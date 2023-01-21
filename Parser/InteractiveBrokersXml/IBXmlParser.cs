@@ -13,7 +13,7 @@ namespace CapitalGainCalculator.Parser.InteractiveBrokersXml
     {
         public IEnumerable<XElement> ParseDividend(XElement document)
         {
-            return document.Descendants("CashTransaction").Where(row => GetDividendType(row.Attribute("type")?.Value) != DividendType.NOT_DIVIDEND);
+            return document.Descendants("CashTransaction").Where(row => GetDividendType(row.GetAttribute("type")) != DividendType.NOT_DIVIDEND);
         }
 
         private DividendType GetDividendType(string? dividendTypeString) => dividendTypeString switch
