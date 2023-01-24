@@ -18,16 +18,17 @@ namespace CapitalGainCalculator.Test
     public class IBXmlParseTest
     {
         private readonly ITestOutputHelper _testOutputHelper;
+        private readonly IBXmlParser _iBXmlParser = new IBXmlParser();
+        private readonly XElement _xmlDoc = XElement.Load(@".\Test\Resource\TaxExample.xml");
         public IBXmlParseTest(ITestOutputHelper output)
         {
             _testOutputHelper = output;
         }
+
         [Fact]
         public void TestReadingIBXmlDividends()
         {
-            XElement xmlDoc = XElement.Load(@".\Test\Resource\TaxExample.xml");
-            IBXmlParser iBXmlParser = new IBXmlParser();
-            IEnumerable<XElement> parsedData = iBXmlParser.ParseDividend(xmlDoc);
+            IEnumerable<XElement> parsedData = _iBXmlParser.ParseDividend(_xmlDoc);
             parsedData.Count().ShouldBe(93);
             IEnumerable<XElement> witholdingTaxes = parsedData.Where(row => row.Attribute("type")?.Value == "Withholding Tax");
             IEnumerable<XElement> dividends = parsedData.Where(row => row.Attribute("type")?.Value == "Dividends");
@@ -35,6 +36,23 @@ namespace CapitalGainCalculator.Test
             witholdingTaxes.Sum(row => decimal.Parse(row.Attribute("amount")?.Value ?? "0")).ToString().ShouldBe("-363394");
             dividends.Sum(row => decimal.Parse(row.Attribute("amount")?.Value ?? "0")).ToString().ShouldBe("2367244.68");
             dividendsInLieu.Sum(row => decimal.Parse(row.Attribute("amount")?.Value ?? "0")).ToString().ShouldBe("933.84");
+        }
+
+        [Fact]
+        public void TestReadingIBXmlBuyTrades()
+        {
+            IEnumerable<XElement> parsedData = _iBXmlParser.ParseBuyTrade(_xmlDoc);
+            parsedData.Count().ShouldBe(41);
+            parsedData.Sum(row => decimal.Parse(row.Attribute("proceeds")?.Value ?? "0")).ToString().ShouldBe("-164864318.984189362");
+        }
+
+        [Fact]
+        public void TestReadingIBXmlSellTrades()
+        {
+            IBXmlParser iBXmlParser = new IBXmlParser();
+            IEnumerable<XElement> parsedData = iBXmlParser.ParseSellTrade(_xmlDoc);
+            parsedData.Count().ShouldBe(39);
+            parsedData.Sum(row => decimal.Parse(row.Attribute("proceeds")?.Value ?? "0")).ToString().ShouldBe("163757801.49355");
         }
 
         [Fact]
@@ -48,6 +66,14 @@ namespace CapitalGainCalculator.Test
             IBXmlParser iBXmlParser = new IBXmlParser();
             IEnumerable<XElement> parsedData = iBXmlParser.ParseDividend(xmlDoc);
             Should.Throw<NullReferenceException>(() => parsedData.ToList(), @"The attribute ""type"" is not found in ""CashTransaction"", please include this attribute in your XML statement");
+        }
+
+        [Fact]
+        public void TestReadingIBXmlCorporateActions()
+        {
+            IBXmlParser iBXmlParser = new IBXmlParser();
+            IEnumerable<XElement> parsedData = iBXmlParser.ParseCorporateAction(_xmlDoc);
+            parsedData.Count().ShouldBe(2);
         }
 
         private void PrintXElements(IEnumerable<XElement> results)

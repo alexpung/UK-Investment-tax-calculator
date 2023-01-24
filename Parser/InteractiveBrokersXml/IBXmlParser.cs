@@ -16,6 +16,21 @@ namespace CapitalGainCalculator.Parser.InteractiveBrokersXml
             return document.Descendants("CashTransaction").Where(row => GetDividendType(row.GetAttribute("type")) != DividendType.NOT_DIVIDEND);
         }
 
+        public IEnumerable<XElement> ParseBuyTrade(XElement document) 
+        {
+            return document.Descendants("Order").Where(row => row.GetAttribute("buySell") == "BUY" && row.GetAttribute("levelOfDetail") == "ORDER");
+        }
+
+        public IEnumerable<XElement> ParseSellTrade(XElement document)
+        {
+            return document.Descendants("Order").Where(row => row.GetAttribute("buySell") == "SELL" && row.GetAttribute("levelOfDetail") == "ORDER");
+        }
+
+        public IEnumerable<XElement> ParseCorporateAction(XElement document)
+        {
+            return document.Descendants("CorporateAction");
+        }
+
         private DividendType GetDividendType(string? dividendTypeString) => dividendTypeString switch
         {
             "Withholding Tax" => DividendType.WITHHOLDING,
