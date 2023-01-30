@@ -1,4 +1,5 @@
 ﻿using CapitalGainCalculator.Enum;
+using CapitalGainCalculator.Model;
 using CapitalGainCalculator.Parser.InteractiveBrokersXml;
 using Shouldly;
 using System;
@@ -12,13 +13,16 @@ using System.Xml.Linq;
 using System.Xml.Serialization;
 using Xunit;
 using Xunit.Abstractions;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace CapitalGainCalculator.Test
 {
     public class IBXmlParseTest
     {
         private readonly ITestOutputHelper _testOutputHelper;
-        private readonly IBXmlParser _iBXmlParser = new IBXmlParser();
+        private readonly IBXmlDividendParser _xmlDividendParser = new IBXmlDividendParser();
+        private readonly IBXmlTradeParser _xmlTradeParser = new IBXmlTradeParser();
+        private readonly IBXmlStockSplitParser _xmlStockSplitParser = new IBXmlStockSplitParser();
         private readonly XElement _xmlDoc = XElement.Load(@".\Test\Resource\TaxExample.xml");
         public IBXmlParseTest(ITestOutputHelper output)
         {
@@ -28,31 +32,26 @@ namespace CapitalGainCalculator.Test
         [Fact]
         public void TestReadingIBXmlDividends()
         {
-            IEnumerable<XElement> parsedData = _iBXmlParser.ParseDividend(_xmlDoc);
+            IEnumerable<Dividend> parsedData = _xmlDividendParser.ParseXml(_xmlDoc);
             parsedData.Count().ShouldBe(93);
-            IEnumerable<XElement> witholdingTaxes = parsedData.Where(row => row.Attribute("type")?.Value == "Withholding Tax");
-            IEnumerable<XElement> dividends = parsedData.Where(row => row.Attribute("type")?.Value == "Dividends");
-            IEnumerable<XElement> dividendsInLieu = parsedData.Where(row => row.Attribute("type")?.Value == "Payment In Lieu Of Dividends");
-            witholdingTaxes.Sum(row => decimal.Parse(row.Attribute("amount")?.Value ?? "0")).ToString().ShouldBe("-363394");
-            dividends.Sum(row => decimal.Parse(row.Attribute("amount")?.Value ?? "0")).ToString().ShouldBe("2367244.68");
-            dividendsInLieu.Sum(row => decimal.Parse(row.Attribute("amount")?.Value ?? "0")).ToString().ShouldBe("933.84");
+            IEnumerable<Dividend> witholdingTaxes = parsedData.Where(dataPoint => dataPoint.DividendType == DividendType.WITHHOLDING);
+            witholdingTaxes.Count().ShouldBe(42);
+            witholdingTaxes.Select(i => (i.Proceed.Amount * i.Proceed.FxRate).Amount).Sum().ToString().ShouldBe("-2648.12");
+            IEnumerable<Dividend> dividends = parsedData.Where(dataPoint => dataPoint.DividendType == DividendType.DIVIDEND);
+            dividends.Count().ShouldBe(46);
+            dividends.Select(i => (i.Proceed.Amount * i.Proceed.FxRate).Amount).Sum().ToString().ShouldBe("17107.24");
+            IEnumerable<Dividend> dividendsInLieu = parsedData.Where(dataPoint => dataPoint.DividendType == DividendType.DIVIDEND_IN_LIEU);
+            dividendsInLieu.Count().ShouldBe(5);
+            dividendsInLieu.Select(i => (i.Proceed.Amount * i.Proceed.FxRate).Amount).Sum().ToString().ShouldBe("97.84");
         }
 
         [Fact]
-        public void TestReadingIBXmlBuyTrades()
+        public void TestReadingIBXmlTrades()
         {
-            IEnumerable<XElement> parsedData = _iBXmlParser.ParseBuyTrade(_xmlDoc);
-            parsedData.Count().ShouldBe(41);
-            parsedData.Sum(row => decimal.Parse(row.Attribute("proceeds")?.Value ?? "0")).ToString().ShouldBe("-164864318.984189362");
-        }
+            IEnumerable<Trade> parsedData = _xmlTradeParser.ParseXml(_xmlDoc);
+            parsedData.Where(trade => trade.BuySell == TradeType.BUY).Count().ShouldBe(41);
+            parsedData.Where(trade => trade.BuySell == TradeType.SELL).Count().ShouldBe(39);
 
-        [Fact]
-        public void TestReadingIBXmlSellTrades()
-        {
-            IBXmlParser iBXmlParser = new IBXmlParser();
-            IEnumerable<XElement> parsedData = iBXmlParser.ParseSellTrade(_xmlDoc);
-            parsedData.Count().ShouldBe(39);
-            parsedData.Sum(row => decimal.Parse(row.Attribute("proceeds")?.Value ?? "0")).ToString().ShouldBe("163757801.49355");
         }
 
         [Fact]
@@ -63,17 +62,20 @@ namespace CapitalGainCalculator.Test
             assetCategory=""STK"" conid=""81540299"" securityID=""JP3130230000"" securityIDType=""ISIN"" cusip="""" underlyingConid="""" underlyingSymbol="""" underlyingSecurityID="""" 
             underlyingListingExchange="""" issuer="""" multiplier=""1"" strike="""" expiry="""" putCall="""" principalAdjustFactor="""" dateTime=""23-Dec-21 20:20:00"" tradeID="""" 
             code="""" transactionID="""" reportDate=""23-Dec-21"" clientReference="""" levelOfDetail=""DETAIL"" serialNumber="""" deliveryType="""" commodityType="""" fineness=""0.0"" weight=""0.0 ()"" /></CashTransactions>");
-            IBXmlParser iBXmlParser = new IBXmlParser();
-            IEnumerable<XElement> parsedData = iBXmlParser.ParseDividend(xmlDoc);
+            IBXmlDividendParser iBXmlParser = new IBXmlDividendParser();
+            IEnumerable<Dividend> parsedData = _xmlDividendParser.ParseXml(xmlDoc);
             Should.Throw<NullReferenceException>(() => parsedData.ToList(), @"The attribute ""type"" is not found in ""CashTransaction"", please include this attribute in your XML statement");
         }
 
         [Fact]
         public void TestReadingIBXmlCorporateActions()
         {
-            IBXmlParser iBXmlParser = new IBXmlParser();
-            IEnumerable<XElement> parsedData = iBXmlParser.ParseCorporateAction(_xmlDoc);
-            parsedData.Count().ShouldBe(2);
+            List<StockSplit> parsedData = _xmlStockSplitParser.ParseXml(_xmlDoc).ToList();
+            parsedData.Count.ShouldBe(2);
+            parsedData[0].AssetName.ShouldBe("4369.T");
+            parsedData[0].Date.ShouldBe(DateTime.Parse("27/01/2021 20:25:00"));
+            ((int)parsedData[0].NumberBeforeSplit).ShouldBe(1);
+            ((int)parsedData[0].NumberAfterSplit).ShouldBe(4);
         }
 
         private void PrintXElements(IEnumerable<XElement> results)

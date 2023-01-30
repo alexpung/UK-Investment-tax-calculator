@@ -5,86 +5,48 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CapitalGainCalculator.Enum;
 using NodaMoney;
 
 namespace CapitalGainCalculator.Model
 {
     public abstract record TaxEvent
     {
-        public string AssetName { get; }
-        public DateTime Date { get; }
-
-        protected TaxEvent(string assetName, DateTime date)
-        {
-           AssetName = assetName;
-           Date = date;
-        }
+        public string AssetName { get; set; }
+        public DateTime Date { get; set; }
     }
 
-    public record BuyTrade : TaxEvent
+    public record Trade : TaxEvent
     {
-        public decimal Quantity { get; }
-        public DescribedMoney Proceed { get; }
-        public IEnumerable<DescribedMoney>? Expenses { get; }
-        public BuyTrade(string assetName, DateTime date, decimal quantity, DescribedMoney proceed, IEnumerable<DescribedMoney>? expenses = null) : base(assetName, date)
-        {
-            Quantity = quantity;
-            Proceed = proceed;
-            Expenses = expenses;
-        }
-    }
-
-    public record SellTrade : TaxEvent
-    {
-        public decimal Quantity { get; }
-        public DescribedMoney Proceed { get; }
-        public IEnumerable<DescribedMoney>? Expenses { get; }
-        public SellTrade(string assetName, DateTime date, decimal quantity, DescribedMoney proceed, IEnumerable<DescribedMoney>? expenses = null) : base(assetName, date)
-        {
-            Quantity = quantity;
-            Proceed = proceed;
-            Expenses = expenses;
-        }
+        public TradeType BuySell { get; set; }
+        public decimal Quantity { get; set; }
+        public DescribedMoney Proceed { get; set; }
+        public IEnumerable<DescribedMoney>? Expenses { get; set; }
     }
 
     public record Dividend : TaxEvent
     {
-        public RegionInfo CompanyLocation { get; }
-        public DescribedMoney Proceed { get; }
-        public ExchangeRate ExchangeRate { get; }
-        public IEnumerable<DescribedMoney>? Expenses { get; }
-        public Dividend(string assetName, DateTime date, RegionInfo companyLocation, DescribedMoney proceeds, ExchangeRate exchangeRate, IEnumerable<DescribedMoney>? expenses = null) : base(assetName, date)
-        {
-            Proceed = proceeds;
-            Expenses = expenses;
-            CompanyLocation = companyLocation;
-            ExchangeRate = exchangeRate;
-        }
+        public DividendType DividendType { get; set; }
+        public RegionInfo CompanyLocation { get; set; }
+        public DescribedMoney Proceed { get; set; }
     }
 
-    public record StockSplit : TaxEvent
+    public abstract record CorporateAction : TaxEvent
     {
-        public ushort NumberBeforeSplit { get; }
-        public ushort NumberAfterSplit { get; }
-        public StockSplit(string assetName, DateTime date, ushort numberBeforeSplit, ushort numberAfterSplit) : base(assetName, date)
-        {
-            NumberBeforeSplit = numberBeforeSplit;
-            NumberAfterSplit = numberAfterSplit;
-        }
+    }
+
+    public record StockSplit : CorporateAction
+    {
+        public ushort NumberBeforeSplit { get; set; }
+        public ushort NumberAfterSplit { get; set; }
     }
 
     public record DescribedMoney
     {
-        public string? Description { get; }
-        public Money Amount { get; }
+        public string? Description { get; set; }
+        public Money Amount { get; set; }
 
-        public ExchangeRate ExchangeRate { get; }
-        public DescribedMoney(Money amount, ExchangeRate exchangeRate, string? description = null)
-        {
-            Description = description;
-            Amount = amount;
-            ExchangeRate = exchangeRate;
-        }
+        public Decimal FxRate { get; set; }
     }
 
 }
