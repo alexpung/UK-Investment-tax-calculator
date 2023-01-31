@@ -16,10 +16,10 @@ namespace CapitalGainCalculator.Parser.InteractiveBrokersXml
                 
     public class IBXmlDividendParser
     {
-        public IEnumerable<Dividend> ParseXml(XElement document)
+        public IList<Dividend> ParseXml(XElement document)
         {
             IEnumerable<XElement> filteredElements = document.Descendants("CashTransaction").Where(row => GetDividendType(row) != DividendType.NOT_DIVIDEND);
-            return filteredElements.Select(DividendMaker).Where(dividend => dividend != null)!;
+            return filteredElements.Select(DividendMaker).Where(dividend => dividend != null).ToList()!;
         }
 
         private Dividend? DividendMaker(XElement element)

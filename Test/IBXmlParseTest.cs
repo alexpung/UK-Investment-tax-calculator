@@ -32,7 +32,7 @@ namespace CapitalGainCalculator.Test
         [Fact]
         public void TestReadingIBXmlDividends()
         {
-            IEnumerable<Dividend> parsedData = _xmlDividendParser.ParseXml(_xmlDoc);
+            IList<Dividend> parsedData = _xmlDividendParser.ParseXml(_xmlDoc);  
             parsedData.Count().ShouldBe(93);
             IEnumerable<Dividend> witholdingTaxes = parsedData.Where(dataPoint => dataPoint.DividendType == DividendType.WITHHOLDING);
             witholdingTaxes.Count().ShouldBe(42);
@@ -48,9 +48,9 @@ namespace CapitalGainCalculator.Test
         [Fact]
         public void TestReadingIBXmlTrades()
         {
-            IEnumerable<Trade> parsedData = _xmlTradeParser.ParseXml(_xmlDoc);
-            parsedData.Where(trade => trade.BuySell == TradeType.BUY).Count().ShouldBe(41);
-            parsedData.Where(trade => trade.BuySell == TradeType.SELL).Count().ShouldBe(39);
+            IList<Trade> parsedData = _xmlTradeParser.ParseXml(_xmlDoc);
+            parsedData.Count(trade => trade.BuySell == TradeType.BUY).ShouldBe(41);
+            parsedData.Count(trade => trade.BuySell == TradeType.SELL).ShouldBe(39);
 
         }
 
@@ -63,14 +63,13 @@ namespace CapitalGainCalculator.Test
             underlyingListingExchange="""" issuer="""" multiplier=""1"" strike="""" expiry="""" putCall="""" principalAdjustFactor="""" dateTime=""23-Dec-21 20:20:00"" tradeID="""" 
             code="""" transactionID="""" reportDate=""23-Dec-21"" clientReference="""" levelOfDetail=""DETAIL"" serialNumber="""" deliveryType="""" commodityType="""" fineness=""0.0"" weight=""0.0 ()"" /></CashTransactions>");
             IBXmlDividendParser iBXmlParser = new IBXmlDividendParser();
-            IEnumerable<Dividend> parsedData = _xmlDividendParser.ParseXml(xmlDoc);
-            Should.Throw<NullReferenceException>(() => parsedData.ToList(), @"The attribute ""type"" is not found in ""CashTransaction"", please include this attribute in your XML statement");
+            Should.Throw<NullReferenceException>(() => _xmlDividendParser.ParseXml(xmlDoc), @"The attribute ""type"" is not found in ""CashTransaction"", please include this attribute in your XML statement");
         }
 
         [Fact]
         public void TestReadingIBXmlCorporateActions()
         {
-            List<StockSplit> parsedData = _xmlStockSplitParser.ParseXml(_xmlDoc).ToList();
+            IList<StockSplit> parsedData = _xmlStockSplitParser.ParseXml(_xmlDoc);
             parsedData.Count.ShouldBe(2);
             parsedData[0].AssetName.ShouldBe("4369.T");
             parsedData[0].Date.ShouldBe(DateTime.Parse("27/01/2021 20:25:00"));

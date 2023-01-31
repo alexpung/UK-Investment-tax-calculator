@@ -13,10 +13,10 @@ namespace CapitalGainCalculator.Parser.InteractiveBrokersXml
 {
     public class IBXmlStockSplitParser
     {
-        public IEnumerable<StockSplit> ParseXml(XElement document)
+        public IList<StockSplit> ParseXml(XElement document)
         {
             IEnumerable<XElement> filteredElements = document.Descendants("CorporateAction").Where(row => row.GetAttribute("description").Contains("SPLIT"));
-            return filteredElements.Select(StockSplitMaker).Where(dividend => dividend != null)!;
+            return filteredElements.Select(StockSplitMaker).Where(dividend => dividend != null).ToList()!;
         }
 
         private StockSplit StockSplitMaker(XElement element)

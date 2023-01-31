@@ -11,10 +11,10 @@ namespace CapitalGainCalculator.Parser.InteractiveBrokersXml
 {
     public class IBXmlTradeParser
     {
-        public IEnumerable<Trade> ParseXml(XElement document)
+        public IList<Trade> ParseXml(XElement document)
         {
             IEnumerable<XElement> filteredElements = document.Descendants("Order").Where(row => row.GetAttribute("levelOfDetail") == "ORDER");
-            return filteredElements.Select(TradeMaker).Where(trade => trade != null)!;
+            return filteredElements.Select(TradeMaker).Where(trade => trade != null).ToList()!;
 
         }
 
