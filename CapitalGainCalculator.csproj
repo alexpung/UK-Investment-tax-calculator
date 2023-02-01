@@ -8,7 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Model\" />
     <Folder Include="View\" />
     <Folder Include="ViewModel\" />
   </ItemGroup>
@@ -25,6 +24,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Test\resource\InvalidFile.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Test\resource\TaxExample.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
