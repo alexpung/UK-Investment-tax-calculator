@@ -9,7 +9,7 @@ using System.Xml.Linq;
 
 namespace CapitalGainCalculator.Parser.InteractiveBrokersXml
 {
-    public class IBParseController
+    public class IBParseController : ITaxEventFileParser
     {
         public IList<TaxEvent> ParseFile(string fileUri)
         {
