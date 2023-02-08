@@ -46,7 +46,9 @@ namespace CapitalGainCalculator.Model
         public string? Description { get; set; }
         public Money Amount { get; set; }
 
-        public Decimal FxRate { get; set; }
+        public decimal FxRate { get; set; }
+
+        public decimal BaseCurrencyAmount => Amount.Amount * FxRate;
     }
 
 }
