@@ -35,7 +35,8 @@ namespace CapitalGainCalculator.Model.UkTaxModel
         {
             DividendType.WITHHOLDING => "Withholding Tax",
             DividendType.DIVIDEND_IN_LIEU => "Payment In Lieu of a Dividend",
-            DividendType.DIVIDEND => "Dividend"
+            DividendType.DIVIDEND => "Dividend",
+            _ => throw new NotImplementedException() //SHould not get a dividend object with any other type.
         };
 
         private decimal SumDividendTotals(IEnumerable<Dividend> dividends)
