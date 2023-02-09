@@ -10,9 +10,9 @@ using System.Threading.Tasks;
 
 namespace CapitalGainCalculator.Model.UkTaxModel
 {
-    public class UkDividendGrouper
+    public class UkDividendGrouper : ITaxAnalyser
     {
-        private IEnumerable<IGrouping<int, IGrouping <RegionInfo, Dividend>>> GroupDividend(IEnumerable<TaxEvent> events)
+        private IEnumerable<IGrouping<int, IGrouping<RegionInfo, Dividend>>> GroupDividend(IEnumerable<TaxEvent> events)
         {
             IEnumerable<Dividend> dividends = from taxEvent in events
                                               where taxEvent is Dividend
@@ -42,8 +42,8 @@ namespace CapitalGainCalculator.Model.UkTaxModel
         private decimal SumDividendTotals(IEnumerable<Dividend> dividends)
         {
             return (from dividend in dividends
-                   where dividend.DividendType is DividendType.DIVIDEND_IN_LIEU or DividendType.DIVIDEND
-                   select dividend.Proceed.BaseCurrencyAmount).Sum();
+                    where dividend.DividendType is DividendType.DIVIDEND_IN_LIEU or DividendType.DIVIDEND
+                    select dividend.Proceed.BaseCurrencyAmount).Sum();
         }
 
         private decimal SumWithholdingTotals(IEnumerable<Dividend> dividends)
@@ -55,7 +55,7 @@ namespace CapitalGainCalculator.Model.UkTaxModel
 
         private string PrettyPrintDividend(Dividend dividend)
         {
-            return  $"Asset Name: {dividend.AssetName}, " +
+            return $"Asset Name: {dividend.AssetName}, " +
                     $"Date: {dividend.Date.ToShortDateString()}, " +
                     $"Type: {DividendTypeConverter(dividend.DividendType)}, " +
                     $"Amount: {dividend.Proceed.Amount}, " +
@@ -68,7 +68,7 @@ namespace CapitalGainCalculator.Model.UkTaxModel
         {
             StringBuilder output = new();
             var result = GroupDividend(events);
-            foreach ( var taxYear in result)
+            foreach (var taxYear in result)
             {
                 output.AppendLine($"Tax Year: {taxYear.Key}");
                 foreach (var companyLocation in taxYear)
@@ -77,7 +77,7 @@ namespace CapitalGainCalculator.Model.UkTaxModel
                     output.AppendLine($"\t\tTotal dividends: £{SumDividendTotals(companyLocation):0.00}");
                     output.AppendLine($"\t\tTotal withholding tax: £{SumWithholdingTotals(companyLocation):0.00}\n");
                     output.AppendLine("\t\tTransactions:");
-                    foreach(var dividend in companyLocation)
+                    foreach (var dividend in companyLocation)
                     {
                         output.AppendLine($"\t\t{PrettyPrintDividend(dividend)}");
                     }
