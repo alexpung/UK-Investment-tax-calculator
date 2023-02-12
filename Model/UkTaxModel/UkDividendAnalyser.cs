@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace CapitalGainCalculator.Model.UkTaxModel
 {
-    public class UkDividendGrouper : ITaxAnalyser
+    public class UkDividendAnalyser : ITaxAnalyser
     {
         private IEnumerable<IGrouping<int, IGrouping<RegionInfo, Dividend>>> GroupDividend(IEnumerable<TaxEvent> events)
         {

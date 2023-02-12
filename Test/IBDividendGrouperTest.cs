@@ -16,7 +16,7 @@ namespace CapitalGainCalculator.Test
     public class IBDividendGrouperTest
     {
         private readonly IBParseController _parseController = new IBParseController();
-        private readonly UkDividendGrouper _ukDividendGrouper = new UkDividendGrouper();
+        private readonly UkDividendAnalyser _ukDividendGrouper = new UkDividendAnalyser();
 
         [Fact]
         public void TestDividendGrouping()
