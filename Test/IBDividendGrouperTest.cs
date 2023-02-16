@@ -27,7 +27,7 @@ namespace CapitalGainCalculator.Test
                 CompanyLocation = new RegionInfo("HK"),
                 DividendType = Enum.DividendType.DIVIDEND,
                 Date = new DateTime(2022, 4, 5),
-                Proceed = new DescribedMoney { Amount = new Money(1000, "HKD"), Description = "abc dividend", FxRate = new decimal(0.11) }
+                Proceed = new DescribedMoney { Amount = new Money(1000, "HKD"), Description = "abc dividend", FxRate = 0.11m }
             };
             Dividend dividend2 = new Dividend
             {
@@ -35,7 +35,7 @@ namespace CapitalGainCalculator.Test
                 CompanyLocation = new RegionInfo("HK"),
                 DividendType = Enum.DividendType.DIVIDEND_IN_LIEU,
                 Date = new DateTime(2022, 4, 5),
-                Proceed = new DescribedMoney { Amount = new Money(500, "HKD"), Description = "HSBC dividend", FxRate = new decimal(0.11) }
+                Proceed = new DescribedMoney { Amount = new Money(500, "HKD"), Description = "HSBC dividend", FxRate = 0.11m }
             };
             Dividend dividend3 = new Dividend
             {
@@ -43,7 +43,7 @@ namespace CapitalGainCalculator.Test
                 CompanyLocation = new RegionInfo("GB"),
                 DividendType = Enum.DividendType.DIVIDEND,
                 Date = new DateTime(2022, 4, 4),
-                Proceed = new DescribedMoney { Amount = new Money(2000, "GBP"), Description = "def dividend", FxRate = new decimal(1) }
+                Proceed = new DescribedMoney { Amount = new Money(2000, "GBP"), Description = "def dividend", FxRate = 1m }
             };
             Dividend dividend4 = new Dividend
             {
@@ -51,7 +51,7 @@ namespace CapitalGainCalculator.Test
                 CompanyLocation = new RegionInfo("GB"),
                 DividendType = Enum.DividendType.WITHHOLDING,
                 Date = new DateTime(2022, 4, 4),
-                Proceed = new DescribedMoney { Amount = new Money(100, "GBP"), Description = "def withholding tax", FxRate = new decimal(1) }
+                Proceed = new DescribedMoney { Amount = new Money(100, "GBP"), Description = "def withholding tax", FxRate = 1m }
             };
             Dividend dividend5 = new Dividend
             {
@@ -59,7 +59,7 @@ namespace CapitalGainCalculator.Test
                 CompanyLocation = new RegionInfo("JP"),
                 DividendType = Enum.DividendType.DIVIDEND,
                 Date = new DateTime(2022, 4, 6),
-                Proceed = new DescribedMoney { Amount = new Money(20000, "JPY"), Description = "def dividend", FxRate = new decimal(0.0063) }
+                Proceed = new DescribedMoney { Amount = new Money(20000, "JPY"), Description = "def dividend", FxRate = 0.0063m }
             };
             Dividend dividend6 = new Dividend
             {
@@ -67,7 +67,7 @@ namespace CapitalGainCalculator.Test
                 CompanyLocation = new RegionInfo("JP"),
                 DividendType = Enum.DividendType.WITHHOLDING,
                 Date = new DateTime(2022, 4, 6),
-                Proceed = new DescribedMoney { Amount = new Money(3000, "JPY"), Description = "def withholding tax", FxRate = new decimal(0.0063) }
+                Proceed = new DescribedMoney { Amount = new Money(3000, "JPY"), Description = "def withholding tax", FxRate = 0.0063m }
             };
             IList<TaxEvent> data = new List<TaxEvent>{dividend1, dividend2, dividend3, dividend4, dividend5,dividend6};
             string result = _ukDividendGrouper.AnalyseTaxEventsData(data);
