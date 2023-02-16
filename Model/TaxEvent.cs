@@ -12,7 +12,7 @@ namespace CapitalGainCalculator.Model
 {
     public abstract record TaxEvent
     {
-        public string AssetName { get; set; }
+        public string AssetName { get; set; } = "";
         public DateTime Date { get; set; }
     }
 
@@ -20,15 +20,15 @@ namespace CapitalGainCalculator.Model
     {
         public TradeType BuySell { get; set; }
         public decimal Quantity { get; set; }
-        public DescribedMoney Proceed { get; set; }
-        public IEnumerable<DescribedMoney>? Expenses { get; set; }
+        public DescribedMoney Proceed { get; set; } = new DescribedMoney();
+        public List<DescribedMoney> Expenses { get; set; } = new List<DescribedMoney>();
     }
 
     public record Dividend : TaxEvent
     {
         public DividendType DividendType { get; set; }
-        public RegionInfo CompanyLocation { get; set; }
-        public DescribedMoney Proceed { get; set; }
+        public RegionInfo CompanyLocation { get; set; } = RegionInfo.CurrentRegion;
+        public DescribedMoney Proceed { get; set; } = new DescribedMoney();
     }
 
     public abstract record CorporateAction : TaxEvent
@@ -43,7 +43,7 @@ namespace CapitalGainCalculator.Model
 
     public record DescribedMoney
     {
-        public string? Description { get; set; }
+        public string Description { get; set; } = "";
         public Money Amount { get; set; }
 
         public decimal FxRate { get; set; }
