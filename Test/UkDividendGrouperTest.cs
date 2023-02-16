@@ -13,9 +13,8 @@ using Xunit;
 
 namespace CapitalGainCalculator.Test
 {
-    public class IBDividendGrouperTest
+    public class UkDividendGrouperTest
     {
-        private readonly IBParseController _parseController = new IBParseController();
         private readonly UkDividendAnalyser _ukDividendGrouper = new UkDividendAnalyser();
 
         [Fact]
