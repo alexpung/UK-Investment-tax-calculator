@@ -17,7 +17,7 @@ namespace CapitalGainCalculator.Test
         [Fact]
         public void TestTradeGrouping()
         {
-            Trade Trade1 = new Trade
+            Trade Trade1 = new()
             {
                 AssetName = "abc",
                 BuySell = Enum.TradeType.BUY,
@@ -25,7 +25,7 @@ namespace CapitalGainCalculator.Test
                 Quantity = 10,
                 Proceed = new DescribedMoney { Amount = new Money(1000, "HKD"), FxRate = 0.11m }
             };
-            Trade Trade2 = new Trade
+            Trade Trade2 = new()
             {
                 AssetName = "HSBC bank",
                 BuySell = Enum.TradeType.BUY,
@@ -41,7 +41,7 @@ namespace CapitalGainCalculator.Test
                 Quantity = 10,
                 Proceed = new DescribedMoney { Amount = new Money(2000, "GBP"), FxRate = 1m }
             };
-            Trade Trade4 = new Trade
+            Trade Trade4 = new()
             {
                 AssetName = "abc",
                 BuySell = Enum.TradeType.BUY,
@@ -49,7 +49,7 @@ namespace CapitalGainCalculator.Test
                 Quantity = 10,
                 Proceed = new DescribedMoney { Amount = new Money(100, "GBP"), FxRate = 1m }
             };
-            Trade Trade5 = new Trade
+            Trade Trade5 = new()
             {
                 AssetName = "abc",
                 BuySell = Enum.TradeType.BUY,
