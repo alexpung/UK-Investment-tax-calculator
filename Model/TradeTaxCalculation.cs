@@ -1,4 +1,6 @@
-﻿using System;
+﻿using CapitalGainCalculator.Enum;
+using Shouldly;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -22,16 +24,26 @@ namespace CapitalGainCalculator.Model
         }
         public decimal TotalQty { get; }
         public decimal UnmatchedQty { get; set; }
+        public TradeType BuySell { get; init; }
 
         public bool CalculationCompleted { get; private set; }
 
+        /// <summary>
+        /// Bunch a group of trade on the same side so that they can be matched together as a group, e.g. UK tax trades on the same side on the same day and same capacity are grouped.
+        /// </summary>
+        /// <param name="trades">Only accept trade from the same side</param>
         public TradeTaxCalculation(IEnumerable<Trade> trades)
         {
+            if (!trades.All(i => i.BuySell.Equals(trades.First().BuySell)))
+            {
+                throw new ArgumentException("Not all trades that is put in TradeTaxCalculation is on the same BUY/SELL side");
+            }
             _tradeList = trades.ToList();
             TotaNetlAmount = trades.Sum(CalculateNetAmount);
             UnmatchedNetAmount = TotaNetlAmount;
             TotalQty = trades.Sum(trade => trade.Quantity);
             UnmatchedQty = TotalQty;
+            BuySell = trades.First().BuySell;
             CalculationCompleted = false;
         }
 
