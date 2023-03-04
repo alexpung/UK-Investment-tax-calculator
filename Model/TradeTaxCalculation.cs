@@ -1,31 +1,28 @@
 ﻿using CapitalGainCalculator.Enum;
-using Shouldly;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CapitalGainCalculator.Model
 {
     public class TradeTaxCalculation
     {
-        private readonly List<Trade> _tradeList;
-        public decimal TotaNetlAmount { get; }
+        public List<Trade> TradeList { get; init; }
+        public List<TradeMatch> MatchHistory { get; init; } = new List<TradeMatch>();
+        public decimal TotalNetAmount { get; }
         private decimal _unmatchedNetAmount;
         public decimal UnmatchedNetAmount
         {
             get { return _unmatchedNetAmount; }
-            set
+            private set
             {
                 _unmatchedNetAmount = value;
                 if(UnmatchedNetAmount == 0) CalculationCompleted = true;
             }
         }
         public decimal TotalQty { get; }
-        public decimal UnmatchedQty { get; set; }
+        public decimal UnmatchedQty { get; private set; }
         public TradeType BuySell { get; init; }
-
         public bool CalculationCompleted { get; private set; }
 
         /// <summary>
@@ -38,13 +35,43 @@ namespace CapitalGainCalculator.Model
             {
                 throw new ArgumentException("Not all trades that is put in TradeTaxCalculation is on the same BUY/SELL side");
             }
-            _tradeList = trades.ToList();
-            TotaNetlAmount = trades.Sum(CalculateNetAmount);
-            UnmatchedNetAmount = TotaNetlAmount;
+            TradeList = trades.ToList();
+            TotalNetAmount = trades.Sum(CalculateNetAmount);
+            UnmatchedNetAmount = TotalNetAmount;
             TotalQty = trades.Sum(trade => trade.Quantity);
             UnmatchedQty = TotalQty;
             BuySell = trades.First().BuySell;
             CalculationCompleted = false;
+        }
+
+        public (decimal matchedQty, decimal matchedValue) MatchQty(decimal demandedQty)
+        {
+            decimal matchedQty;
+            decimal matchedValue;
+            if (demandedQty >= UnmatchedQty)
+            {
+                matchedQty = UnmatchedQty;
+                matchedValue = UnmatchedNetAmount;
+                UnmatchedQty = 0;
+                UnmatchedNetAmount = 0;
+            }
+            else
+            {
+                matchedQty = demandedQty;
+                matchedValue = TotalNetAmount * demandedQty / TotalQty;
+                UnmatchedQty -= matchedQty;
+                UnmatchedNetAmount -= matchedValue;
+            }
+            return (matchedQty, matchedValue);
+        }
+
+        public (decimal matchedQty, decimal matchedValue) MatchAll()
+        {
+            decimal matchedQty = UnmatchedQty;
+            decimal matchedValue = UnmatchedNetAmount;
+            UnmatchedQty = 0;
+            UnmatchedNetAmount = 0;
+            return (matchedQty, matchedValue);
         }
 
         private decimal CalculateNetAmount(Trade trade)
