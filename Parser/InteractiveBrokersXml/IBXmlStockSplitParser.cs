@@ -1,12 +1,8 @@
-﻿using CapitalGainCalculator.Enum;
-using CapitalGainCalculator.Model;
-using Shouldly;
+﻿using CapitalGainCalculator.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace CapitalGainCalculator.Parser.InteractiveBrokersXml
@@ -25,7 +21,6 @@ namespace CapitalGainCalculator.Parser.InteractiveBrokersXml
             string description = element.GetAttribute("description");
             Regex regex = new(matchExpression, RegexOptions.Compiled);
             Match matchResult = regex.Match(description);
-            matchResult.Success.ShouldBeTrue();
             return new StockSplit
             {
                 AssetName = element.GetAttribute("symbol"),

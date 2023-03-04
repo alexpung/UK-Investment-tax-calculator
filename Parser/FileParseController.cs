@@ -1,11 +1,6 @@
 ﻿using CapitalGainCalculator.Model;
-using Castle.Core.Logging;
-using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CapitalGainCalculator.Parser
 {
@@ -24,7 +19,7 @@ namespace CapitalGainCalculator.Parser
             {
                 foreach (ITaxEventFileParser taxEventFileParser in _taxEventFileParsers)
                 {
-                    if(taxEventFileParser.CheckFileValidity(fileName))
+                    if (taxEventFileParser.CheckFileValidity(fileName))
                     {
                         taxEvents.AddRange(taxEventFileParser.ParseFile(fileName));
                         break;

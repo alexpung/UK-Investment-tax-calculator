@@ -17,7 +17,7 @@ namespace CapitalGainCalculator.Model
             private set
             {
                 _unmatchedNetAmount = value;
-                if(UnmatchedNetAmount == 0) CalculationCompleted = true;
+                if (UnmatchedNetAmount == 0) CalculationCompleted = true;
             }
         }
         public decimal TotalQty { get; }

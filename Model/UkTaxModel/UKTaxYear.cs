@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CapitalGainCalculator.Model.UkTaxModel
 {
@@ -12,10 +8,10 @@ namespace CapitalGainCalculator.Model.UkTaxModel
         {
             return (dateTime.Month, dateTime.Day) switch
             {
-                (<=3, _) => dateTime.Year - 1,
-                (4, <6) => dateTime.Year - 1,
-                (4, >=6) => dateTime.Year,
-                (>=5,_) => dateTime.Year
+                ( <= 3, _) => dateTime.Year - 1,
+                (4, < 6) => dateTime.Year - 1,
+                (4, >= 6) => dateTime.Year,
+                ( >= 5, _) => dateTime.Year
             };
         }
     }

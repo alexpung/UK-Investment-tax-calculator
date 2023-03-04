@@ -1,15 +1,8 @@
 ﻿using CapitalGainCalculator.Model;
 using CapitalGainCalculator.Model.UkTaxModel;
-using CapitalGainCalculator.Parser.InteractiveBrokersXml;
 using NodaMoney;
 using Shouldly;
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Xunit;
 
 namespace CapitalGainCalculator.Test
 {
@@ -68,7 +61,7 @@ namespace CapitalGainCalculator.Test
                 Date = new DateTime(2022, 4, 6),
                 Proceed = new DescribedMoney { Amount = new Money(3000, "JPY"), Description = "def withholding tax", FxRate = 0.0063m }
             };
-            IList<TaxEvent> data = new List<TaxEvent>{dividend1, dividend2, dividend3, dividend4, dividend5,dividend6};
+            IList<TaxEvent> data = new List<TaxEvent> { dividend1, dividend2, dividend3, dividend4, dividend5, dividend6 };
             string result = _ukDividendGrouper.AnalyseTaxEventsData(data);
             result.Replace("\r\n", "\n").ShouldBe(
                 """

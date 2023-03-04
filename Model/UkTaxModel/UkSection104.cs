@@ -1,8 +1,6 @@
 ﻿using CapitalGainCalculator.Enum;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Windows.Navigation;
 
 namespace CapitalGainCalculator.Model.UkTaxModel
 {

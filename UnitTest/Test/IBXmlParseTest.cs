@@ -2,18 +2,8 @@
 using CapitalGainCalculator.Model;
 using CapitalGainCalculator.Parser.InteractiveBrokersXml;
 using Shouldly;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml;
 using System.Xml.Linq;
-using System.Xml.Serialization;
-using Xunit;
 using Xunit.Abstractions;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace CapitalGainCalculator.Test
 {
@@ -32,7 +22,7 @@ namespace CapitalGainCalculator.Test
         [Fact]
         public void TestReadingIBXmlDividends()
         {
-            IList<Dividend> parsedData = _xmlDividendParser.ParseXml(_xmlDoc);  
+            IList<Dividend> parsedData = _xmlDividendParser.ParseXml(_xmlDoc);
             parsedData.Count().ShouldBe(93);
             IEnumerable<Dividend> witholdingTaxes = parsedData.Where(dataPoint => dataPoint.DividendType == DividendType.WITHHOLDING);
             witholdingTaxes.Count().ShouldBe(42);

@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections;
+﻿using CapitalGainCalculator.Enum;
+using NodaMoney;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using CapitalGainCalculator.Enum;
-using NodaMoney;
 
 namespace CapitalGainCalculator.Model
 {

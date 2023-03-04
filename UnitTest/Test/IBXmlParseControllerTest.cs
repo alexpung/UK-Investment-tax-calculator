@@ -1,12 +1,6 @@
 ﻿using CapitalGainCalculator.Model;
 using CapitalGainCalculator.Parser.InteractiveBrokersXml;
 using Shouldly;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Xunit;
 
 namespace CapitalGainCalculator.Test
 {
@@ -15,7 +9,7 @@ namespace CapitalGainCalculator.Test
         private readonly IBParseController _parseController = new IBParseController();
 
         [Fact]
-        public void TestCheckingInvalidIBXml() 
+        public void TestCheckingInvalidIBXml()
         {
             string testFilePath = @".\Test\Resource\InvalidFile.xml";
             _parseController.CheckFileValidity(testFilePath).ShouldBeFalse();
