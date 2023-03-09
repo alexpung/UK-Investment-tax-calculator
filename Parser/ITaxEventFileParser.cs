@@ -1,11 +1,10 @@
 ﻿using CapitalGainCalculator.Model;
 using System.Collections.Generic;
 
-namespace CapitalGainCalculator.Parser
+namespace CapitalGainCalculator.Parser;
+
+public interface ITaxEventFileParser
 {
-    public interface ITaxEventFileParser
-    {
-        bool CheckFileValidity(string fileUri);
-        IList<TaxEvent> ParseFile(string fileUri);
-    }
+    bool CheckFileValidity(string fileUri);
+    IList<TaxEvent> ParseFile(string fileUri);
 }

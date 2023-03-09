@@ -1,9 +1,8 @@
-﻿namespace CapitalGainCalculator.Model.UkTaxModel
+﻿namespace CapitalGainCalculator.Model.UkTaxModel;
+
+public enum UkMatchType
 {
-    public enum UkMatchType
-    {
-        SAME_DAY,
-        BREAD_AND_BREAKFAST,
-        SECTION_104
-    }
+    SAME_DAY,
+    BREAD_AND_BREAKFAST,
+    SECTION_104
 }

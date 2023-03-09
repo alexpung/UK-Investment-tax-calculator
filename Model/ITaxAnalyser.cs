@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
 
-namespace CapitalGainCalculator.Model
+namespace CapitalGainCalculator.Model;
+
+public interface ITaxAnalyser
 {
-    public interface ITaxAnalyser
-    {
-        string AnalyseTaxEventsData(IEnumerable<TaxEvent> events);
-    }
+    string AnalyseTaxEventsData(IEnumerable<TaxEvent> events);
 }

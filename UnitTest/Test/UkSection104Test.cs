@@ -1,6 +1,5 @@
-﻿namespace CapitalGainCalculator.Test
+﻿namespace CapitalGainCalculator.Test;
+
+public class UkSection104Test
 {
-    public class UkSection104Test
-    {
-    }
 }

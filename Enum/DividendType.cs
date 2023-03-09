@@ -1,10 +1,9 @@
-﻿namespace CapitalGainCalculator.Enum
+﻿namespace CapitalGainCalculator.Enum;
+
+public enum DividendType
 {
-    public enum DividendType
-    {
-        WITHHOLDING,
-        DIVIDEND,
-        DIVIDEND_IN_LIEU,
-        NOT_DIVIDEND
-    }
+    WITHHOLDING,
+    DIVIDEND,
+    DIVIDEND_IN_LIEU,
+    NOT_DIVIDEND
 }

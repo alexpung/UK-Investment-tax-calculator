@@ -1,8 +1,7 @@
-﻿namespace CapitalGainCalculator.Enum
+﻿namespace CapitalGainCalculator.Enum;
+
+public enum TradeType
 {
-    public enum TradeType
-    {
-        BUY,
-        SELL
-    }
+    BUY,
+    SELL
 }
