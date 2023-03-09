@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace CapitalGainCalculator.Model;
+namespace CapitalGainCalculator.Model.Interfaces;
 
 public interface ITaxAnalyser
 {

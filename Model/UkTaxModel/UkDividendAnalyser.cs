@@ -1,4 +1,5 @@
 ﻿using CapitalGainCalculator.Enum;
+using CapitalGainCalculator.Model.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
