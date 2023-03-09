@@ -1,4 +1,5 @@
 ﻿using CapitalGainCalculator.Enum;
+using CapitalGainCalculator.Model.Interfaces;
 using System;
 using System.Collections.Generic;
 
@@ -19,17 +20,17 @@ public record UkSection104
     }
     public decimal ValueInBaseCurrency { get; private set; }
 
-    public List<TradeTaxCalculation> MatchedTradesList { get; private set; }
+    public List<ITradeTaxCalculation> MatchedTradesList { get; private set; }
 
     public UkSection104(string name)
     {
         AssetName = name;
         Quantity = 0m;
         ValueInBaseCurrency = 0m;
-        MatchedTradesList = new List<TradeTaxCalculation>();
+        MatchedTradesList = new List<ITradeTaxCalculation>();
     }
 
-    public void MatchTradeWithSection104(TradeTaxCalculation tradeTaxCalculation)
+    public void MatchTradeWithSection104(ITradeTaxCalculation tradeTaxCalculation)
     {
         if (tradeTaxCalculation.BuySell == TradeType.BUY)
         {
@@ -43,7 +44,7 @@ public record UkSection104
         MatchedTradesList.Add(tradeTaxCalculation);
     }
 
-    private void AddAssets(TradeTaxCalculation tradeTaxCalculation)
+    private void AddAssets(ITradeTaxCalculation tradeTaxCalculation)
     {
         if (tradeTaxCalculation.UnmatchedQty < 0)
         {
@@ -56,7 +57,7 @@ public record UkSection104
         ValueInBaseCurrency += value;
     }
 
-    private void RemoveAssets(TradeTaxCalculation tradeTaxCalculation)
+    private void RemoveAssets(ITradeTaxCalculation tradeTaxCalculation)
     {
         decimal qty;
         decimal value;

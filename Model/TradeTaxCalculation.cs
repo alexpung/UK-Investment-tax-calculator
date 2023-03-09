@@ -1,11 +1,12 @@
 ﻿using CapitalGainCalculator.Enum;
+using CapitalGainCalculator.Model.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace CapitalGainCalculator.Model;
 
-public class TradeTaxCalculation
+public class TradeTaxCalculation : ITradeTaxCalculation
 {
     public List<Trade> TradeList { get; init; }
     public List<TradeMatch> MatchHistory { get; init; } = new List<TradeMatch>();

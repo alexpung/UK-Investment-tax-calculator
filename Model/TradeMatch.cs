@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using CapitalGainCalculator.Model.Interfaces;
+using System.Collections.Generic;
 
 namespace CapitalGainCalculator.Model;
 
@@ -8,7 +9,7 @@ namespace CapitalGainCalculator.Model;
 public record TradeMatch
 {
     public System.Enum? TradeMatchType { get; set; }
-    public List<TradeTaxCalculation> MatchedGroups { get; set; } = new List<TradeTaxCalculation>();
+    public List<ITradeTaxCalculation> MatchedGroups { get; set; } = new();
 
     public decimal MatchQuantity { get; set; } = 0m;
 
