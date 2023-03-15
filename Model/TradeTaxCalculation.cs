@@ -59,7 +59,7 @@ public class TradeTaxCalculation : ITradeTaxCalculation
         else
         {
             matchedQty = demandedQty;
-            matchedValue = TotalNetAmount * demandedQty / TotalQty;
+            matchedValue = decimal.Round(TotalNetAmount * demandedQty / TotalQty, 2);
             UnmatchedQty -= matchedQty;
             UnmatchedNetAmount -= matchedValue;
         }

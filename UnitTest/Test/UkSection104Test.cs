@@ -1,9 +1,9 @@
 ﻿using CapitalGainCalculator.Enum;
-using CapitalGainCalculator.Model;
 using CapitalGainCalculator.Model.Interfaces;
 using CapitalGainCalculator.Model.UkTaxModel;
 using Moq;
 using Shouldly;
+using UnitTest;
 
 namespace CapitalGainCalculator.Test;
 
@@ -15,31 +15,53 @@ public class UkSection104Test
     [InlineData(100, 1000, 150, 4000)]
     public void TestAddandRemoveSection104(decimal buyQuantity, decimal buyValue, decimal sellQuantity, decimal sellValue)
     {
-        Mock<ITradeTaxCalculation> mockBuyTrade = new();
-        mockBuyTrade.Setup(f => f.MatchAll()).Returns((buyQuantity, buyValue));
-        mockBuyTrade.Setup(f => f.BuySell).Returns(TradeType.BUY);
-        mockBuyTrade.Setup(f => f.MatchHistory).Returns(new List<TradeMatch>());
-        mockBuyTrade.Setup(f => f.UnmatchedQty).Returns(buyQuantity);
+        Mock<ITradeTaxCalculation> mockBuyTrade = MockTrade.CreateMockTrade(buyQuantity, buyValue, TradeType.BUY);
         UkSection104 ukSection104 = new("IBM");
         ukSection104.MatchTradeWithSection104(mockBuyTrade.Object);
         ukSection104.AssetName.ShouldBe("IBM");
         ukSection104.Quantity.ShouldBe(100m);
         ukSection104.ValueInBaseCurrency.ShouldBe(buyValue);
         mockBuyTrade.Object.MatchHistory[0].MatchQuantity.ShouldBe(buyQuantity);
-        mockBuyTrade.Object.MatchHistory[0].BaseCurrencyMatchValue.ShouldBe(buyValue);
+        mockBuyTrade.Object.MatchHistory[0].BaseCurrencyMatchAcquitionValue.ShouldBe(buyValue);
+        mockBuyTrade.Object.MatchHistory[0].BaseCurrencyMatchDisposalValue.ShouldBe(0);
         mockBuyTrade.Object.MatchHistory[0].TradeMatchType.ShouldBe(UkMatchType.SECTION_104);
-
-        Mock<ITradeTaxCalculation> mockSellTrade = new();
-        mockSellTrade.Setup(f => f.MatchAll()).Returns((sellQuantity, sellValue));
-        mockSellTrade.Setup(f => f.BuySell).Returns(TradeType.SELL);
-        mockSellTrade.Setup(f => f.MatchHistory).Returns(new List<TradeMatch>());
-        mockSellTrade.Setup(f => f.UnmatchedQty).Returns(sellQuantity);
-        mockSellTrade.Setup(f => f.MatchQty(It.IsAny<decimal>())).Returns<decimal>(x => (x, 100));
+        Mock<ITradeTaxCalculation> mockSellTrade = MockTrade.CreateMockTrade(sellQuantity, sellValue, TradeType.SELL);
         ukSection104.MatchTradeWithSection104(mockSellTrade.Object);
         ukSection104.Quantity.ShouldBe(decimal.Max(buyQuantity - sellQuantity, 0));
         ukSection104.ValueInBaseCurrency.ShouldBe(decimal.Max((buyQuantity - sellQuantity) / buyQuantity * buyValue, 0));
         mockSellTrade.Object.MatchHistory[0].MatchQuantity.ShouldBe(decimal.Min(sellQuantity, buyQuantity));
-        mockSellTrade.Object.MatchHistory[0].BaseCurrencyMatchValue.ShouldBe(decimal.Min(buyValue / buyQuantity * sellQuantity, buyValue));
+        mockSellTrade.Object.MatchHistory[0].BaseCurrencyMatchAcquitionValue.ShouldBe(decimal.Min(buyValue / buyQuantity * sellQuantity, buyValue));
+        mockSellTrade.Object.MatchHistory[0].BaseCurrencyMatchDisposalValue.ShouldBe(decimal.Min(sellQuantity, buyQuantity) * sellValue / sellQuantity);
         mockSellTrade.Object.MatchHistory[0].TradeMatchType.ShouldBe(UkMatchType.SECTION_104);
+    }
+
+    [Fact]
+    public void TestSection104History()
+    {
+        Mock<ITradeTaxCalculation> mockTrade1 = MockTrade.CreateMockTrade(100, 1000, TradeType.BUY);
+        Mock<ITradeTaxCalculation> mockTrade2 = MockTrade.CreateMockTrade(200, 2000, TradeType.BUY);
+        Mock<ITradeTaxCalculation> mockTrade3 = MockTrade.CreateMockTrade(300, 3000, TradeType.BUY);
+        Mock<ITradeTaxCalculation> mockTrade4 = MockTrade.CreateMockTrade(400, 8000, TradeType.SELL);
+        UkSection104 ukSection104 = new("IBM");
+        ukSection104.MatchTradeWithSection104(mockTrade1.Object);
+        ukSection104.MatchTradeWithSection104(mockTrade2.Object);
+        ukSection104.MatchTradeWithSection104(mockTrade3.Object);
+        ukSection104.MatchTradeWithSection104(mockTrade4.Object);
+        ukSection104.Section104HistoryList[0].OldQuantity.ShouldBe(0);
+        ukSection104.Section104HistoryList[1].OldQuantity.ShouldBe(100);
+        ukSection104.Section104HistoryList[2].OldQuantity.ShouldBe(300);
+        ukSection104.Section104HistoryList[3].OldQuantity.ShouldBe(600);
+        ukSection104.Section104HistoryList[0].OldValue.ShouldBe(0);
+        ukSection104.Section104HistoryList[1].OldValue.ShouldBe(1000);
+        ukSection104.Section104HistoryList[2].OldValue.ShouldBe(3000);
+        ukSection104.Section104HistoryList[3].OldValue.ShouldBe(6000);
+        ukSection104.Section104HistoryList[0].QuantityChange.ShouldBe(100);
+        ukSection104.Section104HistoryList[1].QuantityChange.ShouldBe(200);
+        ukSection104.Section104HistoryList[2].QuantityChange.ShouldBe(300);
+        ukSection104.Section104HistoryList[3].QuantityChange.ShouldBe(-400);
+        ukSection104.Section104HistoryList[0].ValueChange.ShouldBe(1000);
+        ukSection104.Section104HistoryList[1].ValueChange.ShouldBe(2000);
+        ukSection104.Section104HistoryList[2].ValueChange.ShouldBe(3000);
+        ukSection104.Section104HistoryList[3].ValueChange.ShouldBe(-4000);
     }
 }

@@ -33,8 +33,17 @@ public abstract record CorporateAction : TaxEvent
 
 public record StockSplit : CorporateAction
 {
-    public ushort NumberBeforeSplit { get; set; }
-    public ushort NumberAfterSplit { get; set; }
+    public int NumberBeforeSplit { get; set; }
+    public int NumberAfterSplit { get; set; }
+    public bool Rounding { get; set; } = true;
+
+    public decimal GetSharesAfterSplit(decimal quantity)
+    {
+        decimal result = quantity * NumberAfterSplit / NumberBeforeSplit;
+        return Rounding ? Math.Round(result, MidpointRounding.ToZero) : result;
+    }
+
+
 }
 
 public record DescribedMoney
