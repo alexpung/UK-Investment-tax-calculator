@@ -26,7 +26,7 @@ public class IBXmlTradeParser
                 AssetName = element.GetAttribute("symbol"),
                 Date = DateTime.Parse(element.GetAttribute("dateTime")),
                 Quantity = Decimal.Parse(element.GetAttribute("quantity")),
-                Proceed = element.BuildDescribedMoney("proceeds", "currency", "fxRateToBase", element.GetAttribute("description")),
+                GrossProceed = element.BuildDescribedMoney("proceeds", "currency", "fxRateToBase", element.GetAttribute("description")),
                 Expenses = BuildExpenses(element),
             };
         }

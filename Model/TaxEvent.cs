@@ -16,7 +16,7 @@ public record Trade : TaxEvent
 {
     public TradeType BuySell { get; set; }
     public decimal Quantity { get; set; }
-    public DescribedMoney Proceed { get; set; } = new DescribedMoney();
+    public DescribedMoney GrossProceed { get; set; } = new DescribedMoney();
     public List<DescribedMoney> Expenses { get; set; } = new List<DescribedMoney>();
 }
 
