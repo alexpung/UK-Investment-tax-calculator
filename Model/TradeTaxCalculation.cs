@@ -37,7 +37,7 @@ public class TradeTaxCalculation : ITradeTaxCalculation
             throw new ArgumentException("Not all trades that is put in TradeTaxCalculation is on the same BUY/SELL side");
         }
         TradeList = trades.ToList();
-        TotalNetAmount = trades.Sum(CalculateNetAmount);
+        TotalNetAmount = trades.Sum(trade => trade.NetProceed);
         UnmatchedNetAmount = TotalNetAmount;
         TotalQty = trades.Sum(trade => trade.Quantity);
         UnmatchedQty = TotalQty;
@@ -73,16 +73,5 @@ public class TradeTaxCalculation : ITradeTaxCalculation
         UnmatchedQty = 0;
         UnmatchedNetAmount = 0;
         return (matchedQty, matchedValue);
-    }
-
-    private decimal CalculateNetAmount(Trade trade)
-    {
-        decimal deductiable;
-        if (trade.Expenses.Any())
-        {
-            deductiable = trade.Expenses.Sum(expense => expense.BaseCurrencyAmount);
-        }
-        else deductiable = 0;
-        return trade.Proceed.BaseCurrencyAmount - deductiable;
     }
 }

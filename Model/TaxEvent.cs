@@ -3,6 +3,7 @@ using NodaMoney;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 
 namespace CapitalGainCalculator.Model;
 
@@ -18,6 +19,7 @@ public record Trade : TaxEvent
     public decimal Quantity { get; set; }
     public DescribedMoney GrossProceed { get; set; } = new DescribedMoney();
     public List<DescribedMoney> Expenses { get; set; } = new List<DescribedMoney>();
+    public decimal NetProceed => Expenses.Any() ? GrossProceed.BaseCurrencyAmount - Expenses.Sum(expense => expense.BaseCurrencyAmount) : GrossProceed.BaseCurrencyAmount;
 }
 
 public record Dividend : TaxEvent
