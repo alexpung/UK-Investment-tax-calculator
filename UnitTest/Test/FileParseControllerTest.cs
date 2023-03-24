@@ -7,10 +7,14 @@ namespace CapitalGainCalculator.Test;
 
 public class FileParseControllerTest
 {
+    private readonly Trade _mockTradeObject = new Trade() { AssetName = "Test", Quantity = 100, BuySell = Enum.TradeType.BUY, Date = new DateTime(2022, 1, 1), GrossProceed = new DescribedMoney() { Amount = 100 } };
+    private readonly Dividend _mockDividendObject = new Dividend() { AssetName = "Test2", Date = new DateTime(2022, 1, 1), DividendType = Enum.DividendType.WITHHOLDING, Proceed = new DescribedMoney() { Amount = 100 } };
+    private readonly StockSplit _mockStockSplitObject = new StockSplit() { AssetName = "Test3", Date = new DateTime(2022, 1, 1), NumberAfterSplit = 1, NumberBeforeSplit = 2 };
+
     [Fact]
     public void TestReadingNoValidFileInFolder()
     {
-        List<TaxEvent> mockResult = new() { new Trade(), new Dividend() };
+        List<TaxEvent> mockResult = new() { _mockTradeObject, _mockDividendObject };
         Mock<ITaxEventFileParser> mock = new();
         mock.Setup(f => f.ParseFile(It.IsAny<string>())).Returns(mockResult);
         mock.Setup(f => f.CheckFileValidity(It.IsAny<string>())).Returns(false);
@@ -23,7 +27,7 @@ public class FileParseControllerTest
     [Fact]
     public void TestReadingValidFileInFolder()
     {
-        List<TaxEvent> mockResult = new() { new Trade(), new Dividend() };
+        List<TaxEvent> mockResult = new() { _mockTradeObject, _mockDividendObject };
         Mock<ITaxEventFileParser> mock = new();
         mock.Setup(f => f.ParseFile(It.IsAny<string>())).Returns(mockResult);
         mock.Setup(f => f.CheckFileValidity(It.IsAny<string>())).Returns(true);
@@ -41,8 +45,8 @@ public class FileParseControllerTest
     [InlineData(false, false, true, true, 6)]
     public void TestReadingWithTwoParsers(bool mock1Call1, bool mock1Call2, bool mock2Call1, bool mock2Call2, int expectedCount)
     {
-        List<TaxEvent> mockResult = new() { new Trade(), new Dividend() };
-        List<TaxEvent> mockResult2 = new() { new Trade(), new Dividend(), new StockSplit() };
+        List<TaxEvent> mockResult = new() { _mockTradeObject, _mockDividendObject };
+        List<TaxEvent> mockResult2 = new() { _mockTradeObject, _mockDividendObject, _mockStockSplitObject };
         Mock<ITaxEventFileParser> mock = new();
         mock.Setup(f => f.ParseFile(It.IsAny<string>())).Returns(mockResult);
         mock.SetupSequence(f => f.CheckFileValidity(It.IsAny<string>())).Returns(mock1Call1).Returns(mock1Call2);

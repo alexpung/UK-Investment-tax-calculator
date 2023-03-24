@@ -9,24 +9,24 @@ namespace CapitalGainCalculator.Model;
 
 public abstract record TaxEvent
 {
-    public string AssetName { get; set; } = "";
-    public DateTime Date { get; set; }
+    public required string AssetName { get; set; }
+    public required DateTime Date { get; set; }
 }
 
 public record Trade : TaxEvent
 {
-    public TradeType BuySell { get; set; }
-    public decimal Quantity { get; set; }
-    public DescribedMoney GrossProceed { get; set; } = new DescribedMoney();
+    public required TradeType BuySell { get; set; }
+    public required decimal Quantity { get; set; }
+    public required DescribedMoney GrossProceed { get; set; }
     public List<DescribedMoney> Expenses { get; set; } = new List<DescribedMoney>();
     public decimal NetProceed => Expenses.Any() ? GrossProceed.BaseCurrencyAmount - Expenses.Sum(expense => expense.BaseCurrencyAmount) : GrossProceed.BaseCurrencyAmount;
 }
 
 public record Dividend : TaxEvent
 {
-    public DividendType DividendType { get; set; }
+    public required DividendType DividendType { get; set; }
     public RegionInfo CompanyLocation { get; set; } = RegionInfo.CurrentRegion;
-    public DescribedMoney Proceed { get; set; } = new DescribedMoney();
+    public required DescribedMoney Proceed { get; set; }
 }
 
 public abstract record CorporateAction : TaxEvent
@@ -35,8 +35,8 @@ public abstract record CorporateAction : TaxEvent
 
 public record StockSplit : CorporateAction
 {
-    public int NumberBeforeSplit { get; set; }
-    public int NumberAfterSplit { get; set; }
+    public required int NumberBeforeSplit { get; set; }
+    public required int NumberAfterSplit { get; set; }
     public bool Rounding { get; set; } = true;
 
     public decimal GetSharesAfterSplit(decimal quantity)
@@ -51,9 +51,9 @@ public record StockSplit : CorporateAction
 public record DescribedMoney
 {
     public string Description { get; set; } = "";
-    public Money Amount { get; set; }
+    public required Money Amount { get; set; }
 
-    public decimal FxRate { get; set; }
+    public decimal FxRate { get; set; } = 1;
 
     public decimal BaseCurrencyAmount => Amount.Amount * FxRate;
 }
