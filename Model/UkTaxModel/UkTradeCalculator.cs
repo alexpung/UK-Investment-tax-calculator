@@ -3,8 +3,11 @@ using System.Linq;
 
 namespace CapitalGainCalculator.Model.UkTaxModel;
 
-public class UkTradeGrouper
+public class UkTradeCalculator
 {
+    private readonly List<TaxEvent> _taxEvents = new();
+
+
     public static List<TradeTaxCalculation> GroupTrade(IEnumerable<TaxEvent> taxEvents)
     {
         IEnumerable<Trade> trades = from taxEvent in taxEvents

@@ -5,7 +5,7 @@ using Shouldly;
 
 namespace CapitalGainCalculator.Test;
 
-public class UKTradeGrouperTest
+public class UKTradeGroupingTest
 {
     [Fact]
     public void TestTradeGrouping()
@@ -51,7 +51,7 @@ public class UKTradeGrouperTest
             GrossProceed = new DescribedMoney { Amount = new Money(20000, "JPY"), FxRate = 0.0063m }
         };
         IList<TaxEvent> data = new List<TaxEvent> { Trade1, Trade2, Trade3, Trade4, Trade5 };
-        var result = UkTradeGrouper.GroupTrade(data).ToList();
+        var result = UkTradeCalculator.GroupTrade(data).ToList();
         result.Count.ShouldBe(4);
         result.ShouldContain(trade => trade.UnmatchedNetAmount == 210m && trade.UnmatchedQty == 20m);
     }
