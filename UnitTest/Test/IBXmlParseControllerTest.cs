@@ -26,9 +26,9 @@ public class IBXmlParseControllerTest
     public void TestParseValidIBXml()
     {
         string testFilePath = @".\Test\Resource\TaxExample.xml";
-        IList<TaxEvent> results = _parseController.ParseFile(testFilePath);
-        results.Count(i => i is Dividend).ShouldBe(93);
-        results.Count(i => i is StockSplit).ShouldBe(2);
-        results.Count(i => i is Trade).ShouldBe(80);
+        TaxEventLists results = _parseController.ParseFile(testFilePath);
+        results.Dividends.Count.ShouldBe(93);
+        results.CorporateActions.Count.ShouldBe(2);
+        results.Trades.Count.ShouldBe(80);
     }
 }

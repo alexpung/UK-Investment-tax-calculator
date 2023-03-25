@@ -1,6 +1,7 @@
 ﻿using CapitalGainCalculator.Model;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace CapitalGainCalculator.Parser;
 
@@ -11,19 +12,16 @@ public class FileParseController
     {
         _taxEventFileParsers = taxEventFileParsers;
     }
-    public IList<TaxEvent> ParseFolder(string folderPath)
+    public TaxEventLists ParseFolder(string folderPath)
     {
-        List<TaxEvent> taxEvents = new();
+        TaxEventLists taxEvents = new();
         string[] fileEntries = Directory.GetFiles(folderPath);
         foreach (string fileName in fileEntries)
         {
-            foreach (ITaxEventFileParser taxEventFileParser in _taxEventFileParsers)
+            var parser = _taxEventFileParsers.FirstOrDefault(parser => parser.CheckFileValidity(fileName));
+            if (parser != null)
             {
-                if (taxEventFileParser.CheckFileValidity(fileName))
-                {
-                    taxEvents.AddRange(taxEventFileParser.ParseFile(fileName));
-                    break;
-                }
+                taxEvents.AddData(parser.ParseFile(fileName));
             }
         }
         return taxEvents;

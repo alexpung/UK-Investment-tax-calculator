@@ -1,5 +1,4 @@
 ﻿using CapitalGainCalculator.Model;
-using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
 
@@ -7,18 +6,18 @@ namespace CapitalGainCalculator.Parser.InteractiveBrokersXml;
 
 public class IBParseController : ITaxEventFileParser
 {
-    public IList<TaxEvent> ParseFile(string fileUri)
+    public TaxEventLists ParseFile(string fileUri)
     {
-        List<TaxEvent> result = new List<TaxEvent>();
+        TaxEventLists result = new TaxEventLists();
         IBXmlDividendParser dividendParser = new IBXmlDividendParser();
         IBXmlStockSplitParser stockSplitParser = new IBXmlStockSplitParser();
         IBXmlTradeParser tradeParser = new IBXmlTradeParser();
         XElement? xml = XDocument.Load(fileUri).Root;
         if (xml is not null)
         {
-            result.AddRange(dividendParser.ParseXml(xml));
-            result.AddRange(stockSplitParser.ParseXml(xml));
-            result.AddRange(tradeParser.ParseXml(xml));
+            result.Dividends.AddRange(dividendParser.ParseXml(xml));
+            result.CorporateActions.AddRange(stockSplitParser.ParseXml(xml));
+            result.Trades.AddRange(tradeParser.ParseXml(xml));
         }
         return result;
     }
