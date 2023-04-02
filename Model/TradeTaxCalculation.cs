@@ -25,6 +25,9 @@ public class TradeTaxCalculation : ITradeTaxCalculation
     public decimal UnmatchedQty { get; private set; }
     public TradeType BuySell { get; init; }
     public bool CalculationCompleted { get; private set; }
+    public DateTime Date => TradeList[0].Date;
+    public string AssetName => TradeList[0].AssetName;
+
 
     /// <summary>
     /// Bunch a group of trade on the same side so that they can be matched together as a group, e.g. UK tax trades on the same side on the same day and same capacity are grouped.
