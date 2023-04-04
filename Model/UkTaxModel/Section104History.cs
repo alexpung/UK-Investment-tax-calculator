@@ -20,9 +20,9 @@ public class Section104History
             TradeTaxCalculation = tradeTaxCalculation,
             OldQuantity = oldQuantity,
             OldValue = oldValue,
-            Explanation = $"{quantityChange} units worth £{valueChange} added to Section 104 from the following trades.\n" +
+            Explanation = $"{quantityChange} units worth {valueChange:C2} added to Section 104 from the following trades.\n" +
                             $"Section 104 quantity changes from {oldQuantity} to {oldQuantity + quantityChange}\n" +
-                            $"Section 104 value changes from {oldValue} to {oldValue + valueChange}\n" +
+                            $"Section 104 value changes from {oldValue:C2} to {oldValue + valueChange:C2}\n" +
                             $"{string.Join("\n", tradeTaxCalculation.TradeList)}"
         };
     }
@@ -36,9 +36,9 @@ public class Section104History
             TradeTaxCalculation = tradeTaxCalculation,
             OldQuantity = oldQuantity,
             OldValue = oldValue,
-            Explanation = $"{quantityChange * -1} units with value of £{valueChange * -1} removed to Section 104 from the following trades.\n" +
+            Explanation = $"{quantityChange * -1} units with value of {valueChange * -1:C2} removed to Section 104 from the following trades.\n" +
                             $"Section 104 quantity changes from {oldQuantity} to {oldQuantity + quantityChange}\n" +
-                            $"Section 104 value changes from {oldValue} to {oldValue + valueChange}\n" +
+                            $"Section 104 value changes from {oldValue:C2} to {oldValue + valueChange:C2}\n" +
                             $"{string.Join("\n", tradeTaxCalculation.TradeList)}"
         };
     }
@@ -49,7 +49,7 @@ public class Section104History
         {
             OldQuantity = oldQuantity,
             QuantityChange = newQuantity - oldQuantity,
-            Explanation = $"Share adjustment on {date.ToShortDateString} due to corporate action. Quantity of Section104 pool changes from {oldQuantity} to {newQuantity}\n"
+            Explanation = $"Share adjustment on {date.ToShortDateString()} due to corporate action. Quantity of Section104 pool changes from {oldQuantity} to {newQuantity}\n"
         };
     }
 }
