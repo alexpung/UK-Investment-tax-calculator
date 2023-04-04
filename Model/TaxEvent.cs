@@ -19,7 +19,15 @@ public record Trade : TaxEvent
     public required decimal Quantity { get; set; }
     public required DescribedMoney GrossProceed { get; set; }
     public List<DescribedMoney> Expenses { get; set; } = new List<DescribedMoney>();
-    public decimal NetProceed => Expenses.Any() ? GrossProceed.BaseCurrencyAmount - Expenses.Sum(expense => expense.BaseCurrencyAmount) : GrossProceed.BaseCurrencyAmount;
+    public decimal NetProceed
+    {
+        get
+        {
+            if (!Expenses.Any()) return GrossProceed.BaseCurrencyAmount;
+            if (BuySell == TradeType.BUY) return GrossProceed.BaseCurrencyAmount + Expenses.Sum(expense => expense.BaseCurrencyAmount);
+            else return GrossProceed.BaseCurrencyAmount - Expenses.Sum(expense => expense.BaseCurrencyAmount);
+        }
+    }
 }
 
 public record Dividend : TaxEvent
