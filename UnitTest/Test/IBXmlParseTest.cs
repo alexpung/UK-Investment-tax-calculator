@@ -11,7 +11,7 @@ public class IBXmlParseTest
 {
     private readonly ITestOutputHelper _testOutputHelper;
     private readonly IBXmlDividendParser _xmlDividendParser = new IBXmlDividendParser();
-    private readonly IBXmlTradeParser _xmlTradeParser = new IBXmlTradeParser();
+    private readonly IBXmlStockTradeParser _xmlTradeParser = new IBXmlStockTradeParser();
     private readonly IBXmlStockSplitParser _xmlStockSplitParser = new IBXmlStockSplitParser();
     private readonly XElement _xmlDoc = XElement.Load(@".\Test\Resource\TaxExample.xml");
     public IBXmlParseTest(ITestOutputHelper output)

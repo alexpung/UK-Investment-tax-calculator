@@ -6,7 +6,7 @@ namespace CapitalGainCalculator.Test;
 
 public class IBXmlParseControllerTest
 {
-    private readonly IBParseController _parseController = new IBParseController();
+    private readonly IBParseController _parseController = new(new AssetTypeToLoadSetting());
 
     [Fact]
     public void TestCheckingInvalidIBXml()

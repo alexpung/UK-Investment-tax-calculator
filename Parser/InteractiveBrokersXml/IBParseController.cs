@@ -6,18 +6,23 @@ namespace CapitalGainCalculator.Parser.InteractiveBrokersXml;
 
 public class IBParseController : ITaxEventFileParser
 {
+    private readonly AssetTypeToLoadSetting _assetTypeToLoadSetting;
+    public IBParseController(AssetTypeToLoadSetting assetTypeToLoadSetting)
+    {
+        _assetTypeToLoadSetting = assetTypeToLoadSetting;
+    }
     public TaxEventLists ParseFile(string fileUri)
     {
         TaxEventLists result = new TaxEventLists();
         IBXmlDividendParser dividendParser = new IBXmlDividendParser();
         IBXmlStockSplitParser stockSplitParser = new IBXmlStockSplitParser();
-        IBXmlTradeParser tradeParser = new IBXmlTradeParser();
+        IBXmlStockTradeParser stockTradeParser = new IBXmlStockTradeParser();
         XElement? xml = XDocument.Load(fileUri).Root;
         if (xml is not null)
         {
-            result.Dividends.AddRange(dividendParser.ParseXml(xml));
-            result.CorporateActions.AddRange(stockSplitParser.ParseXml(xml));
-            result.Trades.AddRange(tradeParser.ParseXml(xml));
+            if (_assetTypeToLoadSetting.LoadDividend) result.Dividends.AddRange(dividendParser.ParseXml(xml));
+            if (_assetTypeToLoadSetting.LoadStocks) result.CorporateActions.AddRange(stockSplitParser.ParseXml(xml));
+            if (_assetTypeToLoadSetting.LoadStocks) result.Trades.AddRange(stockTradeParser.ParseXml(xml));
         }
         return result;
     }
