@@ -21,9 +21,9 @@ public class Section104History
             OldQuantity = oldQuantity,
             OldValue = oldValue,
             Explanation = $"{quantityChange} units worth {valueChange:C2} added to Section 104 from the following trades.\n" +
+                            $"{string.Join("\n", tradeTaxCalculation.TradeList)}\n" +
                             $"Section 104 quantity changes from {oldQuantity} to {oldQuantity + quantityChange}\n" +
-                            $"Section 104 value changes from {oldValue:C2} to {oldValue + valueChange:C2}\n" +
-                            $"{string.Join("\n", tradeTaxCalculation.TradeList)}"
+                            $"Section 104 value changes from {oldValue:C2} to {oldValue + valueChange:C2}\n"
         };
     }
 
@@ -37,9 +37,9 @@ public class Section104History
             OldQuantity = oldQuantity,
             OldValue = oldValue,
             Explanation = $"{quantityChange * -1} units with value of {valueChange * -1:C2} removed to Section 104 from the following trades.\n" +
+                            $"{string.Join("\n", tradeTaxCalculation.TradeList)}\n" +
                             $"Section 104 quantity changes from {oldQuantity} to {oldQuantity + quantityChange}\n" +
-                            $"Section 104 value changes from {oldValue:C2} to {oldValue + valueChange:C2}\n" +
-                            $"{string.Join("\n", tradeTaxCalculation.TradeList)}"
+                            $"Section 104 value changes from {oldValue:C2} to {oldValue + valueChange:C2}\n"
         };
     }
 
