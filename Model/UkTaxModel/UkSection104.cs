@@ -41,7 +41,19 @@ public record UkSection104
         else throw new ArgumentException($"Unknown BuySell Type {tradeTaxCalculation.BuySell}");
     }
 
-    public void ShareAdjustment(StockSplit stockSplit)
+    public void PerformCorporateAction(CorporateAction action)
+    {
+        switch (action)
+        {
+            case StockSplit:
+                ShareAdjustment((StockSplit)action);
+                break;
+            default:
+                throw new NotImplementedException($"{action} corporate action not implemented!");
+        }
+    }
+
+    private void ShareAdjustment(StockSplit stockSplit)
     {
         decimal newQuantity = stockSplit.GetSharesAfterSplit(Quantity);
         Section104HistoryList.Add(Section104History.ShareAdjustment(stockSplit.Date, Quantity, newQuantity));
