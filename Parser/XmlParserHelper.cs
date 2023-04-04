@@ -22,12 +22,12 @@ public static class XmlParserHelper
         return Money.Parse(xElement.GetAttribute(amountAttributeName), Currency.FromCode(xElement.GetAttribute(currencyAttributeName)));
     }
 
-    public static DescribedMoney BuildDescribedMoney(this XElement xElement, string amountAttributeName, string currencyAttributeName, string exchangeRateAttributeName, string description)
+    public static DescribedMoney BuildDescribedMoney(this XElement xElement, string amountAttributeName, string currencyAttributeName, string exchangeRateAttributeName, string description, bool revertSign = false)
     {
         Money money = xElement.BuildMoney(amountAttributeName, currencyAttributeName);
         return new DescribedMoney
         {
-            Amount = money,
+            Amount = revertSign ? money * -1 : money,
             Description = description,
             FxRate = decimal.Parse(xElement.GetAttribute(exchangeRateAttributeName))
         };
