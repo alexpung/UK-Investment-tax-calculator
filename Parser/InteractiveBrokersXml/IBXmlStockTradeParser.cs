@@ -23,6 +23,7 @@ public class IBXmlStockTradeParser
             {
                 BuySell = GetTradeType(element),
                 AssetName = element.GetAttribute("symbol"),
+                Description = element.GetAttribute("description"),
                 Date = DateTime.Parse(element.GetAttribute("dateTime")),
                 Quantity = GetQuantity(element),
                 GrossProceed = GetGrossProceed(element),
@@ -41,8 +42,8 @@ public class IBXmlStockTradeParser
 
     private DescribedMoney GetGrossProceed(XElement element) => element.GetAttribute("buySell") switch
     {
-        "BUY" => element.BuildDescribedMoney("proceeds", "currency", "fxRateToBase", element.GetAttribute("description"), true),
-        "SELL" => element.BuildDescribedMoney("proceeds", "currency", "fxRateToBase", element.GetAttribute("description")),
+        "BUY" => element.BuildDescribedMoney("proceeds", "currency", "fxRateToBase", "", true),
+        "SELL" => element.BuildDescribedMoney("proceeds", "currency", "fxRateToBase", ""),
         _ => throw new NotImplementedException(),
     };
 
