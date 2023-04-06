@@ -1,49 +1,80 @@
-﻿using System;
+﻿using CapitalGainCalculator.Enum;
+using CapitalGainCalculator.Model.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace CapitalGainCalculator.Model
+namespace CapitalGainCalculator.Model;
+
+public class TradeTaxCalculation : ITradeTaxCalculation
 {
-    public class TradeTaxCalculation
+    public List<Trade> TradeList { get; init; }
+    public List<TradeMatch> MatchHistory { get; init; } = new List<TradeMatch>();
+    public decimal TotalNetAmount { get; }
+    private decimal _unmatchedNetAmount;
+    public decimal UnmatchedNetAmount
     {
-        private readonly List<Trade> _tradeList;
-        public decimal TotaNetlAmount { get; }
-        private decimal _unmatchedNetAmount;
-        public decimal UnmatchedNetAmount
+        get { return _unmatchedNetAmount; }
+        private set
         {
-            get { return _unmatchedNetAmount; }
-            set
-            {
-                _unmatchedNetAmount = value;
-                if(UnmatchedNetAmount == 0) CalculationCompleted = true;
-            }
+            _unmatchedNetAmount = value;
+            if (UnmatchedNetAmount == 0) CalculationCompleted = true;
         }
-        public decimal TotalQty { get; }
-        public decimal UnmatchedQty { get; set; }
+    }
+    public decimal TotalQty { get; }
+    public decimal UnmatchedQty { get; private set; }
+    public TradeType BuySell { get; init; }
+    public bool CalculationCompleted { get; private set; }
+    public DateTime Date => TradeList[0].Date;
+    public string AssetName => TradeList[0].AssetName;
 
-        public bool CalculationCompleted { get; private set; }
 
-        public TradeTaxCalculation(IEnumerable<Trade> trades)
+    /// <summary>
+    /// Bunch a group of trade on the same side so that they can be matched together as a group, e.g. UK tax trades on the same side on the same day and same capacity are grouped.
+    /// </summary>
+    /// <param name="trades">Only accept trade from the same side</param>
+    public TradeTaxCalculation(IEnumerable<Trade> trades)
+    {
+        if (!trades.All(i => i.BuySell.Equals(trades.First().BuySell)))
         {
-            _tradeList = trades.ToList();
-            TotaNetlAmount = trades.Sum(CalculateNetAmount);
-            UnmatchedNetAmount = TotaNetlAmount;
-            TotalQty = trades.Sum(trade => trade.Quantity);
-            UnmatchedQty = TotalQty;
-            CalculationCompleted = false;
+            throw new ArgumentException("Not all trades that is put in TradeTaxCalculation is on the same BUY/SELL side");
         }
+        TradeList = trades.ToList();
+        TotalNetAmount = trades.Sum(trade => trade.NetProceed);
+        UnmatchedNetAmount = TotalNetAmount;
+        TotalQty = trades.Sum(trade => trade.Quantity);
+        UnmatchedQty = TotalQty;
+        BuySell = trades.First().BuySell;
+        CalculationCompleted = false;
+    }
 
-        private decimal CalculateNetAmount(Trade trade)
+    public (decimal matchedQty, decimal matchedValue) MatchQty(decimal demandedQty)
+    {
+        decimal matchedQty;
+        decimal matchedValue;
+        if (demandedQty >= UnmatchedQty)
         {
-            decimal deductiable;
-            if (trade.Expenses.Any())
-            {
-                deductiable = trade.Expenses.Sum(expense => expense.BaseCurrencyAmount);
-            }
-            else deductiable = 0;
-            return trade.Proceed.BaseCurrencyAmount - deductiable;
+            matchedQty = UnmatchedQty;
+            matchedValue = UnmatchedNetAmount;
+            UnmatchedQty = 0;
+            UnmatchedNetAmount = 0;
         }
+        else
+        {
+            matchedQty = demandedQty;
+            matchedValue = decimal.Round(TotalNetAmount * demandedQty / TotalQty, 2);
+            UnmatchedQty -= matchedQty;
+            UnmatchedNetAmount -= matchedValue;
+        }
+        return (matchedQty, matchedValue);
+    }
+
+    public (decimal matchedQty, decimal matchedValue) MatchAll()
+    {
+        decimal matchedQty = UnmatchedQty;
+        decimal matchedValue = UnmatchedNetAmount;
+        UnmatchedQty = 0;
+        UnmatchedNetAmount = 0;
+        return (matchedQty, matchedValue);
     }
 }

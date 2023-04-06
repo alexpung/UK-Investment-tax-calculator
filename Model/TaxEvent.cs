@@ -1,54 +1,95 @@
-﻿using System;
-using System.Collections;
+﻿using CapitalGainCalculator.Enum;
+using NodaMoney;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using CapitalGainCalculator.Enum;
-using NodaMoney;
 
-namespace CapitalGainCalculator.Model
+namespace CapitalGainCalculator.Model;
+
+public abstract record TaxEvent
 {
-    public abstract record TaxEvent
+    public required string AssetName { get; set; }
+    public required DateTime Date { get; set; }
+}
+
+public record Trade : TaxEvent
+{
+    public required TradeType BuySell { get; set; }
+    public required decimal Quantity { get; set; }
+    public required DescribedMoney GrossProceed { get; set; }
+    public string Description { get; set; } = string.Empty;
+    public List<DescribedMoney> Expenses { get; set; } = new List<DescribedMoney>();
+    public decimal NetProceed
     {
-        public string AssetName { get; set; } = "";
-        public DateTime Date { get; set; }
+        get
+        {
+            if (!Expenses.Any()) return GrossProceed.BaseCurrencyAmount;
+            if (BuySell == TradeType.BUY) return GrossProceed.BaseCurrencyAmount + Expenses.Sum(expense => expense.BaseCurrencyAmount);
+            else return GrossProceed.BaseCurrencyAmount - Expenses.Sum(expense => expense.BaseCurrencyAmount);
+        }
     }
 
-    public record Trade : TaxEvent
+    public override string ToString()
     {
-        public TradeType BuySell { get; set; }
-        public decimal Quantity { get; set; }
-        public DescribedMoney Proceed { get; set; } = new DescribedMoney();
-        public List<DescribedMoney> Expenses { get; set; } = new List<DescribedMoney>();
+        string action = BuySell switch
+        {
+            TradeType.BUY => "Bought",
+            TradeType.SELL => "Sold",
+            _ => throw new NotImplementedException()
+        };
+        string netExplanation = BuySell switch
+        {
+            TradeType.BUY => $"Total cost: {NetProceed:C2}",
+            TradeType.SELL => $"Net proceed: {NetProceed:C2}",
+            _ => throw new NotImplementedException()
+        };
+        return $"{action} {Quantity} unit(s) of {AssetName} for {GrossProceed:C2} with total expense {Expenses.Sum(i => i.BaseCurrencyAmount):C2}, {netExplanation}";
     }
+}
 
-    public record Dividend : TaxEvent
+public record Dividend : TaxEvent
+{
+    public required DividendType DividendType { get; set; }
+    public RegionInfo CompanyLocation { get; set; } = RegionInfo.CurrentRegion;
+    public required DescribedMoney Proceed { get; set; }
+}
+
+public abstract record CorporateAction : TaxEvent
+{
+}
+
+public record StockSplit : CorporateAction
+{
+    public required int NumberBeforeSplit { get; set; }
+    public required int NumberAfterSplit { get; set; }
+    public bool Rounding { get; set; } = true;
+
+    public decimal GetSharesAfterSplit(decimal quantity)
     {
-        public DividendType DividendType { get; set; }
-        public RegionInfo CompanyLocation { get; set; } = RegionInfo.CurrentRegion;
-        public DescribedMoney Proceed { get; set; } = new DescribedMoney();
+        decimal result = quantity * NumberAfterSplit / NumberBeforeSplit;
+        return Rounding ? Math.Round(result, MidpointRounding.ToZero) : result;
     }
+}
 
-    public abstract record CorporateAction : TaxEvent
+public record DescribedMoney
+{
+    public string Description { get; set; } = "";
+    public required Money Amount { get; set; }
+
+    public decimal FxRate { get; set; } = 1;
+
+    public decimal BaseCurrencyAmount => Amount.Amount * FxRate;
+
+    public override string ToString()
     {
+        string outputString;
+        if (Description == string.Empty) outputString = $"{Amount}";
+        else outputString = $"{Description}: {Amount}";
+        if (FxRate == 1)
+        {
+            return outputString;
+        }
+        else return $"{outputString} = {BaseCurrencyAmount:C2} Fx rate = {FxRate}";
     }
-
-    public record StockSplit : CorporateAction
-    {
-        public ushort NumberBeforeSplit { get; set; }
-        public ushort NumberAfterSplit { get; set; }
-    }
-
-    public record DescribedMoney
-    {
-        public string Description { get; set; } = "";
-        public Money Amount { get; set; }
-
-        public decimal FxRate { get; set; }
-
-        public decimal BaseCurrencyAmount => Amount.Amount * FxRate;
-    }
-
 }

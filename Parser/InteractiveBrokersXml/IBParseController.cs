@@ -1,43 +1,42 @@
 ﻿using CapitalGainCalculator.Model;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Security.RightsManagement;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace CapitalGainCalculator.Parser.InteractiveBrokersXml
+namespace CapitalGainCalculator.Parser.InteractiveBrokersXml;
+
+public class IBParseController : ITaxEventFileParser
 {
-    public class IBParseController : ITaxEventFileParser
+    private readonly AssetTypeToLoadSetting _assetTypeToLoadSetting;
+    public IBParseController(AssetTypeToLoadSetting assetTypeToLoadSetting)
     {
-        public IList<TaxEvent> ParseFile(string fileUri)
+        _assetTypeToLoadSetting = assetTypeToLoadSetting;
+    }
+    public TaxEventLists ParseFile(string fileUri)
+    {
+        TaxEventLists result = new TaxEventLists();
+        IBXmlDividendParser dividendParser = new IBXmlDividendParser();
+        IBXmlStockSplitParser stockSplitParser = new IBXmlStockSplitParser();
+        IBXmlStockTradeParser stockTradeParser = new IBXmlStockTradeParser();
+        XElement? xml = XDocument.Load(fileUri).Root;
+        if (xml is not null)
         {
-            List<TaxEvent> result = new List<TaxEvent>();
-            IBXmlDividendParser dividendParser = new IBXmlDividendParser();
-            IBXmlStockSplitParser stockSplitParser = new IBXmlStockSplitParser();
-            IBXmlTradeParser tradeParser = new IBXmlTradeParser();
+            if (_assetTypeToLoadSetting.LoadDividend) result.Dividends.AddRange(dividendParser.ParseXml(xml));
+            if (_assetTypeToLoadSetting.LoadStocks) result.CorporateActions.AddRange(stockSplitParser.ParseXml(xml));
+            if (_assetTypeToLoadSetting.LoadStocks) result.Trades.AddRange(stockTradeParser.ParseXml(xml));
+        }
+        return result;
+    }
+
+    public bool CheckFileValidity(string fileUri)
+    {
+        if (System.IO.Path.GetExtension(fileUri) == ".xml")
+        {
             XElement? xml = XDocument.Load(fileUri).Root;
             if (xml is not null)
             {
-                result.AddRange(dividendParser.ParseXml(xml));
-                result.AddRange(stockSplitParser.ParseXml(xml));
-                result.AddRange(tradeParser.ParseXml(xml));
+                return xml.DescendantsAndSelf("FlexQueryResponse").Any() && xml.Descendants("FlexStatements").Any();
             }
-            return result;
         }
-
-        public bool CheckFileValidity(string fileUri)
-        {
-            if (System.IO.Path.GetExtension(fileUri) == ".xml")
-            {
-                XElement? xml = XDocument.Load(fileUri).Root;
-                if (xml is not null)
-                {
-                    return xml.DescendantsAndSelf("FlexQueryResponse").Any() && xml.Descendants("FlexStatements").Any();
-                }
-            }
-            return false;
-        }
+        return false;
     }
 }
