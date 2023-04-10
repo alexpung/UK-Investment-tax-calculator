@@ -1,0 +1,25 @@
+﻿<UserControl
+    x:Class="CapitalGainCalculator.View.AssetTypeLoadOptionsPanel"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:model="clr-namespace:CapitalGainCalculator.Model"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Background="{ui:ThemeResource ApplicationBackgroundBrush}"
+    d:DataContext="{d:DesignInstance Type=model:AssetTypeToLoadSetting}"
+    mc:Ignorable="d">
+    <UserControl.Resources>
+        <Thickness x:Key="CheckBoxMargin">10,0,0,0</Thickness>
+    </UserControl.Resources>
+    <StackPanel>
+        <Label x:Name="AssetLoadTypeLabel" Content="Type of asset to load" FontSize="20"></Label>
+        <CheckBox x:Name="LoadDividendsCheckBox" IsChecked="{Binding LoadDividend}" Content="Dividend" Margin="{DynamicResource CheckBoxMargin}" />
+        <CheckBox x:Name="LoadStocksCheckBox" IsChecked="{Binding LoadStocks}" Content="Stocks"  Margin="{DynamicResource CheckBoxMargin}"/>
+        <CheckBox x:Name="LoadOptionsCheckBox" IsChecked="{Binding LoadOptions}" Content="Options" IsEnabled="False" Margin="{DynamicResource CheckBoxMargin}"/>
+        <CheckBox x:Name="LoadFuturesCheckBox" IsChecked="{Binding LoadFutures}" Content="Futures" IsEnabled="False" Margin="{DynamicResource CheckBoxMargin}"/>
+        <CheckBox x:Name="LoadFxCheckBox" IsChecked="{Binding LoadFx}" Content="Foreign Currency" IsEnabled="False" Margin="{DynamicResource CheckBoxMargin}"/>
+    </StackPanel>
+
+</UserControl>
+
