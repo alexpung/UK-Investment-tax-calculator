@@ -12,7 +12,6 @@
     Background="{ui:ThemeResource ApplicationBackgroundBrush}"
     mc:Ignorable="d">
     <StackPanel>
-        <local:AssetTypeLoadOptionsPanel/>
+        <local:AssetTypeLoadOptionsPanel />
     </StackPanel>
-
 </ui:UiPage>

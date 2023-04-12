@@ -2,8 +2,8 @@
     x:Class="CapitalGainCalculator.View.MainWindow"
     xmlns="http://schemas.microsoft.com/netfx/2009/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     xmlns:page="clr-namespace:CapitalGainCalculator.View.Page"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Background="{ui:ThemeResource ApplicationBackgroundBrush}"
     ExtendsContentIntoTitleBar="True"
     WindowBackdropType="Mica"
@@ -14,7 +14,6 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-
         <Grid
             x:Name="RootMainGrid"
             Grid.Row="1"
@@ -43,13 +42,16 @@
                     <ui:NavigationItem
                         Width="66"
                         VerticalAlignment="Top"
-                        Click="NavigationItem_Click"
                         Content="Capital Gain"
                         Icon="ChartMultiple20"
                         PageTag="dashboard" />
                 </ui:NavigationStore.Items>
                 <ui:NavigationStore.Footer>
-                    <ui:NavigationItem Content="Settings" Icon="Diversity24" PageType="{x:Type page:SettingsPage}" />
+                    <ui:NavigationItem
+                        Content="Settings"
+                        DataContext="{Binding SettingsPageViewModel}"
+                        Icon="Diversity24"
+                        PageType="{x:Type page:SettingsPage}" />
                     <ui:NavigationItem Content="About" Icon="Question20" />
                 </ui:NavigationStore.Footer>
             </ui:NavigationStore>
@@ -82,4 +84,5 @@
         <ui:TitleBar Title="UK Investment Tax Calculator" Grid.Row="0" />
     </Grid>
 </ui:UiWindow>
+
 

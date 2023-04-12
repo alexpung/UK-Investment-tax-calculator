@@ -10,9 +10,4 @@ public partial class MainWindow : UiWindow
     {
         InitializeComponent();
     }
-
-    private void NavigationItem_Click(object sender, System.Windows.RoutedEventArgs e)
-    {
-
-    }
 }

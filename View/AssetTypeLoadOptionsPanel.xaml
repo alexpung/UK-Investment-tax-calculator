@@ -4,22 +4,47 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:model="clr-namespace:CapitalGainCalculator.Model"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:viewmodel="clr-namespace:CapitalGainCalculator.ViewModel"
+    d:DataContext="{d:DesignInstance Type=viewmodel:AssetTypeToLoadSettingViewModel}"
     Background="{ui:ThemeResource ApplicationBackgroundBrush}"
-    d:DataContext="{d:DesignInstance Type=model:AssetTypeToLoadSetting}"
     mc:Ignorable="d">
     <UserControl.Resources>
         <Thickness x:Key="CheckBoxMargin">10,0,0,0</Thickness>
     </UserControl.Resources>
     <StackPanel>
-        <Label x:Name="AssetLoadTypeLabel" Content="Type of asset to load" FontSize="20"></Label>
-        <CheckBox x:Name="LoadDividendsCheckBox" IsChecked="{Binding LoadDividend}" Content="Dividend" Margin="{DynamicResource CheckBoxMargin}" />
-        <CheckBox x:Name="LoadStocksCheckBox" IsChecked="{Binding LoadStocks}" Content="Stocks"  Margin="{DynamicResource CheckBoxMargin}"/>
-        <CheckBox x:Name="LoadOptionsCheckBox" IsChecked="{Binding LoadOptions}" Content="Options" IsEnabled="False" Margin="{DynamicResource CheckBoxMargin}"/>
-        <CheckBox x:Name="LoadFuturesCheckBox" IsChecked="{Binding LoadFutures}" Content="Futures" IsEnabled="False" Margin="{DynamicResource CheckBoxMargin}"/>
-        <CheckBox x:Name="LoadFxCheckBox" IsChecked="{Binding LoadFx}" Content="Foreign Currency" IsEnabled="False" Margin="{DynamicResource CheckBoxMargin}"/>
+        <Label
+            x:Name="AssetLoadTypeLabel"
+            Content="Type of asset to load"
+            FontSize="20" />
+        <CheckBox
+            x:Name="LoadDividendsCheckBox"
+            Margin="{DynamicResource CheckBoxMargin}"
+            Content="Dividend"
+            IsChecked="{Binding LoadDividends, Mode=OneWayToSource}" />
+        <CheckBox
+            x:Name="LoadStocksCheckBox"
+            Margin="{DynamicResource CheckBoxMargin}"
+            Content="Stocks"
+            IsChecked="{Binding LoadStocks, Mode=OneWayToSource}" />
+        <CheckBox
+            x:Name="LoadOptionsCheckBox"
+            Margin="{DynamicResource CheckBoxMargin}"
+            Content="Options"
+            IsChecked="{Binding LoadOptions, Mode=OneWayToSource}"
+            IsEnabled="False" />
+        <CheckBox
+            x:Name="LoadFuturesCheckBox"
+            Margin="{DynamicResource CheckBoxMargin}"
+            Content="Futures"
+            IsChecked="{Binding LoadFutures, Mode=OneWayToSource}"
+            IsEnabled="False" />
+        <CheckBox
+            x:Name="LoadFxCheckBox"
+            Margin="{DynamicResource CheckBoxMargin}"
+            Content="Foreign Currency"
+            IsChecked="{Binding LoadFx, Mode=OneWayToSource}"
+            IsEnabled="False" />
     </StackPanel>
-
 </UserControl>
 

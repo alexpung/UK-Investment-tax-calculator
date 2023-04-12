@@ -20,7 +20,7 @@ public class IBParseController : ITaxEventFileParser
         XElement? xml = XDocument.Load(fileUri).Root;
         if (xml is not null)
         {
-            if (_assetTypeToLoadSetting.LoadDividend) result.Dividends.AddRange(dividendParser.ParseXml(xml));
+            if (_assetTypeToLoadSetting.LoadDividends) result.Dividends.AddRange(dividendParser.ParseXml(xml));
             if (_assetTypeToLoadSetting.LoadStocks) result.CorporateActions.AddRange(stockSplitParser.ParseXml(xml));
             if (_assetTypeToLoadSetting.LoadStocks) result.Trades.AddRange(stockTradeParser.ParseXml(xml));
         }
