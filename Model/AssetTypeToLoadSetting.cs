@@ -1,16 +1,9 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-
-namespace CapitalGainCalculator.Model;
-public partial class AssetTypeToLoadSetting : ObservableObject
+﻿namespace CapitalGainCalculator.Model;
+public class AssetTypeToLoadSetting
 {
-    [ObservableProperty]
-    private bool _loadStocks;
-    [ObservableProperty]
-    private bool _loadOptions;
-    [ObservableProperty]
-    private bool _loadFutures;
-    [ObservableProperty]
-    private bool _loadFx;
-    [ObservableProperty]
-    private bool _loadDividend;
+    public bool LoadStocks { get; set; } = true;
+    public bool LoadOptions { get; set; } = true;
+    public bool LoadFutures { get; set; } = true;
+    public bool LoadFx { get; set; } = true;
+    public bool LoadDividends { get; set; } = true;
 }
