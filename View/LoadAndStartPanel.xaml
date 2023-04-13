@@ -22,19 +22,19 @@
                 Margin="{DynamicResource ButtonMargin}"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
-                Content="Load Folder" />
+                Content="Load Folder" Command="{Binding ReadFolderCommand}" />
             <Button
                 Grid.Column="1"
                 Margin="{DynamicResource ButtonMargin}"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
-                Content="Load File(s)" />
+                Content="Load File(s)" Command="{Binding ReadFilesCommand}" />
             <Button
                 Grid.Column="2"
                 Margin="{DynamicResource ButtonMargin}"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
-                Content="Start Calculation!" />
+                Content="Start Calculation!" Command="{Binding StartCalculationCommand}" />
         </StackPanel>
     </StackPanel>
 </UserControl>
