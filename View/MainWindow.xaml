@@ -34,7 +34,8 @@
                     <ui:NavigationItem
                         Content="Load Data"
                         Icon="Calculator20"
-                        PageTag="loadData" />
+                        PageTag="loadData"
+                        PageType="{x:Type page:LoadDataPage}" />
                     <ui:NavigationItem
                         Content="Dividend"
                         Icon="Money20"
@@ -49,7 +50,6 @@
                 <ui:NavigationStore.Footer>
                     <ui:NavigationItem
                         Content="Settings"
-                        DataContext="{Binding SettingsPageViewModel}"
                         Icon="Diversity24"
                         PageType="{x:Type page:SettingsPage}" />
                     <ui:NavigationItem Content="About" Icon="Question20" />
