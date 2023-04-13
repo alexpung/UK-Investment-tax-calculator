@@ -1,5 +1,7 @@
 ﻿using Autofac;
 using CapitalGainCalculator.Model;
+using CapitalGainCalculator.Model.Interfaces;
+using CapitalGainCalculator.Model.UkTaxModel;
 using CapitalGainCalculator.Parser;
 using CapitalGainCalculator.Parser.InteractiveBrokersXml;
 using CapitalGainCalculator.ViewModel;
@@ -27,12 +29,19 @@ public sealed partial class App : Application
     private static IContainer ConfigureServices()
     {
         ContainerBuilder builder = new();
+        builder.RegisterType<TaxEventLists>().SingleInstance();
+        builder.RegisterType<UkTradeCalculator>().As<ICalculator>();
         builder.RegisterType<AssetTypeToLoadSetting>().SingleInstance();
+
         builder.RegisterType<AssetTypeToLoadSettingViewModel>().SingleInstance();
         builder.RegisterType<SettingsPageViewModel>().SingleInstance();
-        builder.RegisterType<IBParseController>().SingleInstance();
-        builder.Register(c => new List<ITaxEventFileParser> { c.Resolve<IBParseController>() });
+        builder.RegisterType<LoadAndStartViewModel>().SingleInstance();
         builder.RegisterType<MainViewModel>().SingleInstance();
+
+        builder.RegisterType<IBParseController>().SingleInstance();
+        builder.Register(c => new List<ITaxEventFileParser> { c.Resolve<IBParseController>() }).As<IEnumerable<ITaxEventFileParser>>();
+        builder.RegisterType<FileParseController>().SingleInstance();
+
         return builder.Build();
     }
 }
