@@ -21,12 +21,12 @@
             x:Name="LoadDividendsCheckBox"
             Margin="{DynamicResource CheckBoxMargin}"
             Content="Dividend"
-            IsChecked="{Binding LoadDividends, Mode=OneWayToSource}" />
+            IsChecked="{Binding LoadDividends, Mode=OneWayToSource, FallbackValue=True}" />
         <CheckBox
             x:Name="LoadStocksCheckBox"
             Margin="{DynamicResource CheckBoxMargin}"
             Content="Stocks"
-            IsChecked="{Binding LoadStocks, Mode=OneWayToSource}" />
+            IsChecked="{Binding LoadStocks, Mode=OneWayToSource, FallbackValue=True}" />
         <CheckBox
             x:Name="LoadOptionsCheckBox"
             Margin="{DynamicResource CheckBoxMargin}"
