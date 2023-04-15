@@ -6,8 +6,10 @@ namespace CapitalGainCalculator.View.Page;
 /// </summary>
 public partial class LoadDataPage : UiPage
 {
-    public LoadDataPage()
+    public LoadDataPage(LoadAndStartPanel loadAndStartPanel)
     {
         InitializeComponent();
+        LoadDataPageMainStackPanel.Children.Add(loadAndStartPanel);
+
     }
 }

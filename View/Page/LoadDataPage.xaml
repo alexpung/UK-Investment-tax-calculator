@@ -6,12 +6,12 @@
     xmlns:local="clr-namespace:CapitalGainCalculator.View"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:view="clr-namespace:CapitalGainCalculator.View.Page"
     Title="LoadDataPage"
+    d:DataContext="{d:DesignInstance Type=view:LoadDataPage}"
     d:DesignHeight="450"
     d:DesignWidth="800"
     Background="{ui:ThemeResource ApplicationBackgroundBrush}"
     mc:Ignorable="d">
-    <StackPanel x:Name="LoadDataPageMainStackPanel" Margin="20,20,20,20">
-        <local:LoadAndStartPanel HorizontalAlignment="Center" />
-    </StackPanel>
+    <StackPanel x:Name="LoadDataPageMainStackPanel" Margin="20,20,20,20" />
 </ui:UiPage>

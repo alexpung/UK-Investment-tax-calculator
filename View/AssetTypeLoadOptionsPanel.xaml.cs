@@ -1,6 +1,4 @@
-﻿using Autofac;
-using CapitalGainCalculator.ViewModel;
-using System.ComponentModel;
+﻿using CapitalGainCalculator.ViewModel;
 using System.Windows.Controls;
 
 namespace CapitalGainCalculator.View;
@@ -9,12 +7,18 @@ namespace CapitalGainCalculator.View;
 /// </summary>
 public partial class AssetTypeLoadOptionsPanel : UserControl
 {
-    public AssetTypeLoadOptionsPanel()
+    public AssetTypeLoadOptionsPanel(AssetTypeToLoadSettingViewModel assetTypeToLoadSettingViewModel)
     {
+        DataContext = assetTypeToLoadSettingViewModel;
         InitializeComponent();
-        if (!DesignerProperties.GetIsInDesignMode(this))
-        {
-            DataContext = App.Current.IocContainer.Resolve<AssetTypeToLoadSettingViewModel>();
-        }
+        LoadDividendsCheckBox.IsEnabled = true;
+        LoadStocksCheckBox.IsEnabled = true;
+        LoadFuturesCheckBox.IsEnabled = false;
+        LoadOptionsCheckBox.IsEnabled = false;
+        LoadFxCheckBox.IsEnabled = false;
+
+        LoadDividendsCheckBox.IsChecked = true;
+        LoadStocksCheckBox.IsChecked = true;
+
     }
 }

@@ -2,8 +2,9 @@
     x:Class="CapitalGainCalculator.View.MainWindow"
     xmlns="http://schemas.microsoft.com/netfx/2009/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:page="clr-namespace:CapitalGainCalculator.View.Page"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:viewmodel="clr-namespace:CapitalGainCalculator.ViewModel"
     Background="{ui:ThemeResource ApplicationBackgroundBrush}"
     ExtendsContentIntoTitleBar="True"
     WindowBackdropType="Mica"
@@ -19,7 +20,7 @@
             Grid.Row="1"
             Margin="0">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" MinWidth="78" />
+                <ColumnDefinition Width="Auto" MinWidth="80" />
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
 
@@ -27,34 +28,9 @@
             <ui:NavigationStore
                 x:Name="RootNavigation"
                 Grid.Column="0"
-                Margin="8,0,10,0"
+                Footer="{Binding ViewModel.NavigationFooter, Mode=OneWay}"
                 Frame="{Binding ElementName=RootFrame, Mode=OneWay}"
-                SelectedPageIndex="0">
-                <ui:NavigationStore.Items>
-                    <ui:NavigationItem
-                        Content="Load Data"
-                        Icon="Calculator20"
-                        PageTag="loadData"
-                        PageType="{x:Type page:LoadDataPage}" />
-                    <ui:NavigationItem
-                        Content="Dividend"
-                        Icon="Money20"
-                        PageTag="dashboard" />
-                    <ui:NavigationItem
-                        Width="66"
-                        VerticalAlignment="Top"
-                        Content="Capital Gain"
-                        Icon="ChartMultiple20"
-                        PageTag="dashboard" />
-                </ui:NavigationStore.Items>
-                <ui:NavigationStore.Footer>
-                    <ui:NavigationItem
-                        Content="Settings"
-                        Icon="Diversity24"
-                        PageType="{x:Type page:SettingsPage}" />
-                    <ui:NavigationItem Content="About" Icon="Question20" />
-                </ui:NavigationStore.Footer>
-            </ui:NavigationStore>
+                Items="{Binding ViewModel.NavigationItems, Mode=OneWay}"/>
 
             <!--  Page display  -->
             <Border
@@ -81,7 +57,7 @@
         <!--  The title bar contains window navigation elements and some Tray related extras.  -->
         <!--  You can put additional controls in the header, such as a search bar.  -->
         <!--  <ui:TitleBar.Header />  -->
-        <ui:TitleBar Title="UK Investment Tax Calculator" Grid.Row="0" />
+        <ui:TitleBar Title="{Binding ViewModel.ApplicationTitle, Mode=OneWay}" Grid.Row="0" />
     </Grid>
 </ui:UiWindow>
 

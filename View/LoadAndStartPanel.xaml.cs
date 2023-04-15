@@ -1,6 +1,4 @@
-﻿using Autofac;
-using CapitalGainCalculator.ViewModel;
-using System.ComponentModel;
+﻿using CapitalGainCalculator.ViewModel;
 using System.Windows.Controls;
 
 namespace CapitalGainCalculator.View;
@@ -9,12 +7,9 @@ namespace CapitalGainCalculator.View;
 /// </summary>
 public partial class LoadAndStartPanel : UserControl
 {
-    public LoadAndStartPanel()
+    public LoadAndStartPanel(LoadAndStartViewModel loadAndStartViewModel)
     {
+        DataContext = loadAndStartViewModel;
         InitializeComponent();
-        if (!DesignerProperties.GetIsInDesignMode(this))
-        {
-            DataContext = App.Current.IocContainer.Resolve<LoadAndStartViewModel>();
-        }
     }
 }

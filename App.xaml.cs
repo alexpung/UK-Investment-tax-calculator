@@ -1,47 +1,89 @@
-﻿using Autofac;
-using CapitalGainCalculator.Model;
+﻿using CapitalGainCalculator.Model;
 using CapitalGainCalculator.Model.Interfaces;
 using CapitalGainCalculator.Model.UkTaxModel;
 using CapitalGainCalculator.Parser;
 using CapitalGainCalculator.Parser.InteractiveBrokersXml;
+using CapitalGainCalculator.Service;
+using CapitalGainCalculator.View;
+using CapitalGainCalculator.View.Page;
 using CapitalGainCalculator.ViewModel;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using System.Collections.Generic;
 using System.Windows;
+using System.Windows.Threading;
+using Wpf.Ui.Mvvm.Contracts;
+using Wpf.Ui.Mvvm.Services;
 
 namespace CapitalGainCalculator;
 
 /// <summary>
 /// Interaction logic for App.xaml
 /// </summary>
-public sealed partial class App : Application
+public partial class App
 {
-    public IContainer IocContainer { get; }
+    private static readonly IHost _host = Host
+        .CreateDefaultBuilder()
+        .ConfigureServices((context, services) =>
+        {
+            // App Host
+            services.AddHostedService<ApplicationHostService>();
+
+            // Service containing navigation, same as INavigationWindow... but without window
+            services.AddSingleton<INavigationService, NavigationService>();
+            services.AddSingleton<IPageService, PageService>();
+
+            //Models
+            services.AddSingleton<TaxEventLists>();
+            services.AddSingleton<ICalculator, UkTradeCalculator>();
+            services.AddSingleton<AssetTypeToLoadSetting>();
+
+            // Main window with navigation
+            services.AddScoped<MainWindow>();
+            services.AddScoped<MainViewModel>();
+
+            // Views and ViewModels
+            services.AddScoped<LoadDataPage>();
+            services.AddScoped<SettingsPage>();
+            services.AddScoped<LoadAndStartPanel>();
+            services.AddScoped<LoadAndStartViewModel>();
+            services.AddScoped<AssetTypeLoadOptionsPanel>();
+            services.AddScoped<AssetTypeToLoadSettingViewModel>();
+
+            //Application logic
+            services.AddSingleton<IBParseController>();
+            services.AddSingleton<IEnumerable<ITaxEventFileParser>>(c => new List<ITaxEventFileParser> { c.GetService<IBParseController>()! });
+            services.AddSingleton<FileParseController>();
+        }).Build();
+
     public App()
     {
-        IocContainer = ConfigureServices();
         InitializeComponent();
     }
-    public new static App Current => (App)Application.Current;
 
     /// <summary>
-    /// Configures the services for the application.
+    /// Occurs when the application is loading.
     /// </summary>
-    private static IContainer ConfigureServices()
+    private async void OnStartup(object sender, StartupEventArgs e)
     {
-        ContainerBuilder builder = new();
-        builder.RegisterType<TaxEventLists>().SingleInstance();
-        builder.RegisterType<UkTradeCalculator>().As<ICalculator>();
-        builder.RegisterType<AssetTypeToLoadSetting>().SingleInstance();
+        await _host.StartAsync();
+    }
 
-        builder.RegisterType<AssetTypeToLoadSettingViewModel>().SingleInstance();
-        builder.RegisterType<SettingsPageViewModel>().SingleInstance();
-        builder.RegisterType<LoadAndStartViewModel>().SingleInstance();
-        builder.RegisterType<MainViewModel>().SingleInstance();
+    /// <summary>
+    /// Occurs when the application is closing.
+    /// </summary>
+    private async void OnExit(object sender, ExitEventArgs e)
+    {
+        await _host.StopAsync();
 
-        builder.RegisterType<IBParseController>().SingleInstance();
-        builder.Register(c => new List<ITaxEventFileParser> { c.Resolve<IBParseController>() }).As<IEnumerable<ITaxEventFileParser>>();
-        builder.RegisterType<FileParseController>().SingleInstance();
+        _host.Dispose();
+    }
 
-        return builder.Build();
+    /// <summary>
+    /// Occurs when an exception is thrown by an application but not handled.
+    /// </summary>
+    private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
+    {
+        // For more info see https://docs.microsoft.com/en-us/dotnet/api/system.windows.application.dispatcherunhandledexception?view=windowsdesktop-6.0
     }
 }

@@ -7,9 +7,10 @@ namespace CapitalGainCalculator.View.Page
     /// </summary>
     public partial class SettingsPage : UiPage
     {
-        public SettingsPage()
+        public SettingsPage(AssetTypeLoadOptionsPanel assetTypeLoadOptionsPanel)
         {
             InitializeComponent();
+            MainStackPanel.Children.Add(assetTypeLoadOptionsPanel);
         }
     }
 }
