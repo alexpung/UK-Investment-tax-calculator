@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace CapitalGainCalculator.ViewModel;
 
@@ -28,9 +29,9 @@ public class LoadAndStartViewModel : ObservableObject
 
     public async Task OnReadFolder()
     {
-        System.Windows.Forms.FolderBrowserDialog openFileDlg = new();
+        FolderBrowserDialog openFileDlg = new();
         var result = openFileDlg.ShowDialog();
-        if (result.ToString() != string.Empty)
+        if (result == DialogResult.OK)
         {
             string path = openFileDlg.SelectedPath;
             _calculator.AddTaxEvents(_fileParseController.ParseFolder(path));
