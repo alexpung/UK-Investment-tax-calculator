@@ -15,7 +15,6 @@ namespace CapitalGainCalculator.Service;
 public class ApplicationHostService : IHostedService
 {
     private readonly IServiceProvider _serviceProvider;
-    private MainWindow _mainWindow;
 
     public ApplicationHostService(IServiceProvider serviceProvider)
     {
@@ -46,12 +45,13 @@ public class ApplicationHostService : IHostedService
     private async Task HandleActivationAsync()
     {
         await Task.CompletedTask;
+        MainWindow mainWindow;
 
         if (!Application.Current.Windows.OfType<MainWindow>().Any())
         {
-            _mainWindow = (_serviceProvider.GetService(typeof(MainWindow)) as MainWindow)!;
-            _mainWindow.Show();
-            _mainWindow.Navigate(typeof(LoadDataPage));
+            mainWindow = (_serviceProvider.GetService(typeof(MainWindow)) as MainWindow)!;
+            mainWindow.Show();
+            mainWindow.Navigate(typeof(LoadDataPage));
         }
 
         await Task.CompletedTask;
