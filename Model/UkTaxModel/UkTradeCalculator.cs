@@ -1,15 +1,25 @@
 ﻿using CapitalGainCalculator.Enum;
+using CapitalGainCalculator.Model.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace CapitalGainCalculator.Model.UkTaxModel;
 
-public class UkTradeCalculator
+public class UkTradeCalculator : ICalculator
 {
     private readonly TaxEventLists _taxEvents = new();
     private readonly Dictionary<string, UkSection104> _setion104Pools = new();
     private readonly List<TradeTaxCalculation> _unmatchedDisposal = new();
+
+    public UkTradeCalculator()
+    {
+    }
+
+    public UkTradeCalculator(TaxEventLists taxEventLists)
+    {
+        _taxEvents.AddData(taxEventLists);
+    }
 
     public void AddTaxEvents(TaxEventLists taxEventLists)
     {

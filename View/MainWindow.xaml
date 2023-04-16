@@ -1,0 +1,64 @@
+﻿<ui:UiWindow
+    x:Class="CapitalGainCalculator.View.MainWindow"
+    xmlns="http://schemas.microsoft.com/netfx/2009/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:viewmodel="clr-namespace:CapitalGainCalculator.ViewModel"
+    Background="{ui:ThemeResource ApplicationBackgroundBrush}"
+    ExtendsContentIntoTitleBar="True"
+    WindowBackdropType="Mica"
+    WindowCornerPreference="Round"
+    WindowStartupLocation="CenterScreen">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid
+            x:Name="RootMainGrid"
+            Grid.Row="1"
+            Margin="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" MinWidth="80" />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+
+            <!--  This is the main navigation of the application.  -->
+            <ui:NavigationStore
+                x:Name="RootNavigation"
+                Grid.Column="0"
+                Footer="{Binding ViewModel.NavigationFooter, Mode=OneWay}"
+                Frame="{Binding ElementName=RootFrame, Mode=OneWay}"
+                Items="{Binding ViewModel.NavigationItems, Mode=OneWay}"/>
+
+            <!--  Page display  -->
+            <Border
+                Grid.Column="1"
+                Background="{ui:ThemeResource ControlFillColorDefaultBrush}"
+                CornerRadius="8,0,0,0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Frame x:Name="RootFrame" Grid.Row="1" />
+                    <ui:Breadcrumb
+                        Grid.Row="0"
+                        Margin="18"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Top"
+                        FontSize="24"
+                        Navigation="{Binding ElementName=RootNavigation, Mode=OneWay}" />
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!--  The title bar contains window navigation elements and some Tray related extras.  -->
+        <!--  You can put additional controls in the header, such as a search bar.  -->
+        <!--  <ui:TitleBar.Header />  -->
+        <ui:TitleBar Title="{Binding ViewModel.ApplicationTitle, Mode=OneWay}" Grid.Row="0" />
+    </Grid>
+</ui:UiWindow>
+
+
