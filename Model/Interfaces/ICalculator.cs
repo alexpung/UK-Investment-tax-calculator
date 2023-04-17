@@ -1,8 +1,6 @@
-﻿using CapitalGainCalculator.Model.UkTaxModel;
-
-namespace CapitalGainCalculator.Model.Interfaces;
+﻿namespace CapitalGainCalculator.Model.Interfaces;
 
 public interface ICalculator
 {
-    public CalculationResult CalculateTax(TaxEventLists taxEventLists);
+    public CalculationResult CalculateTax();
 }

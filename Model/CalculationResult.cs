@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 
-namespace CapitalGainCalculator.Model.UkTaxModel;
+namespace CapitalGainCalculator.Model;
+
 public class CalculationResult
 {
     public required List<TradeTaxCalculation> CalculatedTrade { get; set; }

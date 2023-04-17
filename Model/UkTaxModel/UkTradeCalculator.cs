@@ -8,13 +8,18 @@ namespace CapitalGainCalculator.Model.UkTaxModel;
 
 public class UkTradeCalculator : ICalculator
 {
-    private TaxEventLists _taxEventList = new();
-    private readonly Dictionary<string, UkSection104> _setion104Pools = new();
+    private readonly TaxEventLists _taxEventList;
+    private readonly UkSection104Pools _setion104Pools;
     private readonly List<TradeTaxCalculation> _unmatchedDisposal = new();
 
-    public CalculationResult CalculateTax(TaxEventLists taxEventLists)
+    public UkTradeCalculator(UkSection104Pools section104Pools, TaxEventLists taxEventLists)
     {
+        _setion104Pools = section104Pools;
         _taxEventList = taxEventLists;
+    }
+
+    public CalculationResult CalculateTax()
+    {
         _setion104Pools.Clear();
         _unmatchedDisposal.Clear();
         Dictionary<string, List<TradeTaxCalculation>> tradeTaxCalculations = GroupTrade(_taxEventList.Trades);
@@ -24,10 +29,9 @@ public class UkTradeCalculator : ICalculator
             ApplyBedAndBreakfastMathingRule(assetGroup.Value);
             ProcessTradeInChronologicalOrder(assetGroup.Value, assetGroup.Key);
         }
-        return new UkCalculationResult
+        return new CalculationResult
         {
             CalculatedTrade = tradeTaxCalculations.Values.SelectMany(i => i).ToList(),
-            Setion104Pools = _setion104Pools,
             UnmatchedDisposal = _unmatchedDisposal
         };
     }
@@ -136,12 +140,7 @@ public class UkTradeCalculator : ICalculator
     {
         List<TradeTaxCalculation> sortedList = tradeTaxCalculations.OrderBy(trade => trade.Date).ToList();
         List<TradeTaxCalculation> unmatchedDisposal = new();
-        _setion104Pools.TryGetValue(assetName, out UkSection104? section104);
-        if (section104 is null)
-        {
-            section104 = new(assetName);
-            _setion104Pools[assetName] = section104;
-        }
+        UkSection104 section104 = _setion104Pools.GetExistingOrInitialise(assetName);
         List<CorporateAction> corporateActions = _taxEventList.CorporateActions.Where(i => i.AssetName == assetName).OrderBy(i => i.Date).ToList();
         foreach (TradeTaxCalculation trade in sortedList)
         {

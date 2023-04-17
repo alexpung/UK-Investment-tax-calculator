@@ -56,6 +56,8 @@ public partial class App
             services.AddSingleton<IEnumerable<ITaxEventFileParser>>(c => new List<ITaxEventFileParser> { c.GetService<IBParseController>()! });
             services.AddSingleton<FileParseController>();
             services.AddSingleton<TaxEventLists>();
+            services.AddSingleton<UkSection104Pools>();
+            services.AddSingleton<CalculationResult>();
         }).Build();
 
     public App()
