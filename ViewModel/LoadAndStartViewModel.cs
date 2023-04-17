@@ -3,30 +3,27 @@ using CapitalGainCalculator.Model.Interfaces;
 using CapitalGainCalculator.Parser;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace CapitalGainCalculator.ViewModel;
 
-public class LoadAndStartViewModel : ObservableObject
+public partial class LoadAndStartViewModel : ObservableObject
 {
     private readonly ICalculator _calculator;
     private readonly FileParseController _fileParseController;
-    private List<TradeTaxCalculation> _results = new();
-    public AsyncRelayCommand ReadFolderCommand { get; set; }
-    public AsyncRelayCommand ReadFilesCommand { get; set; }
-    public AsyncRelayCommand StartCalculationCommand { get; set; }
+    private readonly TaxEventLists _taxEventLists;
+    private readonly CalculationResult _calculationResult;
 
-    public LoadAndStartViewModel(ICalculator calculator, FileParseController fileParseController)
+    public LoadAndStartViewModel(FileParseController fileParseController, TaxEventLists taxEventLists, ICalculator calculator, CalculationResult calculationResult)
     {
         _fileParseController = fileParseController;
+        _taxEventLists = taxEventLists;
         _calculator = calculator;
-        ReadFilesCommand = new(OnReadFiles);
-        ReadFolderCommand = new(OnReadFolder);
-        StartCalculationCommand = new(OnStartCalculation);
+        _calculationResult = calculationResult;
     }
 
+    [RelayCommand]
     public async Task OnReadFolder()
     {
         FolderBrowserDialog openFileDlg = new();
@@ -34,17 +31,18 @@ public class LoadAndStartViewModel : ObservableObject
         if (result == DialogResult.OK)
         {
             string path = openFileDlg.SelectedPath;
-            _calculator.AddTaxEvents(_fileParseController.ParseFolder(path));
+            _taxEventLists.AddData(_fileParseController.ParseFolder(path));
         }
     }
 
+    [RelayCommand]
     public async Task OnReadFiles()
     {
     }
 
+    [RelayCommand]
     public async Task OnStartCalculation()
     {
-        List<TradeTaxCalculation> results = await Task.Run(_calculator.CalculateTax);
-        _results = results;
+        _calculationResult.SetResult(await Task.Run(_calculator.CalculateTax));
     }
 }
