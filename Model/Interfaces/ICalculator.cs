@@ -1,9 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using CapitalGainCalculator.Model.UkTaxModel;
 
 namespace CapitalGainCalculator.Model.Interfaces;
 
 public interface ICalculator
 {
-    public void AddTaxEvents(TaxEventLists taxEventLists);
-    public List<TradeTaxCalculation> CalculateTax();
+    public CalculationResult CalculateTax(TaxEventLists taxEventLists);
 }
