@@ -52,8 +52,10 @@ public partial class App
 
             //Application logic
             services.AddSingleton<IBParseController>();
+            //Represent a list of ITaxEventFileParser in desending order of priority. A file that is accepted by two or more ITaxEventFileParser will be taken by the earlier one in the IEnumerable
             services.AddSingleton<IEnumerable<ITaxEventFileParser>>(c => new List<ITaxEventFileParser> { c.GetService<IBParseController>()! });
             services.AddSingleton<FileParseController>();
+            services.AddSingleton<TaxEventLists>();
         }).Build();
 
     public App()
