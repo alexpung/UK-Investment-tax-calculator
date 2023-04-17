@@ -31,17 +31,17 @@
             x:Name="LoadOptionsCheckBox"
             Margin="{DynamicResource CheckBoxMargin}"
             Content="Options"
-            IsChecked="{Binding LoadOptions, Mode=OneWayToSource}"/>
+            IsChecked="{Binding LoadOptions, Mode=OneWayToSource}" />
         <CheckBox
             x:Name="LoadFuturesCheckBox"
             Margin="{DynamicResource CheckBoxMargin}"
             Content="Futures"
-            IsChecked="{Binding LoadFutures, Mode=OneWayToSource}"/>
+            IsChecked="{Binding LoadFutures, Mode=OneWayToSource}" />
         <CheckBox
             x:Name="LoadFxCheckBox"
             Margin="{DynamicResource CheckBoxMargin}"
             Content="Foreign Currency"
-            IsChecked="{Binding LoadFx, Mode=OneWayToSource}"/>
+            IsChecked="{Binding LoadFx, Mode=OneWayToSource}" />
     </StackPanel>
 </UserControl>
 

@@ -7,6 +7,7 @@ using CapitalGainCalculator.Service;
 using CapitalGainCalculator.View;
 using CapitalGainCalculator.View.Page;
 using CapitalGainCalculator.ViewModel;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Collections.Generic;
@@ -32,6 +33,7 @@ public partial class App
             // Service containing navigation, same as INavigationWindow... but without window
             services.AddSingleton<INavigationService, NavigationService>();
             services.AddSingleton<IPageService, PageService>();
+            services.AddSingleton<WeakReferenceMessenger>();
 
             //Models
             services.AddSingleton<TaxEventLists>();
@@ -47,6 +49,8 @@ public partial class App
             services.AddScoped<SettingsPage>();
             services.AddScoped<LoadAndStartPanel>();
             services.AddScoped<LoadAndStartViewModel>();
+            services.AddScoped<LoadedFilesStatisticsPanel>();
+            services.AddScoped<LoadedFilesStatisticsViewModel>();
             services.AddScoped<AssetTypeLoadOptionsPanel>();
             services.AddScoped<AssetTypeToLoadSettingViewModel>();
 

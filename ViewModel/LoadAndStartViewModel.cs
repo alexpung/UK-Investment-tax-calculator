@@ -1,8 +1,10 @@
 ﻿using CapitalGainCalculator.Model;
 using CapitalGainCalculator.Model.Interfaces;
 using CapitalGainCalculator.Parser;
+using CapitalGainCalculator.ViewModel.Messages;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -14,13 +16,15 @@ public partial class LoadAndStartViewModel : ObservableObject
     private readonly FileParseController _fileParseController;
     private readonly TaxEventLists _taxEventLists;
     private readonly CalculationResult _calculationResult;
+    private readonly WeakReferenceMessenger _messenger;
 
-    public LoadAndStartViewModel(FileParseController fileParseController, TaxEventLists taxEventLists, ICalculator calculator, CalculationResult calculationResult)
+    public LoadAndStartViewModel(FileParseController fileParseController, TaxEventLists taxEventLists, ICalculator calculator, CalculationResult calculationResult, WeakReferenceMessenger weakReferenceMessenger)
     {
         _fileParseController = fileParseController;
         _taxEventLists = taxEventLists;
         _calculator = calculator;
         _calculationResult = calculationResult;
+        _messenger = weakReferenceMessenger;
     }
 
     [RelayCommand]
@@ -32,6 +36,7 @@ public partial class LoadAndStartViewModel : ObservableObject
         {
             string path = openFileDlg.SelectedPath;
             _taxEventLists.AddData(_fileParseController.ParseFolder(path));
+            _messenger.Send<DataLoadedMessage>();
         }
     }
 

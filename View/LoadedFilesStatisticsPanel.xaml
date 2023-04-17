@@ -1,0 +1,42 @@
+﻿<UserControl
+    x:Class="CapitalGainCalculator.View.LoadedFilesStatisticsPanel"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:viewmodel="clr-namespace:CapitalGainCalculator.ViewModel"
+    d:DataContext="{d:DesignInstance Type=viewmodel:LoadedFilesStatisticsViewModel}"
+    Background="{ui:ThemeResource ApplicationBackgroundBrush}"
+    mc:Ignorable="d">
+    <UserControl.Resources>
+        <Thickness x:Key="CheckBoxMargin">10,0,0,0</Thickness>
+    </UserControl.Resources>
+    <StackPanel>
+        <Label
+            x:Name="DataStatisticsLabel"
+            Content="Data Loaded :"
+            FontSize="20" />
+        <Label
+            x:Name="NumberOfTaxEventsLabel"
+            Content="{Binding NumberOfTaxEvents}"
+            ContentStringFormat="Number of tax events: {0}"
+            FontSize="14" />
+        <Label
+            x:Name="NumberOfDividendsLabel"
+            Content="{Binding NumberOfDividends}"
+            ContentStringFormat="Number of dividends: {0}"
+            FontSize="14" />
+        <Label
+            x:Name="NumberOfTradesLabel"
+            Content="{Binding NumberOfTrades}"
+            ContentStringFormat="Number of trades: {0}"
+            FontSize="14" />
+        <Label
+            x:Name="NumberOfCorporateActionsLabel"
+            Content="{Binding NumberOfCorporateActions}"
+            ContentStringFormat="Number of corporate actions: {0}"
+            FontSize="14" />
+    </StackPanel>
+</UserControl>
+

@@ -23,4 +23,9 @@ public record TaxEventLists
             if (taxEvent is Dividend dividend) Dividends.Add(dividend);
         }
     }
+
+    public int GetTotalNumberOfEvents()
+    {
+        return Trades.Count + CorporateActions.Count + Dividends.Count;
+    }
 }
