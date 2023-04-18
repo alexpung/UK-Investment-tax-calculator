@@ -20,7 +20,6 @@ public class UkTradeCalculator : ICalculator
     public CalculationResult CalculateTax()
     {
         _setion104Pools.Clear();
-        _unmatchedDisposal.Clear();
         Dictionary<string, List<TradeTaxCalculation>> tradeTaxCalculations = GroupTrade(_taxEventList.Trades);
         foreach (KeyValuePair<string, List<TradeTaxCalculation>> assetGroup in tradeTaxCalculations)
         {
