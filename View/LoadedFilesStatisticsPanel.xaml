@@ -9,9 +9,6 @@
     d:DataContext="{d:DesignInstance Type=viewmodel:LoadedFilesStatisticsViewModel}"
     Background="{ui:ThemeResource ApplicationBackgroundBrush}"
     mc:Ignorable="d">
-    <UserControl.Resources>
-        <Thickness x:Key="CheckBoxMargin">10,0,0,0</Thickness>
-    </UserControl.Resources>
     <StackPanel>
         <Label
             x:Name="DataStatisticsLabel"

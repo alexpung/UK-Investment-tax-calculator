@@ -48,5 +48,6 @@ public partial class LoadAndStartViewModel : ObservableRecipient
     public async Task OnStartCalculation()
     {
         _calculationResult.SetResult(await Task.Run(_calculator.CalculateTax));
+        Messenger.Send<CalculationFinishedMessage>();
     }
 }

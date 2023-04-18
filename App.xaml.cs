@@ -51,6 +51,8 @@ public partial class App
             services.AddScoped<LoadedFilesStatisticsViewModel>();
             services.AddScoped<AssetTypeLoadOptionsPanel>();
             services.AddScoped<AssetTypeToLoadSettingViewModel>();
+            services.AddScoped<CalculationSummaryPanel>();
+            services.AddScoped<CalculationResultSummaryViewModel>();
 
             //Application logic
             services.AddSingleton<IBParseController>();
