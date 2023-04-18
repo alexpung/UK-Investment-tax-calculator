@@ -10,7 +10,6 @@ public class UkTradeCalculator : ICalculator
 {
     private readonly TaxEventLists _taxEventList;
     private readonly UkSection104Pools _setion104Pools;
-    private readonly List<TradeTaxCalculation> _unmatchedDisposal = new();
 
     public UkTradeCalculator(UkSection104Pools section104Pools, TaxEventLists taxEventLists)
     {
@@ -32,7 +31,6 @@ public class UkTradeCalculator : ICalculator
         return new CalculationResult
         {
             CalculatedTrade = tradeTaxCalculations.Values.SelectMany(i => i).ToList(),
-            UnmatchedDisposal = _unmatchedDisposal
         };
     }
 
@@ -174,6 +172,5 @@ public class UkTradeCalculator : ICalculator
                 }
             }
         }
-        _unmatchedDisposal.AddRange(unmatchedDisposal);
     }
 }
