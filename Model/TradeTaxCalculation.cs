@@ -10,6 +10,9 @@ public class TradeTaxCalculation : ITradeTaxCalculation
 {
     public List<Trade> TradeList { get; init; }
     public List<TradeMatch> MatchHistory { get; init; } = new List<TradeMatch>();
+    public decimal TotalAllowableCost => MatchHistory.Sum(tradeMatch => tradeMatch.BaseCurrencyMatchAcquitionValue);
+    public decimal TotalProceeds => MatchHistory.Sum(tradeMatch => tradeMatch.BaseCurrencyMatchDisposalValue);
+    public decimal Gain => TotalProceeds - TotalAllowableCost;
     public decimal TotalNetAmount { get; }
     private decimal _unmatchedNetAmount;
     public decimal UnmatchedNetAmount
