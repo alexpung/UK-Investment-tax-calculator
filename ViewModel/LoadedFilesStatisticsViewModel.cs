@@ -4,7 +4,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 
 namespace CapitalGainCalculator.ViewModel;
-public partial class LoadedFilesStatisticsViewModel : ObservableRecipient
+public partial class LoadedFilesStatisticsViewModel : ObservableRecipient, IRecipient<DataLoadedMessage>
 {
     private readonly TaxEventLists _taxEventLists;
 
@@ -17,13 +17,13 @@ public partial class LoadedFilesStatisticsViewModel : ObservableRecipient
     [ObservableProperty]
     private int _numberOfCorporateActions = 0;
 
-    public LoadedFilesStatisticsViewModel(TaxEventLists taxEventLists, WeakReferenceMessenger weakReferenceMessenger)
+    public LoadedFilesStatisticsViewModel(TaxEventLists taxEventLists)
     {
         _taxEventLists = taxEventLists;
-        weakReferenceMessenger.Register<DataLoadedMessage>(this, (r, m) => UpdateLoadedFilesStatistics());
+        IsActive = true;
     }
 
-    public void UpdateLoadedFilesStatistics()
+    public void Receive(DataLoadedMessage dataLoadedMessage)
     {
         NumberOfTaxEvents = _taxEventLists.GetTotalNumberOfEvents();
         NumberOfDividends = _taxEventLists.Dividends.Count;

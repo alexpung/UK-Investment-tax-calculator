@@ -10,21 +10,20 @@ using System.Windows.Forms;
 
 namespace CapitalGainCalculator.ViewModel;
 
-public partial class LoadAndStartViewModel : ObservableObject
+public partial class LoadAndStartViewModel : ObservableRecipient
 {
     private readonly ICalculator _calculator;
     private readonly FileParseController _fileParseController;
     private readonly TaxEventLists _taxEventLists;
     private readonly CalculationResult _calculationResult;
-    private readonly WeakReferenceMessenger _messenger;
 
-    public LoadAndStartViewModel(FileParseController fileParseController, TaxEventLists taxEventLists, ICalculator calculator, CalculationResult calculationResult, WeakReferenceMessenger weakReferenceMessenger)
+    public LoadAndStartViewModel(FileParseController fileParseController, TaxEventLists taxEventLists, ICalculator calculator, CalculationResult calculationResult)
     {
         _fileParseController = fileParseController;
         _taxEventLists = taxEventLists;
         _calculator = calculator;
         _calculationResult = calculationResult;
-        _messenger = weakReferenceMessenger;
+        IsActive = true;
     }
 
     [RelayCommand]
@@ -36,7 +35,7 @@ public partial class LoadAndStartViewModel : ObservableObject
         {
             string path = openFileDlg.SelectedPath;
             _taxEventLists.AddData(_fileParseController.ParseFolder(path));
-            _messenger.Send<DataLoadedMessage>();
+            Messenger.Send<DataLoadedMessage>();
         }
     }
 
