@@ -1,10 +1,11 @@
-﻿using System;
+﻿using CapitalGainCalculator.Model.Interfaces;
+using System;
 
 namespace CapitalGainCalculator.Model.UkTaxModel;
 
-public static class UKTaxYear
+public class UKTaxYear : ITaxYear
 {
-    public static int ToTaxYear(DateTime dateTime)
+    public int ToTaxYear(DateTime dateTime)
     {
         return (dateTime.Month, dateTime.Day) switch
         {

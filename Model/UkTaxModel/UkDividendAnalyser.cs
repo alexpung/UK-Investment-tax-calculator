@@ -10,6 +10,13 @@ namespace CapitalGainCalculator.Model.UkTaxModel;
 
 public class UkDividendAnalyser : ITaxAnalyser
 {
+    private readonly ITaxYear _taxYear;
+
+    public UkDividendAnalyser(ITaxYear taxYear)
+    {
+        _taxYear = taxYear;
+    }
+
     private IEnumerable<IGrouping<int, IGrouping<RegionInfo, Dividend>>> GroupDividend(IEnumerable<TaxEvent> events)
     {
         IEnumerable<Dividend> dividends = from taxEvent in events
@@ -17,7 +24,7 @@ public class UkDividendAnalyser : ITaxAnalyser
                                           select (Dividend)taxEvent;
 
         var GroupedDividends = from dividend in dividends
-                               let taxYear = UKTaxYear.ToTaxYear(dividend.Date)
+                               let taxYear = _taxYear.ToTaxYear(dividend.Date)
                                group dividend by taxYear into taxYearGroup
                                from LocationGroup in (
                                     from dividend in taxYearGroup

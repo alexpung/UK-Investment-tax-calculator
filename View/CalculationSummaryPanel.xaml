@@ -10,6 +10,16 @@
     Background="{ui:ThemeResource ApplicationBackgroundBrush}"
     mc:Ignorable="d">
     <StackPanel>
+        <StackPanel Orientation="Horizontal">
+            <Label
+                x:Name="SelectYearLabel"
+                Content="Select Tax Year : "
+                FontSize="20" />
+            <ComboBox
+                x:Name="TradeSummaryYearSelector"
+                ItemsSource="{Binding Years.Options, Mode=OneWay}"
+                SelectedItem="{Binding Years.SelectedYear, Mode=OneWayToSource}" SelectedIndex="0"/>
+        </StackPanel>
         <Label
             x:Name="CalculationSummaryLabel"
             Content="Tax Summary :"

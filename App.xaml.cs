@@ -7,6 +7,7 @@ using CapitalGainCalculator.Service;
 using CapitalGainCalculator.View;
 using CapitalGainCalculator.View.Page;
 using CapitalGainCalculator.ViewModel;
+using CapitalGainCalculator.ViewModel.Options;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Collections.Generic;
@@ -62,6 +63,8 @@ public partial class App
             services.AddSingleton<TaxEventLists>();
             services.AddSingleton<UkSection104Pools>();
             services.AddSingleton<CalculationResult>();
+            services.AddScoped<YearOptions>();
+            services.AddSingleton<ITaxYear, UKTaxYear>();
         }).Build();
 
     public App()
