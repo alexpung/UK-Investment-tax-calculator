@@ -12,12 +12,12 @@ namespace CapitalGainCalculator.ViewModel;
 
 public partial class LoadAndStartViewModel : ObservableRecipient
 {
-    private readonly ICalculator _calculator;
+    private readonly ITradeCalculator _calculator;
     private readonly FileParseController _fileParseController;
     private readonly TaxEventLists _taxEventLists;
     private readonly CalculationResult _calculationResult;
 
-    public LoadAndStartViewModel(FileParseController fileParseController, TaxEventLists taxEventLists, ICalculator calculator, CalculationResult calculationResult)
+    public LoadAndStartViewModel(FileParseController fileParseController, TaxEventLists taxEventLists, ITradeCalculator calculator, CalculationResult calculationResult)
     {
         _fileParseController = fileParseController;
         _taxEventLists = taxEventLists;

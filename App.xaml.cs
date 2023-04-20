@@ -36,7 +36,7 @@ public partial class App
 
             //Models
             services.AddSingleton<TaxEventLists>();
-            services.AddSingleton<ICalculator, UkTradeCalculator>();
+            services.AddSingleton<ITradeCalculator, UkTradeCalculator>();
             services.AddSingleton<AssetTypeToLoadSetting>();
 
             // Main window with navigation

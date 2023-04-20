@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace CapitalGainCalculator.Model.UkTaxModel;
 
-public class UkTradeCalculator : ICalculator
+public class UkTradeCalculator : ITradeCalculator
 {
     private readonly TaxEventLists _taxEventList;
     private readonly UkSection104Pools _setion104Pools;

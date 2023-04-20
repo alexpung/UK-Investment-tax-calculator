@@ -1,6 +1,6 @@
 ﻿namespace CapitalGainCalculator.Model.Interfaces;
 
-public interface ICalculator
+public interface ITradeCalculator
 {
     public CalculationResult CalculateTax();
 }
