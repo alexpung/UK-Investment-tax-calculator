@@ -2,7 +2,7 @@
 
 namespace CapitalGainCalculator.Model.Interfaces;
 
-public interface ITradeCalculator
+public interface IDividendCalculator
 {
-    public List<TradeTaxCalculation> CalculateTax();
+    public List<DividendSummary> CalculateTax();
 }

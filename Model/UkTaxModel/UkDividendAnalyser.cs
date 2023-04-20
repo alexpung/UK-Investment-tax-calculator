@@ -8,7 +8,9 @@ using System.Text;
 
 namespace CapitalGainCalculator.Model.UkTaxModel;
 
-public class UkDividendAnalyser : ITaxAnalyser
+
+// TODO: Remove this class
+public class UkDividendAnalyser
 {
     private readonly ITaxYear _taxYear;
 

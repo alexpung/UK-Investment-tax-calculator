@@ -1,7 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using CapitalGainCalculator.Model.Interfaces;
+using System.Collections.Generic;
 
 namespace CapitalGainCalculator.Model;
-public record TaxEventLists
+public record TaxEventLists : IDividendLists, ITradeAndCorporateActionList
 {
     public List<Trade> Trades { get; set; } = new List<Trade>();
     public List<CorporateAction> CorporateActions { get; set; } = new List<CorporateAction>();

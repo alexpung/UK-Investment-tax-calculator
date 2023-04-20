@@ -35,9 +35,15 @@ public partial class App
             services.AddSingleton<IPageService, PageService>();
 
             //Models
-            services.AddSingleton<TaxEventLists>();
-            services.AddSingleton<ITradeCalculator, UkTradeCalculator>();
+            TaxEventLists taxEventLists = new();
+            services.AddSingleton<IDividendLists>(taxEventLists);
+            services.AddSingleton<ITradeAndCorporateActionList>(taxEventLists);
+            services.AddSingleton(taxEventLists);
             services.AddSingleton<AssetTypeToLoadSetting>();
+            services.AddSingleton<UkSection104Pools>();
+            services.AddSingleton<CalculationResult>();
+            services.AddScoped<YearOptions>();
+            services.AddSingleton<ITaxYear, UKTaxYear>();
 
             // Main window with navigation
             services.AddScoped<MainWindow>();
@@ -60,11 +66,9 @@ public partial class App
             //Represent a list of ITaxEventFileParser in desending order of priority. A file that is accepted by two or more ITaxEventFileParser will be taken by the earlier one in the IEnumerable
             services.AddSingleton<IEnumerable<ITaxEventFileParser>>(c => new List<ITaxEventFileParser> { c.GetService<IBParseController>()! });
             services.AddSingleton<FileParseController>();
-            services.AddSingleton<TaxEventLists>();
-            services.AddSingleton<UkSection104Pools>();
-            services.AddSingleton<CalculationResult>();
-            services.AddScoped<YearOptions>();
-            services.AddSingleton<ITaxYear, UKTaxYear>();
+            services.AddSingleton<ITradeCalculator, UkTradeCalculator>();
+            services.AddSingleton<IDividendCalculator, UkDividendCalculator>();
+
         }).Build();
 
     public App()

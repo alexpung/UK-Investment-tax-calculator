@@ -1,8 +1,7 @@
 ﻿using System.Collections.Generic;
 
 namespace CapitalGainCalculator.Model.Interfaces;
-
-public interface ITradeCalculator
+public interface IDividendLists
 {
-    public List<TradeTaxCalculation> CalculateTax();
+    List<Dividend> Dividends { get; set; }
 }
