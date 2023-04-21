@@ -12,6 +12,7 @@
                 <ui:ThemesDictionary Theme="Dark" />
                 <ui:ControlsDictionary />
             </ResourceDictionary.MergedDictionaries>
+            <Thickness x:Key="ButtonMargin">10,10,10,10</Thickness>
         </ResourceDictionary>
     </Application.Resources>
 </Application>
