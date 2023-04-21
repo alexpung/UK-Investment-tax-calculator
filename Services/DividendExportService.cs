@@ -17,9 +17,9 @@ public class DividendExportService
             output.AppendLine($"Tax Year: {dividendSummary.TaxYear}");
             output.AppendLine($"Region: {dividendSummary.CountryOfOrigin}");
             output.AppendLine($"\tTotal dividends: {dividendSummary.TotalTaxableDividend:C2}");
-            output.AppendLine($"\tTotal withholding tax: £{dividendSummary.TotalForeignTaxPaid:C2}\n");
+            output.AppendLine($"\tTotal withholding tax: {dividendSummary.TotalForeignTaxPaid:C2}\n");
             output.AppendLine("\t\tTransactions:");
-            foreach (var dividend in dividendSummary.RelatedDividendsAndTaxes)
+            foreach (var dividend in dividendSummary.RelatedDividendsAndTaxes.OrderBy(i => i.Date))
             {
                 output.AppendLine($"\t\t{PrettyPrintDividend(dividend)}");
             }
