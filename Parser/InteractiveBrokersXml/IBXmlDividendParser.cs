@@ -13,7 +13,7 @@ public class IBXmlDividendParser
 {
     public IList<Dividend> ParseXml(XElement document)
     {
-        IEnumerable<XElement> filteredElements = document.Descendants("CashTransaction").Where(row => GetDividendType(row) != DividendType.NOT_DIVIDEND);
+        IEnumerable<XElement> filteredElements = document.Descendants("CashTransaction").Where(row => GetDividendType(row) != DividendType.NOT_DIVIDEND && row.GetAttribute("levelOfDetail") == "DETAIL");
         return filteredElements.Select(DividendMaker).Where(dividend => dividend != null).ToList()!;
     }
 
