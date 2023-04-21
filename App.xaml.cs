@@ -41,8 +41,8 @@ public partial class App
             services.AddSingleton(taxEventLists);
             services.AddSingleton<AssetTypeToLoadSetting>();
             services.AddSingleton<UkSection104Pools>();
-            services.AddSingleton<CalculationResult>();
-            services.AddScoped<YearOptions>();
+            services.AddSingleton<TradeCalculationResult>();
+            services.AddSingleton<DividendCalculationResult>();
             services.AddSingleton<ITaxYear, UKTaxYear>();
 
             // Main window with navigation
