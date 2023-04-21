@@ -4,6 +4,7 @@ using CapitalGainCalculator.Model.UkTaxModel;
 using CapitalGainCalculator.Parser;
 using CapitalGainCalculator.Parser.InteractiveBrokersXml;
 using CapitalGainCalculator.Service;
+using CapitalGainCalculator.Services;
 using CapitalGainCalculator.View;
 using CapitalGainCalculator.View.Page;
 using CapitalGainCalculator.ViewModel;
@@ -33,6 +34,7 @@ public partial class App
             // Service containing navigation, same as INavigationWindow... but without window
             services.AddSingleton<INavigationService, NavigationService>();
             services.AddSingleton<IPageService, PageService>();
+            services.AddSingleton<DividendExportService>();
 
             //Models
             TaxEventLists taxEventLists = new();
@@ -43,6 +45,7 @@ public partial class App
             services.AddSingleton<UkSection104Pools>();
             services.AddSingleton<TradeCalculationResult>();
             services.AddSingleton<DividendCalculationResult>();
+            services.AddSingleton<YearOptions>();
             services.AddSingleton<ITaxYear, UKTaxYear>();
 
             // Main window with navigation
@@ -60,6 +63,8 @@ public partial class App
             services.AddScoped<AssetTypeToLoadSettingViewModel>();
             services.AddScoped<CalculationSummaryPanel>();
             services.AddScoped<CalculationResultSummaryViewModel>();
+            services.AddScoped<ExportToFilePanel>();
+            services.AddScoped<ExportToFileViewModel>();
 
             //Application logic
             services.AddSingleton<IBParseController>();
