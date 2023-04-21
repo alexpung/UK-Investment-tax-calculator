@@ -48,7 +48,7 @@ public partial class CalculationResultSummaryViewModel : ObservableRecipient, IR
     public void Receive(CalculationFinishedMessage message)
     {
         UpdateSummary();
-        Years.SetYears(GetYearsWithDisposal());
+        Years.SetYears(GetSelectableYears());
     }
 
     private void UpdateSummary()
@@ -62,11 +62,12 @@ public partial class CalculationResultSummaryViewModel : ObservableRecipient, IR
         TotalLoss = resultFilterByYear.Where(trade => trade.Gain < 0).Sum(trade => trade.Gain);
     }
 
-    private IEnumerable<int> GetYearsWithDisposal()
+    private IEnumerable<int> GetSelectableYears()
     {
-        return _tradeCalculationResult.CalculatedTrade.Where(trade => trade.BuySell == Enum.TradeType.SELL)
+        IEnumerable<int> yearsWithDisposal = _tradeCalculationResult.CalculatedTrade.Where(trade => trade.BuySell == Enum.TradeType.SELL)
                                                  .Select(trade => trade.Date.Year)
-                                                 .Distinct()
-                                                 .OrderByDescending(i => i);
+                                                 .Distinct();
+        IEnumerable<int> yearsWithDividend = _dividendCalculationResult.DividendSummary.Select(dividend => dividend.TaxYear).Distinct();
+        return yearsWithDisposal.Union(yearsWithDividend).OrderByDescending(i => i);
     }
 }
