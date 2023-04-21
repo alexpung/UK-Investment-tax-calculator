@@ -11,7 +11,8 @@ namespace CapitalGainCalculator.ViewModel;
 
 public partial class CalculationResultSummaryViewModel : ObservableRecipient, IRecipient<CalculationFinishedMessage>
 {
-    private readonly CalculationResult _calculationResult;
+    private readonly TradeCalculationResult _tradeCalculationResult;
+    private readonly DividendCalculationResult _dividendCalculationResult;
     [ObservableProperty]
     private int _numberOfDisposals;
     [ObservableProperty]
@@ -26,9 +27,10 @@ public partial class CalculationResultSummaryViewModel : ObservableRecipient, IR
     private readonly ITaxYear _taxYear;
 
 
-    public CalculationResultSummaryViewModel(CalculationResult calculationResult, YearOptions years, ITaxYear taxYear)
+    public CalculationResultSummaryViewModel(TradeCalculationResult tradeCalculationResult, DividendCalculationResult dividendCalculationResult, YearOptions years, ITaxYear taxYear)
     {
-        _calculationResult = calculationResult;
+        _tradeCalculationResult = tradeCalculationResult;
+        _dividendCalculationResult = dividendCalculationResult;
         Years = years;
         Years.PropertyChanged += Years_PropertyChanged;
         _taxYear = taxYear;
@@ -51,8 +53,8 @@ public partial class CalculationResultSummaryViewModel : ObservableRecipient, IR
 
     private void UpdateSummary()
     {
-        if (_calculationResult.CalculatedTrade is null || Years is null) return;
-        IEnumerable<TradeTaxCalculation> resultFilterByYear = _calculationResult.CalculatedTrade.Where(trade => Years.IsSelectedYear(_taxYear.ToTaxYear(trade.Date)));
+        if (_tradeCalculationResult.CalculatedTrade is null || Years is null) return;
+        IEnumerable<TradeTaxCalculation> resultFilterByYear = _tradeCalculationResult.CalculatedTrade.Where(trade => Years.IsSelectedYear(_taxYear.ToTaxYear(trade.Date)));
         NumberOfDisposals = resultFilterByYear.Count(trade => trade.BuySell == Enum.TradeType.SELL);
         DisposalProceeds = resultFilterByYear.Sum(trade => trade.TotalProceeds);
         AllowableCosts = resultFilterByYear.Sum(trade => trade.TotalAllowableCost);
@@ -62,7 +64,7 @@ public partial class CalculationResultSummaryViewModel : ObservableRecipient, IR
 
     private IEnumerable<int> GetYearsWithDisposal()
     {
-        return _calculationResult.CalculatedTrade.Where(trade => trade.BuySell == Enum.TradeType.SELL)
+        return _tradeCalculationResult.CalculatedTrade.Where(trade => trade.BuySell == Enum.TradeType.SELL)
                                                  .Select(trade => trade.Date.Year)
                                                  .Distinct()
                                                  .OrderByDescending(i => i);

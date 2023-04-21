@@ -16,16 +16,18 @@ public partial class LoadAndStartViewModel : ObservableRecipient
     private readonly IDividendCalculator _dividendCalculator;
     private readonly FileParseController _fileParseController;
     private readonly TaxEventLists _taxEventLists;
-    private readonly CalculationResult _calculationResult;
+    private readonly TradeCalculationResult _tradeCalculationResult;
+    private readonly DividendCalculationResult _dividendCalculationResult;
 
     public LoadAndStartViewModel(FileParseController fileParseController, TaxEventLists taxEventLists, ITradeCalculator tradeCalculator,
-        CalculationResult calculationResult, IDividendCalculator dividendCalculator)
+        TradeCalculationResult tradeCalculationResult, DividendCalculationResult dividendCalculationResult, IDividendCalculator dividendCalculator)
     {
         _fileParseController = fileParseController;
         _taxEventLists = taxEventLists;
         _tradeCalculator = tradeCalculator;
         _dividendCalculator = dividendCalculator;
-        _calculationResult = calculationResult;
+        _tradeCalculationResult = tradeCalculationResult;
+        _dividendCalculationResult = dividendCalculationResult;
 
         IsActive = true;
     }
@@ -52,8 +54,8 @@ public partial class LoadAndStartViewModel : ObservableRecipient
     [RelayCommand]
     public async Task OnStartCalculation()
     {
-        _calculationResult.SetResult(await Task.Run(_tradeCalculator.CalculateTax));
-        _calculationResult.SetResult(await Task.Run(_dividendCalculator.CalculateTax));
+        _tradeCalculationResult.SetResult(await Task.Run(_tradeCalculator.CalculateTax));
+        _dividendCalculationResult.SetResult(await Task.Run(_dividendCalculator.CalculateTax));
         Messenger.Send<CalculationFinishedMessage>();
     }
 }
