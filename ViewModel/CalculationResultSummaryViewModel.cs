@@ -4,6 +4,7 @@ using CapitalGainCalculator.ViewModel.Messages;
 using CapitalGainCalculator.ViewModel.Options;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -54,12 +55,12 @@ public partial class CalculationResultSummaryViewModel : ObservableRecipient, IR
     private void UpdateSummary()
     {
         if (_tradeCalculationResult.CalculatedTrade is null || Years is null) return;
-        IEnumerable<TradeTaxCalculation> resultFilterByYear = _tradeCalculationResult.CalculatedTrade.Where(trade => Years.IsSelectedYear(_taxYear.ToTaxYear(trade.Date)));
-        NumberOfDisposals = resultFilterByYear.Count(trade => trade.BuySell == Enum.TradeType.SELL);
-        DisposalProceeds = resultFilterByYear.Sum(trade => trade.TotalProceeds);
-        AllowableCosts = resultFilterByYear.Sum(trade => trade.TotalAllowableCost);
-        TotalGain = resultFilterByYear.Where(trade => trade.Gain > 0).Sum(trade => trade.Gain);
-        TotalLoss = resultFilterByYear.Where(trade => trade.Gain < 0).Sum(trade => trade.Gain);
+        Func<TradeTaxCalculation, bool> filterFunc = trade => Years.IsSelectedYear(_taxYear.ToTaxYear(trade.Date));
+        NumberOfDisposals = _tradeCalculationResult.NumberOfDisposals(filterFunc);
+        DisposalProceeds = _tradeCalculationResult.DisposalProceeds(filterFunc);
+        AllowableCosts = _tradeCalculationResult.AllowableCosts(filterFunc);
+        TotalGain = _tradeCalculationResult.TotalGain(filterFunc);
+        TotalLoss = _tradeCalculationResult.TotalLoss(filterFunc);
     }
 
     private IEnumerable<int> GetSelectableYears()
