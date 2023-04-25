@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 
 namespace CapitalGainCalculator.Services;
+
 public class DividendExportService
 {
     public string Export(IEnumerable<DividendSummary> dividendSummaries)
