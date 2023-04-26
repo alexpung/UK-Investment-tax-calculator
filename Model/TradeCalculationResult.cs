@@ -13,9 +13,10 @@ public class TradeCalculationResult
         CalculatedTrade = tradeTaxCalculations;
     }
 
+    // Rounding to tax payer benefit https://www.gov.uk/hmrc-internal-manuals/self-assessment-manual/sam121370
     public int NumberOfDisposals(Func<TradeTaxCalculation, bool> filterCondition) => CalculatedTrade.Where(filterCondition).Count(trade => trade.BuySell == Enum.TradeType.SELL);
-    public decimal DisposalProceeds(Func<TradeTaxCalculation, bool> filterCondition) => CalculatedTrade.Where(filterCondition).Sum(trade => trade.TotalProceeds);
-    public decimal AllowableCosts(Func<TradeTaxCalculation, bool> filterCondition) => CalculatedTrade.Where(filterCondition).Sum(trade => trade.TotalAllowableCost);
-    public decimal TotalGain(Func<TradeTaxCalculation, bool> filterCondition) => CalculatedTrade.Where(filterCondition).Where(trade => trade.Gain > 0).Sum(trade => trade.Gain);
-    public decimal TotalLoss(Func<TradeTaxCalculation, bool> filterCondition) => CalculatedTrade.Where(filterCondition).Where(trade => trade.Gain < 0).Sum(trade => trade.Gain);
+    public int DisposalProceeds(Func<TradeTaxCalculation, bool> filterCondition) => (int)Math.Floor(CalculatedTrade.Where(filterCondition).Sum(trade => trade.TotalProceeds));
+    public int AllowableCosts(Func<TradeTaxCalculation, bool> filterCondition) => (int)Math.Ceiling(CalculatedTrade.Where(filterCondition).Sum(trade => trade.TotalAllowableCost));
+    public int TotalGain(Func<TradeTaxCalculation, bool> filterCondition) => (int)Math.Floor(CalculatedTrade.Where(filterCondition).Where(trade => trade.Gain > 0).Sum(trade => trade.Gain));
+    public int TotalLoss(Func<TradeTaxCalculation, bool> filterCondition) => (int)Math.Ceiling(CalculatedTrade.Where(filterCondition).Where(trade => trade.Gain < 0).Sum(trade => trade.Gain));
 }
