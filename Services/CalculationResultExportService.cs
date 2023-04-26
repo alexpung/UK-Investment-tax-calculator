@@ -24,6 +24,7 @@ public class CalculationResultExportService
         foreach (int year in availableYears)
         {
             output.Append(WriteTaxYearSummary(year, calculationResult));
+            output.AppendLine();
         }
         output.AppendLine();
         return output.ToString();
