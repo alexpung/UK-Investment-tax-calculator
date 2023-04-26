@@ -18,9 +18,9 @@ public class CalculationResultExportService
 
     public string Export(TradeCalculationResult calculationResult)
     {
-        List<TradeTaxCalculation> tradeTaxCalculations = calculationResult.CalculatedTrade;
+        IEnumerable<TradeTaxCalculation> tradeTaxCalculations = calculationResult.CalculatedTrade;
         StringBuilder output = new();
-        List<int> availableYears = tradeTaxCalculations.Select(i => _taxYear.ToTaxYear(i.Date)).Distinct().OrderByDescending(i => i).ToList();
+        IEnumerable<int> availableYears = tradeTaxCalculations.Select(i => _taxYear.ToTaxYear(i.Date)).Distinct().OrderByDescending(i => i);
         foreach (int year in availableYears)
         {
             output.Append(WriteTaxYearSummary(year, calculationResult));
