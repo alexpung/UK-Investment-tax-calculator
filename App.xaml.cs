@@ -35,6 +35,7 @@ public partial class App
             services.AddSingleton<INavigationService, NavigationService>();
             services.AddSingleton<IPageService, PageService>();
             services.AddSingleton<DividendExportService>();
+            services.AddSingleton<CalculationResultExportService>();
 
             //Models
             TaxEventLists taxEventLists = new();
