@@ -4,6 +4,7 @@ using System.Collections.Generic;
 namespace CapitalGainCalculator.Model.Interfaces;
 public interface ITradeTaxCalculation
 {
+    string AssetName { get; }
     TradeType BuySell { get; init; }
     bool CalculationCompleted { get; }
     List<TradeMatch> MatchHistory { get; init; }
