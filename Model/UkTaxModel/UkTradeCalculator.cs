@@ -69,7 +69,7 @@ public class UkTradeCalculator : ITradeCalculator
                     if (sortedList[k].Date.AddDays(30) < sortedList[i].Date) break;
                     if (sortedList[k].BuySell == TradeType.SELL)
                     {
-                        MatchTrade(sortedList[i], sortedList[k], UkMatchType.BREAD_AND_BREAKFAST);
+                        MatchTrade(sortedList[i], sortedList[k], UkMatchType.BED_AND_BREAKFAST);
                         if (sortedList[i].CalculationCompleted) break;
                     }
                     k--;
