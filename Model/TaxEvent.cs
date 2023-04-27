@@ -35,7 +35,7 @@ public record Trade : TaxEvent
     {
         if (!Expenses.Any()) return string.Empty;
         StringBuilder stringBuilder = new();
-        stringBuilder.Append("\nExpenses: ");
+        stringBuilder.Append("\n\tExpenses: ");
         foreach (var expense in Expenses)
         {
             stringBuilder.Append(expense.ToString() + "\t");
@@ -57,7 +57,8 @@ public record Trade : TaxEvent
             TradeType.SELL => $"Net proceed: {NetProceed:C2}",
             _ => throw new NotImplementedException()
         };
-        return $"{action} {Quantity} unit(s) of {AssetName} for {GrossProceed:C2} with total expense {Expenses.Sum(i => i.BaseCurrencyAmount):C2}, {netExplanation}" + GetExpensesExplanation();
+        return $"{action} {Quantity} unit(s) of {AssetName} on {Date:dd-MMM-yyyy} for {GrossProceed:C2} with total expense {Expenses.Sum(i => i.BaseCurrencyAmount):C2}, {netExplanation}"
+            + GetExpensesExplanation();
     }
 }
 
