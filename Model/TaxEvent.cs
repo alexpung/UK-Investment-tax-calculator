@@ -1,5 +1,5 @@
 ﻿using CapitalGainCalculator.Enum;
-using NodaMoney;
+using NMoneys;
 using System;
 using System.Collections.Generic;
 using System.Globalization;

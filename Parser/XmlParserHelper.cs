@@ -1,5 +1,5 @@
 ﻿using CapitalGainCalculator.Model;
-using NodaMoney;
+using NMoneys;
 using System;
 using System.Xml.Linq;
 
@@ -14,12 +14,12 @@ public static class XmlParserHelper
         {
             return xAttribute.Value;
         }
-        else throw new NullReferenceException(@$"The attribute ""{attributeName}"" is not found in ""{xElement.Name}"", please include this attribute in your XML statement");
+        else throw new ArgumentException(@$"The attribute ""{attributeName}"" is not found in ""{xElement.Name}"", please include this attribute in your XML statement");
     }
 
     public static Money BuildMoney(this XElement xElement, string amountAttributeName, string currencyAttributeName)
     {
-        return Money.Parse(xElement.GetAttribute(amountAttributeName), Currency.FromCode(xElement.GetAttribute(currencyAttributeName)));
+        return new Money(decimal.Parse(xElement.GetAttribute(amountAttributeName)), xElement.GetAttribute(currencyAttributeName));
     }
 
     public static DescribedMoney BuildDescribedMoney(this XElement xElement, string amountAttributeName, string currencyAttributeName, string exchangeRateAttributeName, string description, bool revertSign = false)
