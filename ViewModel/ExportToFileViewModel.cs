@@ -15,9 +15,9 @@ public partial class ExportToFileViewModel : ObservableObject
     private readonly DividendCalculationResult _dividendCalculationResult;
     private readonly YearOptions _yearOptions;
     private readonly TradeCalculationResult _tradeCalculationResult;
-    private readonly CalculationResultExportService _calculationResultExportService;
+    private readonly UkCalculationResultExportService _calculationResultExportService;
 
-    public ExportToFileViewModel(DividendExportService dividendExportService, DividendCalculationResult dividendCalculationResult, YearOptions years, TradeCalculationResult tradeCalculationResult, CalculationResultExportService calculationResultExportService)
+    public ExportToFileViewModel(DividendExportService dividendExportService, DividendCalculationResult dividendCalculationResult, YearOptions years, TradeCalculationResult tradeCalculationResult, UkCalculationResultExportService calculationResultExportService)
     {
         _dividendExportService = dividendExportService;
         _dividendCalculationResult = dividendCalculationResult;
