@@ -4,9 +4,11 @@ using CapitalGainCalculator.Model.UkTaxModel;
 using CapitalGainCalculator.Parser;
 using CapitalGainCalculator.Parser.InteractiveBrokersXml;
 using CapitalGainCalculator.Service;
+using CapitalGainCalculator.Services;
 using CapitalGainCalculator.View;
 using CapitalGainCalculator.View.Page;
 using CapitalGainCalculator.ViewModel;
+using CapitalGainCalculator.ViewModel.Options;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Collections.Generic;
@@ -32,11 +34,20 @@ public partial class App
             // Service containing navigation, same as INavigationWindow... but without window
             services.AddSingleton<INavigationService, NavigationService>();
             services.AddSingleton<IPageService, PageService>();
+            services.AddSingleton<DividendExportService>();
+            services.AddSingleton<UkCalculationResultExportService>();
 
             //Models
-            services.AddSingleton<TaxEventLists>();
-            services.AddSingleton<ICalculator, UkTradeCalculator>();
+            TaxEventLists taxEventLists = new();
+            services.AddSingleton<IDividendLists>(taxEventLists);
+            services.AddSingleton<ITradeAndCorporateActionList>(taxEventLists);
+            services.AddSingleton(taxEventLists);
             services.AddSingleton<AssetTypeToLoadSetting>();
+            services.AddSingleton<UkSection104Pools>();
+            services.AddSingleton<TradeCalculationResult>();
+            services.AddSingleton<DividendCalculationResult>();
+            services.AddSingleton<YearOptions>();
+            services.AddSingleton<ITaxYear, UKTaxYear>();
 
             // Main window with navigation
             services.AddScoped<MainWindow>();
@@ -47,13 +58,23 @@ public partial class App
             services.AddScoped<SettingsPage>();
             services.AddScoped<LoadAndStartPanel>();
             services.AddScoped<LoadAndStartViewModel>();
+            services.AddScoped<LoadedFilesStatisticsPanel>();
+            services.AddScoped<LoadedFilesStatisticsViewModel>();
             services.AddScoped<AssetTypeLoadOptionsPanel>();
             services.AddScoped<AssetTypeToLoadSettingViewModel>();
+            services.AddScoped<CalculationSummaryPanel>();
+            services.AddScoped<CalculationResultSummaryViewModel>();
+            services.AddScoped<ExportToFilePanel>();
+            services.AddScoped<ExportToFileViewModel>();
 
             //Application logic
             services.AddSingleton<IBParseController>();
+            //Represent a list of ITaxEventFileParser in desending order of priority. A file that is accepted by two or more ITaxEventFileParser will be taken by the earlier one in the IEnumerable
             services.AddSingleton<IEnumerable<ITaxEventFileParser>>(c => new List<ITaxEventFileParser> { c.GetService<IBParseController>()! });
             services.AddSingleton<FileParseController>();
+            services.AddSingleton<ITradeCalculator, UkTradeCalculator>();
+            services.AddSingleton<IDividendCalculator, UkDividendCalculator>();
+
         }).Build();
 
     public App()

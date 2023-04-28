@@ -1,9 +1,10 @@
 ﻿using CapitalGainCalculator.Enum;
-using NodaMoney;
+using NMoneys;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 
 namespace CapitalGainCalculator.Model;
 
@@ -30,6 +31,18 @@ public record Trade : TaxEvent
         }
     }
 
+    private string GetExpensesExplanation()
+    {
+        if (!Expenses.Any()) return string.Empty;
+        StringBuilder stringBuilder = new();
+        stringBuilder.Append("\n\tExpenses: ");
+        foreach (var expense in Expenses)
+        {
+            stringBuilder.Append(expense.ToString() + "\t");
+        }
+        return stringBuilder.ToString();
+    }
+
     public override string ToString()
     {
         string action = BuySell switch
@@ -44,7 +57,8 @@ public record Trade : TaxEvent
             TradeType.SELL => $"Net proceed: {NetProceed:C2}",
             _ => throw new NotImplementedException()
         };
-        return $"{action} {Quantity} unit(s) of {AssetName} for {GrossProceed:C2} with total expense {Expenses.Sum(i => i.BaseCurrencyAmount):C2}, {netExplanation}";
+        return $"{action} {Quantity} unit(s) of {AssetName} on {Date:dd-MMM-yyyy} for {GrossProceed:C2} with total expense {Expenses.Sum(i => i.BaseCurrencyAmount):C2}, {netExplanation}"
+            + GetExpensesExplanation();
     }
 }
 

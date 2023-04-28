@@ -6,31 +6,21 @@ using System.Linq;
 
 namespace CapitalGainCalculator.Model.UkTaxModel;
 
-public class UkTradeCalculator : ICalculator
+public class UkTradeCalculator : ITradeCalculator
 {
-    private readonly TaxEventLists _taxEvents = new();
-    private readonly Dictionary<string, UkSection104> _setion104Pools = new();
-    private readonly List<TradeTaxCalculation> _unmatchedDisposal = new();
+    private readonly ITradeAndCorporateActionList _tradeList;
+    private readonly UkSection104Pools _setion104Pools;
 
-    public UkTradeCalculator()
+    public UkTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorporateActionList tradeList)
     {
-    }
-
-    public UkTradeCalculator(TaxEventLists taxEventLists)
-    {
-        _taxEvents.AddData(taxEventLists);
-    }
-
-    public void AddTaxEvents(TaxEventLists taxEventLists)
-    {
-        _taxEvents.AddData(taxEventLists);
+        _setion104Pools = section104Pools;
+        _tradeList = tradeList;
     }
 
     public List<TradeTaxCalculation> CalculateTax()
     {
         _setion104Pools.Clear();
-        _unmatchedDisposal.Clear();
-        Dictionary<string, List<TradeTaxCalculation>> tradeTaxCalculations = GroupTrade(_taxEvents.Trades);
+        Dictionary<string, List<TradeTaxCalculation>> tradeTaxCalculations = GroupTrade(_tradeList.Trades);
         foreach (KeyValuePair<string, List<TradeTaxCalculation>> assetGroup in tradeTaxCalculations)
         {
             ApplySameDayMatchingRule(assetGroup.Value);
@@ -79,7 +69,7 @@ public class UkTradeCalculator : ICalculator
                     if (sortedList[k].Date.AddDays(30) < sortedList[i].Date) break;
                     if (sortedList[k].BuySell == TradeType.SELL)
                     {
-                        MatchTrade(sortedList[i], sortedList[k], UkMatchType.BREAD_AND_BREAKFAST);
+                        MatchTrade(sortedList[i], sortedList[k], UkMatchType.BED_AND_BREAKFAST);
                         if (sortedList[i].CalculationCompleted) break;
                     }
                     k--;
@@ -90,7 +80,7 @@ public class UkTradeCalculator : ICalculator
 
     private List<StockSplit> CheckStockSplit(DateTime fromDate, DateTime toDate)
     {
-        return _taxEvents.CorporateActions.OfType<StockSplit>().Where(i => i.Date > fromDate && i.Date <= toDate).ToList();
+        return _tradeList.CorporateActions.OfType<StockSplit>().Where(i => i.Date > fromDate && i.Date <= toDate).ToList();
     }
 
     private void MatchTrade(TradeTaxCalculation trade1, TradeTaxCalculation trade2, UkMatchType ukMatchType)
@@ -118,10 +108,10 @@ public class UkTradeCalculator : ICalculator
                 matchQuantityAfterActions = split.GetSharesAfterSplit(matchQuantityAfterActions);
             }
         }
-        (_, decimal trade1Value) = earlierTrade.MatchQty(matchQuantity);
-        (_, decimal trade2Value) = laterTrade.MatchQty(matchQuantityAfterActions);
-        decimal acquitionValue = trade1.BuySell == TradeType.BUY ? trade1Value : trade2Value;
-        decimal disposalValue = trade1.BuySell == TradeType.BUY ? trade2Value : trade1Value;
+        (_, decimal earlierTradeValue) = earlierTrade.MatchQty(matchQuantity);
+        (_, decimal laterTradeValue) = laterTrade.MatchQty(matchQuantityAfterActions);
+        decimal acquitionValue = earlierTrade.BuySell == TradeType.BUY ? earlierTradeValue : laterTradeValue;
+        decimal disposalValue = earlierTrade.BuySell == TradeType.BUY ? laterTradeValue : earlierTradeValue;
         trade1.MatchHistory.Add(new TradeMatch()
         {
             TradeMatchType = ukMatchType,
@@ -144,13 +134,8 @@ public class UkTradeCalculator : ICalculator
     {
         List<TradeTaxCalculation> sortedList = tradeTaxCalculations.OrderBy(trade => trade.Date).ToList();
         List<TradeTaxCalculation> unmatchedDisposal = new();
-        _setion104Pools.TryGetValue(assetName, out UkSection104? section104);
-        if (section104 is null)
-        {
-            section104 = new(assetName);
-            _setion104Pools[assetName] = section104;
-        }
-        List<CorporateAction> corporateActions = _taxEvents.CorporateActions.Where(i => i.AssetName == assetName).OrderBy(i => i.Date).ToList();
+        UkSection104 section104 = _setion104Pools.GetExistingOrInitialise(assetName);
+        List<CorporateAction> corporateActions = _tradeList.CorporateActions.Where(i => i.AssetName == assetName).OrderBy(i => i.Date).ToList();
         foreach (TradeTaxCalculation trade in sortedList)
         {
             if (trade.CalculationCompleted) continue;
@@ -183,6 +168,5 @@ public class UkTradeCalculator : ICalculator
                 }
             }
         }
-        _unmatchedDisposal.AddRange(unmatchedDisposal);
     }
 }

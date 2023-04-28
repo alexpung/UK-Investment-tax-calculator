@@ -2,8 +2,7 @@
 
 namespace CapitalGainCalculator.Model.Interfaces;
 
-public interface ICalculator
+public interface ITradeCalculator
 {
-    public void AddTaxEvents(TaxEventLists taxEventLists);
     public List<TradeTaxCalculation> CalculateTax();
 }

@@ -1,32 +1,39 @@
 ﻿using CapitalGainCalculator.Model;
 using CapitalGainCalculator.Model.Interfaces;
 using CapitalGainCalculator.Parser;
+using CapitalGainCalculator.ViewModel.Messages;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using System.Collections.Generic;
+using CommunityToolkit.Mvvm.Messaging;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace CapitalGainCalculator.ViewModel;
 
-public class LoadAndStartViewModel : ObservableObject
+public partial class LoadAndStartViewModel : ObservableRecipient
 {
-    private readonly ICalculator _calculator;
+    private readonly ITradeCalculator _tradeCalculator;
+    private readonly IDividendCalculator _dividendCalculator;
     private readonly FileParseController _fileParseController;
-    private List<TradeTaxCalculation> _results = new();
-    public AsyncRelayCommand ReadFolderCommand { get; set; }
-    public AsyncRelayCommand ReadFilesCommand { get; set; }
-    public AsyncRelayCommand StartCalculationCommand { get; set; }
+    private readonly TaxEventLists _taxEventLists;
+    private readonly TradeCalculationResult _tradeCalculationResult;
+    private readonly DividendCalculationResult _dividendCalculationResult;
 
-    public LoadAndStartViewModel(ICalculator calculator, FileParseController fileParseController)
+    public LoadAndStartViewModel(FileParseController fileParseController, TaxEventLists taxEventLists, ITradeCalculator tradeCalculator,
+        TradeCalculationResult tradeCalculationResult, DividendCalculationResult dividendCalculationResult, IDividendCalculator dividendCalculator)
     {
         _fileParseController = fileParseController;
-        _calculator = calculator;
-        ReadFilesCommand = new(OnReadFiles);
-        ReadFolderCommand = new(OnReadFolder);
-        StartCalculationCommand = new(OnStartCalculation);
+        _taxEventLists = taxEventLists;
+        _tradeCalculator = tradeCalculator;
+        _dividendCalculator = dividendCalculator;
+        _tradeCalculationResult = tradeCalculationResult;
+        _dividendCalculationResult = dividendCalculationResult;
+
+        IsActive = true;
     }
 
+
+    [RelayCommand]
     public async Task OnReadFolder()
     {
         FolderBrowserDialog openFileDlg = new();
@@ -34,17 +41,21 @@ public class LoadAndStartViewModel : ObservableObject
         if (result == DialogResult.OK)
         {
             string path = openFileDlg.SelectedPath;
-            _calculator.AddTaxEvents(_fileParseController.ParseFolder(path));
+            _taxEventLists.AddData(_fileParseController.ParseFolder(path));
+            Messenger.Send<DataLoadedMessage>();
         }
     }
 
+    [RelayCommand]
     public async Task OnReadFiles()
     {
     }
 
+    [RelayCommand]
     public async Task OnStartCalculation()
     {
-        List<TradeTaxCalculation> results = await Task.Run(_calculator.CalculateTax);
-        _results = results;
+        _tradeCalculationResult.SetResult(await Task.Run(_tradeCalculator.CalculateTax));
+        _dividendCalculationResult.SetResult(await Task.Run(_dividendCalculator.CalculateTax));
+        Messenger.Send<CalculationFinishedMessage>();
     }
 }

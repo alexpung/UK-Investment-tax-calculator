@@ -5,6 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     xmlns:viewmodel="clr-namespace:CapitalGainCalculator.ViewModel"
+    Height="800"
     Background="{ui:ThemeResource ApplicationBackgroundBrush}"
     ExtendsContentIntoTitleBar="True"
     WindowBackdropType="Mica"
@@ -30,7 +31,7 @@
                 Grid.Column="0"
                 Footer="{Binding ViewModel.NavigationFooter, Mode=OneWay}"
                 Frame="{Binding ElementName=RootFrame, Mode=OneWay}"
-                Items="{Binding ViewModel.NavigationItems, Mode=OneWay}"/>
+                Items="{Binding ViewModel.NavigationItems, Mode=OneWay}" />
 
             <!--  Page display  -->
             <Border

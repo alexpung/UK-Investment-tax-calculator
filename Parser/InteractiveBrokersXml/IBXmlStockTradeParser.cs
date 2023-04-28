@@ -63,7 +63,7 @@ public class IBXmlStockTradeParser
         }
         if (element.GetAttribute("taxes") != "0")
         {
-            element.BuildDescribedMoney("taxes", "currency", "fxRateToBase", "Tax", true);
+            expenses.Add(element.BuildDescribedMoney("taxes", "currency", "fxRateToBase", "Tax", true));
         }
         return expenses;
     }
