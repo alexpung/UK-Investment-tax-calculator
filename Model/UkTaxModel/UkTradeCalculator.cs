@@ -37,7 +37,7 @@ public class UkTradeCalculator : ITradeCalculator
                                     select (Trade)taxEvent;
 
         var groupedTrade = from trade in trades
-                           group trade by new { trade.AssetName, trade.Date, trade.BuySell };
+                           group trade by new { trade.AssetName, trade.Date.Date, trade.BuySell };
         var groupedTradeCalculations = groupedTrade.Select(group => new TradeTaxCalculation(group)).ToList();
         return groupedTradeCalculations.GroupBy(TradeTaxCalculation => TradeTaxCalculation.TradeList.First().AssetName).ToDictionary(group => group.Key, group => group.ToList());
     }
