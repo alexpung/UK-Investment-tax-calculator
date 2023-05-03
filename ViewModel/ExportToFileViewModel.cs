@@ -37,7 +37,7 @@ public partial class ExportToFileViewModel : ObservableObject
         if (result == true)
         {
             string filename = saveFileDialog.FileName;
-            IEnumerable<DividendSummary> filteredDividendSummary = _dividendCalculationResult.DividendSummary.Where(dividend => _yearOptions.IsSelectedYear(dividend.TaxYear));
+            IEnumerable<DividendSummary> filteredDividendSummary = _dividendCalculationResult.DividendSummary.Where(dividend => _yearOptions.GetSelectedYears().Contains(dividend.TaxYear));
             System.IO.File.WriteAllText(filename, _dividendExportService.Export(filteredDividendSummary));
         }
     }
