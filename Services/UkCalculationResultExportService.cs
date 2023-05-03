@@ -40,7 +40,7 @@ public class UkCalculationResultExportService
     private string WriteTaxYearSummary(int year, TradeCalculationResult calculationResult)
     {
         StringBuilder output = new();
-        Func<TradeTaxCalculation, bool> filter = trade => _taxYear.ToTaxYear(trade.Date) == year;
+        IEnumerable<int> filter = new[] { year };
         output.AppendLine($"Summary for tax year {year}:");
         output.AppendLine($"Number of disposals: {calculationResult.NumberOfDisposals(filter)}");
         output.AppendLine($"Total disposal proceeds: {calculationResult.DisposalProceeds(filter):C0}");

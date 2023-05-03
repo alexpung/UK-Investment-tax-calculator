@@ -55,12 +55,14 @@ public partial class CalculationResultSummaryViewModel : ObservableRecipient, IR
     private void UpdateSummary()
     {
         if (_tradeCalculationResult.CalculatedTrade is null || Years is null) return;
-        Func<TradeTaxCalculation, bool> filterFunc = trade => Years.IsSelectedYear(_taxYear.ToTaxYear(trade.Date));
-        NumberOfDisposals = _tradeCalculationResult.NumberOfDisposals(filterFunc);
-        DisposalProceeds = _tradeCalculationResult.DisposalProceeds(filterFunc);
-        AllowableCosts = _tradeCalculationResult.AllowableCosts(filterFunc);
-        TotalGain = _tradeCalculationResult.TotalGain(filterFunc);
-        TotalLoss = _tradeCalculationResult.TotalLoss(filterFunc);
+        NumberOfDisposals = _tradeCalculationResult.NumberOfDisposals(Years.GetSelectedYears());
+        DisposalProceeds = _tradeCalculationResult.DisposalProceeds(Years.GetSelectedYears());
+        AllowableCosts = _tradeCalculationResult.AllowableCosts(Years.GetSelectedYears());
+        TotalGain = _tradeCalculationResult.TotalGain(Years.GetSelectedYears());
+        TotalLoss = _tradeCalculationResult.TotalLoss(Years.GetSelectedYears());
+        TotalDividends = _dividendCalculationResult.GetTotalDividend(Years.GetSelectedYears());
+        TotalForeignTaxPaid = _dividendCalculationResult.GetForeignTaxPaid(Years.GetSelectedYears());
+
     }
 
     private IEnumerable<int> GetSelectableYears()
