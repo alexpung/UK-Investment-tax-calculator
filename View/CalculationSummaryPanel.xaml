@@ -15,10 +15,26 @@
                 x:Name="SelectYearLabel"
                 Content="Select Tax Year : "
                 FontSize="20" />
-            <ComboBox
-                x:Name="TradeSummaryYearSelector"
-                ItemsSource="{Binding Years.Options, Mode=OneWay}"
-                SelectedItem="{Binding Years.SelectedYear, Mode=OneWayToSource}" SelectedIndex="0"/>
+            <ComboBox x:Name="TradeSummaryYearSelector" ItemsSource="{Binding Years.Options}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <CheckBox IsChecked="{Binding IsSelected}" />
+                            <TextBlock Text="{Binding Years}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+            <Button
+                x:Name="SelectAllYearBtn"
+                Margin="{Binding Mode=OneWay, Source={StaticResource ButtonMargin}}"
+                Command="{Binding Years.SelectAllYearsCommand}"
+                Content="Select All" />
+            <Button
+                x:Name="DeselectAllYearBtn"
+                Margin="{Binding Mode=OneWay, Source={StaticResource ButtonMargin}}"
+                Command="{Binding Years.DeSelectAllYearsCommand}"
+                Content="Deselect All" />
         </StackPanel>
         <Label
             x:Name="CalculationSummaryLabel"
@@ -32,22 +48,32 @@
         <Label
             x:Name="DisposalProceedsLabel"
             Content="{Binding DisposalProceeds}"
-            ContentStringFormat="Disposal Proceeds: {0:C2}"
+            ContentStringFormat="Disposal proceeds: {0:C2}"
             FontSize="14" />
         <Label
             x:Name="AllowableCostsLabel"
             Content="{Binding AllowableCosts}"
-            ContentStringFormat="Allowable Costs: {0:C2}"
+            ContentStringFormat="Allowable costs: {0:C2}"
             FontSize="14" />
         <Label
             x:Name="TotalGainLabel"
             Content="{Binding TotalGain}"
-            ContentStringFormat="Total Gain: {0:C2}"
+            ContentStringFormat="Total gain: {0:C2}"
             FontSize="14" />
         <Label
             x:Name="TotalLossLabel"
             Content="{Binding TotalLoss}"
-            ContentStringFormat="Total Loss: {0:C2}"
+            ContentStringFormat="Total loss: {0:C2}"
+            FontSize="14" />
+        <Label
+            x:Name="TotalDividendLabel"
+            Content="{Binding TotalDividends}"
+            ContentStringFormat="Total dividends: {0:C2}"
+            FontSize="14" />
+        <Label
+            x:Name="TotalForeignTaxPaidLabel"
+            Content="{Binding TotalForeignTaxPaid}"
+            ContentStringFormat="Total foreign tax paid: {0:C2}"
             FontSize="14" />
     </StackPanel>
 </UserControl>

@@ -1,37 +1,59 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CapitalGainCalculator.ViewModel.Messages;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace CapitalGainCalculator.ViewModel.Options;
 
 public partial class YearOptions : ObservableObject
 {
-    public ObservableCollection<string> Options { get; set; }
-    private readonly string _wildOption = "All Years";
-    [ObservableProperty]
-    private string _selectedYear;
+    public ObservableCollection<DropdownYearItems> Options { get; set; } = new();
 
-    public YearOptions() : base()
+    [RelayCommand]
+    public void SelectAllYears()
     {
-        Options = new ObservableCollection<string> { _wildOption };
-        SelectedYear = Options[0];
+        foreach (var option in Options)
+        {
+            option.IsSelected = true;
+        }
+    }
+
+    [RelayCommand]
+    public void DeSelectAllYears()
+    {
+        foreach (var option in Options)
+        {
+            option.IsSelected = false;
+        }
     }
 
     public void SetYears(IEnumerable<int> years)
     {
         Options.Clear();
-        Options.Add(_wildOption);
-        foreach (int year in years) Options.Add(year.ToString());
-        SelectedYear = Options[0];
+        foreach (int year in years.OrderByDescending(i => i))
+        {
+            Options.Add(new DropdownYearItems() { Years = year, IsSelected = false });
+        }
     }
 
-    /// <summary>
-    /// Check if a certain year is Selected. Always true if "All Years" selected.
-    /// </summary>
-    public bool IsSelectedYear(int? year) => SelectedYear switch
-    {
-        string a when a.Equals(_wildOption) => true,
-        null => false,
-        _ => int.Parse(SelectedYear) == year,
-    };
+    public List<int> GetSelectedYears() => Options.Where(i => i.IsSelected).Select(i => i.Years).ToList();
 }
+
+public partial class DropdownYearItems : ObservableRecipient
+{
+    public int Years { get; set; }
+    private bool _isSelected;
+    public bool IsSelected
+    {
+        get { return _isSelected; }
+        set
+        {
+            SetProperty(ref _isSelected, value);
+            Messenger.Send<YearSelectionChangedMessage>();
+        }
+    }
+}
+

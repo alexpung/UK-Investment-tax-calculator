@@ -38,15 +38,15 @@ public partial class CalculationResultSummaryViewModel : ObservableRecipient, IR
         IsActive = true;
     }
 
-    private void Years_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
-    {
-        if (Years.SelectedYear is not null)
+    public void Receive(CalculationFinishedMessage message)
         {
+        Years.SetYears(GetSelectableYears());
+        Years.SelectAllYears();
             UpdateSummary();
         }
     }
 
-    public void Receive(CalculationFinishedMessage message)
+    public void Receive(YearSelectionChangedMessage message)
     {
         UpdateSummary();
         Years.SetYears(GetSelectableYears());
