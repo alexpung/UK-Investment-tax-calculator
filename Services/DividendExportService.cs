@@ -9,9 +9,16 @@ namespace CapitalGainCalculator.Services;
 
 public class DividendExportService
 {
-    public string Export(IEnumerable<DividendSummary> dividendSummaries)
+    private readonly DividendCalculationResult _result;
+
+    public DividendExportService(DividendCalculationResult dividendCalculationResult)
     {
-        dividendSummaries = dividendSummaries.OrderByDescending(i => i.TaxYear);
+        _result = dividendCalculationResult;
+    }
+
+    public string Export(IEnumerable<int> yearsToExport)
+    {
+        IEnumerable<DividendSummary> dividendSummaries = _result.DividendSummary.Where(dividend => yearsToExport.Contains(dividend.TaxYear)).OrderByDescending(i => i.TaxYear);
         StringBuilder output = new();
         foreach (DividendSummary dividendSummary in dividendSummaries)
         {

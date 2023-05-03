@@ -12,21 +12,22 @@ public class UkCalculationResultExportService
 {
     private readonly ITaxYear _taxYear;
     private readonly UkSection104Pools _section104Pools;
+    private readonly TradeCalculationResult _tradeCalculationResult;
 
-    public UkCalculationResultExportService(ITaxYear taxYear, UkSection104Pools ukSection104Pools)
+    public UkCalculationResultExportService(ITaxYear taxYear, UkSection104Pools ukSection104Pools, TradeCalculationResult tradeCalculationResult)
     {
         _taxYear = taxYear;
         _section104Pools = ukSection104Pools;
+        _tradeCalculationResult = tradeCalculationResult;
     }
 
-    public string Export(TradeCalculationResult calculationResult)
+    public string Export(IEnumerable<int> yearsToExport)
     {
-        IEnumerable<TradeTaxCalculation> tradeTaxCalculations = calculationResult.CalculatedTrade;
+        IEnumerable<TradeTaxCalculation> tradeTaxCalculations = _tradeCalculationResult.CalculatedTrade;
         StringBuilder output = new();
-        IEnumerable<int> availableYears = tradeTaxCalculations.Select(i => _taxYear.ToTaxYear(i.Date)).Distinct().OrderByDescending(i => i);
-        foreach (int year in availableYears)
+        foreach (int year in yearsToExport.OrderByDescending(i => i))
         {
-            output.Append(WriteTaxYearSummary(year, calculationResult));
+            output.Append(WriteTaxYearSummary(year, _tradeCalculationResult));
             IEnumerable<TradeTaxCalculation> yearFilteredTradeCalculations = tradeTaxCalculations.Where(i => _taxYear.ToTaxYear(i.Date) == year && i.BuySell == Enum.TradeType.SELL)
                                                                                                  .OrderBy(i => i.Date);
             output.AppendLine();
