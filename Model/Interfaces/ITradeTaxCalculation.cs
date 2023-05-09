@@ -1,4 +1,5 @@
 ﻿using CapitalGainCalculator.Enum;
+using System;
 using System.Collections.Generic;
 
 namespace CapitalGainCalculator.Model.Interfaces;
@@ -13,6 +14,10 @@ public interface ITradeTaxCalculation
     List<Trade> TradeList { get; init; }
     decimal UnmatchedNetAmount { get; }
     decimal UnmatchedQty { get; }
+    DateTime Date { get; }
+    decimal TotalProceeds { get; }
+    decimal TotalAllowableCost { get; }
+    decimal Gain { get; }
 
     (decimal matchedQty, decimal matchedValue) MatchAll();
     (decimal matchedQty, decimal matchedValue) MatchQty(decimal demandedQty);
