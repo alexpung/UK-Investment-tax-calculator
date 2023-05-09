@@ -14,14 +14,14 @@ public class TradeCalculationResult
         _taxYear = taxYear;
     }
 
-    public List<TradeTaxCalculation> CalculatedTrade { get; set; } = new();
+    public List<ITradeTaxCalculation> CalculatedTrade { get; set; } = new();
 
-    public void SetResult(List<TradeTaxCalculation> tradeTaxCalculations)
+    public void SetResult(List<ITradeTaxCalculation> tradeTaxCalculations)
     {
         CalculatedTrade = tradeTaxCalculations;
     }
 
-    private bool IsTradeInSelectedTaxYear(IEnumerable<int> selectedYears, TradeTaxCalculation taxCalculation)
+    private bool IsTradeInSelectedTaxYear(IEnumerable<int> selectedYears, ITradeTaxCalculation taxCalculation)
     {
         return selectedYears.Contains(_taxYear.ToTaxYear(taxCalculation.Date));
     }
