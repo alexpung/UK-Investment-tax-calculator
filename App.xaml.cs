@@ -37,6 +37,7 @@ public partial class App
             services.AddSingleton<DividendExportService>();
             services.AddSingleton<UkCalculationResultExportService>();
             services.AddSingleton<SaveTextFileWithDialogService>();
+            services.AddSingleton<UkSection104ExportService>();
 
             //Models
             TaxEventLists taxEventLists = new();

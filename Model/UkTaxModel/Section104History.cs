@@ -5,6 +5,7 @@ namespace CapitalGainCalculator.Model.UkTaxModel;
 public class Section104History
 {
     public ITradeTaxCalculation? TradeTaxCalculation { get; set; }
+    public DateTime Date { get; set; }
     public decimal OldQuantity { get; set; }
     public decimal OldValue { get; set; }
     public decimal QuantityChange { get; set; }
@@ -15,15 +16,13 @@ public class Section104History
     {
         return new Section104History
         {
+            Date = tradeTaxCalculation.Date,
             QuantityChange = quantityChange,
             ValueChange = valueChange,
             TradeTaxCalculation = tradeTaxCalculation,
             OldQuantity = oldQuantity,
             OldValue = oldValue,
-            Explanation = $"{quantityChange} units worth {valueChange:C2} added to Section 104 from the following trades.\n" +
-                            $"{string.Join("\n", tradeTaxCalculation.TradeList)}\n" +
-                            $"Section 104 quantity changes from {oldQuantity} to {oldQuantity + quantityChange}\n" +
-                            $"Section 104 value changes from {oldValue:C2} to {oldValue + valueChange:C2}\n"
+            Explanation = $"{tradeTaxCalculation.TradeList}"
         };
     }
 
@@ -31,15 +30,13 @@ public class Section104History
     {
         return new Section104History
         {
+            Date = tradeTaxCalculation.Date,
             QuantityChange = quantityChange,
             ValueChange = valueChange,
             TradeTaxCalculation = tradeTaxCalculation,
             OldQuantity = oldQuantity,
             OldValue = oldValue,
-            Explanation = $"{quantityChange * -1} units with value of {valueChange * -1:C2} removed to Section 104 from the following trades.\n" +
-                            $"{string.Join("\n", tradeTaxCalculation.TradeList)}\n" +
-                            $"Section 104 quantity changes from {oldQuantity} to {oldQuantity + quantityChange}\n" +
-                            $"Section 104 value changes from {oldValue:C2} to {oldValue + valueChange:C2}\n"
+            Explanation = $"{tradeTaxCalculation.TradeList}"
         };
     }
 
@@ -48,8 +45,9 @@ public class Section104History
         return new Section104History
         {
             OldQuantity = oldQuantity,
+            Date = date,
             QuantityChange = newQuantity - oldQuantity,
-            Explanation = $"Share adjustment on {date.ToShortDateString()} due to corporate action. Quantity of Section104 pool changes from {oldQuantity} to {newQuantity}\n"
+            Explanation = $"Share adjustment on {date.ToShortDateString()} due to corporate action."
         };
     }
 }

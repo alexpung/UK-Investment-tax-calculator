@@ -15,8 +15,21 @@
     <StackPanel>
         <Label x:Name="ExportToFileLabel" FontSize="20">Export Data to file</Label>
         <StackPanel x:Name="ExportButtonsStackPanel" Orientation="Horizontal">
-            <ui:Button Margin="{DynamicResource ButtonMargin}" x:Name="ExportDividendButton" Command="{Binding ExportDividendToFileCommand}" Content="Export Dividend" />
-            <ui:Button Margin="{DynamicResource ButtonMargin}" x:Name="ExportTradeButton" Command="{Binding ExportTradesToFileCommand}" Content="Export Trade" />
+            <ui:Button
+                x:Name="ExportDividendButton"
+                Margin="{DynamicResource ButtonMargin}"
+                Command="{Binding ExportDividendToFileCommand}"
+                Content="Export Dividend" />
+            <ui:Button
+                x:Name="ExportTradeButton"
+                Margin="{DynamicResource ButtonMargin}"
+                Command="{Binding ExportTradesToFileCommand}"
+                Content="Export Trade" />
+            <ui:Button
+                x:Name="ExportSection104Button"
+                Margin="{DynamicResource ButtonMargin}"
+                Command="{Binding ExportSection104ToFileCommand}"
+                Content="Export Section 104" />
         </StackPanel>
     </StackPanel>
 </UserControl>
