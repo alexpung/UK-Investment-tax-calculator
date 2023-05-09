@@ -36,19 +36,33 @@ public partial class LoadAndStartViewModel : ObservableRecipient
     [RelayCommand]
     public async Task OnReadFolder()
     {
-        FolderBrowserDialog openFileDlg = new();
-        var result = openFileDlg.ShowDialog();
+        FolderBrowserDialog openFolderDialog = new();
+        var result = openFolderDialog.ShowDialog();
         if (result == DialogResult.OK)
         {
-            string path = openFileDlg.SelectedPath;
-            _taxEventLists.AddData(_fileParseController.ParseFolder(path));
-            Messenger.Send<DataLoadedMessage>();
+            await Task.Run(() =>
+            {
+                _taxEventLists.AddData(_fileParseController.ParseFolder(openFolderDialog.SelectedPath));
+                Messenger.Send<DataLoadedMessage>();
+            });
         }
     }
 
     [RelayCommand]
     public async Task OnReadFiles()
     {
+        OpenFileDialog openFileDialog = new()
+        {
+            Multiselect = true
+        };
+        if (openFileDialog.ShowDialog() == DialogResult.OK)
+        {
+            await Task.Run(() =>
+            {
+                _taxEventLists.AddData(_fileParseController.ParseFiles(openFileDialog.FileNames));
+                Messenger.Send<DataLoadedMessage>();
+            });
+        }
     }
 
     [RelayCommand]

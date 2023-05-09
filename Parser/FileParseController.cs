@@ -8,15 +8,26 @@ namespace CapitalGainCalculator.Parser;
 public class FileParseController
 {
     private readonly IEnumerable<ITaxEventFileParser> _taxEventFileParsers;
+
     public FileParseController(IEnumerable<ITaxEventFileParser> taxEventFileParsers)
     {
         _taxEventFileParsers = taxEventFileParsers;
     }
+
     public TaxEventLists ParseFolder(string folderPath)
     {
+        return ReadFiles(Directory.GetFiles(folderPath));
+    }
+
+    public TaxEventLists ParseFiles(IEnumerable<string> filenames)
+    {
+        return ReadFiles(filenames);
+    }
+
+    private TaxEventLists ReadFiles(IEnumerable<string> filenames)
+    {
         TaxEventLists taxEvents = new();
-        string[] fileEntries = Directory.GetFiles(folderPath);
-        foreach (string fileName in fileEntries)
+        foreach (string fileName in filenames)
         {
             var parser = _taxEventFileParsers.FirstOrDefault(parser => parser.CheckFileValidity(fileName));
             if (parser != null)
