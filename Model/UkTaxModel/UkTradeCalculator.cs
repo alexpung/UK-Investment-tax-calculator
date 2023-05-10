@@ -17,11 +17,11 @@ public class UkTradeCalculator : ITradeCalculator
         _tradeList = tradeList;
     }
 
-    public List<TradeTaxCalculation> CalculateTax()
+    public List<ITradeTaxCalculation> CalculateTax()
     {
         _setion104Pools.Clear();
-        Dictionary<string, List<TradeTaxCalculation>> tradeTaxCalculations = GroupTrade(_tradeList.Trades);
-        foreach (KeyValuePair<string, List<TradeTaxCalculation>> assetGroup in tradeTaxCalculations)
+        Dictionary<string, List<ITradeTaxCalculation>> tradeTaxCalculations = GroupTrade(_tradeList.Trades);
+        foreach (KeyValuePair<string, List<ITradeTaxCalculation>> assetGroup in tradeTaxCalculations)
         {
             ApplySameDayMatchingRule(assetGroup.Value);
             ApplyBedAndBreakfastMathingRule(assetGroup.Value);
@@ -30,7 +30,7 @@ public class UkTradeCalculator : ITradeCalculator
         return tradeTaxCalculations.Values.SelectMany(i => i).ToList();
     }
 
-    private static Dictionary<string, List<TradeTaxCalculation>> GroupTrade(IEnumerable<TaxEvent> taxEvents)
+    private static Dictionary<string, List<ITradeTaxCalculation>> GroupTrade(IEnumerable<TaxEvent> taxEvents)
     {
         IEnumerable<Trade> trades = from taxEvent in taxEvents
                                     where taxEvent is Trade
@@ -38,13 +38,13 @@ public class UkTradeCalculator : ITradeCalculator
 
         var groupedTrade = from trade in trades
                            group trade by new { trade.AssetName, trade.Date.Date, trade.BuySell };
-        var groupedTradeCalculations = groupedTrade.Select(group => new TradeTaxCalculation(group)).ToList();
+        IEnumerable<ITradeTaxCalculation> groupedTradeCalculations = groupedTrade.Select(group => new TradeTaxCalculation(group)).ToList();
         return groupedTradeCalculations.GroupBy(TradeTaxCalculation => TradeTaxCalculation.TradeList.First().AssetName).ToDictionary(group => group.Key, group => group.ToList());
     }
 
-    private void ApplySameDayMatchingRule(IList<TradeTaxCalculation> tradeTaxCalculations)
+    private void ApplySameDayMatchingRule(IList<ITradeTaxCalculation> tradeTaxCalculations)
     {
-        List<TradeTaxCalculation> sortedList = tradeTaxCalculations.OrderBy(trade => trade.Date).ToList();
+        List<ITradeTaxCalculation> sortedList = tradeTaxCalculations.OrderBy(trade => trade.Date).ToList();
         for (int i = 0; i < sortedList.Count - 1; i++)
         {
             if (sortedList[i].Date == sortedList[i + 1].Date)
@@ -55,9 +55,9 @@ public class UkTradeCalculator : ITradeCalculator
         }
     }
 
-    private void ApplyBedAndBreakfastMathingRule(IList<TradeTaxCalculation> tradeTaxCalculations)
+    private void ApplyBedAndBreakfastMathingRule(IList<ITradeTaxCalculation> tradeTaxCalculations)
     {
-        List<TradeTaxCalculation> sortedList = tradeTaxCalculations.OrderBy(trade => trade.Date).ToList();
+        List<ITradeTaxCalculation> sortedList = tradeTaxCalculations.OrderBy(trade => trade.Date).ToList();
         for (int i = 0; i < sortedList.Count - 1; i++)
         {
             if (sortedList[i].BuySell == TradeType.BUY)
@@ -83,13 +83,13 @@ public class UkTradeCalculator : ITradeCalculator
         return _tradeList.CorporateActions.OfType<StockSplit>().Where(i => i.Date > fromDate && i.Date <= toDate).ToList();
     }
 
-    private void MatchTrade(TradeTaxCalculation trade1, TradeTaxCalculation trade2, UkMatchType ukMatchType)
+    private void MatchTrade(ITradeTaxCalculation trade1, ITradeTaxCalculation trade2, UkMatchType ukMatchType)
     {
         if (trade1.CalculationCompleted || trade2.CalculationCompleted) return;
         decimal matchQuantity = Math.Min(trade1.UnmatchedQty, trade2.UnmatchedQty);
         decimal matchQuantityAfterActions = matchQuantity;
-        TradeTaxCalculation earlierTrade;
-        TradeTaxCalculation laterTrade;
+        ITradeTaxCalculation earlierTrade;
+        ITradeTaxCalculation laterTrade;
         if (trade1.Date <= trade2.Date)
         {
             earlierTrade = trade1;
@@ -130,13 +130,13 @@ public class UkTradeCalculator : ITradeCalculator
         });
     }
 
-    private void ProcessTradeInChronologicalOrder(List<TradeTaxCalculation> tradeTaxCalculations, string assetName)
+    private void ProcessTradeInChronologicalOrder(List<ITradeTaxCalculation> tradeTaxCalculations, string assetName)
     {
-        List<TradeTaxCalculation> sortedList = tradeTaxCalculations.OrderBy(trade => trade.Date).ToList();
-        List<TradeTaxCalculation> unmatchedDisposal = new();
+        List<ITradeTaxCalculation> sortedList = tradeTaxCalculations.OrderBy(trade => trade.Date).ToList();
+        List<ITradeTaxCalculation> unmatchedDisposal = new();
         UkSection104 section104 = _setion104Pools.GetExistingOrInitialise(assetName);
         List<CorporateAction> corporateActions = _tradeList.CorporateActions.Where(i => i.AssetName == assetName).OrderBy(i => i.Date).ToList();
-        foreach (TradeTaxCalculation trade in sortedList)
+        foreach (ITradeTaxCalculation trade in sortedList)
         {
             if (trade.CalculationCompleted) continue;
             if (corporateActions.Any())

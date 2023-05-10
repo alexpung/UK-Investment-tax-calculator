@@ -23,12 +23,12 @@ public class UkCalculationResultExportService
 
     public string Export(IEnumerable<int> yearsToExport)
     {
-        IEnumerable<TradeTaxCalculation> tradeTaxCalculations = _tradeCalculationResult.CalculatedTrade;
+        IEnumerable<ITradeTaxCalculation> tradeTaxCalculations = _tradeCalculationResult.CalculatedTrade;
         StringBuilder output = new();
         foreach (int year in yearsToExport.OrderByDescending(i => i))
         {
             output.Append(WriteTaxYearSummary(year, _tradeCalculationResult));
-            IEnumerable<TradeTaxCalculation> yearFilteredTradeCalculations = tradeTaxCalculations.Where(i => _taxYear.ToTaxYear(i.Date) == year && i.BuySell == Enum.TradeType.SELL)
+            IEnumerable<ITradeTaxCalculation> yearFilteredTradeCalculations = tradeTaxCalculations.Where(i => _taxYear.ToTaxYear(i.Date) == year && i.BuySell == Enum.TradeType.SELL)
                                                                                                  .OrderBy(i => i.Date);
             output.AppendLine();
             output.Append(WriteDisposalDetails(yearFilteredTradeCalculations));
@@ -51,7 +51,7 @@ public class UkCalculationResultExportService
         return output.ToString();
     }
 
-    private string WriteDisposalDetails(IEnumerable<TradeTaxCalculation> tradeTaxCalculations)
+    private string WriteDisposalDetails(IEnumerable<ITradeTaxCalculation> tradeTaxCalculations)
     {
         StringBuilder output = new StringBuilder();
         int DisposalCount = 1;
@@ -76,20 +76,20 @@ public class UkCalculationResultExportService
         return output.ToString();
     }
 
-    private string UnmatchedDescription(TradeTaxCalculation tradeTaxCalculation) => tradeTaxCalculation.UnmatchedQty switch
+    private string UnmatchedDescription(ITradeTaxCalculation tradeTaxCalculation) => tradeTaxCalculation.UnmatchedQty switch
     {
         0 => "All units of the disposals are matched with acquitions",
         > 0 => $"{tradeTaxCalculation.UnmatchedQty} units of disposals are not matched (short sale).",
         _ => throw new NotImplementedException()
     };
 
-    private string TradeMatchDispatcher(TradeMatch tradeMatch, TradeTaxCalculation calculation) => tradeMatch.TradeMatchType switch
+    private string TradeMatchDispatcher(TradeMatch tradeMatch, ITradeTaxCalculation calculation) => tradeMatch.TradeMatchType switch
     {
         UkMatchType.SECTION_104 => PrintSection104Match(tradeMatch, calculation),
         _ => PrintTradeMatch(tradeMatch)
     };
 
-    private string PrintSection104Match(TradeMatch tradeMatch, TradeTaxCalculation calculation)
+    private string PrintSection104Match(TradeMatch tradeMatch, ITradeTaxCalculation calculation)
     {
         StringBuilder output = new StringBuilder();
         List<Section104History> section104Histories = _section104Pools.GetHistory(calculation);

@@ -4,5 +4,5 @@ namespace CapitalGainCalculator.Model.Interfaces;
 
 public interface ITradeCalculator
 {
-    public List<TradeTaxCalculation> CalculateTax();
+    public List<ITradeTaxCalculation> CalculateTax();
 }
