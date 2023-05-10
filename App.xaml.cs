@@ -68,6 +68,8 @@ public partial class App
             services.AddScoped<CalculationResultSummaryViewModel>();
             services.AddScoped<ExportToFilePanel>();
             services.AddScoped<ExportToFileViewModel>();
+            services.AddScoped<AboutViewModel>();
+            services.AddScoped<AboutPage>();
 
             //Application logic
             services.AddSingleton<IBParseController>();

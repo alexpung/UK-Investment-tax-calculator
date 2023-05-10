@@ -23,4 +23,10 @@
     <PackageReference Include="WPF-UI" Version="2.0.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="View\Resources\AuthorNotice.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
