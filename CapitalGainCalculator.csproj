@@ -7,6 +7,14 @@
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
     <PlatformTarget>x64</PlatformTarget>
+    <StartupObject>CapitalGainCalculator.App</StartupObject>
+    <AssemblyVersion>0.0.1.0</AssemblyVersion>
+    <Title>UK investment tax calculator</Title>
+    <Authors>Ka Wing Pun</Authors>
+    <Copyright>Copyright (c) 2023 Ka Wing Pun</Copyright>
+    <PackageProjectUrl>https://github.com/alexpung/CapitalGainTaxCalculator</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <NeutralLanguage>en-GB</NeutralLanguage>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -32,6 +40,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
     <None Update="View\Resources\AuthorNotice.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
