@@ -87,7 +87,7 @@ public record UkSection104
         {
             (qty, disposalValue) = tradeTaxCalculation.MatchQty(Quantity);
         }
-        acqisitionValue = qty / Quantity * ValueInBaseCurrency;
+        acqisitionValue = qty * ValueInBaseCurrency / Quantity;
         tradeTaxCalculation.MatchHistory.Add(CreateUkMatchHistory(qty, acqisitionValue, disposalValue));
         Section104HistoryList.Add(Section104History.RemoveFromSection104(tradeTaxCalculation, qty * -1, acqisitionValue * -1, Quantity, ValueInBaseCurrency));
         Quantity -= qty;
