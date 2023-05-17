@@ -23,7 +23,7 @@ public class FileParseControllerTest
 
 
     [Fact]
-    public void TestReadingNoValidFileInFolder()
+    public void TestReadingNoValidFileInFolderShouldHaveNothing()
     {
         Mock<ITaxEventFileParser> mock = new();
         mock.Setup(f => f.ParseFile(It.IsAny<string>())).Returns(_mockResult);

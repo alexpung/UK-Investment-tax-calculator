@@ -1,47 +1,67 @@
 ﻿using CapitalGainCalculator.Model;
 using CapitalGainCalculator.Parser.InteractiveBrokersXml;
 using Shouldly;
+using System.Collections;
 
 namespace CapitalGainCalculator.Test;
 
 public class IBXmlParseControllerTest
 {
-    private readonly IBParseController _parseController;
 
-    public IBXmlParseControllerTest()
-    {
-        AssetTypeToLoadSetting assetTypeToLoadSetting = new()
-        {
-            LoadStocks = true,
-            LoadOptions = false,
-            LoadFutures = false,
-            LoadDividends = true,
-            LoadFx = false
-        };
-        _parseController = new(assetTypeToLoadSetting);
-    }
 
     [Fact]
     public void TestCheckingInvalidIBXml()
     {
         string testFilePath = @".\Test\Resource\InvalidFile.xml";
-        _parseController.CheckFileValidity(testFilePath).ShouldBeFalse();
+        IBParseController iBParseController = new(new AssetTypeToLoadSetting());
+        iBParseController.CheckFileValidity(testFilePath).ShouldBeFalse();
     }
 
     [Fact]
     public void TestCheckingValidIBXml()
     {
         string testFilePath = @".\Test\Resource\TaxExample.xml";
-        _parseController.CheckFileValidity(testFilePath).ShouldBeTrue();
+        IBParseController iBParseController = new(new AssetTypeToLoadSetting());
+        iBParseController.CheckFileValidity(testFilePath).ShouldBeTrue();
     }
 
-    [Fact]
-    public void TestParseValidIBXml()
+    [Theory]
+    [ClassData(typeof(AssetTypeToLoadSettingTestData))]
+    public void TestParseValidIBXml(AssetTypeToLoadSetting assetTypeToLoadSetting)
     {
         string testFilePath = @".\Test\Resource\TaxExample.xml";
-        TaxEventLists results = _parseController.ParseFile(testFilePath);
-        results.Dividends.Count.ShouldBe(47);
-        results.CorporateActions.Count.ShouldBe(2);
-        results.Trades.Count.ShouldBe(58);
+        IBParseController iBParseController = new(assetTypeToLoadSetting);
+        TaxEventLists results = iBParseController.ParseFile(testFilePath);
+        if (assetTypeToLoadSetting.LoadStocks)
+        {
+            results.Trades.Count.ShouldBe(58);
+            results.CorporateActions.Count.ShouldBe(2);
+        }
+        else
+        {
+            results.Trades.Count.ShouldBe(0);
+            results.CorporateActions.Count.ShouldBe(0);
+        }
+        if (assetTypeToLoadSetting.LoadDividends)
+        {
+            results.Dividends.Count.ShouldBe(47);
+        }
+        else results.Dividends.Count.ShouldBe(0);
     }
+}
+
+public class AssetTypeToLoadSettingTestData : IEnumerable<object[]>
+{
+    public IEnumerator<object[]> GetEnumerator()
+    {
+        yield return new object[] { new AssetTypeToLoadSetting() { LoadStocks = true, LoadDividends = true, LoadFutures = true, LoadFx = true, LoadOptions = true } };
+        yield return new object[] { new AssetTypeToLoadSetting() { LoadStocks = true, LoadDividends = false, LoadFutures = false, LoadFx = false, LoadOptions = false } };
+        yield return new object[] { new AssetTypeToLoadSetting() { LoadStocks = false, LoadDividends = true, LoadFutures = false, LoadFx = false, LoadOptions = false } };
+        yield return new object[] { new AssetTypeToLoadSetting() { LoadStocks = false, LoadDividends = false, LoadFutures = true, LoadFx = false, LoadOptions = false } };
+        yield return new object[] { new AssetTypeToLoadSetting() { LoadStocks = false, LoadDividends = false, LoadFutures = false, LoadFx = true, LoadOptions = false } };
+        yield return new object[] { new AssetTypeToLoadSetting() { LoadStocks = false, LoadDividends = false, LoadFutures = false, LoadFx = false, LoadOptions = true } };
+        yield return new object[] { new AssetTypeToLoadSetting() { LoadStocks = false, LoadDividends = true, LoadFutures = true, LoadFx = true, LoadOptions = true } };
+    }
+
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }

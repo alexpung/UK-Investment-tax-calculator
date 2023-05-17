@@ -1,5 +1,4 @@
 ﻿using CapitalGainCalculator.Model;
-using CapitalGainCalculator.Model.UkTaxModel;
 using CapitalGainCalculator.Parser;
 using CapitalGainCalculator.Parser.InteractiveBrokersXml;
 
@@ -15,8 +14,8 @@ public class UkTradeCalculatorTest
         };
         FileParseController fileParseController = new(taxEventFileParsers);
         TaxEventLists taxEventLists = fileParseController.ParseFolder("C:\\Users\\Alex Pun\\Desktop\\IB statements\\IB xml cash");
-        UkTradeCalculator ukTradeCalculator = new();
-        ukTradeCalculator.AddTaxEvents(taxEventLists);
-        List<TradeTaxCalculation> results = ukTradeCalculator.CalculateTax();
+        //UkTradeCalculator ukTradeCalculator = new();
+        //ukTradeCalculator.AddTaxEvents(taxEventLists);
+        //List<TradeTaxCalculation> results = ukTradeCalculator.CalculateTax();
     }
 }
