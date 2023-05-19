@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CapitalGainCalculator.csproj" />
+    <ProjectReference Include="..\BlazorApp-Investment Tax Calculator\BlazorApp-Investment Tax Calculator.csproj" />
   </ItemGroup>
 
   <ItemGroup>

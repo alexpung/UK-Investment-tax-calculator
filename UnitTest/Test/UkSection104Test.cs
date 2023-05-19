@@ -1,7 +1,7 @@
-﻿using CapitalGainCalculator.Enum;
-using CapitalGainCalculator.Model;
-using CapitalGainCalculator.Model.Interfaces;
-using CapitalGainCalculator.Model.UkTaxModel;
+﻿using Enum;
+using Model;
+using Model.Interfaces;
+using Model.UkTaxModel;
 using Moq;
 using Shouldly;
 using UnitTest;

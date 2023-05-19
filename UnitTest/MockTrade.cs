@@ -1,6 +1,6 @@
-﻿using CapitalGainCalculator.Enum;
-using CapitalGainCalculator.Model;
-using CapitalGainCalculator.Model.Interfaces;
+﻿using Enum;
+using Model;
+using Model.Interfaces;
 using Moq;
 
 namespace UnitTest;
