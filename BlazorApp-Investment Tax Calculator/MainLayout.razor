@@ -1,5 +1,31 @@
 ﻿@inherits LayoutComponentBase
+@using BlazorApp_Investment_Tax_Calculator.Pages
 
-<main>
-    @Body
-</main>
+<div class="page">
+    <div class="grid-container">
+        <div class="sidebar">
+            <NavMenu />
+        </div>
+        <main class="content" >
+            @Body
+        </main>
+    </div>
+</div>
+
+<style>
+    .grid-container {
+        display: grid;
+        grid-template-rows: fit-content auto;
+        grid-template-columns: fit-content auto;
+        grid-template-areas: 'header  header '
+                             'sidebar content';
+    }
+
+    .sidebar {
+        grid-area: sidebar;
+    }
+
+    .content {
+        grid-area: content;
+    }
+</style>

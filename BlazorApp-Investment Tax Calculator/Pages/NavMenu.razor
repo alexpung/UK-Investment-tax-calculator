@@ -1,0 +1,39 @@
+﻿@using Syncfusion.Blazor.Navigations
+@using Syncfusion.Blazor.Buttons
+@using Syncfusion.Blazor.Inputs
+@using Syncfusion.Blazor.Lists
+@inject NavigationManager Navigation
+
+
+<SfSidebar Width="220px">
+    <ChildContent>
+        <SfListView DataSource="@List" TValue="listData" CssClass="e-template-list" ShowIcon="true">
+            <ListViewFieldSettings TValue="listData" Id="Id" Text="Text" IconCss="IconCss"></ListViewFieldSettings>
+            <ListViewEvents TValue="listData" Clicked="OnSelect"></ListViewEvents>
+        </SfListView>
+    </ChildContent>
+</SfSidebar>
+
+@code {
+    // Specify the value of ListView component DataSource property.
+    public List<listData> List = new List<listData>
+    {
+        new listData {Id="1", Text = "Home", IconCss = "sb-icons icon-grid e-sb-icon control-icon", PageAddress = "/"},
+        new listData {Id="2",Text = "Import/Export", IconCss = "sb-icons icon-chart e-sb-icon control-icon", PageAddress = "/MainCalculatorPage"},
+        new listData {Id="3",Text = "Trade Data", IconCss = "sb-icons icon-datepicker e-sb-icon control-icon"},
+        new listData {Id="4", Text = "Dividend Data", IconCss = "sb-icons icon-dialog e-sb-icon control-icon"},
+        new listData {Id="5", Text = "Add missing trade", IconCss = "sb-icons icon-dropdownlist e-sb-icon control-icon"}
+    };
+    public class listData
+    {
+        public string Id { get; set; }
+        public string Text { get; set; }
+        public string IconCss { get; set; }
+        public string PageAddress { get; set; }
+    }
+    // Specifies the event handler for Clicked event in ListView component.
+    public void OnSelect(Syncfusion.Blazor.Lists.ClickEventArgs<listData> args)
+    {
+        Navigation.NavigateTo(args.ItemData.PageAddress);
+    }
+}
