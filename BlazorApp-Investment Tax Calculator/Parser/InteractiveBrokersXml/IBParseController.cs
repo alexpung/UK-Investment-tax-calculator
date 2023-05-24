@@ -10,13 +10,13 @@ public class IBParseController : ITaxEventFileParser
     {
         _assetTypeToLoadSetting = assetTypeToLoadSetting;
     }
-    public TaxEventLists ParseFile(string content)
+    public TaxEventLists ParseFile(string data)
     {
-        TaxEventLists result = new TaxEventLists();
-        IBXmlDividendParser dividendParser = new IBXmlDividendParser();
-        IBXmlStockSplitParser stockSplitParser = new IBXmlStockSplitParser();
-        IBXmlStockTradeParser stockTradeParser = new IBXmlStockTradeParser();
-        XElement? xml = XDocument.Parse(content).Root;
+        TaxEventLists result = new();
+        IBXmlDividendParser dividendParser = new();
+        IBXmlStockSplitParser stockSplitParser = new();
+        IBXmlStockTradeParser stockTradeParser = new();
+        XElement? xml = XDocument.Parse(data).Root;
         if (xml is not null)
         {
             if (_assetTypeToLoadSetting.LoadDividends) result.Dividends.AddRange(dividendParser.ParseXml(xml));
@@ -26,9 +26,10 @@ public class IBParseController : ITaxEventFileParser
         return result;
     }
 
-    public bool CheckFileValidity(string content)
+    public bool CheckFileValidity(string data, string contentType)
     {
-        XElement? xml = XDocument.Parse(content).Root;
+        if (contentType != "text/xml") return false;
+        XElement? xml = XDocument.Parse(data).Root;
         if (xml is not null)
         {
             return xml.DescendantsAndSelf("FlexQueryResponse").Any() && xml.Descendants("FlexStatements").Any();

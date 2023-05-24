@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Model;
 using Model.Interfaces;
 using Model.UkTaxModel;
+using Parser;
+using Parser.InteractiveBrokersXml;
 using Services;
 using Syncfusion.Blazor;
 using ViewModel;
@@ -15,6 +17,12 @@ builder.Services.AddSingleton<DividendExportService>();
 builder.Services.AddSingleton<UkCalculationResultExportService>();
 builder.Services.AddSingleton<SaveTextFileWithDialogService>();
 builder.Services.AddSingleton<UkSection104ExportService>();
+builder.Services.AddSingleton<FileParseController>();
+builder.Services.AddSingleton<ITradeCalculator, UkTradeCalculator>();
+builder.Services.AddSingleton<IDividendCalculator, UkDividendCalculator>();
+builder.Services.AddSingleton<IBParseController>();
+// Register any new broker parsers here in order of priority
+builder.Services.AddSingleton<IEnumerable<ITaxEventFileParser>>(c => new List<ITaxEventFileParser> { c.GetService<IBParseController>()! });
 // Models
 TaxEventLists taxEventLists = new();
 builder.Services.AddSingleton<IDividendLists>(taxEventLists);

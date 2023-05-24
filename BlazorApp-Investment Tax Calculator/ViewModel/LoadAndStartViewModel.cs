@@ -1,5 +1,4 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.AspNetCore.Components.Forms;
 using Model;
@@ -17,10 +16,7 @@ public partial class LoadAndStartViewModel : ObservableRecipient
     private readonly TaxEventLists _taxEventLists;
     private readonly TradeCalculationResult _tradeCalculationResult;
     private readonly DividendCalculationResult _dividendCalculationResult;
-
-    private const long _maxFileSize = 1024 * 1024 * 100; // 100 MB
     private const int _maxFileCount = 100;
-    private bool _isLoading = false;
 
     public LoadAndStartViewModel(FileParseController fileParseController, TaxEventLists taxEventLists, ITradeCalculator tradeCalculator,
         TradeCalculationResult tradeCalculationResult, DividendCalculationResult dividendCalculationResult, IDividendCalculator dividendCalculator)
@@ -35,19 +31,12 @@ public partial class LoadAndStartViewModel : ObservableRecipient
         IsActive = true;
     }
 
-    [RelayCommand]
-    public async Task LoadFiles(InputFileChangeEventArgs e)
+    public async Task LoadFile(IBrowserFile file)
     {
-        _isLoading = true;
-        foreach (var file in e.GetMultipleFiles())
-        {
-            await Task.Run(() => _taxEventLists.AddData(_fileParseController.ReadFile(file)));
-        }
-        _isLoading = false;
+        _taxEventLists.AddData(await _fileParseController.ReadFile(file));
         Messenger.Send<DataLoadedMessage>();
     }
 
-    [RelayCommand]
     public async Task OnStartCalculation()
     {
         _tradeCalculationResult.SetResult(await Task.Run(_tradeCalculator.CalculateTax));

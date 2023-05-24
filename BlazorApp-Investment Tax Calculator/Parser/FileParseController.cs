@@ -5,6 +5,7 @@ namespace Parser;
 
 public class FileParseController
 {
+    private const long _maxFileSize = 1024 * 1024 * 100; // 100 MB
     private readonly IEnumerable<ITaxEventFileParser> _taxEventFileParsers;
 
     public FileParseController(IEnumerable<ITaxEventFileParser> taxEventFileParsers)
@@ -12,14 +13,18 @@ public class FileParseController
         _taxEventFileParsers = taxEventFileParsers;
     }
 
-    public TaxEventLists ReadFile(IBrowserFile file)
+    public async Task<TaxEventLists> ReadFile(IBrowserFile file)
     {
         TaxEventLists taxEvents = new();
-        string content = new StreamReader(file.OpenReadStream()).ReadToEnd();
-        var parser = _taxEventFileParsers.FirstOrDefault(parser => parser.CheckFileValidity(content));
-        if (parser != null)
+        using (StreamReader sr = new(file.OpenReadStream(_maxFileSize)))
         {
-            taxEvents.AddData(parser.ParseFile(content));
+            string data = await sr.ReadToEndAsync();
+            string contentType = file.ContentType;
+            var parser = _taxEventFileParsers.FirstOrDefault(parser => parser.CheckFileValidity(data, contentType));
+            if (parser != null)
+            {
+                taxEvents.AddData(parser.ParseFile(data));
+            }
         }
         return taxEvents;
     }
