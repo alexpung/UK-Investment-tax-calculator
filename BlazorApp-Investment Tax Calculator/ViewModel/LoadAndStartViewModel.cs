@@ -16,7 +16,6 @@ public partial class LoadAndStartViewModel : ObservableRecipient
     private readonly TaxEventLists _taxEventLists;
     private readonly TradeCalculationResult _tradeCalculationResult;
     private readonly DividendCalculationResult _dividendCalculationResult;
-    private const int _maxFileCount = 100;
 
     public LoadAndStartViewModel(FileParseController fileParseController, TaxEventLists taxEventLists, ITradeCalculator tradeCalculator,
         TradeCalculationResult tradeCalculationResult, DividendCalculationResult dividendCalculationResult, IDividendCalculator dividendCalculator)
