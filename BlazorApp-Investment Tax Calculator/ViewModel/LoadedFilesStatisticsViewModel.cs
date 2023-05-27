@@ -1,26 +1,21 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Messaging;
+﻿using CommunityToolkit.Mvvm.Messaging;
 using Model;
 using ViewModel.Messages;
 
 namespace ViewModel;
-public partial class LoadedFilesStatisticsViewModel : ObservableRecipient, IRecipient<DataLoadedMessage>
+public partial class LoadedFilesStatisticsViewModel : IRecipient<DataLoadedMessage>
 {
     private readonly TaxEventLists _taxEventLists;
 
-    [ObservableProperty]
-    private int _numberOfTaxEvents = 0;
-    [ObservableProperty]
-    private int _numberOfTrades = 0;
-    [ObservableProperty]
-    private int _numberOfDividends = 0;
-    [ObservableProperty]
-    private int _numberOfCorporateActions = 0;
+    public int NumberOfTaxEvents { get; set; } = 0;
+    public int NumberOfTrades { get; set; } = 0;
+    public int NumberOfDividends { get; set; } = 0;
+    public int NumberOfCorporateActions { get; set; } = 0;
 
-    public LoadedFilesStatisticsViewModel(TaxEventLists taxEventLists)
+    public LoadedFilesStatisticsViewModel(TaxEventLists taxEventLists, IMessenger messenger)
     {
         _taxEventLists = taxEventLists;
-        IsActive = true;
+        messenger.Register(this);
     }
 
     public void Receive(DataLoadedMessage dataLoadedMessage)

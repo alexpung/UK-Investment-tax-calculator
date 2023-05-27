@@ -26,21 +26,21 @@ public partial class ExportToFileViewModel : ObservableObject
     [RelayCommand]
     public void ExportDividendToFile()
     {
-        string contents = _dividendExportService.Export(_yearOptions.GetSelectedYears());
+        string contents = _dividendExportService.Export(_yearOptions.SelectedOptions);
         _saveTextFileWithDialogService.OpenFileDialogAndSaveText("Dividend Summary.txt", contents);
     }
 
     [RelayCommand]
     public void ExportTradesToFile()
     {
-        string contents = _calculationResultExportService.Export(_yearOptions.GetSelectedYears());
+        string contents = _calculationResultExportService.Export(_yearOptions.SelectedOptions);
         _saveTextFileWithDialogService.OpenFileDialogAndSaveText("Trade Calculations.txt", contents);
     }
 
     [RelayCommand]
     public void ExportSection104ToFile()
     {
-        string contents = _section104ExportService.Export(_yearOptions.GetSelectedYears());
+        string contents = _section104ExportService.Export(_yearOptions.SelectedOptions);
         _saveTextFileWithDialogService.OpenFileDialogAndSaveText("Section 104 History.txt", contents);
     }
 }
