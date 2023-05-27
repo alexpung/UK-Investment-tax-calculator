@@ -5,7 +5,7 @@ using ViewModel.Options;
 
 namespace ViewModel;
 
-public partial class CalculationResultSummaryViewModel : IRecipient<CalculationFinishedMessage>, IRecipient<YearSelectionChangedMessage>
+public class CalculationResultSummaryViewModel : IRecipient<CalculationFinishedMessage>, IRecipient<YearSelectionChangedMessage>
 {
     private readonly TradeCalculationResult _tradeCalculationResult;
     private readonly DividendCalculationResult _dividendCalculationResult;
