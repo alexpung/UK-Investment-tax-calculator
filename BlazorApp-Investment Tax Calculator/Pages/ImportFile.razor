@@ -2,14 +2,21 @@
 @using Model.Interfaces;
 @using Syncfusion.Blazor.Inputs
 
-@inject LoadAndStartViewModel loadAndStartViewModel
+@inject LoadFileViewModel loadFileViewModel
 @inject LoadedFilesStatisticsViewModel loadedFileStatisticsViewModel
 
 <h3>Import and Export</h3>
+<p>Import Files</p>
 <p>
     <SfUploader AutoUpload="false">
         <UploaderEvents ValueChange="LoadFiles"></UploaderEvents>
     </SfUploader>
+</p>
+<p>Import Folders</p>
+<p>
+<SfUploader ID="UploadFiles" AutoUpload=false DirectoryUpload=true>
+        <UploaderEvents ValueChange="LoadFiles"></UploaderEvents>
+</SfUploader>
 </p>
 <p> Number of tax events: @loadedFileStatisticsViewModel.NumberOfTaxEvents</p>
 <p> Number of dividends imported: @loadedFileStatisticsViewModel.NumberOfDividends</p>
@@ -21,7 +28,7 @@
     {
         foreach (var file in args.Files)
         {
-            await loadAndStartViewModel.LoadFile(file.File);
+            await loadFileViewModel.LoadFile(file.File);
         }
     }
 }
