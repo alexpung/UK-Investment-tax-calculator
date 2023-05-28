@@ -14,7 +14,7 @@ public class IBXmlParseControllerTest
     {
         string testText = File.ReadAllText(@".\Test\Resource\InvalidFile.xml");
         IBParseController iBParseController = new(new AssetTypeToLoadSetting());
-        iBParseController.CheckFileValidity(testText).ShouldBeFalse();
+        iBParseController.CheckFileValidity(testText, "text/xml").ShouldBeFalse();
     }
 
     [Fact]
@@ -22,7 +22,15 @@ public class IBXmlParseControllerTest
     {
         string testText = File.ReadAllText(@".\Test\Resource\TaxExample.xml");
         IBParseController iBParseController = new(new AssetTypeToLoadSetting());
-        iBParseController.CheckFileValidity(testText).ShouldBeTrue();
+        iBParseController.CheckFileValidity(testText, "text/xml").ShouldBeTrue();
+    }
+
+    [Fact]
+    public void TestRejectingInvalidFileType()
+    {
+        string testText = File.ReadAllText(@".\Test\Resource\TaxExample.xml");
+        IBParseController iBParseController = new(new AssetTypeToLoadSetting());
+        iBParseController.CheckFileValidity(testText, "text").ShouldBeFalse();
     }
 
     [Theory]
