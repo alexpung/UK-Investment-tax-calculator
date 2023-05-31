@@ -18,7 +18,6 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 builder.Services.AddSingleton<IMessenger>(new WeakReferenceMessenger());
 builder.Services.AddSingleton<DividendExportService>();
 builder.Services.AddSingleton<UkCalculationResultExportService>();
-builder.Services.AddSingleton<SaveTextFileWithDialogService>();
 builder.Services.AddSingleton<UkSection104ExportService>();
 builder.Services.AddSingleton<FileParseController>();
 builder.Services.AddSingleton<ITradeCalculator, UkTradeCalculator>();

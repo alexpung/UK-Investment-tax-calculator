@@ -1,0 +1,44 @@
+﻿@using ViewModel;
+@using Syncfusion.Blazor.Buttons
+@using Microsoft.JSInterop;
+
+@inject IJSRuntime JS
+
+
+@inject ExportToFileViewModel exportToFileViewModel
+
+<h3>ExportFile</h3>
+
+<SfButton @onclick="InvokeExportDividend"> Export Dividends </SfButton>
+<SfButton @onclick="InvokeExportTrades"> Export Trades </SfButton>
+<SfButton @onclick="InvokeExportSection104"> Export Section104 </SfButton>
+
+@code {
+    private IJSObjectReference? _downloadFileJsScript;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        _downloadFileJsScript = await JS.InvokeAsync<IJSObjectReference>("import", "./Components/ExportFile.razor.js");
+    }
+
+    private async Task InvokeExportDividend()
+    {
+        byte[] file = exportToFileViewModel.ExportDividends();
+        using var streamRef = new DotNetStreamReference(new MemoryStream(file));
+        await _downloadFileJsScript!.InvokeVoidAsync("BlazorDownloadFile", "Dividends Summary.txt", streamRef);
+    }
+
+    private async Task InvokeExportTrades()
+    {
+        byte[] file = exportToFileViewModel.ExportTrades();
+        using var streamRef = new DotNetStreamReference(new MemoryStream(file));
+        await _downloadFileJsScript!.InvokeVoidAsync("BlazorDownloadFile", "Trades Calculation.txt", streamRef);
+    }
+
+    private async Task InvokeExportSection104()
+    {
+        byte[] file = exportToFileViewModel.ExportSection104();
+        using var streamRef = new DotNetStreamReference(new MemoryStream(file));
+        await _downloadFileJsScript!.InvokeVoidAsync("BlazorDownloadFile", "Section104.txt", streamRef);
+    }
+}
