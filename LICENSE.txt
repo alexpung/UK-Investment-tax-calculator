@@ -1,6 +1,12 @@
 MIT License
 
-Copyright (c) [year] [fullname]
+Copyright (c) 2023 Ka Wing Pun
+
+The front end contains components from Syncfusion. 
+If you need to access Syncfusion's binaries or compile any part of this project
+containing syncfusion code, or anything linked to or dependent on this project, 
+you would need to contact Syncfusion to receive either an eligible community
+license or a paid license.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
