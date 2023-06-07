@@ -1,6 +1,5 @@
 ﻿using Model;
 using NMoneys;
-using System;
 using System.Xml.Linq;
 
 namespace Parser;

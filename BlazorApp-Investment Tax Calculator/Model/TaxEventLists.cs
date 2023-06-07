@@ -1,5 +1,4 @@
 ﻿using Model.Interfaces;
-using System.Collections.Generic;
 
 namespace Model;
 public record TaxEventLists : IDividendLists, ITradeAndCorporateActionList

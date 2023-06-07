@@ -1,7 +1,5 @@
 ﻿using Enum;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 
 namespace Model;
 

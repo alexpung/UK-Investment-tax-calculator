@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Model.Interfaces;
+﻿namespace Model.Interfaces;
 
 public interface ITaxYear
 {

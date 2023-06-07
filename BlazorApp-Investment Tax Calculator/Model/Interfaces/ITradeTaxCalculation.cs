@@ -1,6 +1,4 @@
 ﻿using Enum;
-using System;
-using System.Collections.Generic;
 
 namespace Model.Interfaces;
 public interface ITradeTaxCalculation

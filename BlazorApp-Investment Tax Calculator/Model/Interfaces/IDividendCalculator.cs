@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Model.Interfaces;
+﻿namespace Model.Interfaces;
 
 public interface IDividendCalculator
 {
