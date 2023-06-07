@@ -21,12 +21,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Resources\AuthorNotice.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
     <None Include="Components\ExportFile.razor" />
   </ItemGroup>
 
