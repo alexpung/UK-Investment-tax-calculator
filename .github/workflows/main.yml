@@ -3,7 +3,8 @@ on:
   push:
     branches:
       - master
-
+permissions:
+  contents: write
 jobs:
   deploy-to-github-pages:
   # use ubuntu-latest image to run steps on
@@ -23,6 +24,5 @@ jobs:
      - name: Commit wwwroot to GitHub Pages
        uses: JamesIves/github-pages-deploy-action@3.7.1
        with:
-         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
          BRANCH: gh-pages
          FOLDER: dist/Web/wwwroot
