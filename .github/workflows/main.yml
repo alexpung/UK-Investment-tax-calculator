@@ -17,7 +17,7 @@ jobs:
      - name: Install .NET WASM Build Tools
        run: dotnet workload install wasm-tools
      - name: Restore Syncfusion packages
-       run: dotnet nuget add source --username alexpung --password ${{ secrets.packages }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/alexpung/index.json"
+       run: dotnet nuget add source --username alexpung --password ${{ secrets.READPACKAGES }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/alexpung/index.json"
      - name: Publish .NET Core Project
        run: dotnet publish "BlazorApp-Investment Tax Calculator/BlazorApp-Investment Tax Calculator.csproj" -c:Release -p:GHPages=true -o dist/Web --nologo
      - name: Commit wwwroot to GitHub Pages
