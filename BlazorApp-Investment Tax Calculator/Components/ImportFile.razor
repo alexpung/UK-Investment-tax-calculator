@@ -1,0 +1,34 @@
+﻿@using ViewModel;
+@using Model.Interfaces;
+@using Syncfusion.Blazor.Inputs
+
+@inject LoadFileViewModel loadFileViewModel
+@inject LoadedFilesStatisticsViewModel loadedFileStatisticsViewModel
+
+<h3>Import and Export</h3>
+<p>Import Files</p>
+<p>
+    <SfUploader AutoUpload="false">
+        <UploaderEvents ValueChange="LoadFiles"></UploaderEvents>
+    </SfUploader>
+</p>
+<p>Import Folders</p>
+<p>
+<SfUploader ID="UploadFiles" AutoUpload=false DirectoryUpload=true>
+        <UploaderEvents ValueChange="LoadFiles"></UploaderEvents>
+</SfUploader>
+</p>
+<p> Number of tax events: @loadedFileStatisticsViewModel.NumberOfTaxEvents</p>
+<p> Number of dividends imported: @loadedFileStatisticsViewModel.NumberOfDividends</p>
+<p> Number of trades imported: @loadedFileStatisticsViewModel.NumberOfTrades</p>
+<p> Number of corporate actions imported: @loadedFileStatisticsViewModel.NumberOfCorporateActions</p>
+
+@code {
+    private async Task LoadFiles(UploadChangeEventArgs args)
+    {
+        foreach (var file in args.Files)
+        {
+            await loadFileViewModel.LoadFile(file.File);
+        }
+    }
+}

@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>13b19bc3-9627-470e-bdf1-a60c6a72562a</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Remove="Pages\ExportFile.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.5" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.5" PrivateAssets="all" />
+    <PackageReference Include="NMoneys" Version="6.1.2" />
+    <PackageReference Include="PublishSPAforGitHubPages.Build" Version="2.0.2" />
+    <PackageReference Include="Syncfusion.Blazor.Buttons" Version="21.1.35" />
+    <PackageReference Include="Syncfusion.Blazor.Core" Version="21.1.35" />
+    <PackageReference Include="Syncfusion.Blazor.DropDowns" Version="21.1.35" />
+    <PackageReference Include="Syncfusion.Blazor.Inputs" Version="21.1.35" />
+    <PackageReference Include="Syncfusion.Blazor.Lists" Version="21.1.35" />
+    <PackageReference Include="Syncfusion.Blazor.Navigations" Version="21.1.35" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Components\ExportFile.razor" />
+  </ItemGroup>
+
+</Project>

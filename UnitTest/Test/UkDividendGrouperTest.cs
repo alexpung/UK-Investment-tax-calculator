@@ -1,6 +1,6 @@
-﻿using CapitalGainCalculator.Model;
-using CapitalGainCalculator.Model.Interfaces;
-using CapitalGainCalculator.Model.UkTaxModel;
+﻿using Model;
+using Model.Interfaces;
+using Model.UkTaxModel;
 using Moq;
 using NMoneys;
 using Shouldly;

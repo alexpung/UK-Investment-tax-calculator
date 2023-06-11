@@ -1,5 +1,5 @@
-﻿using CapitalGainCalculator.Model;
-using CapitalGainCalculator.Parser.InteractiveBrokersXml;
+﻿using Model;
+using Parser.InteractiveBrokersXml;
 using Shouldly;
 using System.Collections;
 
@@ -12,26 +12,34 @@ public class IBXmlParseControllerTest
     [Fact]
     public void TestCheckingInvalidIBXml()
     {
-        string testFilePath = @".\Test\Resource\InvalidFile.xml";
+        string testText = File.ReadAllText(@".\Test\Resource\InvalidFile.xml");
         IBParseController iBParseController = new(new AssetTypeToLoadSetting());
-        iBParseController.CheckFileValidity(testFilePath).ShouldBeFalse();
+        iBParseController.CheckFileValidity(testText, "text/xml").ShouldBeFalse();
     }
 
     [Fact]
     public void TestCheckingValidIBXml()
     {
-        string testFilePath = @".\Test\Resource\TaxExample.xml";
+        string testText = File.ReadAllText(@".\Test\Resource\TaxExample.xml");
         IBParseController iBParseController = new(new AssetTypeToLoadSetting());
-        iBParseController.CheckFileValidity(testFilePath).ShouldBeTrue();
+        iBParseController.CheckFileValidity(testText, "text/xml").ShouldBeTrue();
+    }
+
+    [Fact]
+    public void TestRejectingInvalidFileType()
+    {
+        string testText = File.ReadAllText(@".\Test\Resource\TaxExample.xml");
+        IBParseController iBParseController = new(new AssetTypeToLoadSetting());
+        iBParseController.CheckFileValidity(testText, "text").ShouldBeFalse();
     }
 
     [Theory]
     [ClassData(typeof(AssetTypeToLoadSettingTestData))]
     public void TestParseValidIBXml(AssetTypeToLoadSetting assetTypeToLoadSetting)
     {
-        string testFilePath = @".\Test\Resource\TaxExample.xml";
+        string testText = File.ReadAllText(@".\Test\Resource\TaxExample.xml");
         IBParseController iBParseController = new(assetTypeToLoadSetting);
-        TaxEventLists results = iBParseController.ParseFile(testFilePath);
+        TaxEventLists results = iBParseController.ParseFile(testText);
         if (assetTypeToLoadSetting.LoadStocks)
         {
             results.Trades.Count.ShouldBe(58);

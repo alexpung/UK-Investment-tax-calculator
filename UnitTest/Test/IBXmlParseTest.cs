@@ -1,6 +1,6 @@
-﻿using CapitalGainCalculator.Enum;
-using CapitalGainCalculator.Model;
-using CapitalGainCalculator.Parser.InteractiveBrokersXml;
+﻿using Enum;
+using Model;
+using Parser.InteractiveBrokersXml;
 using Shouldly;
 using System.Xml.Linq;
 
