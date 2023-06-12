@@ -6,7 +6,7 @@ on:
 permissions:
   contents: write
 jobs:
-  deploy-to-github-pages:
+  build-project:
   # use ubuntu-latest image to run steps on
     runs-on: windows-latest
     steps:
@@ -21,11 +21,25 @@ jobs:
        run: dotnet nuget add source --username alexpung --password ${{ secrets.READPACKAGES }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/alexpung/index.json"
      - name: Publish .NET Core Project
        run: dotnet publish "BlazorApp-Investment Tax Calculator/BlazorApp-Investment Tax Calculator.csproj" -c:Release -p:GHPages=true -o dist/Web --nologo
-     - name: Install rsync 📚
-       run: |
-         apt-get update && apt-get install -y rsync
-     - name: Commit wwwroot to GitHub Pages
-       uses: JamesIves/github-pages-deploy-action@3.7.1
+     - name: Upload Artifacts
+       uses: actions/upload-artifact@v1
        with:
-         BRANCH: gh-pages
-         FOLDER: dist/Web/wwwroot
+         name: blazor_site
+         path: /
+  deploy:
+    concurrency: ci-${{ github.ref }}
+    needs: [build-project]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Download Artifacts
+        uses: actions/download-artifact@v1
+        with:
+          name: blazor_site
+
+      - name: Deploy
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: 'blazor_site'
