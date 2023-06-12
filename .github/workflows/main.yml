@@ -25,7 +25,7 @@ jobs:
        uses: actions/upload-artifact@v1
        with:
          name: blazor_site
-         path: /
+         path: dist/Web
   deploy:
     concurrency: ci-${{ github.ref }}
     needs: [build-project]
