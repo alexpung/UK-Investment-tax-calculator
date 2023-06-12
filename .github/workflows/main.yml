@@ -43,3 +43,5 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: 'blazor_site'
+          publish_dir: publish/wwwroot
+          force_orphan: true
