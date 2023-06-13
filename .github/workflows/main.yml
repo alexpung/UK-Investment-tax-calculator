@@ -20,7 +20,7 @@ jobs:
      - name: Add Syncfusion packages as source
        run: dotnet nuget add source --username alexpung --password ${{ secrets.READPACKAGES }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/alexpung/index.json"
      - name: Restore Synfusion packages
-       run: dotnet restore --source github
+       run: dotnet restore --source "https://nuget.pkg.github.com/alexpung/index.json"
      - name: Publish .NET Core Project
        run: dotnet publish "BlazorApp-Investment Tax Calculator/BlazorApp-Investment Tax Calculator.csproj" -c:Release -p:GHPages=true -o dist/Web --nologo
      - name: Deploy
