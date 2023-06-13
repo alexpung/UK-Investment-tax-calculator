@@ -6,7 +6,7 @@ To help report UK tax for dividend and capital gain.
 
 # What is included
 
-1. (TBD) Blazor WASM application ready to use.
+1. Blazor WASM application ready to use. NEW: Site is live! https://alexpung.github.io/UK-Investment-tax-calculator/
 
 # Current functionality
 
@@ -28,6 +28,10 @@ To help report UK tax for dividend and capital gain.
 4. Go to the import sections and select the files, then press the "Upload" button.
 5. Press "Start Calculation".
 6. Export the results by pressing the buttons at the export file section.
+
+# Privacy concerns:
+
+Your trade data is not uploaded anywhere. They never leave your browser thanks to Blazor WASM framework. The calculation is entirely done in your browser.
 
 # Design notes:
 
