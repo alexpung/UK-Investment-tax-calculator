@@ -55,7 +55,7 @@ public class IBXmlParseTest
         IList<StockSplit> parsedData = _xmlStockSplitParser.ParseXml(_xmlDoc);
         parsedData.Count.ShouldBe(2);
         parsedData[0].AssetName.ShouldBe("4369.T");
-        parsedData[0].Date.ShouldBe(DateTime.Parse("27/01/2021 20:25:00"));
+        parsedData[0].Date.ShouldBe(DateTime.Parse("27-Jan-21 20:25:00"));
         parsedData[0].NumberBeforeSplit.ShouldBe(1);
         parsedData[0].NumberAfterSplit.ShouldBe(4);
     }
