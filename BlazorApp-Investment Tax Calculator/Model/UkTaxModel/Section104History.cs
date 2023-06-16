@@ -21,7 +21,6 @@ public class Section104History
             TradeTaxCalculation = tradeTaxCalculation,
             OldQuantity = oldQuantity,
             OldValue = oldValue,
-            Explanation = $"{tradeTaxCalculation.TradeList}"
         };
     }
 
@@ -35,7 +34,6 @@ public class Section104History
             TradeTaxCalculation = tradeTaxCalculation,
             OldQuantity = oldQuantity,
             OldValue = oldValue,
-            Explanation = $"{tradeTaxCalculation.TradeList}"
         };
     }
 
