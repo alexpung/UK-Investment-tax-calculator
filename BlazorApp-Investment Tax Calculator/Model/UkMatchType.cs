@@ -1,6 +1,6 @@
-﻿namespace Model.UkTaxModel;
+﻿namespace Model;
 
-public enum UkMatchType
+public enum TaxMatchType
 {
     SAME_DAY,
     BED_AND_BREAKFAST,

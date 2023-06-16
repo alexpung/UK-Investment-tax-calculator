@@ -22,8 +22,14 @@ builder.Services.AddSingleton<UkSection104ExportService>();
 builder.Services.AddSingleton<FileParseController>();
 builder.Services.AddSingleton<ITradeCalculator, UkTradeCalculator>();
 builder.Services.AddSingleton<IDividendCalculator, UkDividendCalculator>();
-builder.Services.AddSingleton<IBParseController>();
 builder.Services.AddSingleton<YearOptions>();
+
+// IBKR parser
+builder.Services.AddSingleton<IBXmlStockTradeParser>();
+builder.Services.AddSingleton<IBXmlDividendParser>();
+builder.Services.AddSingleton<IBXmlStockSplitParser>();
+builder.Services.AddSingleton<IBParseController>();
+
 // Register any new broker parsers here in order of priority
 builder.Services.AddSingleton<IEnumerable<ITaxEventFileParser>>(c => new List<ITaxEventFileParser> { c.GetService<IBParseController>()! });
 // Models

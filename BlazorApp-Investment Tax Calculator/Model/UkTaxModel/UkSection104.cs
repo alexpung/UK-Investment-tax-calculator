@@ -96,7 +96,7 @@ public record UkSection104
     {
         return new()
         {
-            TradeMatchType = UkMatchType.SECTION_104,
+            TradeMatchType = TaxMatchType.SECTION_104,
             MatchQuantity = qty,
             BaseCurrencyMatchAcquitionValue = acqisitionValue,
             BaseCurrencyMatchDisposalValue = disposalValue

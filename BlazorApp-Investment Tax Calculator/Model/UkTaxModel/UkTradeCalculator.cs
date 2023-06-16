@@ -47,7 +47,7 @@ public class UkTradeCalculator : ITradeCalculator
             if (sortedList[i].Date == sortedList[i + 1].Date)
             {
                 // No need to check BUY vs SELL. There should only be one of each in the same day after GroupTrade()
-                MatchTrade(sortedList[i], sortedList[i + 1], UkMatchType.SAME_DAY);
+                MatchTrade(sortedList[i], sortedList[i + 1], TaxMatchType.SAME_DAY);
             }
         }
     }
@@ -66,7 +66,7 @@ public class UkTradeCalculator : ITradeCalculator
                     if (sortedList[k].Date.AddDays(30) < sortedList[i].Date) break;
                     if (sortedList[k].BuySell == TradeType.SELL)
                     {
-                        MatchTrade(sortedList[i], sortedList[k], UkMatchType.BED_AND_BREAKFAST);
+                        MatchTrade(sortedList[i], sortedList[k], TaxMatchType.BED_AND_BREAKFAST);
                         if (sortedList[i].CalculationCompleted) break;
                     }
                     k--;
@@ -80,7 +80,7 @@ public class UkTradeCalculator : ITradeCalculator
         return _tradeList.CorporateActions.OfType<StockSplit>().Where(i => i.Date > fromDate && i.Date <= toDate).ToList();
     }
 
-    private void MatchTrade(ITradeTaxCalculation trade1, ITradeTaxCalculation trade2, UkMatchType ukMatchType)
+    private void MatchTrade(ITradeTaxCalculation trade1, ITradeTaxCalculation trade2, TaxMatchType TaxMatchType)
     {
         if (trade1.CalculationCompleted || trade2.CalculationCompleted) return;
         decimal matchQuantity = Math.Min(trade1.UnmatchedQty, trade2.UnmatchedQty);
@@ -111,7 +111,7 @@ public class UkTradeCalculator : ITradeCalculator
         decimal disposalValue = earlierTrade.BuySell == TradeType.BUY ? laterTradeValue : earlierTradeValue;
         trade1.MatchHistory.Add(new TradeMatch()
         {
-            TradeMatchType = ukMatchType,
+            TradeMatchType = TaxMatchType,
             MatchQuantity = matchQuantity,
             BaseCurrencyMatchAcquitionValue = acquitionValue,
             BaseCurrencyMatchDisposalValue = disposalValue,
@@ -119,7 +119,7 @@ public class UkTradeCalculator : ITradeCalculator
         });
         trade2.MatchHistory.Add(new TradeMatch()
         {
-            TradeMatchType = ukMatchType,
+            TradeMatchType = TaxMatchType,
             MatchQuantity = matchQuantity,
             BaseCurrencyMatchAcquitionValue = acquitionValue,
             BaseCurrencyMatchDisposalValue = disposalValue,
@@ -157,7 +157,7 @@ public class UkTradeCalculator : ITradeCalculator
             {
                 if (unmatchedDisposal.Any())
                 {
-                    unmatchedDisposal.ForEach(unmatchedTrade => MatchTrade(unmatchedTrade, trade, UkMatchType.SHORTCOVER));
+                    unmatchedDisposal.ForEach(unmatchedTrade => MatchTrade(unmatchedTrade, trade, TaxMatchType.SHORTCOVER));
                 }
                 if (!trade.CalculationCompleted)
                 {

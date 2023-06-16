@@ -25,7 +25,7 @@ public class UkSection104Test
         mockBuyTrade.Object.MatchHistory[0].MatchQuantity.ShouldBe(buyQuantity);
         mockBuyTrade.Object.MatchHistory[0].BaseCurrencyMatchAcquitionValue.ShouldBe(buyValue);
         mockBuyTrade.Object.MatchHistory[0].BaseCurrencyMatchDisposalValue.ShouldBe(0);
-        mockBuyTrade.Object.MatchHistory[0].TradeMatchType.ShouldBe(UkMatchType.SECTION_104);
+        mockBuyTrade.Object.MatchHistory[0].TradeMatchType.ShouldBe(TaxMatchType.SECTION_104);
         Mock<ITradeTaxCalculation> mockSellTrade = MockTrade.CreateMockTrade(sellQuantity, sellValue, TradeType.SELL);
         ukSection104.MatchTradeWithSection104(mockSellTrade.Object);
         ukSection104.Quantity.ShouldBe(decimal.Max(buyQuantity - sellQuantity, 0));
@@ -33,7 +33,7 @@ public class UkSection104Test
         mockSellTrade.Object.MatchHistory[0].MatchQuantity.ShouldBe(decimal.Min(sellQuantity, buyQuantity));
         mockSellTrade.Object.MatchHistory[0].BaseCurrencyMatchAcquitionValue.ShouldBe(decimal.Min(buyValue / buyQuantity * sellQuantity, buyValue));
         mockSellTrade.Object.MatchHistory[0].BaseCurrencyMatchDisposalValue.ShouldBe(decimal.Min(sellQuantity, buyQuantity) * sellValue / sellQuantity);
-        mockSellTrade.Object.MatchHistory[0].TradeMatchType.ShouldBe(UkMatchType.SECTION_104);
+        mockSellTrade.Object.MatchHistory[0].TradeMatchType.ShouldBe(TaxMatchType.SECTION_104);
     }
 
     [Fact]
