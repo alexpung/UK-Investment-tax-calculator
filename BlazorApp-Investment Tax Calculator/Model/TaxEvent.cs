@@ -27,7 +27,6 @@ public record Trade : TaxEvent
         }
     }
 }
-}
 
 public record Dividend : TaxEvent
 {
