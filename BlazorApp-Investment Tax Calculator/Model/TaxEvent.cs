@@ -1,7 +1,6 @@
 ﻿using Enum;
 using NMoneys;
 using System.Globalization;
-using System.Text;
 
 namespace Model;
 
@@ -27,36 +26,7 @@ public record Trade : TaxEvent
             else return GrossProceed.BaseCurrencyAmount - Expenses.Sum(expense => expense.BaseCurrencyAmount);
         }
     }
-
-    private string GetExpensesExplanation()
-    {
-        if (!Expenses.Any()) return string.Empty;
-        StringBuilder stringBuilder = new();
-        stringBuilder.Append("\n\tExpenses: ");
-        foreach (var expense in Expenses)
-        {
-            stringBuilder.Append(expense.ToString() + "\t");
-        }
-        return stringBuilder.ToString();
-    }
-
-    public override string ToString()
-    {
-        string action = BuySell switch
-        {
-            TradeType.BUY => "Bought",
-            TradeType.SELL => "Sold",
-            _ => throw new NotImplementedException()
-        };
-        string netExplanation = BuySell switch
-        {
-            TradeType.BUY => $"Total cost: {NetProceed:C2}",
-            TradeType.SELL => $"Net proceed: {NetProceed:C2}",
-            _ => throw new NotImplementedException()
-        };
-        return $"{action} {Quantity} unit(s) of {AssetName} on {Date:dd-MMM-yyyy} for {GrossProceed:C2} with total expense {Expenses.Sum(i => i.BaseCurrencyAmount):C2}, {netExplanation}"
-            + GetExpensesExplanation();
-    }
+}
 }
 
 public record Dividend : TaxEvent
@@ -87,20 +57,7 @@ public record DescribedMoney
 {
     public string Description { get; set; } = "";
     public required Money Amount { get; set; }
-
     public decimal FxRate { get; set; } = 1;
 
     public decimal BaseCurrencyAmount => Amount.Amount * FxRate;
-
-    public override string ToString()
-    {
-        string outputString;
-        if (Description == string.Empty) outputString = $"{Amount}";
-        else outputString = $"{Description}: {Amount}";
-        if (FxRate == 1)
-        {
-            return outputString;
-        }
-        else return $"{outputString} = {BaseCurrencyAmount:C2} Fx rate = {FxRate}";
-    }
 }
