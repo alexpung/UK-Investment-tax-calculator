@@ -8,7 +8,8 @@
 @inject StartCalculationViewModel startCalculationViewModel
 @inject CalculationResultSummaryViewModel calculationResultSummaryViewModel
 @inject YearOptions yearOptions;
-<h3>Calculation</h3>
+
+<h3><p>Calculation</p></h3>
 
 <SfButton @onclick="startCalculationViewModel.OnStartCalculation"> Start Calculation </SfButton>
 
@@ -18,7 +19,7 @@
     <MultiSelectFieldSettings Text="Years" Value="Years"></MultiSelectFieldSettings>
 </SfMultiSelect>
 
-Tax Summary:
+<h3><p>Tax Summary:</p></h3>
 
 <p>Number of disposals: @calculationResultSummaryViewModel.NumberOfDisposals</p>
 <p>Total Disposal Proceed: @calculationResultSummaryViewModel.DisposalProceeds.ToBaseCurrencyString()</p>
