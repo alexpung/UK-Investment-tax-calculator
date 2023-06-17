@@ -41,10 +41,10 @@ public class UkCalculationResultExportService
         IEnumerable<int> filter = new[] { year };
         output.AppendLine($"Summary for tax year {year}:");
         output.AppendLine($"Number of disposals: {calculationResult.NumberOfDisposals(filter)}");
-        output.AppendLine($"Total disposal proceeds: {calculationResult.DisposalProceeds(filter):C0}");
-        output.AppendLine($"Total allowable costs: {calculationResult.AllowableCosts(filter):C0}");
-        output.AppendLine($"Total gains (excluding loss): {calculationResult.TotalGain(filter):C0}");
-        output.AppendLine($"Total loss: {calculationResult.TotalLoss(filter):C0}");
+        output.AppendLine($"Total disposal proceeds: {calculationResult.DisposalProceeds(filter).ToBaseCurrencyString(0)}");
+        output.AppendLine($"Total allowable costs: {calculationResult.AllowableCosts(filter).ToBaseCurrencyString(0)}");
+        output.AppendLine($"Total gains (excluding loss): {calculationResult.TotalGain(filter).ToBaseCurrencyString(0)}");
+        output.AppendLine($"Total loss: {calculationResult.TotalLoss(filter).ToBaseCurrencyString(0)}");
         return output.ToString();
     }
 
@@ -54,8 +54,9 @@ public class UkCalculationResultExportService
         int DisposalCount = 1;
         foreach (var calculations in tradeTaxCalculations)
         {
-            output.Append($"Disposal {DisposalCount}: Sold {calculations.TotalQty} units of {calculations.AssetName} on {calculations.Date.Date.ToString("dd-MMM-yyyy")} for {calculations.TotalNetAmount:C2}.\t");
-            output.AppendLine($"Total gain (loss): {calculations.Gain:C2}");
+            output.Append($"Disposal {DisposalCount}: Sold {calculations.TotalQty} units of {calculations.AssetName} on " +
+                $"{calculations.Date.Date.ToString("dd-MMM-yyyy")} for {calculations.TotalNetAmount.ToBaseCurrencyString()}.\t");
+            output.AppendLine($"Total gain (loss): {calculations.Gain.ToBaseCurrencyString()}");
             output.AppendLine(calculations.UnmatchedDescription());
             output.AppendLine($"Trade details:");
             foreach (var trade in calculations.TradeList)

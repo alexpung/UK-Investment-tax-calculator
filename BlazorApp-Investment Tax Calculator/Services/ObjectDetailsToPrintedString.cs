@@ -2,6 +2,7 @@
 using Model;
 using Model.Interfaces;
 using Model.UkTaxModel;
+using System.Globalization;
 using System.Text;
 
 namespace Services;
@@ -30,12 +31,12 @@ public static class ObjectDetailsToPrintedString
         };
         string netExplanation = trade.BuySell switch
         {
-            TradeType.BUY => $"Total cost: {trade.NetProceed:C2}",
-            TradeType.SELL => $"Net proceed: {trade.NetProceed:C2}",
+            TradeType.BUY => $"Total cost: {trade.NetProceed.ToBaseCurrencyString()}",
+            TradeType.SELL => $"Net proceed: {trade.NetProceed.ToBaseCurrencyString()}",
             _ => throw new NotImplementedException()
         };
-        return $"{action} {trade.Quantity} unit(s) of {trade.AssetName} on {trade.Date:dd-MMM-yyyy} for {trade.GrossProceed.BaseCurrencyAmount:C2} " +
-            $"with total expense {trade.Expenses.Sum(i => i.BaseCurrencyAmount):C2}, {netExplanation}"
+        return $"{action} {trade.Quantity} unit(s) of {trade.AssetName} on {trade.Date:dd-MMM-yyyy} for {trade.GrossProceed.BaseCurrencyAmount.ToBaseCurrencyString()} " +
+            $"with total expense {trade.Expenses.Sum(i => i.BaseCurrencyAmount).ToBaseCurrencyString()}, {netExplanation}"
             + GetExpensesExplanation(trade);
     }
 
@@ -48,14 +49,14 @@ public static class ObjectDetailsToPrintedString
         {
             return outputString;
         }
-        else return $"{outputString} = {describedMoney.BaseCurrencyAmount:C2} Fx rate = {describedMoney.FxRate}";
+        else return $"{outputString} = {describedMoney.BaseCurrencyAmount.ToBaseCurrencyString()} Fx rate = {describedMoney.FxRate}";
     }
 
     public static string ToPrintedString(this Section104History section104History)
     {
         StringBuilder output = new StringBuilder();
-        output.AppendLine($"{section104History.Date.ToShortDateString()}\t{section104History.OldQuantity + section104History.QuantityChange} ({section104History.QuantityChange:+#.##;-#.##;+0})\t\t\t" +
-            $"{section104History.OldValue + section104History.ValueChange:C2} ({section104History.ValueChange:+#.##;-#.##;+0})\t\t");
+        output.AppendLine($"{section104History.Date.ToShortDateString()}\t{section104History.OldQuantity + section104History.QuantityChange} ({section104History.QuantityChange.ToSignedNumberString()})\t\t\t" +
+            $"{(section104History.OldValue + section104History.ValueChange).ToBaseCurrencyString()} ({section104History.ValueChange.ToBaseCurrencyString(addSign: true)})\t\t");
         if (section104History.Explanation != string.Empty)
         {
             output.AppendLine($"{section104History.Explanation}");
@@ -78,7 +79,7 @@ public static class ObjectDetailsToPrintedString
                 $"Type: {dividend.DividendType.ToPrintedString()}, " +
                 $"Amount: {dividend.Proceed.Amount}, " +
                 $"FxRate: {dividend.Proceed.FxRate}, " +
-                $"Sterling Amount: {dividend.Proceed.BaseCurrencyAmount:C2}, " +
+                $"Sterling Amount: {dividend.Proceed.BaseCurrencyAmount.ToBaseCurrencyString()}, " +
                 $"Description: {dividend.Proceed.Description}";
     }
 
@@ -102,10 +103,10 @@ public static class ObjectDetailsToPrintedString
     public static string ToPrintedString(this TradeMatch tradeMatch)
     {
         StringBuilder output = new();
-        output.AppendLine($"{tradeMatch.TradeMatchType.ToPrintedString()}: Matched {tradeMatch.MatchQuantity} units of the disposal. Acquition cost is {tradeMatch.BaseCurrencyMatchAcquitionValue:C4}");
+        output.AppendLine($"{tradeMatch.TradeMatchType.ToPrintedString()}: Matched {tradeMatch.MatchQuantity} units of the disposal. Acquition cost is {tradeMatch.BaseCurrencyMatchAcquitionValue.ToBaseCurrencyString(4)}");
         output.AppendLine($"Matched trade: {string.Join("\n", tradeMatch.MatchedGroup!.TradeList.Select(trade => trade.ToPrintedString()))}");
-        output.AppendLine($"Gain for this match is {tradeMatch.BaseCurrencyMatchDisposalValue:C2} - {tradeMatch.BaseCurrencyMatchAcquitionValue:C2} " +
-                            $"= {tradeMatch.BaseCurrencyMatchDisposalValue - tradeMatch.BaseCurrencyMatchAcquitionValue:C2}");
+        output.AppendLine($"Gain for this match is {tradeMatch.BaseCurrencyMatchDisposalValue.ToBaseCurrencyString()} - {tradeMatch.BaseCurrencyMatchAcquitionValue.ToBaseCurrencyString()} " +
+                            $"= {(tradeMatch.BaseCurrencyMatchDisposalValue - tradeMatch.BaseCurrencyMatchAcquitionValue).ToBaseCurrencyString()}");
         output.AppendLine();
         return output.ToString();
     }
@@ -114,12 +115,26 @@ public static class ObjectDetailsToPrintedString
     {
         StringBuilder output = new StringBuilder();
         List<Section104History> section104Histories = section104Pools.GetHistory(calculation);
-        output.AppendLine($"At time of disposal, section 104 contains {section104Histories.Last().OldQuantity} units with value {section104Histories.Last().OldValue:C4}");
-        output.AppendLine($"Section 104: Matched {tradeMatch.MatchQuantity} units of the disposal. Acquition cost is {tradeMatch.BaseCurrencyMatchAcquitionValue:C4}");
-        output.AppendLine($"Gain for this match is {tradeMatch.BaseCurrencyMatchDisposalValue:C2} - {tradeMatch.BaseCurrencyMatchAcquitionValue:C2} " +
-                            $"= {tradeMatch.BaseCurrencyMatchDisposalValue - tradeMatch.BaseCurrencyMatchAcquitionValue:C2}");
+        output.AppendLine($"At time of disposal, section 104 contains {section104Histories.Last().OldQuantity} units with value {section104Histories.Last().OldValue.ToBaseCurrencyString(4)}");
+        output.AppendLine($"Section 104: Matched {tradeMatch.MatchQuantity} units of the disposal. Acquition cost is {tradeMatch.BaseCurrencyMatchAcquitionValue.ToBaseCurrencyString(4)}");
+        output.AppendLine($"Gain for this match is {tradeMatch.BaseCurrencyMatchDisposalValue.ToBaseCurrencyString()} - {tradeMatch.BaseCurrencyMatchAcquitionValue.ToBaseCurrencyString()} " +
+                            $"= {(tradeMatch.BaseCurrencyMatchDisposalValue - tradeMatch.BaseCurrencyMatchAcquitionValue).ToString()}");
         output.AppendLine();
         return output.ToString();
+    }
+
+    public static string ToBaseCurrencyString(this decimal decimalNumber, int numberOfDecimalPlaces = 2, bool addSign = false)
+    {
+        string sign = string.Empty;
+        if (addSign && decimalNumber >= 0) sign = "+";
+        return sign + string.Format(new CultureInfo("en-GB", false), $"{{0:c{numberOfDecimalPlaces}}}", decimalNumber);
+    }
+
+    public static string ToSignedNumberString(this decimal decimalNumber)
+    {
+        string sign = string.Empty;
+        if (decimalNumber >= 0) sign = "+";
+        return sign + decimalNumber.ToString();
     }
 
     public static string UnmatchedDescription(this ITradeTaxCalculation tradeTaxCalculation) => tradeTaxCalculation.UnmatchedQty switch

@@ -29,20 +29,20 @@ public class TradeCalculationResult
 
 
 
-    public int DisposalProceeds(IEnumerable<int> taxYearsFilter) => (int)Math.Floor(CalculatedTrade.Where(trade => IsTradeInSelectedTaxYear(taxYearsFilter, trade))
+    public decimal DisposalProceeds(IEnumerable<int> taxYearsFilter) => Math.Floor(CalculatedTrade.Where(trade => IsTradeInSelectedTaxYear(taxYearsFilter, trade))
                                                                                                    .Where(trade => trade.BuySell == Enum.TradeType.SELL)
                                                                                                    .Sum(trade => trade.TotalProceeds));
 
-    public int AllowableCosts(IEnumerable<int> taxYearsFilter) => (int)Math.Ceiling(CalculatedTrade.Where(trade => IsTradeInSelectedTaxYear(taxYearsFilter, trade))
+    public decimal AllowableCosts(IEnumerable<int> taxYearsFilter) => Math.Ceiling(CalculatedTrade.Where(trade => IsTradeInSelectedTaxYear(taxYearsFilter, trade))
                                                                                                    .Where(trade => trade.BuySell == Enum.TradeType.SELL)
                                                                                                    .Sum(trade => trade.TotalAllowableCost));
 
-    public int TotalGain(IEnumerable<int> taxYearsFilter) => (int)Math.Floor(CalculatedTrade.Where(trade => IsTradeInSelectedTaxYear(taxYearsFilter, trade))
+    public decimal TotalGain(IEnumerable<int> taxYearsFilter) => Math.Floor(CalculatedTrade.Where(trade => IsTradeInSelectedTaxYear(taxYearsFilter, trade))
                                                                                             .Where(trade => trade.BuySell == Enum.TradeType.SELL)
                                                                                             .Where(trade => trade.Gain > 0)
                                                                                             .Sum(trade => trade.Gain));
 
-    public int TotalLoss(IEnumerable<int> taxYearsFilter) => (int)Math.Ceiling(CalculatedTrade.Where(trade => IsTradeInSelectedTaxYear(taxYearsFilter, trade))
+    public decimal TotalLoss(IEnumerable<int> taxYearsFilter) => Math.Ceiling(CalculatedTrade.Where(trade => IsTradeInSelectedTaxYear(taxYearsFilter, trade))
                                                                                               .Where(trade => trade.BuySell == Enum.TradeType.SELL)
                                                                                               .Where(trade => trade.Gain < 0)
                                                                                               .Sum(trade => trade.Gain));
