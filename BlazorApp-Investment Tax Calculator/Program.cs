@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Model;
 using Model.Interfaces;
 using Model.UkTaxModel;
+using NMoneys;
 using Parser;
 using Parser.InteractiveBrokersXml;
 using Services;
@@ -17,12 +18,15 @@ builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 builder.Services.AddSingleton<IMessenger>(new WeakReferenceMessenger());
 builder.Services.AddSingleton<DividendExportService>();
+builder.Services.AddSingleton<FileParseController>();
+builder.Services.AddSingleton<YearOptions>();
+
+// UK tax specific components - replace if you want to calculate some other countries.
 builder.Services.AddSingleton<UkCalculationResultExportService>();
 builder.Services.AddSingleton<UkSection104ExportService>();
-builder.Services.AddSingleton<FileParseController>();
 builder.Services.AddSingleton<ITradeCalculator, UkTradeCalculator>();
 builder.Services.AddSingleton<IDividendCalculator, UkDividendCalculator>();
-builder.Services.AddSingleton<YearOptions>();
+BaseCurrencyMoney.BaseCurrency = Currency.Gbp;
 
 // IBKR parser
 builder.Services.AddSingleton<IBXmlStockTradeParser>();

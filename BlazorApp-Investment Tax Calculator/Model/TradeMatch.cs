@@ -1,4 +1,5 @@
 ﻿using Model.Interfaces;
+using NMoneys;
 
 namespace Model;
 
@@ -10,7 +11,7 @@ public record TradeMatch
     public required TaxMatchType TradeMatchType { get; set; }
     public ITradeTaxCalculation? MatchedGroup { get; set; }
     public decimal MatchQuantity { get; set; } = 0m;
-    public decimal BaseCurrencyMatchDisposalValue { get; set; } = 0m;
-    public decimal BaseCurrencyMatchAcquitionValue { get; set; } = 0m;
+    public Money BaseCurrencyMatchDisposalValue { get; set; } = BaseCurrencyMoney.BaseCurrencyZero;
+    public Money BaseCurrencyMatchAcquitionValue { get; set; } = BaseCurrencyMoney.BaseCurrencyZero;
     public string AdditionalInformation { get; set; } = string.Empty;
 }

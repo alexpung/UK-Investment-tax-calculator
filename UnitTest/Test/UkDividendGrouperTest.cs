@@ -5,6 +5,7 @@ using Moq;
 using NMoneys;
 using Shouldly;
 using System.Globalization;
+using UnitTest;
 
 namespace CapitalGainCalculator.Test;
 
@@ -91,15 +92,15 @@ public class UkDividendCalculatorTest
         result.Count.ShouldBe(3);
         var hkResult = result.Single(i => i.CountryOfOrigin.Name == "HK");
         hkResult.TaxYear.ShouldBe(2021);
-        hkResult.TotalTaxableDividend.ShouldBe(165);
-        hkResult.TotalForeignTaxPaid.ShouldBe(0);
+        hkResult.TotalTaxableDividend.ShouldBe(165m.ConvertToBaseCurrency());
+        hkResult.TotalForeignTaxPaid.ShouldBe(0m.ConvertToBaseCurrency());
         var gbResult = result.Single(i => i.CountryOfOrigin.Name == "GB");
         gbResult.TaxYear.ShouldBe(2021);
-        gbResult.TotalTaxableDividend.ShouldBe(2000);
-        gbResult.TotalForeignTaxPaid.ShouldBe(100);
+        gbResult.TotalTaxableDividend.ShouldBe(2000m.ConvertToBaseCurrency());
+        gbResult.TotalForeignTaxPaid.ShouldBe(100m.ConvertToBaseCurrency());
         var jpResult = result.Single(i => i.CountryOfOrigin.Name == "JP");
         jpResult.TaxYear.ShouldBe(2022);
-        jpResult.TotalTaxableDividend.ShouldBe(196);
-        jpResult.TotalForeignTaxPaid.ShouldBe(29.4m);
+        jpResult.TotalTaxableDividend.ShouldBe(196m.ConvertToBaseCurrency());
+        jpResult.TotalForeignTaxPaid.ShouldBe(29.4m.ConvertToBaseCurrency());
     }
 }

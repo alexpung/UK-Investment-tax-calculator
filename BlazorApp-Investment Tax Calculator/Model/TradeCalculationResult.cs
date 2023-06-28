@@ -1,4 +1,5 @@
 ﻿using Model.Interfaces;
+using NMoneys;
 
 namespace Model;
 
@@ -29,21 +30,25 @@ public class TradeCalculationResult
 
 
 
-    public decimal DisposalProceeds(IEnumerable<int> taxYearsFilter) => Math.Floor(CalculatedTrade.Where(trade => IsTradeInSelectedTaxYear(taxYearsFilter, trade))
+    public Money DisposalProceeds(IEnumerable<int> taxYearsFilter) => CalculatedTrade.Where(trade => IsTradeInSelectedTaxYear(taxYearsFilter, trade))
                                                                                                    .Where(trade => trade.BuySell == Enum.TradeType.SELL)
-                                                                                                   .Sum(trade => trade.TotalProceeds));
+                                                                                                   .BaseCurrencySum(trade => trade.TotalProceeds)
+                                                                                                   .Floor();
 
-    public decimal AllowableCosts(IEnumerable<int> taxYearsFilter) => Math.Ceiling(CalculatedTrade.Where(trade => IsTradeInSelectedTaxYear(taxYearsFilter, trade))
+    public Money AllowableCosts(IEnumerable<int> taxYearsFilter) => CalculatedTrade.Where(trade => IsTradeInSelectedTaxYear(taxYearsFilter, trade))
                                                                                                    .Where(trade => trade.BuySell == Enum.TradeType.SELL)
-                                                                                                   .Sum(trade => trade.TotalAllowableCost));
+                                                                                                   .BaseCurrencySum(trade => trade.TotalAllowableCost)
+                                                                                                   .Ceiling();
 
-    public decimal TotalGain(IEnumerable<int> taxYearsFilter) => Math.Floor(CalculatedTrade.Where(trade => IsTradeInSelectedTaxYear(taxYearsFilter, trade))
+    public Money TotalGain(IEnumerable<int> taxYearsFilter) => CalculatedTrade.Where(trade => IsTradeInSelectedTaxYear(taxYearsFilter, trade))
                                                                                             .Where(trade => trade.BuySell == Enum.TradeType.SELL)
-                                                                                            .Where(trade => trade.Gain > 0)
-                                                                                            .Sum(trade => trade.Gain));
+                                                                                            .Where(trade => trade.Gain.Amount > 0)
+                                                                                            .BaseCurrencySum(trade => trade.Gain)
+                                                                                            .Floor();
 
-    public decimal TotalLoss(IEnumerable<int> taxYearsFilter) => Math.Ceiling(CalculatedTrade.Where(trade => IsTradeInSelectedTaxYear(taxYearsFilter, trade))
+    public Money TotalLoss(IEnumerable<int> taxYearsFilter) => CalculatedTrade.Where(trade => IsTradeInSelectedTaxYear(taxYearsFilter, trade))
                                                                                               .Where(trade => trade.BuySell == Enum.TradeType.SELL)
-                                                                                              .Where(trade => trade.Gain < 0)
-                                                                                              .Sum(trade => trade.Gain));
+                                                                                              .Where(trade => trade.Gain.Amount < 0)
+                                                                                              .BaseCurrencySum(trade => trade.Gain)
+                                                                                              .Ceiling();
 }

@@ -1,5 +1,6 @@
 ﻿using Enum;
 using Model.Interfaces;
+using NMoneys;
 
 namespace Model.UkTaxModel;
 
@@ -16,14 +17,14 @@ public record UkSection104
             else _quantity = value;
         }
     }
-    public decimal ValueInBaseCurrency { get; private set; }
+    public Money ValueInBaseCurrency { get; private set; }
     public List<Section104History> Section104HistoryList { get; private set; } = new();
 
     public UkSection104(string name)
     {
         AssetName = name;
         Quantity = 0m;
-        ValueInBaseCurrency = 0m;
+        ValueInBaseCurrency = BaseCurrencyMoney.BaseCurrencyZero;
     }
 
     public void MatchTradeWithSection104(ITradeTaxCalculation tradeTaxCalculation)
@@ -65,8 +66,8 @@ public record UkSection104
             throw new ArgumentOutOfRangeException
                 ($"Cannot add assets with negative quantity {tradeTaxCalculation.UnmatchedQty} and value {tradeTaxCalculation.UnmatchedNetAmount}");
         }
-        (decimal qty, decimal value) = tradeTaxCalculation.MatchAll();
-        tradeTaxCalculation.MatchHistory.Add(CreateUkMatchHistory(qty, value));
+        (decimal qty, Money value) = tradeTaxCalculation.MatchAll();
+        tradeTaxCalculation.MatchHistory.Add(CreateUkMatchHistory(qty, value, BaseCurrencyMoney.BaseCurrencyZero));
         Section104HistoryList.Add(Section104History.AddToSection104(tradeTaxCalculation, qty, value, Quantity, ValueInBaseCurrency));
         Quantity += qty;
         ValueInBaseCurrency += value;
@@ -74,7 +75,8 @@ public record UkSection104
 
     private void RemoveAssets(ITradeTaxCalculation tradeTaxCalculation)
     {
-        decimal qty, disposalValue, acqisitionValue;
+        decimal qty;
+        Money disposalValue, acqisitionValue;
         if (Quantity == 0m) return;
         if (tradeTaxCalculation.UnmatchedQty <= Quantity)
         {
@@ -85,14 +87,14 @@ public record UkSection104
         {
             (qty, disposalValue) = tradeTaxCalculation.MatchQty(Quantity);
         }
-        acqisitionValue = qty * ValueInBaseCurrency / Quantity;
+        acqisitionValue = ValueInBaseCurrency.Multiply(qty).Divide(Quantity);
         tradeTaxCalculation.MatchHistory.Add(CreateUkMatchHistory(qty, acqisitionValue, disposalValue));
         Section104HistoryList.Add(Section104History.RemoveFromSection104(tradeTaxCalculation, qty * -1, acqisitionValue * -1, Quantity, ValueInBaseCurrency));
         Quantity -= qty;
         ValueInBaseCurrency -= acqisitionValue;
     }
 
-    private static TradeMatch CreateUkMatchHistory(decimal qty, decimal acqisitionValue, decimal disposalValue = 0)
+    private static TradeMatch CreateUkMatchHistory(decimal qty, Money acqisitionValue, Money disposalValue)
     {
         return new()
         {

@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.Messaging;
 using Model;
+using NMoneys;
 using ViewModel.Messages;
 using ViewModel.Options;
 
@@ -10,12 +11,12 @@ public class CalculationResultSummaryViewModel : IRecipient<CalculationFinishedM
     private readonly TradeCalculationResult _tradeCalculationResult;
     private readonly DividendCalculationResult _dividendCalculationResult;
     public int NumberOfDisposals { get; set; }
-    public decimal DisposalProceeds { get; set; }
-    public decimal AllowableCosts { get; set; }
-    public decimal TotalGain { get; set; }
-    public decimal TotalLoss { get; set; }
-    public decimal TotalDividends { get; set; }
-    public decimal TotalForeignTaxPaid { get; set; }
+    public Money DisposalProceeds { get; set; }
+    public Money AllowableCosts { get; set; }
+    public Money TotalGain { get; set; }
+    public Money TotalLoss { get; set; }
+    public Money TotalDividends { get; set; }
+    public Money TotalForeignTaxPaid { get; set; }
     public YearOptions Years { get; init; }
 
 

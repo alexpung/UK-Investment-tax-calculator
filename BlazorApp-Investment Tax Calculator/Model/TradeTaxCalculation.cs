@@ -1,5 +1,6 @@
 ﻿using Enum;
 using Model.Interfaces;
+using NMoneys;
 
 namespace Model;
 
@@ -7,18 +8,18 @@ public class TradeTaxCalculation : ITradeTaxCalculation
 {
     public List<Trade> TradeList { get; init; }
     public List<TradeMatch> MatchHistory { get; init; } = new List<TradeMatch>();
-    public decimal TotalAllowableCost => MatchHistory.Sum(tradeMatch => tradeMatch.BaseCurrencyMatchAcquitionValue);
-    public decimal TotalProceeds => MatchHistory.Sum(tradeMatch => tradeMatch.BaseCurrencyMatchDisposalValue);
-    public decimal Gain => TotalProceeds - TotalAllowableCost;
-    public decimal TotalNetAmount { get; }
-    private decimal _unmatchedNetAmount;
-    public decimal UnmatchedNetAmount
+    public Money TotalAllowableCost => MatchHistory.BaseCurrencySum(tradeMatch => tradeMatch.BaseCurrencyMatchAcquitionValue);
+    public Money TotalProceeds => MatchHistory.BaseCurrencySum(tradeMatch => tradeMatch.BaseCurrencyMatchDisposalValue);
+    public Money Gain => TotalProceeds - TotalAllowableCost;
+    public Money TotalNetAmount { get; }
+    private Money _unmatchedNetAmount;
+    public Money UnmatchedNetAmount
     {
         get { return _unmatchedNetAmount; }
         private set
         {
             _unmatchedNetAmount = value;
-            if (UnmatchedNetAmount == 0) CalculationCompleted = true;
+            if (UnmatchedNetAmount.Amount == 0) CalculationCompleted = true;
         }
     }
     public decimal TotalQty { get; }
@@ -40,7 +41,7 @@ public class TradeTaxCalculation : ITradeTaxCalculation
             throw new ArgumentException("Not all trades that is put in TradeTaxCalculation is on the same BUY/SELL side");
         }
         TradeList = trades.ToList();
-        TotalNetAmount = trades.Sum(trade => trade.NetProceed);
+        TotalNetAmount = trades.BaseCurrencySum(trade => trade.NetProceed);
         UnmatchedNetAmount = TotalNetAmount;
         TotalQty = trades.Sum(trade => trade.Quantity);
         UnmatchedQty = TotalQty;
@@ -48,33 +49,33 @@ public class TradeTaxCalculation : ITradeTaxCalculation
         CalculationCompleted = false;
     }
 
-    public (decimal matchedQty, decimal matchedValue) MatchQty(decimal demandedQty)
+    public (decimal matchedQty, Money matchedValue) MatchQty(decimal demandedQty)
     {
         decimal matchedQty;
-        decimal matchedValue;
+        Money matchedValue;
         if (demandedQty >= UnmatchedQty)
         {
             matchedQty = UnmatchedQty;
             matchedValue = UnmatchedNetAmount;
             UnmatchedQty = 0;
-            UnmatchedNetAmount = 0;
+            UnmatchedNetAmount = BaseCurrencyMoney.BaseCurrencyZero;
         }
         else
         {
             matchedQty = demandedQty;
-            matchedValue = decimal.Round(TotalNetAmount * demandedQty / TotalQty, 2);
+            matchedValue = TotalNetAmount.Multiply(demandedQty).Divide(TotalQty);
             UnmatchedQty -= matchedQty;
             UnmatchedNetAmount -= matchedValue;
         }
         return (matchedQty, matchedValue);
     }
 
-    public (decimal matchedQty, decimal matchedValue) MatchAll()
+    public (decimal matchedQty, Money matchedValue) MatchAll()
     {
         decimal matchedQty = UnmatchedQty;
-        decimal matchedValue = UnmatchedNetAmount;
+        Money matchedValue = UnmatchedNetAmount;
         UnmatchedQty = 0;
-        UnmatchedNetAmount = 0;
+        UnmatchedNetAmount = BaseCurrencyMoney.BaseCurrencyZero;
         return (matchedQty, matchedValue);
     }
 }

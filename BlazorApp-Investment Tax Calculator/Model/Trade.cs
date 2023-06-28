@@ -1,4 +1,5 @@
 ﻿using Enum;
+using NMoneys;
 
 namespace Model;
 
@@ -9,13 +10,13 @@ public record Trade : TaxEvent
     public required DescribedMoney GrossProceed { get; set; }
     public string Description { get; set; } = string.Empty;
     public List<DescribedMoney> Expenses { get; set; } = new List<DescribedMoney>();
-    public decimal NetProceed
+    public Money NetProceed
     {
         get
         {
             if (!Expenses.Any()) return GrossProceed.BaseCurrencyAmount;
-            if (BuySell == TradeType.BUY) return GrossProceed.BaseCurrencyAmount + Expenses.Sum(expense => expense.BaseCurrencyAmount);
-            else return GrossProceed.BaseCurrencyAmount - Expenses.Sum(expense => expense.BaseCurrencyAmount);
+            if (BuySell == TradeType.BUY) return GrossProceed.BaseCurrencyAmount + Expenses.Select(i => i.BaseCurrencyAmount).Sum();
+            else return GrossProceed.BaseCurrencyAmount - Expenses.Select(i => i.BaseCurrencyAmount).Sum();
         }
     }
 }

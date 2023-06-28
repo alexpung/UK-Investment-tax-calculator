@@ -1,5 +1,6 @@
 ﻿using Enum;
 using Model.Interfaces;
+using NMoneys;
 
 namespace Model.UkTaxModel;
 
@@ -105,10 +106,10 @@ public class UkTradeCalculator : ITradeCalculator
                 matchQuantityAfterActions = split.GetSharesAfterSplit(matchQuantityAfterActions);
             }
         }
-        (_, decimal earlierTradeValue) = earlierTrade.MatchQty(matchQuantity);
-        (_, decimal laterTradeValue) = laterTrade.MatchQty(matchQuantityAfterActions);
-        decimal acquitionValue = earlierTrade.BuySell == TradeType.BUY ? earlierTradeValue : laterTradeValue;
-        decimal disposalValue = earlierTrade.BuySell == TradeType.BUY ? laterTradeValue : earlierTradeValue;
+        (_, Money earlierTradeValue) = earlierTrade.MatchQty(matchQuantity);
+        (_, Money laterTradeValue) = laterTrade.MatchQty(matchQuantityAfterActions);
+        Money acquitionValue = earlierTrade.BuySell == TradeType.BUY ? earlierTradeValue : laterTradeValue;
+        Money disposalValue = earlierTrade.BuySell == TradeType.BUY ? laterTradeValue : earlierTradeValue;
         trade1.MatchHistory.Add(new TradeMatch()
         {
             TradeMatchType = TaxMatchType,

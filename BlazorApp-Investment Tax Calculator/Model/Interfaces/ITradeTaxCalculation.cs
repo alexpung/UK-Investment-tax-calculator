@@ -1,4 +1,5 @@
 ﻿using Enum;
+using NMoneys;
 
 namespace Model.Interfaces;
 public interface ITradeTaxCalculation
@@ -7,16 +8,16 @@ public interface ITradeTaxCalculation
     TradeType BuySell { get; init; }
     bool CalculationCompleted { get; }
     List<TradeMatch> MatchHistory { get; init; }
-    decimal TotalNetAmount { get; }
+    Money TotalNetAmount { get; }
     decimal TotalQty { get; }
     List<Trade> TradeList { get; init; }
-    decimal UnmatchedNetAmount { get; }
+    Money UnmatchedNetAmount { get; }
     decimal UnmatchedQty { get; }
     DateTime Date { get; }
-    decimal TotalProceeds { get; }
-    decimal TotalAllowableCost { get; }
-    decimal Gain { get; }
+    Money TotalProceeds { get; }
+    Money TotalAllowableCost { get; }
+    Money Gain { get; }
 
-    (decimal matchedQty, decimal matchedValue) MatchAll();
-    (decimal matchedQty, decimal matchedValue) MatchQty(decimal demandedQty);
+    (decimal matchedQty, Money matchedValue) MatchAll();
+    (decimal matchedQty, Money matchedValue) MatchQty(decimal demandedQty);
 }

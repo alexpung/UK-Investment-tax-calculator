@@ -1,4 +1,5 @@
 ﻿using Model.Interfaces;
+using NMoneys;
 
 namespace Model.UkTaxModel;
 public class Section104History
@@ -6,12 +7,12 @@ public class Section104History
     public ITradeTaxCalculation? TradeTaxCalculation { get; set; }
     public DateTime Date { get; set; }
     public decimal OldQuantity { get; set; }
-    public decimal OldValue { get; set; }
+    public Money OldValue { get; set; }
     public decimal QuantityChange { get; set; }
-    public decimal ValueChange { get; set; }
+    public Money ValueChange { get; set; }
     public string Explanation { get; set; } = string.Empty;
 
-    public static Section104History AddToSection104(ITradeTaxCalculation tradeTaxCalculation, decimal quantityChange, decimal valueChange, decimal oldQuantity, decimal oldValue)
+    public static Section104History AddToSection104(ITradeTaxCalculation tradeTaxCalculation, decimal quantityChange, Money valueChange, decimal oldQuantity, Money oldValue)
     {
         return new Section104History
         {
@@ -24,7 +25,7 @@ public class Section104History
         };
     }
 
-    public static Section104History RemoveFromSection104(ITradeTaxCalculation tradeTaxCalculation, decimal quantityChange, decimal valueChange, decimal oldQuantity, decimal oldValue)
+    public static Section104History RemoveFromSection104(ITradeTaxCalculation tradeTaxCalculation, decimal quantityChange, Money valueChange, decimal oldQuantity, Money oldValue)
     {
         return new Section104History
         {

@@ -41,10 +41,10 @@ public class UkCalculationResultExportService
         IEnumerable<int> filter = new[] { year };
         output.AppendLine($"Summary for tax year {year}:");
         output.AppendLine($"Number of disposals: {calculationResult.NumberOfDisposals(filter)}");
-        output.AppendLine($"Total disposal proceeds: {calculationResult.DisposalProceeds(filter).ToBaseCurrencyString(0)}");
-        output.AppendLine($"Total allowable costs: {calculationResult.AllowableCosts(filter).ToBaseCurrencyString(0)}");
-        output.AppendLine($"Total gains (excluding loss): {calculationResult.TotalGain(filter).ToBaseCurrencyString(0)}");
-        output.AppendLine($"Total loss: {calculationResult.TotalLoss(filter).ToBaseCurrencyString(0)}");
+        output.AppendLine($"Total disposal proceeds: {calculationResult.DisposalProceeds(filter)}");
+        output.AppendLine($"Total allowable costs: {calculationResult.AllowableCosts(filter)}");
+        output.AppendLine($"Total gains (excluding loss): {calculationResult.TotalGain(filter)}");
+        output.AppendLine($"Total loss: {calculationResult.TotalLoss(filter)}");
         return output.ToString();
     }
 
@@ -55,8 +55,8 @@ public class UkCalculationResultExportService
         foreach (var calculations in tradeTaxCalculations)
         {
             output.Append($"Disposal {DisposalCount}: Sold {calculations.TotalQty} units of {calculations.AssetName} on " +
-                $"{calculations.Date.Date.ToString("dd-MMM-yyyy")} for {calculations.TotalNetAmount.ToBaseCurrencyString()}.\t");
-            output.AppendLine($"Total gain (loss): {calculations.Gain.ToBaseCurrencyString()}");
+                $"{calculations.Date.Date.ToString("dd-MMM-yyyy")} for {calculations.TotalNetAmount}.\t");
+            output.AppendLine($"Total gain (loss): {calculations.Gain}");
             output.AppendLine(calculations.UnmatchedDescription());
             output.AppendLine($"Trade details:");
             foreach (var trade in calculations.TradeList)
