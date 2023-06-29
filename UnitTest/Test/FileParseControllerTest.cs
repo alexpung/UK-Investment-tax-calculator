@@ -6,7 +6,7 @@ using Parser;
 using Shouldly;
 using System.Text;
 
-namespace CapitalGainCalculator.Test;
+namespace UnitTest.Test;
 
 public class FileParseControllerTest
 {

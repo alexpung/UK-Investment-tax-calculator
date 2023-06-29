@@ -4,7 +4,7 @@ using Parser.InteractiveBrokersXml;
 using Shouldly;
 using System.Xml.Linq;
 
-namespace CapitalGainCalculator.Test;
+namespace UnitTest.Test;
 
 public class IBXmlParseTest
 {

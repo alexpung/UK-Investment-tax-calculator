@@ -6,7 +6,7 @@ using Moq;
 using Shouldly;
 using UnitTest;
 
-namespace CapitalGainCalculator.Test;
+namespace UnitTest.Test;
 
 public class UkSection104Test
 {

@@ -7,7 +7,7 @@ using Shouldly;
 using System.Globalization;
 using UnitTest;
 
-namespace CapitalGainCalculator.Test;
+namespace UnitTest.Test;
 
 public class UkDividendCalculatorTest
 {
