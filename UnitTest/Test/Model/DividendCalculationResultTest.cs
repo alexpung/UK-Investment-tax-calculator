@@ -1,7 +1,8 @@
+using Model;
 using Moq;
 using NMoneys;
 
-namespace Model.Tests;
+namespace UnitTest.Test.Model;
 
 public class DividendCalculationResultTests
 {
