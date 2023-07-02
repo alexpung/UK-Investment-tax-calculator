@@ -3,9 +3,9 @@ using Model;
 using Model.Interfaces;
 using Model.UkTaxModel;
 using Moq;
-using Shouldly;
+using UnitTest.Helper;
 
-namespace UnitTest.Test;
+namespace UnitTest.Test.Model;
 
 public class UkSection104Test
 {

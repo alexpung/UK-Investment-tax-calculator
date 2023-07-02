@@ -3,7 +3,7 @@ using Parser.InteractiveBrokersXml;
 using Shouldly;
 using System.Collections;
 
-namespace UnitTest.Test;
+namespace UnitTest.Test.Parser;
 
 public class IBXmlParseControllerTest
 {

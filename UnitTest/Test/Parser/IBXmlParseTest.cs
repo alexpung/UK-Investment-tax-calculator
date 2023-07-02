@@ -4,7 +4,7 @@ using Parser.InteractiveBrokersXml;
 using Shouldly;
 using System.Xml.Linq;
 
-namespace UnitTest.Test;
+namespace UnitTest.Test.Parser;
 
 public class IBXmlParseTest
 {

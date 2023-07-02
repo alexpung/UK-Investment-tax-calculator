@@ -3,10 +3,9 @@ using Model;
 using Moq;
 using NMoneys;
 using Parser;
-using Shouldly;
 using System.Text;
 
-namespace UnitTest.Test;
+namespace UnitTest.Test.Parser;
 
 public class FileParseControllerTest
 {

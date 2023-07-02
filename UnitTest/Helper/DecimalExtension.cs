@@ -1,7 +1,7 @@
 ﻿using Model;
 using NMoneys;
 
-namespace UnitTest;
+namespace UnitTest.Helper;
 
 public static class DecimalExtension
 {

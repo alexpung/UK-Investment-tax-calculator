@@ -1,10 +1,9 @@
 ﻿using Model;
 using NMoneys;
 using NMoneys.Extensions;
-using Shouldly;
 using System.Collections;
 
-namespace UnitTest.Test;
+namespace UnitTest.Test.Model;
 public class MoneyTest
 {
     [Theory]

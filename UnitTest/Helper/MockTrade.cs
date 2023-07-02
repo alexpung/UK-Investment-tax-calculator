@@ -3,7 +3,8 @@ using Model;
 using Model.Interfaces;
 using Moq;
 
-namespace UnitTest;
+namespace UnitTest.Helper;
+
 public static class MockTrade
 {
     public static Mock<ITradeTaxCalculation> CreateMockTrade(decimal quantity, decimal value, TradeType tradeType)

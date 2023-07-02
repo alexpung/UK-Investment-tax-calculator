@@ -3,11 +3,10 @@ using Model.Interfaces;
 using Model.UkTaxModel;
 using Moq;
 using NMoneys;
-using Shouldly;
 using System.Globalization;
-using UnitTest;
+using UnitTest.Helper;
 
-namespace UnitTest.Test;
+namespace UnitTest.Test.Model;
 
 public class UkDividendCalculatorTest
 {
