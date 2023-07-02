@@ -4,6 +4,7 @@ using NMoneys.Extensions;
 using System.Collections;
 
 namespace UnitTest.Test.Model;
+
 public class MoneyTest
 {
     [Theory]
