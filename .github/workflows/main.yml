@@ -23,6 +23,10 @@ jobs:
        run: dotnet nuget add source --username alexpung --password ${{ secrets.READPACKAGES }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/alexpung/index.json"
      - name: Run tests
        run: dotnet test
+     - name: Upload coverage reports to Codecov
+       uses: codecov/codecov-action@v3
+       env: 
+         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
      - name: Publish .NET Core Project
        run: dotnet publish "BlazorApp-Investment Tax Calculator/BlazorApp-Investment Tax Calculator.csproj" -c:Release -p:GHPages=true -o dist/Web --nologo
      - name: Deploy
