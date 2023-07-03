@@ -26,7 +26,7 @@ public class TradeTests
         var netProceed = trade.NetProceed;
 
         // Assert
-        Assert.Equal(100, netProceed.Amount);
+        netProceed.Amount.ShouldBe(100);
     }
 
     [Fact]
@@ -55,7 +55,7 @@ public class TradeTests
         var netProceed = trade.NetProceed;
 
         // Assert
-        Assert.Equal(70, netProceed.Amount);
+        netProceed.Amount.ShouldBe(70);
     }
 }
 

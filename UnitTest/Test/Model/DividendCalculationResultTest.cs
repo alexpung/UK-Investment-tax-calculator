@@ -27,7 +27,7 @@ public class DividendCalculationResultTests
         var totalDividend = result.GetTotalDividend(yearFilter);
 
         // Assert
-        Assert.Equal(new Money(400, Currency.Gbp), totalDividend);
+        totalDividend.ShouldBe(new Money(400, Currency.Gbp));
     }
 
     [Fact]
@@ -51,7 +51,7 @@ public class DividendCalculationResultTests
         var foreignTaxPaid = result.GetForeignTaxPaid(yearFilter);
 
         // Assert
-        Assert.Equal(new Money(120, Currency.Gbp), foreignTaxPaid);
+        foreignTaxPaid.ShouldBe(new Money(120, Currency.Gbp));
     }
 
     [Fact]
@@ -75,7 +75,7 @@ public class DividendCalculationResultTests
         var foreignTaxPaid = result.GetForeignTaxPaid(yearFilter);
 
         // Assert
-        Assert.Equal(BaseCurrencyMoney.BaseCurrencyZero, foreignTaxPaid);
+        foreignTaxPaid.ShouldBe(BaseCurrencyMoney.BaseCurrencyZero);
     }
 }
 

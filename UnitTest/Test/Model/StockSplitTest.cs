@@ -22,6 +22,6 @@ public class StockSplitTests
         decimal sharesAfterSplit = stockSplit.GetSharesAfterSplit(quantity);
 
         // Assert
-        Assert.Equal(15, sharesAfterSplit);
+        sharesAfterSplit.ShouldBe(15);
     }
 }

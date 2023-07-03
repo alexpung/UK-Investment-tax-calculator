@@ -30,7 +30,7 @@ public class TaxEventListsTests
         int totalNumberOfEvents = taxEventLists.GetTotalNumberOfEvents();
 
         // Assert
-        Assert.Equal(4, totalNumberOfEvents);
+        totalNumberOfEvents.ShouldBe(4);
     }
 
     [Fact]
@@ -62,9 +62,9 @@ public class TaxEventListsTests
         targetTaxEventLists.AddData(sourceTaxEventLists);
 
         // Assert
-        Assert.Equal(sourceTaxEventLists.Trades, targetTaxEventLists.Trades);
-        Assert.Equal(sourceTaxEventLists.CorporateActions, targetTaxEventLists.CorporateActions);
-        Assert.Equal(sourceTaxEventLists.Dividends, targetTaxEventLists.Dividends);
+        targetTaxEventLists.Trades.ShouldBe(sourceTaxEventLists.Trades);
+        targetTaxEventLists.CorporateActions.ShouldBe(sourceTaxEventLists.CorporateActions);
+        targetTaxEventLists.Dividends.ShouldBe(sourceTaxEventLists.Dividends);
     }
 
     [Fact]
@@ -87,9 +87,9 @@ public class TaxEventListsTests
         taxEventLists.AddData(taxEvents);
 
         // Assert
-        Assert.Equal(taxEvents.OfType<Trade>(), taxEventLists.Trades);
-        Assert.Equal(taxEvents.OfType<CorporateAction>(), taxEventLists.CorporateActions);
-        Assert.Equal(taxEvents.OfType<Dividend>(), taxEventLists.Dividends);
+        taxEventLists.Trades.ShouldBe(taxEvents.OfType<Trade>());
+        taxEventLists.CorporateActions.ShouldBe(taxEvents.OfType<CorporateAction>());
+        taxEventLists.Dividends.ShouldBe(taxEvents.OfType<Dividend>());
     }
 }
 
