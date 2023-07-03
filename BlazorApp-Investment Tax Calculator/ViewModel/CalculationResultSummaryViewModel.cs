@@ -11,12 +11,12 @@ public class CalculationResultSummaryViewModel : IRecipient<CalculationFinishedM
     private readonly TradeCalculationResult _tradeCalculationResult;
     private readonly DividendCalculationResult _dividendCalculationResult;
     public int NumberOfDisposals { get; set; }
-    public Money DisposalProceeds { get; set; }
-    public Money AllowableCosts { get; set; }
-    public Money TotalGain { get; set; }
-    public Money TotalLoss { get; set; }
-    public Money TotalDividends { get; set; }
-    public Money TotalForeignTaxPaid { get; set; }
+    public Money DisposalProceeds { get; set; } = BaseCurrencyMoney.BaseCurrencyZero;
+    public Money AllowableCosts { get; set; } = BaseCurrencyMoney.BaseCurrencyZero;
+    public Money TotalGain { get; set; } = BaseCurrencyMoney.BaseCurrencyZero;
+    public Money TotalLoss { get; set; } = BaseCurrencyMoney.BaseCurrencyZero;
+    public Money TotalDividends { get; set; } = BaseCurrencyMoney.BaseCurrencyZero;
+    public Money TotalForeignTaxPaid { get; set; } = BaseCurrencyMoney.BaseCurrencyZero;
     public YearOptions Years { get; init; }
 
 
