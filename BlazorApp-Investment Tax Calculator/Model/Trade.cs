@@ -5,12 +5,12 @@ namespace Model;
 
 public record Trade : TaxEvent
 {
-    public required TradeType BuySell { get; set; }
-    public required decimal Quantity { get; set; }
-    public required DescribedMoney GrossProceed { get; set; }
+    public virtual required TradeType BuySell { get; set; }
+    public virtual required decimal Quantity { get; set; }
+    public virtual required DescribedMoney GrossProceed { get; set; }
     public string Description { get; set; } = string.Empty;
     public List<DescribedMoney> Expenses { get; set; } = new List<DescribedMoney>();
-    public Money NetProceed
+    public virtual Money NetProceed
     {
         get
         {

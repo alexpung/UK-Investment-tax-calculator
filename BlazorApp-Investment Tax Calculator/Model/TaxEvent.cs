@@ -2,6 +2,6 @@
 
 public abstract record TaxEvent
 {
-    public required string AssetName { get; set; }
-    public required DateTime Date { get; set; }
+    public virtual required string AssetName { get; set; }
+    public virtual required DateTime Date { get; set; }
 }
