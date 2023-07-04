@@ -78,6 +78,13 @@ public class MoneyTest
     }
 
     [Fact]
+    public void TestEmptyCurrencySum()
+    {
+        List<DescribedMoney> moneys = new List<DescribedMoney>();
+        moneys.BaseCurrencySum(i => i.Amount).ShouldBeEquivalentTo(BaseCurrencyMoney.BaseCurrencyZero);
+    }
+
+    [Fact]
     public void TestChangeBaseCurrencyZero()
     {
         BaseCurrencyMoney.BaseCurrency = Currency.Jpy;
