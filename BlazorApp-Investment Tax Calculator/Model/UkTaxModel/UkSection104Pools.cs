@@ -15,7 +15,7 @@ public class UkSection104Pools
     /// </summary>
     /// <param name="assetName"></param>
     /// <returns></returns>
-    public UkSection104 GetExistingOrInitialise(string assetName)
+    public virtual UkSection104 GetExistingOrInitialise(string assetName)
     {
         _section104Pools.TryGetValue(assetName, out UkSection104? section104);
         if (section104 is null)
@@ -26,7 +26,7 @@ public class UkSection104Pools
         return section104;
     }
 
-    public void Clear()
+    public virtual void Clear()
     {
         _section104Pools.Clear();
     }
