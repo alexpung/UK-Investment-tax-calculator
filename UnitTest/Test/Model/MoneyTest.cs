@@ -69,7 +69,7 @@ public class MoneyTest
     [Fact]
     public void TestObjectWithCurrencySum()
     {
-        List<DescribedMoney> moneys = new List<DescribedMoney>
+        List<DescribedMoney> moneys = new()
         { new DescribedMoney() { Amount= new Money(10m, Currency.Gbp) },
           new DescribedMoney() { Amount= new Money(20.1m, Currency.Gbp) },
           new DescribedMoney() { Amount= new Money(0.2m, Currency.Gbp) },
@@ -78,10 +78,17 @@ public class MoneyTest
     }
 
     [Fact]
-    public void TestEmptyCurrencySum()
+    public void TestEmptyBaseCurrencySum()
     {
         List<DescribedMoney> moneys = new List<DescribedMoney>();
         moneys.BaseCurrencySum(i => i.Amount).ShouldBeEquivalentTo(BaseCurrencyMoney.BaseCurrencyZero);
+    }
+
+    [Fact]
+    public void TestEmptyCurrencySum()
+    {
+        List<Money> moneys = new();
+        moneys.BaseCurrencySum().ShouldBeEquivalentTo(BaseCurrencyMoney.BaseCurrencyZero);
     }
 
     [Fact]
