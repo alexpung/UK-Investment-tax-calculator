@@ -1,6 +1,6 @@
 ﻿using Model.UkTaxModel;
 
-namespace Model.Tests.UkTaxModel;
+namespace UnitTest.Test.Model.UkTaxModel;
 
 public class UKTaxYearTests
 {
