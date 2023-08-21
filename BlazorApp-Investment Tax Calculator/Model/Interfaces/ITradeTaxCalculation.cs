@@ -2,7 +2,7 @@
 using NMoneys;
 
 namespace Model.Interfaces;
-public interface ITradeTaxCalculation
+public interface ITradeTaxCalculation : ITextFilePrintable
 {
     string AssetName { get; }
     TradeType BuySell { get; init; }

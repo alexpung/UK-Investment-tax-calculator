@@ -1,9 +1,14 @@
 ﻿using Enum;
 using Model.Interfaces;
 using NMoneys;
+using System.Text;
 
 namespace Model;
 
+/// <summary>
+/// Contain trades that considered the same group in tax matching caluclation.
+/// The usage of this implementation is limited to trades in same day and same asset name, and same buy/sell side of the trade.
+/// </summary>
 public class TradeTaxCalculation : ITradeTaxCalculation
 {
     public List<Trade> TradeList { get; init; }
@@ -77,5 +82,33 @@ public class TradeTaxCalculation : ITradeTaxCalculation
         UnmatchedQty = 0;
         UnmatchedNetAmount = BaseCurrencyMoney.BaseCurrencyZero;
         return (matchedQty, matchedValue);
+    }
+
+    public string UnmatchedDescription() => UnmatchedQty switch
+    {
+        0 => "All units of the disposals are matched with acquitions",
+        > 0 => $"{UnmatchedQty} units of disposals are not matched (short sale).",
+        _ => throw new NotImplementedException()
+    };
+
+    public string PrintToTextFile()
+    {
+        StringBuilder output = new();
+        output.Append($"Sold {TotalQty} units of {AssetName} on " +
+            $"{Date.Date.ToString("dd-MMM-yyyy")} for {TotalNetAmount}.\t");
+        output.AppendLine($"Total gain (loss): {Gain}");
+        output.AppendLine(UnmatchedDescription());
+        output.AppendLine($"Trade details:");
+        foreach (var trade in TradeList)
+        {
+            output.AppendLine($"\t{trade.PrintToTextFile()}");
+        }
+        output.AppendLine($"Trade matching:");
+        foreach (var matching in MatchHistory)
+        {
+            output.AppendLine(matching.PrintToTextFile());
+        }
+        output.AppendLine();
+        return output.ToString();
     }
 }

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Services;
 
-public class UkCalculationResultExportService
+public class UkCalculationResultExportService : ITextFilePrintable
 {
     private readonly ITaxYear _taxYear;
     private readonly UkSection104Pools _section104Pools;
@@ -18,14 +18,13 @@ public class UkCalculationResultExportService
         _tradeCalculationResult = tradeCalculationResult;
     }
 
-    public string Export(IEnumerable<int> yearsToExport)
+    public string PrintToTextFile(IEnumerable<int> yearsToExport)
     {
-        IEnumerable<ITradeTaxCalculation> tradeTaxCalculations = _tradeCalculationResult.CalculatedTrade;
         StringBuilder output = new();
         foreach (int year in yearsToExport.OrderByDescending(i => i))
         {
             output.Append(WriteTaxYearSummary(year, _tradeCalculationResult));
-            IEnumerable<ITradeTaxCalculation> yearFilteredTradeCalculations = tradeTaxCalculations.Where(i => _taxYear.ToTaxYear(i.Date) == year && i.BuySell == Enum.TradeType.SELL)
+            IEnumerable<ITradeTaxCalculation> yearFilteredTradeCalculations = _tradeCalculationResult.CalculatedTrade.Where(i => _taxYear.ToTaxYear(i.Date) == year && i.BuySell == Enum.TradeType.SELL)
                                                                                                  .OrderBy(i => i.Date);
             output.AppendLine();
             output.Append(WriteDisposalDetails(yearFilteredTradeCalculations));
@@ -33,6 +32,12 @@ public class UkCalculationResultExportService
         }
         output.AppendLine();
         return output.ToString();
+    }
+
+    public string PrintToTextFile()
+    {
+        IEnumerable<int> taxYears = _tradeCalculationResult.CalculatedTrade.Select(calculation => _taxYear.ToTaxYear(calculation.Date)).Distinct().OrderByDescending(i => i);
+        return PrintToTextFile(taxYears);
     }
 
     private static string WriteTaxYearSummary(int year, TradeCalculationResult calculationResult)
@@ -48,30 +53,13 @@ public class UkCalculationResultExportService
         return output.ToString();
     }
 
-    private string WriteDisposalDetails(IEnumerable<ITradeTaxCalculation> tradeTaxCalculations)
+    private static string WriteDisposalDetails(IEnumerable<ITradeTaxCalculation> tradeTaxCalculations)
     {
         StringBuilder output = new();
         int DisposalCount = 1;
         foreach (var calculations in tradeTaxCalculations)
         {
-            output.Append($"Disposal {DisposalCount}: Sold {calculations.TotalQty} units of {calculations.AssetName} on " +
-                $"{calculations.Date.Date.ToString("dd-MMM-yyyy")} for {calculations.TotalNetAmount}.\t");
-            output.AppendLine($"Total gain (loss): {calculations.Gain}");
-            output.AppendLine(calculations.UnmatchedDescription());
-            output.AppendLine($"Trade details:");
-            foreach (var trade in calculations.TradeList)
-            {
-                output.AppendLine($"\t{trade.ToPrintedString()}");
-            }
-            output.AppendLine($"Trade matching:");
-            foreach (var matching in calculations.MatchHistory)
-            {
-                if (matching.TradeMatchType == TaxMatchType.SECTION_104)
-                {
-                    output.AppendLine(matching.ToPrintedString(calculations, _section104Pools));
-                }
-                else output.AppendLine(matching.ToPrintedString());
-            }
+            output.Append($"Disposal {DisposalCount}: {calculations.PrintToTextFile()}");
             output.AppendLine();
             DisposalCount++;
         }

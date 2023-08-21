@@ -81,7 +81,7 @@ public class UkTradeCalculator : ITradeCalculator
         return _tradeList.CorporateActions.OfType<StockSplit>().Where(i => i.Date > fromDate && i.Date <= toDate).ToList();
     }
 
-    private void MatchTrade(ITradeTaxCalculation trade1, ITradeTaxCalculation trade2, TaxMatchType TaxMatchType)
+    private void MatchTrade(ITradeTaxCalculation trade1, ITradeTaxCalculation trade2, TaxMatchType taxMatchType)
     {
         if (trade1.CalculationCompleted || trade2.CalculationCompleted) return;
         decimal matchQuantity = Math.Min(trade1.UnmatchedQty, trade2.UnmatchedQty);
@@ -110,22 +110,8 @@ public class UkTradeCalculator : ITradeCalculator
         (_, Money laterTradeValue) = laterTrade.MatchQty(matchQuantityAfterActions);
         Money acquitionValue = earlierTrade.BuySell == TradeType.BUY ? earlierTradeValue : laterTradeValue;
         Money disposalValue = earlierTrade.BuySell == TradeType.BUY ? laterTradeValue : earlierTradeValue;
-        trade1.MatchHistory.Add(new TradeMatch()
-        {
-            TradeMatchType = TaxMatchType,
-            MatchQuantity = matchQuantity,
-            BaseCurrencyMatchAcquitionValue = acquitionValue,
-            BaseCurrencyMatchDisposalValue = disposalValue,
-            MatchedGroup = trade2
-        });
-        trade2.MatchHistory.Add(new TradeMatch()
-        {
-            TradeMatchType = TaxMatchType,
-            MatchQuantity = matchQuantity,
-            BaseCurrencyMatchAcquitionValue = acquitionValue,
-            BaseCurrencyMatchDisposalValue = disposalValue,
-            MatchedGroup = trade1
-        });
+        trade1.MatchHistory.Add(TradeMatch.CreateTradeMatch(taxMatchType, matchQuantity, acquitionValue, disposalValue, trade2));
+        trade2.MatchHistory.Add(TradeMatch.CreateTradeMatch(taxMatchType, matchQuantity, acquitionValue, disposalValue, trade1));
     }
 
     private void ProcessTradeInChronologicalOrder(List<ITradeTaxCalculation> tradeTaxCalculations, string assetName)

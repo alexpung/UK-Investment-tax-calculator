@@ -1,8 +1,10 @@
 ﻿using Model.Interfaces;
 using NMoneys;
+using Services;
+using System.Text;
 
 namespace Model.UkTaxModel;
-public class Section104History
+public class Section104History : ITextFilePrintable
 {
     public ITradeTaxCalculation? TradeTaxCalculation { get; set; }
     public DateTime Date { get; set; }
@@ -47,5 +49,25 @@ public class Section104History
             QuantityChange = newQuantity - oldQuantity,
             Explanation = $"Share adjustment on {date.ToShortDateString()} due to corporate action."
         };
+    }
+
+    public string PrintToTextFile()
+    {
+        StringBuilder output = new();
+        output.AppendLine($"{Date.ToShortDateString()}\t{OldQuantity + QuantityChange} ({QuantityChange.ToSignedNumberString()})\t\t\t" +
+            $"{OldValue + ValueChange} ({ValueChange.ToSignedNumberString()})\t\t");
+        if (Explanation != string.Empty)
+        {
+            output.AppendLine($"{Explanation}");
+        }
+        if (TradeTaxCalculation?.TradeList is not null)
+        {
+            output.AppendLine("Involved trades:");
+            foreach (var trade in TradeTaxCalculation.TradeList)
+            {
+                output.AppendLine(trade.PrintToTextFile());
+            }
+        }
+        return output.ToString();
     }
 }

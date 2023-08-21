@@ -25,7 +25,7 @@ public class DividendExportService
             output.AppendLine("\t\tTransactions:");
             foreach (var dividend in dividendSummary.RelatedDividendsAndTaxes.OrderBy(i => i.Date))
             {
-                output.AppendLine($"\t\t{dividend.ToPrintedString()}");
+                output.AppendLine($"\t\t{dividend.PrintToTextFile()}");
             }
             output.AppendLine();
         }

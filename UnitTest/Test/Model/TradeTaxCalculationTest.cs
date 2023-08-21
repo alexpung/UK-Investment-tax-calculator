@@ -47,13 +47,11 @@ public class TradeTaxCalculationTests
     public void TradeTaxCalculation_CalculatesTotalAllowableCost()
     {
         // Arrange
-        Mock<TradeMatch> match1 = new();
-        Mock<TradeMatch> match2 = new();
-        match1.Setup(i => i.BaseCurrencyMatchAcquitionValue).Returns(BaseCurrencyMoney.BaseCurrencyAmount(100));
-        match2.Setup(i => i.BaseCurrencyMatchAcquitionValue).Returns(BaseCurrencyMoney.BaseCurrencyAmount(200));
         Mock<Trade> trade1 = new();
         trade1.Setup(i => i.BuySell).Returns(TradeType.SELL);
-        var matchHistory = new List<TradeMatch> { match1.Object, match2.Object };
+        var matchHistory = new List<TradeMatch> { TradeMatch.CreateTradeMatch(TaxMatchType.SECTION_104, 100, BaseCurrencyMoney.BaseCurrencyAmount(100), BaseCurrencyMoney.BaseCurrencyAmount(150)),
+                                                  TradeMatch.CreateTradeMatch(TaxMatchType.SECTION_104, 100, BaseCurrencyMoney.BaseCurrencyAmount(200), BaseCurrencyMoney.BaseCurrencyAmount(250))
+                                                };
         var calculation = new TradeTaxCalculation(new List<Trade>() { trade1.Object })
         {
             MatchHistory = matchHistory
@@ -70,13 +68,11 @@ public class TradeTaxCalculationTests
     public void TradeTaxCalculation_CalculatesTotalProceeds()
     {
         // Arrange
-        Mock<TradeMatch> match1 = new();
-        Mock<TradeMatch> match2 = new();
-        match1.Setup(i => i.BaseCurrencyMatchDisposalValue).Returns(BaseCurrencyMoney.BaseCurrencyAmount(100));
-        match2.Setup(i => i.BaseCurrencyMatchDisposalValue).Returns(BaseCurrencyMoney.BaseCurrencyAmount(200));
         Mock<Trade> trade1 = new();
         trade1.Setup(i => i.BuySell).Returns(TradeType.SELL);
-        var matchHistory = new List<TradeMatch> { match1.Object, match2.Object };
+        var matchHistory = new List<TradeMatch> { TradeMatch.CreateTradeMatch(TaxMatchType.SECTION_104, 100, BaseCurrencyMoney.BaseCurrencyZero, BaseCurrencyMoney.BaseCurrencyAmount(100)),
+                                                  TradeMatch.CreateTradeMatch(TaxMatchType.SECTION_104, 100, BaseCurrencyMoney.BaseCurrencyZero, BaseCurrencyMoney.BaseCurrencyAmount(200))
+                                                };
         var calculation = new TradeTaxCalculation(new List<Trade>() { trade1.Object })
         {
             MatchHistory = matchHistory
@@ -93,15 +89,11 @@ public class TradeTaxCalculationTests
     public void TradeTaxCalculation_CalculatesTotalGain()
     {
         // Arrange
-        Mock<TradeMatch> match1 = new();
-        Mock<TradeMatch> match2 = new();
-        match1.Setup(i => i.BaseCurrencyMatchDisposalValue).Returns(BaseCurrencyMoney.BaseCurrencyAmount(100));
-        match2.Setup(i => i.BaseCurrencyMatchDisposalValue).Returns(BaseCurrencyMoney.BaseCurrencyAmount(200));
-        match1.Setup(i => i.BaseCurrencyMatchAcquitionValue).Returns(BaseCurrencyMoney.BaseCurrencyAmount(70));
-        match2.Setup(i => i.BaseCurrencyMatchAcquitionValue).Returns(BaseCurrencyMoney.BaseCurrencyAmount(210));
         Mock<Trade> trade1 = new();
         trade1.Setup(i => i.BuySell).Returns(TradeType.SELL);
-        var matchHistory = new List<TradeMatch> { match1.Object, match2.Object };
+        var matchHistory = new List<TradeMatch> { TradeMatch.CreateTradeMatch(TaxMatchType.SECTION_104, 100, BaseCurrencyMoney.BaseCurrencyAmount(70), BaseCurrencyMoney.BaseCurrencyAmount(100)),
+                                                  TradeMatch.CreateTradeMatch(TaxMatchType.SECTION_104, 100, BaseCurrencyMoney.BaseCurrencyAmount(210), BaseCurrencyMoney.BaseCurrencyAmount(200))
+                                                };
         var calculation = new TradeTaxCalculation(new List<Trade>() { trade1.Object })
         {
             MatchHistory = matchHistory

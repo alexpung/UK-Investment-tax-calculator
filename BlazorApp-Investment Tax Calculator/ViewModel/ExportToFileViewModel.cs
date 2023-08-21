@@ -26,13 +26,13 @@ public class ExportToFileViewModel
 
     public byte[] ExportTrades()
     {
-        string contents = _calculationResultExportService.Export(_yearOptions.SelectedOptions);
+        string contents = _calculationResultExportService.PrintToTextFile(_yearOptions.SelectedOptions);
         return System.Text.Encoding.UTF8.GetBytes(contents);
     }
 
     public byte[] ExportSection104()
     {
-        string contents = _section104ExportService.Export(_yearOptions.SelectedOptions);
+        string contents = _section104ExportService.PrintToTextFile(_yearOptions.SelectedOptions);
         return System.Text.Encoding.UTF8.GetBytes(contents);
     }
 }

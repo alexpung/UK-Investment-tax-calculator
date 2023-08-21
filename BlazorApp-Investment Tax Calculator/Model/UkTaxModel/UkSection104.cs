@@ -67,8 +67,9 @@ public record UkSection104
                 ($"Cannot add assets with negative quantity {tradeTaxCalculation.UnmatchedQty} and value {tradeTaxCalculation.UnmatchedNetAmount}");
         }
         (decimal qty, Money value) = tradeTaxCalculation.MatchAll();
-        tradeTaxCalculation.MatchHistory.Add(CreateUkMatchHistory(qty, value, BaseCurrencyMoney.BaseCurrencyZero));
-        Section104HistoryList.Add(Section104History.AddToSection104(tradeTaxCalculation, qty, value, Quantity, ValueInBaseCurrency));
+        Section104History newSection104History = Section104History.AddToSection104(tradeTaxCalculation, qty, value, Quantity, ValueInBaseCurrency);
+        tradeTaxCalculation.MatchHistory.Add(TradeMatch.CreateSection104Match(qty, value, BaseCurrencyMoney.BaseCurrencyZero, newSection104History));
+        Section104HistoryList.Add(newSection104History);
         Quantity += qty;
         ValueInBaseCurrency += value;
     }
@@ -88,20 +89,10 @@ public record UkSection104
             (qty, disposalValue) = tradeTaxCalculation.MatchQty(Quantity);
         }
         acqisitionValue = ValueInBaseCurrency.Multiply(qty).Divide(Quantity);
-        tradeTaxCalculation.MatchHistory.Add(CreateUkMatchHistory(qty, acqisitionValue, disposalValue));
-        Section104HistoryList.Add(Section104History.RemoveFromSection104(tradeTaxCalculation, qty * -1, acqisitionValue * -1, Quantity, ValueInBaseCurrency));
+        Section104History newSection104History = Section104History.RemoveFromSection104(tradeTaxCalculation, qty * -1, acqisitionValue * -1, Quantity, ValueInBaseCurrency);
+        tradeTaxCalculation.MatchHistory.Add(TradeMatch.CreateSection104Match(qty, acqisitionValue, disposalValue, newSection104History));
+        Section104HistoryList.Add(newSection104History);
         Quantity -= qty;
         ValueInBaseCurrency -= acqisitionValue;
-    }
-
-    private static TradeMatch CreateUkMatchHistory(decimal qty, Money acqisitionValue, Money disposalValue)
-    {
-        return new()
-        {
-            TradeMatchType = TaxMatchType.SECTION_104,
-            MatchQuantity = qty,
-            BaseCurrencyMatchAcquitionValue = acqisitionValue,
-            BaseCurrencyMatchDisposalValue = disposalValue
-        };
     }
 }
