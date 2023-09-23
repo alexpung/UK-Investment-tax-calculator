@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Model;
 using Model.Interfaces;
 using Model.UkTaxModel;
-using NMoneys;
 using Parser;
 using Parser.InteractiveBrokersXml;
 using Services;
@@ -26,7 +25,7 @@ builder.Services.AddSingleton<UkCalculationResultExportService>();
 builder.Services.AddSingleton<UkSection104ExportService>();
 builder.Services.AddSingleton<ITradeCalculator, UkTradeCalculator>();
 builder.Services.AddSingleton<IDividendCalculator, UkDividendCalculator>();
-BaseCurrencyMoney.BaseCurrency = Currency.Gbp;
+WrappedMoney.BaseCurrency = "Gbp";
 
 // IBKR parser
 builder.Services.AddSingleton<IBXmlStockTradeParser>();

@@ -17,7 +17,7 @@ public class TradeTests
             Quantity = 10,
             GrossProceed = new DescribedMoney
             {
-                Amount = new NMoneys.Money(100),
+                Amount = new WrappedMoney(100),
                 Description = "Trade gross proceed"
             }
         };
@@ -41,13 +41,13 @@ public class TradeTests
             Quantity = 5,
             GrossProceed = new DescribedMoney
             {
-                Amount = new NMoneys.Money(100),
+                Amount = new WrappedMoney(100),
                 Description = "Trade gross proceed"
             },
             Expenses = new List<DescribedMoney>
             {
-                new DescribedMoney { Amount = new NMoneys.Money(10), Description = "Expense 1" },
-                new DescribedMoney { Amount = new NMoneys.Money(20), Description = "Expense 2" }
+                new DescribedMoney { Amount = new WrappedMoney(10), Description = "Expense 1" },
+                new DescribedMoney { Amount = new WrappedMoney(20), Description = "Expense 2" }
             }
         };
 

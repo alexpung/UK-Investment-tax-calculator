@@ -1,5 +1,4 @@
 ﻿using Model;
-using NMoneys;
 using System.Xml.Linq;
 
 namespace Parser;
@@ -16,14 +15,14 @@ public static class XmlParserHelper
         else throw new ArgumentException(@$"The attribute ""{attributeName}"" is not found in ""{xElement.Name}"", please include this attribute in your XML statement");
     }
 
-    public static Money BuildMoney(this XElement xElement, string amountAttributeName, string currencyAttributeName)
+    public static WrappedMoney BuildMoney(this XElement xElement, string amountAttributeName, string currencyAttributeName)
     {
-        return new Money(decimal.Parse(xElement.GetAttribute(amountAttributeName)), xElement.GetAttribute(currencyAttributeName));
+        return new WrappedMoney(decimal.Parse(xElement.GetAttribute(amountAttributeName)), xElement.GetAttribute(currencyAttributeName));
     }
 
     public static DescribedMoney BuildDescribedMoney(this XElement xElement, string amountAttributeName, string currencyAttributeName, string exchangeRateAttributeName, string description, bool revertSign = false)
     {
-        Money money = xElement.BuildMoney(amountAttributeName, currencyAttributeName);
+        WrappedMoney money = xElement.BuildMoney(amountAttributeName, currencyAttributeName);
         return new DescribedMoney
         {
             Amount = revertSign ? money * -1 : money,

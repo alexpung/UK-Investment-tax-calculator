@@ -2,9 +2,7 @@
 using Model.Interfaces;
 using Model.UkTaxModel;
 using Moq;
-using NMoneys;
 using System.Globalization;
-using UnitTest.Helper;
 
 namespace UnitTest.Test.Model;
 
@@ -27,7 +25,7 @@ public class UkDividendCalculatorTest
                 CompanyLocation = new RegionInfo("HK"),
                 DividendType = Enum.DividendType.DIVIDEND,
                 Date = new DateTime(2022, 4, 5),
-                Proceed = new DescribedMoney { Amount = new Money(1000, "HKD"), Description = "MTR Corporation dividend", FxRate = 0.11m }
+                Proceed = new DescribedMoney { Amount = new WrappedMoney(1000, "HKD"), Description = "MTR Corporation dividend", FxRate = 0.11m }
             },
             new Dividend()
             {
@@ -35,7 +33,7 @@ public class UkDividendCalculatorTest
                 CompanyLocation = new RegionInfo("HK"),
                 DividendType = Enum.DividendType.DIVIDEND_IN_LIEU,
                 Date = new DateTime(2022, 4, 5),
-                Proceed = new DescribedMoney { Amount = new Money(500, "HKD"), Description = "HSBC Bank dividend", FxRate = 0.11m }
+                Proceed = new DescribedMoney { Amount = new WrappedMoney(500, "HKD"), Description = "HSBC Bank dividend", FxRate = 0.11m }
             },
             new Dividend()
             {
@@ -43,7 +41,7 @@ public class UkDividendCalculatorTest
                 CompanyLocation = new RegionInfo("GB"),
                 DividendType = Enum.DividendType.DIVIDEND,
                 Date = new DateTime(2022, 4, 4),
-                Proceed = new DescribedMoney { Amount = new Money(2000, "GBP"), Description = "Shell dividend", FxRate = 1m }
+                Proceed = new DescribedMoney { Amount = new WrappedMoney(2000, "GBP"), Description = "Shell dividend", FxRate = 1m }
             },
             new Dividend()
             {
@@ -51,7 +49,7 @@ public class UkDividendCalculatorTest
                 CompanyLocation = new RegionInfo("GB"),
                 DividendType = Enum.DividendType.WITHHOLDING,
                 Date = new DateTime(2022, 4, 4),
-                Proceed = new DescribedMoney { Amount = new Money(100, "GBP"), Description = "Shell withholding tax", FxRate = 1m }
+                Proceed = new DescribedMoney { Amount = new WrappedMoney(100, "GBP"), Description = "Shell withholding tax", FxRate = 1m }
             },
             new Dividend()
             {
@@ -59,7 +57,7 @@ public class UkDividendCalculatorTest
                 CompanyLocation = new RegionInfo("JP"),
                 DividendType = Enum.DividendType.DIVIDEND,
                 Date = new DateTime(2022, 4, 6),
-                Proceed = new DescribedMoney { Amount = new Money(20000, "JPY"), Description = "Sony Corporation dividend", FxRate = 0.0063m }
+                Proceed = new DescribedMoney { Amount = new WrappedMoney(20000, "JPY"), Description = "Sony Corporation dividend", FxRate = 0.0063m }
             },
             new Dividend()
             {
@@ -67,7 +65,7 @@ public class UkDividendCalculatorTest
                 CompanyLocation = new RegionInfo("JP"),
                 DividendType = Enum.DividendType.WITHHOLDING,
                 Date = new DateTime(2022, 4, 6),
-                Proceed = new DescribedMoney { Amount = new Money(3000, "JPY"), Description = "Sony Corporation withholding tax", FxRate = 0.0063m }
+                Proceed = new DescribedMoney { Amount = new WrappedMoney(3000, "JPY"), Description = "Sony Corporation withholding tax", FxRate = 0.0063m }
             },
             new Dividend()
             {
@@ -75,7 +73,7 @@ public class UkDividendCalculatorTest
                 CompanyLocation = new RegionInfo("JP"),
                 DividendType = Enum.DividendType.DIVIDEND,
                 Date = new DateTime(2022, 8, 6),
-                Proceed = new DescribedMoney { Amount = new Money(10000, "JPY"), Description = "Sony Corporation dividend", FxRate = 0.007m }
+                Proceed = new DescribedMoney { Amount = new WrappedMoney(10000, "JPY"), Description = "Sony Corporation dividend", FxRate = 0.007m }
             },
             new Dividend()
             {
@@ -83,7 +81,7 @@ public class UkDividendCalculatorTest
                 CompanyLocation = new RegionInfo("JP"),
                 DividendType = Enum.DividendType.WITHHOLDING,
                 Date = new DateTime(2022, 8, 6),
-                Proceed = new DescribedMoney { Amount = new Money(1500, "JPY"), Description = "Sony Corporation withholding tax", FxRate = 0.007m }
+                Proceed = new DescribedMoney { Amount = new WrappedMoney(1500, "JPY"), Description = "Sony Corporation withholding tax", FxRate = 0.007m }
             }
         };
         UkDividendCalculator calculator = SetUpCalculator(data);
@@ -91,15 +89,15 @@ public class UkDividendCalculatorTest
         result.Count.ShouldBe(3);
         var hkResult = result.Single(i => i.CountryOfOrigin.Name == "HK");
         hkResult.TaxYear.ShouldBe(2021);
-        hkResult.TotalTaxableDividend.ShouldBe(165m.ConvertToBaseCurrency());
-        hkResult.TotalForeignTaxPaid.ShouldBe(0m.ConvertToBaseCurrency());
+        hkResult.TotalTaxableDividend.ShouldBe(new WrappedMoney(165m));
+        hkResult.TotalForeignTaxPaid.ShouldBe(new WrappedMoney(0m));
         var gbResult = result.Single(i => i.CountryOfOrigin.Name == "GB");
         gbResult.TaxYear.ShouldBe(2021);
-        gbResult.TotalTaxableDividend.ShouldBe(2000m.ConvertToBaseCurrency());
-        gbResult.TotalForeignTaxPaid.ShouldBe(100m.ConvertToBaseCurrency());
+        gbResult.TotalTaxableDividend.ShouldBe(new WrappedMoney(2000m));
+        gbResult.TotalForeignTaxPaid.ShouldBe(new WrappedMoney(100m));
         var jpResult = result.Single(i => i.CountryOfOrigin.Name == "JP");
         jpResult.TaxYear.ShouldBe(2022);
-        jpResult.TotalTaxableDividend.ShouldBe(196m.ConvertToBaseCurrency());
-        jpResult.TotalForeignTaxPaid.ShouldBe(29.4m.ConvertToBaseCurrency());
+        jpResult.TotalTaxableDividend.ShouldBe(new WrappedMoney(196m));
+        jpResult.TotalForeignTaxPaid.ShouldBe(new WrappedMoney(29.4m));
     }
 }

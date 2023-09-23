@@ -1,5 +1,4 @@
 ﻿using Model.Interfaces;
-using NMoneys;
 using Services;
 using System.Text;
 
@@ -9,12 +8,12 @@ public class Section104History : ITextFilePrintable
     public ITradeTaxCalculation? TradeTaxCalculation { get; set; }
     public DateTime Date { get; set; }
     public decimal OldQuantity { get; set; }
-    public Money OldValue { get; set; }
+    public WrappedMoney OldValue { get; set; }
     public decimal QuantityChange { get; set; }
-    public Money ValueChange { get; set; }
+    public WrappedMoney ValueChange { get; set; }
     public string Explanation { get; set; } = string.Empty;
 
-    public static Section104History AddToSection104(ITradeTaxCalculation tradeTaxCalculation, decimal quantityChange, Money valueChange, decimal oldQuantity, Money oldValue)
+    public static Section104History AddToSection104(ITradeTaxCalculation tradeTaxCalculation, decimal quantityChange, WrappedMoney valueChange, decimal oldQuantity, WrappedMoney oldValue)
     {
         return new Section104History
         {
@@ -27,7 +26,7 @@ public class Section104History : ITextFilePrintable
         };
     }
 
-    public static Section104History RemoveFromSection104(ITradeTaxCalculation tradeTaxCalculation, decimal quantityChange, Money valueChange, decimal oldQuantity, Money oldValue)
+    public static Section104History RemoveFromSection104(ITradeTaxCalculation tradeTaxCalculation, decimal quantityChange, WrappedMoney valueChange, decimal oldQuantity, WrappedMoney oldValue)
     {
         return new Section104History
         {

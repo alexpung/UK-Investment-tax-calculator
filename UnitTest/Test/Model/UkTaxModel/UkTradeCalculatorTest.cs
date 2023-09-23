@@ -77,11 +77,11 @@ public class UkTradeCalculatorTests
         List<ITradeTaxCalculation> result = calculator.CalculateTax();
 
         // Assert
-        result[1].Gain.ShouldBe(BaseCurrencyMoney.BaseCurrencyAmount(5700));
-        result[1].TotalAllowableCost.ShouldBe(BaseCurrencyMoney.BaseCurrencyAmount(2300));
+        result[1].Gain.ShouldBe(new WrappedMoney(5700));
+        result[1].TotalAllowableCost.ShouldBe(new WrappedMoney(2300));
         result[1].TotalQty.ShouldBe(80m);
         section104.Quantity.ShouldBe(70);
-        section104.ValueInBaseCurrency.ShouldBe(BaseCurrencyMoney.BaseCurrencyAmount(700));
+        section104.ValueInBaseCurrency.ShouldBe(new WrappedMoney(700));
     }
 
 
@@ -107,10 +107,10 @@ public class UkTradeCalculatorTests
         List<ITradeTaxCalculation> result = calculator.CalculateTax();
 
         // Assert
-        result[1].Gain.ShouldBe(BaseCurrencyMoney.BaseCurrencyAmount(5200));
-        result[1].TotalAllowableCost.ShouldBe(BaseCurrencyMoney.BaseCurrencyAmount(2800));
+        result[1].Gain.ShouldBe(new WrappedMoney(5200));
+        result[1].TotalAllowableCost.ShouldBe(new WrappedMoney(2800));
         section104.Quantity.ShouldBe(90);
-        section104.ValueInBaseCurrency.ShouldBe(BaseCurrencyMoney.BaseCurrencyAmount(2200));
+        section104.ValueInBaseCurrency.ShouldBe(new WrappedMoney(2200));
     }
 
     [Fact]
@@ -138,10 +138,10 @@ public class UkTradeCalculatorTests
         List<ITradeTaxCalculation> result = calculator.CalculateTax();
 
         // Assert
-        result[0].Gain.ShouldBe(BaseCurrencyMoney.BaseCurrencyAmount(-3500));
-        result[0].TotalAllowableCost.ShouldBe(BaseCurrencyMoney.BaseCurrencyAmount(5000));
+        result[0].Gain.ShouldBe(new WrappedMoney(-3500));
+        result[0].TotalAllowableCost.ShouldBe(new WrappedMoney(5000));
         section104.Quantity.ShouldBe(75);
-        section104.ValueInBaseCurrency.ShouldBe(BaseCurrencyMoney.BaseCurrencyAmount(2500));
+        section104.ValueInBaseCurrency.ShouldBe(new WrappedMoney(2500));
     }
 
     [Fact]
@@ -169,9 +169,9 @@ public class UkTradeCalculatorTests
         List<ITradeTaxCalculation> result = calculator.CalculateTax();
 
         // Assert
-        result[0].Gain.ShouldBe(BaseCurrencyMoney.BaseCurrencyAmount(166.6666666666666666666666667m));
-        result[1].Gain.ShouldBe(BaseCurrencyMoney.BaseCurrencyAmount(408.3333333333333333333333333m));
-        result[2].Gain.ShouldBe(BaseCurrencyMoney.BaseCurrencyAmount(325));
+        result[0].Gain.ShouldBe(new WrappedMoney(166.6666666666666666666666667m));
+        result[1].Gain.ShouldBe(new WrappedMoney(408.3333333333333333333333333m));
+        result[2].Gain.ShouldBe(new WrappedMoney(325));
     }
 
 

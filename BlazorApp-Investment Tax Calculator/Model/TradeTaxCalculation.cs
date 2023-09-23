@@ -1,6 +1,5 @@
 ﻿using Enum;
 using Model.Interfaces;
-using NMoneys;
 using System.Text;
 
 namespace Model;
@@ -13,12 +12,12 @@ public class TradeTaxCalculation : ITradeTaxCalculation
 {
     public List<Trade> TradeList { get; init; }
     public List<TradeMatch> MatchHistory { get; init; } = new List<TradeMatch>();
-    public Money TotalAllowableCost => MatchHistory.BaseCurrencySum(tradeMatch => tradeMatch.BaseCurrencyMatchAcquitionValue);
-    public Money TotalProceeds => MatchHistory.BaseCurrencySum(tradeMatch => tradeMatch.BaseCurrencyMatchDisposalValue);
-    public Money Gain => TotalProceeds - TotalAllowableCost;
-    public Money TotalNetAmount { get; }
-    private Money _unmatchedNetAmount;
-    public Money UnmatchedNetAmount
+    public WrappedMoney TotalAllowableCost => MatchHistory.Sum(tradeMatch => tradeMatch.BaseCurrencyMatchAcquitionValue);
+    public WrappedMoney TotalProceeds => MatchHistory.Sum(tradeMatch => tradeMatch.BaseCurrencyMatchDisposalValue);
+    public WrappedMoney Gain => TotalProceeds - TotalAllowableCost;
+    public WrappedMoney TotalNetAmount { get; }
+    private WrappedMoney _unmatchedNetAmount;
+    public WrappedMoney UnmatchedNetAmount
     {
         get { return _unmatchedNetAmount; }
         private set
@@ -46,7 +45,7 @@ public class TradeTaxCalculation : ITradeTaxCalculation
             throw new ArgumentException("Not all trades that is put in TradeTaxCalculation is on the same BUY/SELL side");
         }
         TradeList = trades.ToList();
-        TotalNetAmount = trades.BaseCurrencySum(trade => trade.NetProceed);
+        TotalNetAmount = trades.Sum(trade => trade.NetProceed);
         UnmatchedNetAmount = TotalNetAmount;
         TotalQty = trades.Sum(trade => trade.Quantity);
         UnmatchedQty = TotalQty;
@@ -54,33 +53,33 @@ public class TradeTaxCalculation : ITradeTaxCalculation
         CalculationCompleted = false;
     }
 
-    public (decimal matchedQty, Money matchedValue) MatchQty(decimal demandedQty)
+    public (decimal matchedQty, WrappedMoney matchedValue) MatchQty(decimal demandedQty)
     {
         decimal matchedQty;
-        Money matchedValue;
+        WrappedMoney matchedValue;
         if (demandedQty >= UnmatchedQty)
         {
             matchedQty = UnmatchedQty;
             matchedValue = UnmatchedNetAmount;
             UnmatchedQty = 0;
-            UnmatchedNetAmount = BaseCurrencyMoney.BaseCurrencyZero;
+            UnmatchedNetAmount = WrappedMoney.GetBaseCurrencyZero();
         }
         else
         {
             matchedQty = demandedQty;
-            matchedValue = TotalNetAmount.Multiply(demandedQty).Divide(TotalQty);
+            matchedValue = TotalNetAmount * demandedQty / TotalQty;
             UnmatchedQty -= matchedQty;
             UnmatchedNetAmount -= matchedValue;
         }
         return (matchedQty, matchedValue);
     }
 
-    public (decimal matchedQty, Money matchedValue) MatchAll()
+    public (decimal matchedQty, WrappedMoney matchedValue) MatchAll()
     {
         decimal matchedQty = UnmatchedQty;
-        Money matchedValue = UnmatchedNetAmount;
+        WrappedMoney matchedValue = UnmatchedNetAmount;
         UnmatchedQty = 0;
-        UnmatchedNetAmount = BaseCurrencyMoney.BaseCurrencyZero;
+        UnmatchedNetAmount = WrappedMoney.GetBaseCurrencyZero();
         return (matchedQty, matchedValue);
     }
 

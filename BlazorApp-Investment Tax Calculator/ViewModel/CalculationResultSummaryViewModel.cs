@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.Messaging;
 using Model;
-using NMoneys;
 using ViewModel.Messages;
 using ViewModel.Options;
 
@@ -11,12 +10,12 @@ public class CalculationResultSummaryViewModel : IRecipient<CalculationFinishedM
     private readonly TradeCalculationResult _tradeCalculationResult;
     private readonly DividendCalculationResult _dividendCalculationResult;
     public int NumberOfDisposals { get; set; }
-    public Money DisposalProceeds { get; set; } = BaseCurrencyMoney.BaseCurrencyZero;
-    public Money AllowableCosts { get; set; } = BaseCurrencyMoney.BaseCurrencyZero;
-    public Money TotalGain { get; set; } = BaseCurrencyMoney.BaseCurrencyZero;
-    public Money TotalLoss { get; set; } = BaseCurrencyMoney.BaseCurrencyZero;
-    public Money TotalDividends { get; set; } = BaseCurrencyMoney.BaseCurrencyZero;
-    public Money TotalForeignTaxPaid { get; set; } = BaseCurrencyMoney.BaseCurrencyZero;
+    public WrappedMoney DisposalProceeds { get; set; } = WrappedMoney.GetBaseCurrencyZero();
+    public WrappedMoney AllowableCosts { get; set; } = WrappedMoney.GetBaseCurrencyZero();
+    public WrappedMoney TotalGain { get; set; } = WrappedMoney.GetBaseCurrencyZero();
+    public WrappedMoney TotalLoss { get; set; } = WrappedMoney.GetBaseCurrencyZero();
+    public WrappedMoney TotalDividends { get; set; } = WrappedMoney.GetBaseCurrencyZero();
+    public WrappedMoney TotalForeignTaxPaid { get; set; } = WrappedMoney.GetBaseCurrencyZero();
     public YearOptions Years { get; init; }
 
 

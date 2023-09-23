@@ -1,6 +1,5 @@
 ﻿using Model.Interfaces;
 using Model.UkTaxModel;
-using NMoneys;
 using System.Text;
 
 namespace Model;
@@ -13,21 +12,21 @@ public record TradeMatch : ITextFilePrintable
     public required TaxMatchType TradeMatchType { get; set; }
     public ITradeTaxCalculation? MatchedGroup { get; set; }
     public decimal MatchQuantity { get; set; } = 0m;
-    public virtual Money BaseCurrencyMatchDisposalValue { get; set; } = BaseCurrencyMoney.BaseCurrencyZero;
-    public virtual Money BaseCurrencyMatchAcquitionValue { get; set; } = BaseCurrencyMoney.BaseCurrencyZero;
+    public virtual WrappedMoney BaseCurrencyMatchDisposalValue { get; set; } = WrappedMoney.GetBaseCurrencyZero();
+    public virtual WrappedMoney BaseCurrencyMatchAcquitionValue { get; set; } = WrappedMoney.GetBaseCurrencyZero();
     public string AdditionalInformation { get; set; } = string.Empty;
     public Section104History? Section104HistorySnapshot { get; set; }
 
     private TradeMatch() { }
 
-    public static TradeMatch CreateSection104Match(decimal qty, Money acqisitionValue, Money disposalValue, Section104History section104History)
+    public static TradeMatch CreateSection104Match(decimal qty, WrappedMoney acqisitionValue, WrappedMoney disposalValue, Section104History section104History)
     {
         TradeMatch tradeMatch = CreateTradeMatch(TaxMatchType.SECTION_104, qty, acqisitionValue, disposalValue);
         tradeMatch.Section104HistorySnapshot = section104History;
         return tradeMatch;
     }
 
-    public static TradeMatch CreateTradeMatch(TaxMatchType taxMatchType, decimal qty, Money acqisitionValue, Money disposalValue, ITradeTaxCalculation? matchedGroup = null)
+    public static TradeMatch CreateTradeMatch(TaxMatchType taxMatchType, decimal qty, WrappedMoney acqisitionValue, WrappedMoney disposalValue, ITradeTaxCalculation? matchedGroup = null)
     {
         return new()
         {

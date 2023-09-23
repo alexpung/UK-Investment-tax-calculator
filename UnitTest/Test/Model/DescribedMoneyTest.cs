@@ -1,5 +1,4 @@
 ﻿using Model;
-using NMoneys;
 
 namespace UnitTest.Test.Model;
 
@@ -9,14 +8,14 @@ public class DescribedMoneyTests
     public void BaseCurrencyAmount_ReturnsCorrectValue()
     {
         // Arrange
-        var amount = new Money(100, "USD");
+        var amount = new WrappedMoney(100, "USD");
         var describedMoney = new DescribedMoney { Amount = amount, FxRate = 1.5m };
 
         // Act
-        Money baseCurrencyAmount = describedMoney.BaseCurrencyAmount;
+        WrappedMoney baseCurrencyAmount = describedMoney.BaseCurrencyAmount;
 
         // Assert
-        baseCurrencyAmount.ShouldBe(BaseCurrencyMoney.BaseCurrencyAmount(150));
+        baseCurrencyAmount.ShouldBe(new WrappedMoney(150));
     }
 }
 

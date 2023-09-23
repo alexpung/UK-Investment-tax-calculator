@@ -1,6 +1,4 @@
-﻿using NMoneys;
-
-namespace Model;
+﻿namespace Model;
 
 public class DividendCalculationResult
 {
@@ -11,13 +9,13 @@ public class DividendCalculationResult
         DividendSummary = dividendSummaries;
     }
 
-    public Money GetTotalDividend(IEnumerable<int> yearFilter)
+    public WrappedMoney GetTotalDividend(IEnumerable<int> yearFilter)
     {
-        return DividendSummary.Where(i => yearFilter.Contains(i.TaxYear)).BaseCurrencySum(i => i.TotalTaxableDividend);
+        return DividendSummary.Where(i => yearFilter.Contains(i.TaxYear)).Sum(i => i.TotalTaxableDividend);
     }
 
-    public Money GetForeignTaxPaid(IEnumerable<int> yearFilter)
+    public WrappedMoney GetForeignTaxPaid(IEnumerable<int> yearFilter)
     {
-        return DividendSummary.Where(i => yearFilter.Contains(i.TaxYear)).BaseCurrencySum(i => i.TotalForeignTaxPaid);
+        return DividendSummary.Where(i => yearFilter.Contains(i.TaxYear)).Sum(i => i.TotalForeignTaxPaid);
     }
 }

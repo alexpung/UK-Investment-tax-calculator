@@ -1,4 +1,4 @@
-﻿using NMoneys;
+﻿using Model;
 
 namespace Services;
 
@@ -11,7 +11,7 @@ public static class ObjectDetailsToPrintedString
         return sign + decimalNumber.ToString();
     }
 
-    public static string ToSignedNumberString(this Money money)
+    public static string ToSignedNumberString(this WrappedMoney money)
     {
         string sign = string.Empty;
         if (money.Amount >= 0) sign = "+";

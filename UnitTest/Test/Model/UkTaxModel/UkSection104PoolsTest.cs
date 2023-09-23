@@ -37,7 +37,7 @@ public class UkSection104PoolsTests
 
         // Assert
         result.Quantity.ShouldBe(100);
-        result.ValueInBaseCurrency.ShouldBe(BaseCurrencyMoney.BaseCurrencyAmount(2000));
+        result.ValueInBaseCurrency.ShouldBe(new WrappedMoney(2000));
     }
 
     [Fact]
@@ -96,7 +96,7 @@ public class UkSection104PoolsTests
         // Assert
         result.Count.ShouldBe(4);
         result[3].QuantityChange.ShouldBe(400);
-        result[3].ValueChange.ShouldBe(BaseCurrencyMoney.BaseCurrencyAmount(1300));
+        result[3].ValueChange.ShouldBe(new WrappedMoney(1300));
     }
 
     private static ITradeTaxCalculation CreateMockTradeTaxCalculation(string assetName, DateTime dateTime, decimal qty, decimal value, TradeType tradeType)
@@ -107,7 +107,7 @@ public class UkSection104PoolsTests
         mock.SetupGet(c => c.UnmatchedQty).Returns(qty);
         mock.SetupGet(c => c.BuySell).Returns(tradeType);
         mock.SetupGet(c => c.MatchHistory).Returns(new List<TradeMatch>());
-        mock.Setup(c => c.MatchAll()).Returns((qty, BaseCurrencyMoney.BaseCurrencyAmount(value)));
+        mock.Setup(c => c.MatchAll()).Returns((qty, new WrappedMoney(value)));
         return mock.Object;
     }
 }

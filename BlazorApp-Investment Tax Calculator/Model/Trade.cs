@@ -1,6 +1,5 @@
 ﻿using Enum;
 using Model.Interfaces;
-using NMoneys;
 using System.Text;
 
 namespace Model;
@@ -12,7 +11,7 @@ public record Trade : TaxEvent, ITextFilePrintable
     public virtual required DescribedMoney GrossProceed { get; set; }
     public string Description { get; set; } = string.Empty;
     public List<DescribedMoney> Expenses { get; set; } = new List<DescribedMoney>();
-    public virtual Money NetProceed
+    public virtual WrappedMoney NetProceed
     {
         get
         {
@@ -49,7 +48,7 @@ public record Trade : TaxEvent, ITextFilePrintable
             _ => throw new NotImplementedException()
         };
         return $"{action} {Quantity} unit(s) of {AssetName} on {Date:dd-MMM-yyyy} for {GrossProceed.BaseCurrencyAmount} " +
-            $"with total expense {Expenses.BaseCurrencySum(expenses => expenses.BaseCurrencyAmount)}, {netExplanation}"
+            $"with total expense {Expenses.Sum(expenses => expenses.BaseCurrencyAmount)}, {netExplanation}"
             + GetExpensesExplanation();
     }
 }
