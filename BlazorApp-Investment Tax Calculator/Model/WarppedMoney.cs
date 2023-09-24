@@ -2,6 +2,7 @@
 
 namespace Model;
 
+[System.Diagnostics.DebuggerDisplay("{ToString()}")]
 public record WrappedMoney
 {
     private Money _nMoney;
