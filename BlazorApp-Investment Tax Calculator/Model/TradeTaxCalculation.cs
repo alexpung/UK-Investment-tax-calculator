@@ -46,7 +46,7 @@ public class TradeTaxCalculation : ITradeTaxCalculation
         }
         TradeList = trades.ToList();
         TotalNetAmount = trades.Sum(trade => trade.NetProceed);
-        UnmatchedNetAmount = TotalNetAmount;
+        _unmatchedNetAmount = TotalNetAmount;
         TotalQty = trades.Sum(trade => trade.Quantity);
         UnmatchedQty = TotalQty;
         BuySell = trades.First().BuySell;
