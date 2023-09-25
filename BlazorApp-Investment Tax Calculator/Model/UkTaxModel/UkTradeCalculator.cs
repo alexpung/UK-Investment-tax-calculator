@@ -44,7 +44,7 @@ public class UkTradeCalculator : ITradeCalculator
         List<ITradeTaxCalculation> sortedList = tradeTaxCalculations.OrderBy(trade => trade.Date).ToList();
         for (int i = 0; i < sortedList.Count - 1; i++)
         {
-            if (sortedList[i].Date == sortedList[i + 1].Date)
+            if (sortedList[i].Date.Date == sortedList[i + 1].Date.Date)
             {
                 // No need to check BUY vs SELL. There should only be one of each in the same day after GroupTrade()
                 MatchTrade(sortedList[i], sortedList[i + 1], TaxMatchType.SAME_DAY);
@@ -55,7 +55,7 @@ public class UkTradeCalculator : ITradeCalculator
     private void ApplyBedAndBreakfastMathingRule(IList<ITradeTaxCalculation> tradeTaxCalculations)
     {
         List<ITradeTaxCalculation> sortedList = tradeTaxCalculations.OrderBy(trade => trade.Date).ToList();
-        for (int i = 0; i < sortedList.Count - 1; i++)
+        for (int i = 0; i < sortedList.Count; i++)
         {
             if (sortedList[i].BuySell == TradeType.BUY)
             {
@@ -63,7 +63,9 @@ public class UkTradeCalculator : ITradeCalculator
                 // lookback a 30 days window
                 while (k >= 0)
                 {
-                    if (sortedList[k].Date.AddDays(30) < sortedList[i].Date) break;
+                    // if the buy trade is more than 30 days after any sell trade then no bread and breakfast rules applies
+                    if (sortedList[k].Date.Date.AddDays(30) < sortedList[i].Date.Date) break;
+                    // Otherwise applies bread and breakfast rules to each sell trade within the window
                     if (sortedList[k].BuySell == TradeType.SELL)
                     {
                         MatchTrade(sortedList[i], sortedList[k], TaxMatchType.BED_AND_BREAKFAST);
