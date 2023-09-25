@@ -47,7 +47,7 @@ public record Trade : TaxEvent, ITextFilePrintable
             TradeType.SELL => $"Net proceed: {NetProceed}",
             _ => throw new NotImplementedException()
         };
-        return $"{action} {Quantity} unit(s) of {AssetName} on {Date:dd-MMM-yyyy} for {GrossProceed} " +
+        return $"{action} {Quantity} unit(s) of {AssetName} on {Date:dd-MMM-yyyy} for {GrossProceed.PrintToTextFile()} " +
             $"with total expense {Expenses.Sum(expenses => expenses.BaseCurrencyAmount)}, {netExplanation}"
             + GetExpensesExplanation();
     }
