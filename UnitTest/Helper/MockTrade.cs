@@ -22,7 +22,7 @@ public static class MockTrade
     public static Mock<Trade> CreateMockTrade(string assetName, DateTime dateTime, TradeType tradeType, decimal quantity, decimal baseCurrencyAmount)
     {
         var mockTrade = new Mock<Trade>();
-        mockTrade.SetupGet(t => t.AssetName).Returns("Asset1");
+        mockTrade.SetupGet(t => t.AssetName).Returns(assetName);
         mockTrade.SetupGet(t => t.Date).Returns(dateTime);
         mockTrade.SetupGet(t => t.BuySell).Returns(tradeType);
         mockTrade.SetupGet(t => t.Quantity).Returns(quantity);
