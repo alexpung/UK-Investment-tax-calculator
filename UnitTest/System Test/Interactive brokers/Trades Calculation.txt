@@ -1,0 +1,56 @@
+Summary for tax year 2021:
+Number of disposals: 2
+Total disposal proceeds: £2,693.00
+Total allowable costs: £1,857.00
+Total gains (excluding loss): £837.00
+Total loss: £0.00
+
+Disposal 1: Sold 200 units of ABC on 03-May-2021 for £1,834.73.	Total gain (loss): £409.86
+All units of the disposals are matched with acquitions
+Trade details:
+	Sold 200 unit(s) of ABC on 03-May-2021 for $2,200.00 = £1,870.00 Fx rate = 0.85 with total expense £35.28, Net proceed: £1,834.73
+	Expenses: Commission: $1.50 = £1.28 Fx rate = 0.85	Tax: $40.00 = £34.00 Fx rate = 0.85	
+Trade matching:
+Same day: Matched 50 units of the disposal. Acquition cost is £460.28
+Matched trade: Bought 50 unit(s) of ABC on 03-May-2021 for $510.00 = £433.50 Fx rate = 0.85 with total expense £26.78, Total cost: £460.28
+	Expenses: Commission: $1.50 = £1.28 Fx rate = 0.85	Tax: $30.00 = £25.50 Fx rate = 0.85	
+Gain for this match is £458.68 - £460.28 = -£1.59
+
+
+Bed and breakfast: Matched 100 units of the disposal. Acquition cost is £560.29
+Matched trade: Bought 100 unit(s) of ABC on 04-May-2021 for $600.00 = £516.00 Fx rate = 0.86 with total expense £44.29, Total cost: £560.29
+	Expenses: Commission: $1.50 = £1.29 Fx rate = 0.86	Tax: $50.00 = £43.00 Fx rate = 0.86	
+Gain for this match is £917.36 - £560.29 = £357.07
+
+
+At time of disposal, section 104 contains 200 units with value £1,617.20
+Section 104: Matched 50 units of the disposal. Acquition cost is £404.30
+Gain for this match is £458.68 - £404.30 = £54.38
+
+
+
+
+Disposal 2: Sold 100 units of DEF on 05-May-2021 for £858.71.	Total gain (loss): £427.42
+All units of the disposals are matched with acquitions
+Trade details:
+	Sold 100 unit(s) of DEF on 05-May-2021 for $1,000.00 = £860.00 Fx rate = 0.86 with total expense £1.29, Net proceed: £858.71
+	Expenses: Commission: $1.50 = £1.29 Fx rate = 0.86	
+Trade matching:
+Cover unmatched disposal: Matched 100 units of the disposal. Acquition cost is £431.29
+Matched trade: Bought 100 unit(s) of DEF on 06-Dec-2021 for $500.00 = £430.00 Fx rate = 0.86 with total expense £1.29, Total cost: £431.29
+	Expenses: Commission: $1.50 = £1.29 Fx rate = 0.86	
+Gain for this match is £858.71 - £431.29 = £427.42
+
+
+
+
+
+Summary for tax year 2020:
+Number of disposals: 0
+Total disposal proceeds: £0.00
+Total allowable costs: £0.00
+Total gains (excluding loss): £0.00
+Total loss: £0.00
+
+
+

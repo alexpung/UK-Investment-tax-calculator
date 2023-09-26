@@ -1,0 +1,10 @@
+Tax Year: 2020
+Region: JPN (JP)
+	Total dividends: £555.00
+	Total withholding tax: -£166.50
+
+		Transactions:
+		Asset Name: ABCD, Date: 02/02/2021, Type: Withholding Tax, Amount: -¥30,000, FxRate: 0.00555, Sterling Amount: -£166.50, Description: ABC CASH DIVIDEND - JP TAX
+		Asset Name: ABCD, Date: 02/02/2021, Type: Dividend, Amount: ¥90,000, FxRate: 0.00555, Sterling Amount: £499.50, Description: ABC CASH DIVIDEND (Ordinary Dividend)
+		Asset Name: ABCD, Date: 02/02/2021, Type: Payment In Lieu of a Dividend, Amount: ¥10,000, FxRate: 0.00555, Sterling Amount: £55.50, Description: ABC CASH DIVIDEND (Ordinary Dividend)
+
