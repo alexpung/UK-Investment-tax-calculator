@@ -27,12 +27,8 @@ public class UkTradeCalculator : ITradeCalculator
         return tradeTaxCalculations.Values.SelectMany(i => i).ToList();
     }
 
-    private static Dictionary<string, List<ITradeTaxCalculation>> GroupTrade(IEnumerable<TaxEvent> taxEvents)
+    private static Dictionary<string, List<ITradeTaxCalculation>> GroupTrade(IEnumerable<Trade> trades)
     {
-        IEnumerable<Trade> trades = from taxEvent in taxEvents
-                                    where taxEvent is Trade
-                                    select (Trade)taxEvent;
-
         var groupedTrade = from trade in trades
                            group trade by new { trade.AssetName, trade.Date.Date, trade.BuySell };
         IEnumerable<ITradeTaxCalculation> groupedTradeCalculations = groupedTrade.Select(group => new TradeTaxCalculation(group)).ToList();
