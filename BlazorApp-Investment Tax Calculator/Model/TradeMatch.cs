@@ -26,7 +26,8 @@ public record TradeMatch : ITextFilePrintable
         return tradeMatch;
     }
 
-    public static TradeMatch CreateTradeMatch(TaxMatchType taxMatchType, decimal qty, WrappedMoney acqisitionValue, WrappedMoney disposalValue, ITradeTaxCalculation? matchedGroup = null)
+    public static TradeMatch CreateTradeMatch(TaxMatchType taxMatchType, decimal qty, WrappedMoney acqisitionValue, WrappedMoney disposalValue, ITradeTaxCalculation? matchedGroup = null,
+        string additionalInfo = "")
     {
         return new()
         {
@@ -34,7 +35,8 @@ public record TradeMatch : ITextFilePrintable
             MatchQuantity = qty,
             BaseCurrencyMatchAcquitionValue = acqisitionValue,
             BaseCurrencyMatchDisposalValue = disposalValue,
-            MatchedGroup = matchedGroup
+            MatchedGroup = matchedGroup,
+            AdditionalInformation = additionalInfo
         };
     }
 
@@ -46,7 +48,8 @@ public record TradeMatch : ITextFilePrintable
             output.AppendLine($"At time of disposal, section 104 contains {Section104HistorySnapshot!.OldQuantity} units with value {Section104HistorySnapshot.OldValue}");
             output.AppendLine($"Section 104: Matched {MatchQuantity} units of the disposal. Acquition cost is {BaseCurrencyMatchAcquitionValue}");
             output.AppendLine($"Gain for this match is {BaseCurrencyMatchDisposalValue} - {BaseCurrencyMatchAcquitionValue} " +
-                                $"= {(BaseCurrencyMatchDisposalValue - BaseCurrencyMatchAcquitionValue).ToString()}");
+                                $"= {BaseCurrencyMatchDisposalValue - BaseCurrencyMatchAcquitionValue}");
+            output.AppendLine(AdditionalInformation);
             output.AppendLine();
         }
         else
@@ -55,6 +58,7 @@ public record TradeMatch : ITextFilePrintable
             output.AppendLine($"Matched trade: {string.Join("\n", MatchedGroup!.TradeList.Select(trade => trade.PrintToTextFile()))}");
             output.AppendLine($"Gain for this match is {BaseCurrencyMatchDisposalValue} - {BaseCurrencyMatchAcquitionValue} " +
                                 $"= {BaseCurrencyMatchDisposalValue - BaseCurrencyMatchAcquitionValue}");
+            output.AppendLine(AdditionalInformation);
             output.AppendLine();
         }
         return output.ToString();

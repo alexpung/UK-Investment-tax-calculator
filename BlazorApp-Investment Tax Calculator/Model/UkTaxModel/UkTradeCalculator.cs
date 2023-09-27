@@ -85,34 +85,31 @@ public class UkTradeCalculator : ITradeCalculator
     private void MatchTrade(ITradeTaxCalculation trade1, ITradeTaxCalculation trade2, TaxMatchType taxMatchType)
     {
         if (trade1.CalculationCompleted || trade2.CalculationCompleted) return;
-        decimal matchQuantity = Math.Min(trade1.UnmatchedQty, trade2.UnmatchedQty);
-        decimal matchQuantityAfterActions = matchQuantity;
-        ITradeTaxCalculation earlierTrade;
-        ITradeTaxCalculation laterTrade;
-        if (trade1.Date <= trade2.Date)
-        {
-            earlierTrade = trade1;
-            laterTrade = trade2;
-        }
-        else
-        {
-            earlierTrade = trade2;
-            laterTrade = trade1;
-        }
+        ITradeTaxCalculation earlierTrade = (trade1.Date <= trade2.Date) ? trade1 : trade2;
+        ITradeTaxCalculation laterTrade = (trade1.Date <= trade2.Date) ? trade2 : trade1;
+        decimal earlierTradeAdjustedUnmatchedQty = earlierTrade.UnmatchedQty;
         List<StockSplit> stockSplits = CheckStockSplit(earlierTrade.Date, laterTrade.Date);
         if (stockSplits != null)
         {
             foreach (StockSplit split in stockSplits)
             {
-                matchQuantityAfterActions = split.GetSharesAfterSplit(matchQuantityAfterActions);
+                earlierTradeAdjustedUnmatchedQty = split.GetSharesAfterSplit(earlierTradeAdjustedUnmatchedQty);
             }
         }
-        (_, WrappedMoney earlierTradeValue) = earlierTrade.MatchQty(matchQuantity);
-        (_, WrappedMoney laterTradeValue) = laterTrade.MatchQty(matchQuantityAfterActions);
+        decimal matchQuantity = Math.Min(earlierTradeAdjustedUnmatchedQty, laterTrade.UnmatchedQty);
+        decimal shareMultiplier = earlierTradeAdjustedUnmatchedQty / earlierTrade.UnmatchedQty;
+        decimal earlierTradeAdjustedmatchQuantity = matchQuantity / shareMultiplier;
+        (_, WrappedMoney earlierTradeValue) = earlierTrade.MatchQty(earlierTradeAdjustedmatchQuantity);
+        (_, WrappedMoney laterTradeValue) = laterTrade.MatchQty(matchQuantity);
         WrappedMoney acquitionValue = earlierTrade.BuySell == TradeType.BUY ? earlierTradeValue : laterTradeValue;
         WrappedMoney disposalValue = earlierTrade.BuySell == TradeType.BUY ? laterTradeValue : earlierTradeValue;
-        trade1.MatchHistory.Add(TradeMatch.CreateTradeMatch(taxMatchType, matchQuantity, acquitionValue, disposalValue, trade2));
-        trade2.MatchHistory.Add(TradeMatch.CreateTradeMatch(taxMatchType, matchQuantity, acquitionValue, disposalValue, trade1));
+        string additionalInfo = string.Empty;
+        if (shareMultiplier != 1)
+        {
+            additionalInfo = $"{earlierTradeAdjustedmatchQuantity} units of the earlier trade is matched with {matchQuantity} units of later trade due to share split in between.";
+        }
+        earlierTrade.MatchHistory.Add(TradeMatch.CreateTradeMatch(taxMatchType, earlierTradeAdjustedmatchQuantity, acquitionValue, disposalValue, laterTrade, additionalInfo));
+        laterTrade.MatchHistory.Add(TradeMatch.CreateTradeMatch(taxMatchType, matchQuantity, acquitionValue, disposalValue, earlierTrade, additionalInfo));
     }
 
     private void ProcessTradeInChronologicalOrder(List<ITradeTaxCalculation> tradeTaxCalculations, string assetName)
@@ -126,6 +123,7 @@ public class UkTradeCalculator : ITradeCalculator
             if (trade.CalculationCompleted) continue;
             if (corporateActions.Any())
             {
+                // Process corporate action first if the action happens before a trade.
                 List<CorporateAction> actionToBePerformed = corporateActions.Where(action => action.Date < trade.Date).ToList();
                 foreach (CorporateAction action in actionToBePerformed)
                 {
@@ -153,5 +151,7 @@ public class UkTradeCalculator : ITradeCalculator
                 }
             }
         }
+        // handle remaining corporate actions even if the action is after all trades in the list.
+        corporateActions.ForEach(section104.PerformCorporateAction);
     }
 }

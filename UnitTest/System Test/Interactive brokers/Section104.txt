@@ -6,8 +6,11 @@ Involved trades:
 Bought 200 unit(s) of ABC on 01-May-2021 for $2,000.00 = £1,600.00 Fx rate = 0.8 with total expense £17.20, Total cost: £1,617.20
 	Expenses: Commission: $1.50 = £1.20 Fx rate = 0.8	Tax: $20.00 = £16.00 Fx rate = 0.8	
 
-03/05/2021	150 (-50)			£1,212.90 (-£404.30)		
+03/05/2021	100 (-100)			£808.60 (-£808.60)		
 Involved trades:
 Sold 200 unit(s) of ABC on 03-May-2021 for $2,200.00 = £1,870.00 Fx rate = 0.85 with total expense £35.28, Net proceed: £1,834.73
 	Expenses: Commission: $1.50 = £1.28 Fx rate = 0.85	Tax: $40.00 = £34.00 Fx rate = 0.85	
+
+03/05/2021	200 (+100)			£0.00 (+£0.00)		
+Share adjustment on 03/05/2021 due to corporate action.
 
