@@ -19,15 +19,16 @@ To help report UK tax for dividend and capital gain.
 
 # To use:
 
-1. Configure flex query from interactive brokers. Following report required. Date format dd-MMM-yy
+1. You should configure the base currency of your IBKR account to GBP.
+2. Configure flex query from interactive brokers. Following report required. Date format dd-MMM-yy
    1. Cash Transactions: Level of detail: Detail
    2. Corporate actions
    3. Trades: Level of detail: Orders
-2. Download the flex query for each year in xml format using web browser.
-3. Open the web application.
-4. Go to the import sections and select the files, then press the "Upload" button.
-5. Press "Start Calculation".
-6. Export the results by pressing the buttons at the export file section.
+3. Download the flex query for each year in xml format using web browser.
+4. Open the web application.
+5. Go to the import sections and select the files, then press the "Upload" button.
+6. Press "Start Calculation".
+7. Export the results by pressing the buttons at the export file section.
 
 # Privacy concerns:
 
