@@ -9,7 +9,7 @@
 <Order currency="USD" fxRateToBase="0.86" assetCategory="STK" symbol="DEF" description="DEF Example Stock" dateTime="05-May-21 12:34:56" quantity="-100" proceeds="1000" taxes="0" ibCommission="-1.5" ibCommissionCurrency="USD" buySell="SELL" levelOfDetail="ORDER" />
 <Order currency="USD" fxRateToBase="0.86" assetCategory="STK" symbol="DEF" description="DEF Example Stock" dateTime="06-Dec-21 12:34:56" quantity="100" proceeds="-500" taxes="0" ibCommission="-1.5" ibCommissionCurrency="USD" buySell="BUY" levelOfDetail="ORDER" />
 </Trades><CorporateActions>
-<CorporateAction symbol="ABC" description="ABC SPLIT 2 FOR 1" dateTime="03-May-21 20:25:00"/>
+<CorporateAction symbol="ABC" description="ABC SPLIT 2 FOR 1" dateTime="03-May-21 20:25:00" type="FS"/>
 </CorporateActions>
 <CashTransactions>
 <CashTransaction settleDate="02-Feb-21" symbol="ABCD" isin="JP12345" description="ABC CASH DIVIDEND - JP TAX" amount="-30000" type="Withholding Tax" currency="JPY" fxRateToBase="0.00555" levelOfDetail="DETAIL"/>

@@ -8,7 +8,7 @@ public class IBXmlStockSplitParser
 {
     public IList<StockSplit> ParseXml(XElement document)
     {
-        IEnumerable<XElement> filteredElements = document.Descendants("CorporateAction").Where(row => row.GetAttribute("description").Contains("SPLIT"));
+        IEnumerable<XElement> filteredElements = document.Descendants("CorporateAction").Where(row => row.GetAttribute("type") == "FS");
         return filteredElements.Select(StockSplitMaker).Where(dividend => dividend != null).ToList()!;
     }
 
