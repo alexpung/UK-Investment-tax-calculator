@@ -130,12 +130,12 @@ public class TradeTaxCalculationTests
     {
         // Arrange
         Mock<Trade> trade1 = new();
-        trade1.Setup(i => i.Date).Returns(new DateTime(2023, 1, 1));
+        trade1.Setup(i => i.Date).Returns(new DateTime(2023, 1, 1, 12, 34, 56));
         trade1.Setup(i => i.BuySell).Returns(TradeType.SELL);
         trade1.Setup(i => i.NetProceed).Returns(new WrappedMoney(100));
         var calculation = new TradeTaxCalculation(new List<Trade>() { trade1.Object });
         // Assert
-        calculation.Date.ShouldBe(new DateTime(2023, 1, 1));
+        calculation.Date.ShouldBe(new DateTime(2023, 1, 1, 12, 34, 56));
     }
 
     [Fact]
