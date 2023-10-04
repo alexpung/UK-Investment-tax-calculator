@@ -17,7 +17,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.11" PrivateAssets="all" />
     <PackageReference Include="NMoneys" Version="6.1.2" />
     <PackageReference Include="PublishSPAforGitHubPages.Build" Version="2.0.2" />
-    <PackageReference Include="Syncfusion.Blazor.Buttons" Version="21.1.35" />
+    <PackageReference Include="Syncfusion.Blazor.Buttons" Version="23.1.39" />
     <PackageReference Include="Syncfusion.Blazor.Core" Version="21.1.35" />
     <PackageReference Include="Syncfusion.Blazor.DropDowns" Version="21.1.35" />
     <PackageReference Include="Syncfusion.Blazor.Inputs" Version="21.1.35" />
