@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
@@ -20,7 +20,7 @@
     <PackageReference Include="Syncfusion.Blazor.Buttons" Version="21.1.35" />
     <PackageReference Include="Syncfusion.Blazor.Core" Version="21.1.35" />
     <PackageReference Include="Syncfusion.Blazor.DropDowns" Version="21.1.35" />
-    <PackageReference Include="Syncfusion.Blazor.Inputs" Version="21.1.35" />
+    <PackageReference Include="Syncfusion.Blazor.Inputs" Version="23.1.39" />
     <PackageReference Include="Syncfusion.Blazor.Lists" Version="21.1.35" />
     <PackageReference Include="Syncfusion.Blazor.Navigations" Version="21.1.35" />
     <PackageReference Include="Syncfusion.Blazor.Themes" Version="21.1.35" />
