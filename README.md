@@ -1,7 +1,5 @@
-UK investment tax calculator
-
-UK tax calculator for Interactive Broker
-
+## UK investment tax calculator
+UK tax calculator for Interactive Broker.
 To help report UK tax for dividend and capital gain.
 
 ## What is included
@@ -18,12 +16,12 @@ https://alexpung.github.io/UK-Investment-tax-calculator/
 1. Interactive Brokers Flex queries only for the moment.
 
 ## Can broker X statements be supported?
-The system is designed to accomodate new parsers of different statement files convertiable to a string (or bytestream?)
+The system is designed to accomodate new parsers of different statement files convertiable to a string (or bytestream?).
 Anyone interested can implement a new parser implementing ITaxEventFileParser.
 https://github.com/alexpung/UK-Investment-tax-calculator/tree/master/BlazorApp-Investment%20Tax%20Calculator/Parser/InteractiveBrokersXml
 
 ## Current functionality
-####Parsed trade type:
+#### Parsed trade type:
 1. Trades:
   1. Stock orders
 2. Dividend income
@@ -40,7 +38,7 @@ Viewing your imported trade in a separate table.
 Add missing trade and export it.
 Tests and feedback are welcome, bugs are to be expected.
 
-####Output files
+#### Output files
 1. Dividend summary by year.
 2. Trade summary by year and trade details.
 3. Section104 histories showing changes in the pool over time.
