@@ -4,21 +4,49 @@ UK tax calculator for Interactive Broker
 
 To help report UK tax for dividend and capital gain.
 
-# What is included
+## What is included
 
-1. Blazor WASM application ready to use. NEW: Site is live! https://alexpung.github.io/UK-Investment-tax-calculator/
+1. Blazor WASM application ready to use.
+https://alexpung.github.io/UK-Investment-tax-calculator/
 
-# Current functionality
+## What is so special about this project?
+1.  It is a web app so no installation required and secure.
+2. Support trades and dividends in foreign currency.
+3. Support shorting and forward split corporate action. (Reverse split I need sample)
 
-1. Read Interactive Brokers XML file for dividends (dividend/dividend in lieu/Witholding tax).
-2. Read Interactive Brokers XML file for shares buy and sell.
-3. Show section 104 holdings.
-4. Allow user to specify period to report. In this case trade and dividends of that period will be listed.
-5. Dividend and withholding tax list and summary sorted by countries,
-8. Capital gain calculations for each disposal.
+## Supported import format and brokers
+1. Interactive Brokers Flex queries only for the moment.
 
-# To use:
+## Can broker X statements be supported?
+The system is designed to accomodate new parsers of different statement files convertiable to a string (or bytestream?)
+Anyone interested can implement a new parser implementing ITaxEventFileParser.
+https://github.com/alexpung/UK-Investment-tax-calculator/tree/master/BlazorApp-Investment%20Tax%20Calculator/Parser/InteractiveBrokersXml
 
+## Current functionality
+####Parsed trade type:
+1. Trades:
+  1. Stock orders
+2. Dividend income
+  1. Dividend cash income
+  2. Witholding tax paid
+  3. Dividend in Lieu.
+3. Corporate actions
+  1. Forward split only
+
+#### Pending implementation
+FX, Futures (not sure if I want to handle delivery calculation.....)
+More corporate actions
+Viewing your imported trade in a separate table.
+Add missing trade and export it.
+Tests and feedback are welcome, bugs are to be expected.
+
+####Output files
+1. Dividend summary by year.
+2. Trade summary by year and trade details.
+3. Section104 histories showing changes in the pool over time.
+
+## To use:
+File sample is [here](http://https://github.com/alexpung/UK-Investment-tax-calculator/blob/master/UnitTest/System%20Test/Interactive%20brokers/TaxExample.xml "here"), you can download it and put it in the web app to see how it works.
 1. You should configure the base currency of your IBKR account to GBP.
 2. Configure flex query from interactive brokers. Following report required. Date format dd-MMM-yy
    1. Cash Transactions: Level of detail: Detail
@@ -30,11 +58,11 @@ To help report UK tax for dividend and capital gain.
 6. Press "Start Calculation".
 7. Export the results by pressing the buttons at the export file section.
 
-# Privacy concerns:
+## Privacy concerns:
 
 Your trade data is not uploaded anywhere. They never leave your browser thanks to Blazor WASM framework. The calculation is entirely done in your browser.
 
-# Design notes:
+## Design notes:
 
 1. When a share forward or reverse split occurs it is assumed that the decimal shares will be lost (see StockSplit class). Other cases to be implemented as necessary.
 2. Share matching rules are implemented according to: https://rppaccounts.co.uk/taxation-of-shares/
@@ -45,7 +73,7 @@ Your trade data is not uploaded anywhere. They never leave your browser thanks t
 
 Note point #4 when buying back shorted shares #1 (same day rule) and #2 (bed&breakfast) still applies.
 
-# Example
+## Example
 Examples can be found in https://github.com/alexpung/UK-Investment-tax-calculator/tree/master/UnitTest/System%20Test/Interactive%20brokers
 
 ### Output:
