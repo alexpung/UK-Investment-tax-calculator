@@ -11,6 +11,7 @@ https://alexpung.github.io/UK-Investment-tax-calculator/
 1.  It is a web app so no installation required and secure.
 2. Support trades and dividends in foreign currency.
 3. Support shorting and forward split corporate action. (Reverse split I need sample)
+4. Implementation of TCGA92/S105 (1)(a): Multiple trades in the same day for the same Buy/Sell side is treated as a single trade. This affect same day/bread and breakfast calculation.
 
 ## Supported import format and brokers
 1. Interactive Brokers Flex queries only for the moment.
