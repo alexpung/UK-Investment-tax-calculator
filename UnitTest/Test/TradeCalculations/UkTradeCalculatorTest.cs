@@ -2,7 +2,7 @@
 using Model.Interfaces;
 using Model.UkTaxModel;
 
-namespace UnitTest.Test;
+namespace UnitTest.Test.TradeCalculations;
 public class UkTradeCalculatorTest
 {
     [Fact]
