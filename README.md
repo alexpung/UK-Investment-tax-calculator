@@ -44,7 +44,7 @@ Tests and feedback are welcome, bugs are to be expected.
 3. Section104 histories showing changes in the pool over time.
 
 ## To use:
-File sample is [here](http://https://github.com/alexpung/UK-Investment-tax-calculator/blob/master/UnitTest/System%20Test/Interactive%20brokers/TaxExample.xml "here"), you can download it and put it in the web app to see how it works.
+File sample is [here](https://github.com/alexpung/UK-Investment-tax-calculator/blob/master/UnitTest/System%20Test/Interactive%20brokers/TaxExample.xml "here"), you can download it and put it in the web app to see how it works.
 1. You should configure the base currency of your IBKR account to GBP.
 2. Configure flex query from interactive brokers. Following report required. Date format dd-MMM-yy
    1. Cash Transactions: Level of detail: Detail
