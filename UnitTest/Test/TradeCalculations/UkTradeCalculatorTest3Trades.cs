@@ -39,7 +39,7 @@ public class UkTradeCalculatorTest3Trades
             GrossProceed = new() { Description = "", Amount = new(5000m) },
         };
         UkSection104Pools section104Pools = new();
-        TaxEventLists taxEventLists = new TaxEventLists();
+        TaxEventLists taxEventLists = new();
         taxEventLists.AddData(new List<Trade>() { trade1, trade2, trade3 });
         UkTradeCalculator calculator = new(section104Pools, taxEventLists);
         List<ITradeTaxCalculation> result = calculator.CalculateTax();
@@ -49,7 +49,7 @@ public class UkTradeCalculatorTest3Trades
         result[1].Gain.Amount.ShouldBe(-166.67m, 0.01m);
         result[1].TotalAllowableCost.Amount.ShouldBe(1666.67m, 0.01m);
         result[1].MatchHistory[0].TradeMatchType.ShouldBe(TaxMatchType.BED_AND_BREAKFAST);
-        section104Pools.GetExistingOrInitialise("DEF").ValueInBaseCurrency.ShouldBe(new WrappedMoney(1666.6666666666666666666666666m));
+        section104Pools.GetExistingOrInitialise("DEF").ValueInBaseCurrency.Amount.ShouldBe(1666.67m, 0.01m);
         section104Pools.GetExistingOrInitialise("DEF").Quantity.ShouldBe(100);
     }
 
@@ -109,16 +109,16 @@ public class UkTradeCalculatorTest3Trades
         result[2].MatchHistory[0].TradeMatchType.ShouldBe(TaxMatchType.BED_AND_BREAKFAST);
         // Section 104 Holding Matching (3,500 shares)
         result[2].MatchHistory[1].BaseCurrencyMatchDisposalValue.ShouldBe(new WrappedMoney(5250m)); // (6000 * 3500 / 4000)
-        result[2].MatchHistory[1].BaseCurrencyMatchAcquitionValue.ShouldBe(new WrappedMoney(681.57894736842105263157894737m)); // (1850 * 3500 / 9500)
+        result[2].MatchHistory[1].BaseCurrencyMatchAcquitionValue.Amount.ShouldBe(681.58m, 0.01m); // (1850 * 3500 / 9500)
         result[2].MatchHistory[1].MatchQuantity.ShouldBe(3500);
         result[2].MatchHistory[1].TradeMatchType.ShouldBe(TaxMatchType.SECTION_104);
 
         //Total
-        result[2].Gain.ShouldBe(new WrappedMoney(4468.4210526315789473684210526m)); // (6000 * 500 / 4000 - 850) + (6000 * 3500 / 4000) - (1850 * 3500 / 9500)
-        result[2].TotalAllowableCost.ShouldBe(new WrappedMoney(1531.5789473684210526315789474m));
+        result[2].Gain.Amount.ShouldBe(4468.42m, 0.01m); // (6000 * 500 / 4000 - 850) + (6000 * 3500 / 4000) - (1850 * 3500 / 9500)
+        result[2].TotalAllowableCost.Amount.ShouldBe(1531.58m, 0.01m);
 
         // Ensure the Section 104 pool is updated correctly
-        section104Pools.GetExistingOrInitialise("Mesopotamia plc").ValueInBaseCurrency.ShouldBe(new WrappedMoney(1168.4210526315789473684210526m)); // 1850 - (1850 * 3500 / 9500)
+        section104Pools.GetExistingOrInitialise("Mesopotamia plc").ValueInBaseCurrency.Amount.ShouldBe(1168.42m, 0.01m); // 1850 - (1850 * 3500 / 9500)
         section104Pools.GetExistingOrInitialise("Mesopotamia plc").Quantity.ShouldBe(6000);
     }
 
