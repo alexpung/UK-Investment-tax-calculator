@@ -12,6 +12,7 @@ public class TradeCalculationResult
     }
 
     public List<ITradeTaxCalculation> CalculatedTrade { get; set; } = new();
+    public IEnumerable<ITradeTaxCalculation> GetDisposals => CalculatedTrade.Where(trade => trade.BuySell == Enum.TradeType.SELL);
 
     public void SetResult(List<ITradeTaxCalculation> tradeTaxCalculations)
     {

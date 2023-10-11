@@ -3,7 +3,7 @@
 namespace Model;
 
 [System.Diagnostics.DebuggerDisplay("{ToString()}")]
-public record WrappedMoney
+public record WrappedMoney : IComparable<WrappedMoney>
 {
     private Money _nMoney;
     public static string BaseCurrency { get; set; } = "Gbp";
@@ -73,6 +73,14 @@ public record WrappedMoney
     {
         _nMoney = _nMoney.Ceiling();
         return this;
+    }
+
+    public int CompareTo(WrappedMoney? other)
+    {
+        if (other == null) return 0;
+        if (Amount > other.Amount) return 1;
+        if (Amount < other.Amount) return -1;
+        return 0;
     }
 }
 

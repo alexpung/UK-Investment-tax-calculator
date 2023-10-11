@@ -4,15 +4,18 @@
 
 @inject TradeCalculationResult tradeCalculationResult
 
-<p>TaxCalculationTable</p>
+<p>Disposal calculation summary</p>
 
-<SfGrid ID="ResultGrid" @ref="resultGrid" DataSource="@tradeCalculationResult.CalculatedTrade" AllowPaging="true" AllowSorting="true" AllowPdfExport="true" AllowExcelExport="true"
-            Toolbar="@(new List<string>() { "PdfExport", "ExcelExport", "Print" })">
+<SfGrid ID="ResultGrid" @ref="resultGrid" DataSource="@tradeCalculationResult.GetDisposals" AllowPaging="true" AllowSorting="true" AllowPdfExport="true" AllowExcelExport="true"
+        Toolbar="@(new List<string>() { "PdfExport", "ExcelExport", "Print" })" Height="1000px">
+    <GridPageSettings PageSizes="true"></GridPageSettings>
     <GridEvents OnToolbarClick="ToolbarClickHandler" TValue="ITradeTaxCalculation"></GridEvents>
     <GridColumns>
         <GridColumn Field=@nameof(ITradeTaxCalculation.Date) HeaderText="Date" Format="d"></GridColumn>
         <GridColumn Field=@nameof(ITradeTaxCalculation.BuySell) HeaderText="Trade Type"></GridColumn>
         <GridColumn Field=@nameof(ITradeTaxCalculation.AssetName) HeaderText="Asset Name"></GridColumn>
+        <GridColumn Field=@nameof(ITradeTaxCalculation.TotalQty) HeaderText="Total Quantity"></GridColumn>
+        <GridColumn Field=@nameof(ITradeTaxCalculation.TotalProceeds) HeaderText="Total Proceeeds"></GridColumn>
         <GridColumn Field=@nameof(ITradeTaxCalculation.TotalAllowableCost) HeaderText="Allowable Cost"></GridColumn>
         <GridColumn Field=@nameof(ITradeTaxCalculation.Gain) HeaderText="Gain (Loss)"></GridColumn>
         <GridColumn Field=@nameof(ITradeTaxCalculation.CalculationCompleted) HeaderText="Completely Matched?"></GridColumn>
