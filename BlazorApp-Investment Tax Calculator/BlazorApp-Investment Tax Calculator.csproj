@@ -25,7 +25,6 @@
     <PackageReference Include="Syncfusion.Blazor.Lists" Version="23.1.36" />
     <PackageReference Include="Syncfusion.Blazor.Navigations" Version="23.1.36" />
     <PackageReference Include="Syncfusion.Blazor.Themes" Version="23.1.36" />
-    <PackageReference Include="Syncfusion.Blazor.TreeGrid" Version="23.1.36" />
   </ItemGroup>
 
   <ItemGroup>

@@ -21,4 +21,16 @@ public record DescribedMoney : ITextFilePrintable
         }
         else return $"{outputString} = {BaseCurrencyAmount} Fx rate = {FxRate}";
     }
+
+    public string Display()
+    {
+        string outputString;
+        if (Description == string.Empty) outputString = Amount.ToString();
+        else outputString = $"{Description}: {Amount}";
+        if (FxRate == 1)
+        {
+            return outputString;
+        }
+        else return $"{BaseCurrencyAmount} ({outputString})";
+    }
 }

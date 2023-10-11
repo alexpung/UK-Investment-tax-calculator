@@ -1,0 +1,55 @@
+﻿@using Model
+@using Model.Interfaces;
+@using Syncfusion.Blazor.Grids;
+
+@inject TradeCalculationResult tradeCalculationResult
+
+<p>TaxCalculationTable</p>
+
+<SfGrid ID="ResultGrid" @ref="resultGrid" DataSource="@tradeCalculationResult.CalculatedTrade" AllowPaging="true" AllowSorting="true" AllowPdfExport="true" AllowExcelExport="true"
+            Toolbar="@(new List<string>() { "PdfExport", "ExcelExport", "Print" })">
+    <GridEvents OnToolbarClick="ToolbarClickHandler" TValue="ITradeTaxCalculation"></GridEvents>
+    <GridColumns>
+        <GridColumn Field=@nameof(ITradeTaxCalculation.Date) HeaderText="Date" Format="d"></GridColumn>
+        <GridColumn Field=@nameof(ITradeTaxCalculation.BuySell) HeaderText="Trade Type"></GridColumn>
+        <GridColumn Field=@nameof(ITradeTaxCalculation.AssetName) HeaderText="Asset Name"></GridColumn>
+        <GridColumn Field=@nameof(ITradeTaxCalculation.TotalAllowableCost) HeaderText="Allowable Cost"></GridColumn>
+        <GridColumn Field=@nameof(ITradeTaxCalculation.Gain) HeaderText="Gain (Loss)"></GridColumn>
+        <GridColumn Field=@nameof(ITradeTaxCalculation.CalculationCompleted) HeaderText="Completely Matched?"></GridColumn>
+    </GridColumns>
+    <GridTemplates>
+        <DetailTemplate>
+            @{
+                var tradeTaxCalculation = (context as ITradeTaxCalculation);
+                List<TradeMatch> tradeMatches = tradeTaxCalculation!.MatchHistory;
+                List<Trade> trades = tradeTaxCalculation.TradeList;
+                <p>Trade Matches</p>
+                <SfGrid DataSource="@tradeMatches">
+                    <GridColumns>
+                        <GridColumn Field=@nameof(TradeMatch.TradeMatchType) HeaderText="Match Type"> </GridColumn>
+                        <GridColumn Field=@nameof(TradeMatch.MatchQuantity) HeaderText="Match Quantity"></GridColumn>
+                        <GridColumn Field=@nameof(TradeMatch.BaseCurrencyMatchDisposalValue) HeaderText="Match Disposal Value"></GridColumn>
+                        <GridColumn Field=@nameof(TradeMatch.BaseCurrencyMatchAcquitionValue) HeaderText="Match Acquition Value"></GridColumn>
+                        <GridColumn Field=@nameof(TradeMatch.AdditionalInformation) HeaderText="Additional Information"></GridColumn>
+                    </GridColumns>
+                </SfGrid>
+            }
+        </DetailTemplate>
+    </GridTemplates>
+</SfGrid>
+
+@code {
+    private SfGrid<ITradeTaxCalculation> resultGrid = new();
+
+    public async Task ToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)
+    {
+        if (args.Item.Id == "ResultGrid_pdfexport")  //Id is combination of Grid's ID and itemname
+        {
+            await this.resultGrid.ExportToPdfAsync();
+        }
+        if (args.Item.Id == "ResultGrid_excelexport")  //Id is combination of Grid's ID and itemname
+        {
+            await this.resultGrid.ExportToExcelAsync();
+        }
+    }
+}
