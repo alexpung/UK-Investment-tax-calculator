@@ -22,7 +22,7 @@ Anyone interested can implement a new parser implementing ITaxEventFileParser.
 https://github.com/alexpung/UK-Investment-tax-calculator/tree/master/BlazorApp-Investment%20Tax%20Calculator/Parser/InteractiveBrokersXml
 
 ## Current functionality
-#### Parsed trade type:
+### Parsed trade type:
 1. Trades:
     1. Stock orders
 2. Dividend income
@@ -31,11 +31,12 @@ https://github.com/alexpung/UK-Investment-tax-calculator/tree/master/BlazorApp-I
     3. Dividend in Lieu.
 3. Corporate actions
     1. Forward split only
+4. View trade calculations and dividend data in a table 
 
 #### Pending implementation
 FX, Futures (not sure if I want to handle delivery calculation.....)  
 More corporate actions  
-Viewing your imported trade in a separate table.  
+Viewing imported trade and flattened trade matching details in tables.
 Add missing trade and export it.  
 Tests and feedback are welcome, bugs are to be expected.  
 

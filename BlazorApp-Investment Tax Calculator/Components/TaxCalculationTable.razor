@@ -19,7 +19,7 @@
         <GridColumn Field=@nameof(ITradeTaxCalculation.TotalProceeds) HeaderText="Total Proceeeds"></GridColumn>
         <GridColumn Field=@nameof(ITradeTaxCalculation.TotalAllowableCost) HeaderText="Allowable Cost"></GridColumn>
         <GridColumn Field=@nameof(ITradeTaxCalculation.Gain) HeaderText="Gain (Loss)"></GridColumn>
-        <GridColumn Field=@nameof(ITradeTaxCalculation.CalculationCompleted) HeaderText="Completely Matched?"></GridColumn>
+        <GridColumn Field=@nameof(ITradeTaxCalculation.UnmatchedQty) HeaderText="Unmatched shares"></GridColumn>
     </GridColumns>
     <GridTemplates>
         <DetailTemplate>
@@ -47,11 +47,16 @@
 
     public async Task ToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)
     {
-        if (args.Item.Id == "ResultGrid_pdfexport")  //Id is combination of Grid's ID and itemname
+        if (args.Item.Id == "DisposalCalculationGrid_pdfexport")  //Id is combination of Grid's ID and itemname
         {
-            await disposalCalculationGrid.ExportToPdfAsync();
+            var pdfExportProperties = new PdfExportProperties()
+            {
+                PageOrientation = PageOrientation.Landscape,
+                PageSize = PdfPageSize.A4
+            };
+            await disposalCalculationGrid.ExportToPdfAsync(pdfExportProperties);
         }
-        if (args.Item.Id == "ResultGrid_excelexport")  //Id is combination of Grid's ID and itemname
+        if (args.Item.Id == "DisposalCalculationGrid_excelexport")  //Id is combination of Grid's ID and itemname
         {
             await disposalCalculationGrid.ExportToExcelAsync();
         }

@@ -24,13 +24,10 @@ public record DescribedMoney : ITextFilePrintable
 
     public string Display()
     {
-        string outputString;
-        if (Description == string.Empty) outputString = Amount.ToString();
-        else outputString = $"{Description}: {Amount}";
         if (FxRate == 1)
         {
-            return outputString;
+            return BaseCurrencyAmount.ToString();
         }
-        else return $"{BaseCurrencyAmount} ({outputString})";
+        else return $"{BaseCurrencyAmount} ({Amount})";
     }
 }
