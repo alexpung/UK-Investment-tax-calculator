@@ -6,7 +6,8 @@
 
 <p>Disposal calculation summary</p>
 
-<SfGrid ID="ResultGrid" @ref="resultGrid" DataSource="@tradeCalculationResult.GetDisposals" AllowPaging="true" AllowSorting="true" AllowPdfExport="true" AllowExcelExport="true"
+<SfGrid ID="ResultGrid" @ref="resultGrid" DataSource="@tradeCalculationResult.GetDisposals"
+        AllowPaging="true" AllowSorting="true" AllowPdfExport="true" AllowExcelExport="true" AllowResizing="true"
         Toolbar="@(new List<string>() { "PdfExport", "ExcelExport", "Print" })" Height="1000px">
     <GridPageSettings PageSizes="true"></GridPageSettings>
     <GridEvents OnToolbarClick="ToolbarClickHandler" TValue="ITradeTaxCalculation"></GridEvents>
