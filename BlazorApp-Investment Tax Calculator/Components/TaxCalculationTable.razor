@@ -6,7 +6,7 @@
 
 <p>Disposal calculation summary</p>
 
-<SfGrid ID="ResultGrid" @ref="resultGrid" DataSource="@tradeCalculationResult.GetDisposals"
+<SfGrid ID="DisposalCalculationGrid" @ref="disposalCalculationGrid" DataSource="@tradeCalculationResult.GetDisposals"
         AllowPaging="true" AllowSorting="true" AllowPdfExport="true" AllowExcelExport="true" AllowResizing="true"
         Toolbar="@(new List<string>() { "PdfExport", "ExcelExport", "Print" })" Height="1000px">
     <GridPageSettings PageSizes="true"></GridPageSettings>
@@ -43,17 +43,17 @@
 </SfGrid>
 
 @code {
-    private SfGrid<ITradeTaxCalculation> resultGrid = new();
+    private SfGrid<ITradeTaxCalculation> disposalCalculationGrid = new();
 
     public async Task ToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)
     {
         if (args.Item.Id == "ResultGrid_pdfexport")  //Id is combination of Grid's ID and itemname
         {
-            await this.resultGrid.ExportToPdfAsync();
+            await disposalCalculationGrid.ExportToPdfAsync();
         }
         if (args.Item.Id == "ResultGrid_excelexport")  //Id is combination of Grid's ID and itemname
         {
-            await this.resultGrid.ExportToExcelAsync();
+            await disposalCalculationGrid.ExportToExcelAsync();
         }
     }
 }
