@@ -2,7 +2,7 @@
 using Model.Interfaces;
 using System.Globalization;
 
-namespace Model;
+namespace Model.TaxEvents;
 
 public record Dividend : TaxEvent, ITextFilePrintable
 {

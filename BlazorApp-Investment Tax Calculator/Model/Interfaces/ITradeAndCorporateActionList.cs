@@ -1,4 +1,6 @@
-﻿namespace Model.Interfaces;
+﻿using Model.TaxEvents;
+
+namespace Model.Interfaces;
 public interface ITradeAndCorporateActionList
 {
     List<CorporateAction> CorporateActions { get; set; }

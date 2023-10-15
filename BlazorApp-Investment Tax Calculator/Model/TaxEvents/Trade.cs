@@ -2,10 +2,11 @@
 using Model.Interfaces;
 using System.Text;
 
-namespace Model;
+namespace Model.TaxEvents;
 
 public record Trade : TaxEvent, ITextFilePrintable
 {
+    public AssetCatagoryType AssetType { get; } = AssetCatagoryType.STOCK;
     public virtual required TradeType BuySell { get; set; }
     public virtual required decimal Quantity { get; set; }
     public virtual required DescribedMoney GrossProceed { get; set; }

@@ -1,6 +1,7 @@
 ﻿namespace UnitTest.Test.Model;
 using Enum;
 using global::Model;
+using global::Model.TaxEvents;
 using Moq;
 using System;
 using System.Collections.Generic;

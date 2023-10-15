@@ -1,4 +1,5 @@
 ﻿using Enum;
+using Model.TaxEvents;
 
 namespace Model.Interfaces;
 public interface ITradeTaxCalculation : ITextFilePrintable

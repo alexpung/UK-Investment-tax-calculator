@@ -1,4 +1,4 @@
-﻿namespace Model;
+﻿namespace Model.TaxEvents;
 
 public abstract record TaxEvent
 {

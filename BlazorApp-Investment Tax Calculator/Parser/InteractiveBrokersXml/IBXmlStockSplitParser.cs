@@ -1,4 +1,4 @@
-﻿using Model;
+﻿using Model.TaxEvents;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 

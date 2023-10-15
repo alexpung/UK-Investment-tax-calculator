@@ -1,6 +1,7 @@
 ﻿using Enum;
 using Model;
 using Model.Interfaces;
+using Model.TaxEvents;
 using Moq;
 
 namespace UnitTest.Helper;

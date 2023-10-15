@@ -1,5 +1,6 @@
 using Enum;
 using Model;
+using Model.TaxEvents;
 
 namespace UnitTest.Test.Model;
 

@@ -1,5 +1,6 @@
 ﻿using Enum;
 using Model;
+using Model.TaxEvents;
 using Parser.InteractiveBrokersXml;
 using Shouldly;
 using System.Xml.Linq;

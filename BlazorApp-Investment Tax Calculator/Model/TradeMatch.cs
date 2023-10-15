@@ -1,4 +1,5 @@
-﻿using Model.Interfaces;
+﻿using Enum;
+using Model.Interfaces;
 using Model.UkTaxModel;
 using System.Text;
 

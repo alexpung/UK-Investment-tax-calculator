@@ -1,4 +1,4 @@
-﻿namespace Model;
+﻿namespace Enum;
 
 public enum TaxMatchType
 {

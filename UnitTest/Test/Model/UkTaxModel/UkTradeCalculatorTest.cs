@@ -2,13 +2,13 @@
 using Enum;
 using global::Model;
 using global::Model.Interfaces;
+using global::Model.TaxEvents;
 using global::Model.UkTaxModel;
 using Moq;
 using System;
 using System.Collections.Generic;
 using UnitTest.Helper;
 using Xunit;
-
 
 public class UkTradeCalculatorTests
 {

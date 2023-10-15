@@ -1,5 +1,6 @@
 ﻿using Enum;
 using Model.Interfaces;
+using Model.TaxEvents;
 using System.Text;
 
 namespace Model;

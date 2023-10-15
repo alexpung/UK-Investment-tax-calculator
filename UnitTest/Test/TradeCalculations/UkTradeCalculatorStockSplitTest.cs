@@ -1,5 +1,7 @@
-﻿using Model;
+﻿using Enum;
+using Model;
 using Model.Interfaces;
+using Model.TaxEvents;
 using Model.UkTaxModel;
 
 namespace UnitTest.Test.TradeCalculations;

@@ -1,5 +1,6 @@
 ﻿using Enum;
 using Model;
+using Model.TaxEvents;
 using System.Xml.Linq;
 
 namespace Parser.InteractiveBrokersXml;

@@ -1,5 +1,5 @@
 ﻿using Enum;
-using Model;
+using Model.TaxEvents;
 using System.Globalization;
 using System.Xml.Linq;
 
