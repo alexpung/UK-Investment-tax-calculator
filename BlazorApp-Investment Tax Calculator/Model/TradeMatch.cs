@@ -41,7 +41,7 @@ public record TradeMatch : ITextFilePrintable
         };
     }
 
-    public string PrintToTextFile()
+    public virtual string PrintToTextFile()
     {
         StringBuilder output = new();
         if (TradeMatchType == TaxMatchType.SECTION_104)
