@@ -112,46 +112,36 @@ public class UkTradeCalculator : ITradeCalculator
         laterTrade.MatchHistory.Add(TradeMatch.CreateTradeMatch(taxMatchType, matchQuantity, acquitionValue, disposalValue, earlierTrade, additionalInfo));
     }
 
-    private void ProcessTradeInChronologicalOrder(List<ITradeTaxCalculation> tradeTaxCalculations, string assetName)
+    private void ProcessTradeInChronologicalOrder(IEnumerable<ITradeTaxCalculation> tradeTaxCalculations, string assetName)
     {
-        List<ITradeTaxCalculation> sortedList = tradeTaxCalculations.OrderBy(trade => trade.Date).ToList();
         List<ITradeTaxCalculation> unmatchedDisposal = new();
         UkSection104 section104 = _setion104Pools.GetExistingOrInitialise(assetName);
-        List<CorporateAction> corporateActions = _tradeList.CorporateActions.Where(i => i.AssetName == assetName).OrderBy(i => i.Date).ToList();
-        foreach (ITradeTaxCalculation trade in sortedList)
+        IEnumerable<CorporateAction> corporateActions = _tradeList.CorporateActions.Where(i => i.AssetName == assetName);
+        IEnumerable<object> taxEventsInChronologicalOrder = tradeTaxCalculations.Select(a => new { Item = (object)a, a.Date })
+                          .Concat(corporateActions.Select(b => new { Item = (object)b, b.Date }))
+                          .OrderBy(item => item.Date).Select(item => item.Item);
+        foreach (object taxEvent in taxEventsInChronologicalOrder)
         {
-            if (trade.CalculationCompleted) continue;
-            if (corporateActions.Any())
+            switch (taxEvent)
             {
-                // Process corporate action first if the action happens before a trade.
-                List<CorporateAction> actionToBePerformed = corporateActions.Where(action => action.Date < trade.Date).ToList();
-                foreach (CorporateAction action in actionToBePerformed)
-                {
+                case ITradeTaxCalculation tradeTaxCalculation:
+                    if (tradeTaxCalculation.CalculationCompleted) continue;
+                    if (unmatchedDisposal.Any() && tradeTaxCalculation.BuySell == TradeType.BUY)
+                    {
+                        unmatchedDisposal.ForEach(unmatchedTrade => MatchTrade(unmatchedTrade, tradeTaxCalculation, TaxMatchType.SHORTCOVER));
+                    }
+                    section104.MatchTradeWithSection104(tradeTaxCalculation);
+                    if (!tradeTaxCalculation.CalculationCompleted && tradeTaxCalculation.BuySell == TradeType.SELL)
+                    {
+                        unmatchedDisposal.Add(tradeTaxCalculation);
+                    }
+                    break;
+                case CorporateAction action:
                     section104.PerformCorporateAction(action);
-                    corporateActions.Remove(action);
-                }
-            }
-            if (trade.BuySell == TradeType.SELL)
-            {
-                section104.MatchTradeWithSection104(trade);
-                if (!trade.CalculationCompleted)
-                {
-                    unmatchedDisposal.Add(trade);
-                }
-            }
-            else if (trade.BuySell == TradeType.BUY)
-            {
-                if (unmatchedDisposal.Any())
-                {
-                    unmatchedDisposal.ForEach(unmatchedTrade => MatchTrade(unmatchedTrade, trade, TaxMatchType.SHORTCOVER));
-                }
-                if (!trade.CalculationCompleted)
-                {
-                    section104.MatchTradeWithSection104(trade);
-                }
+                    break;
+                default:
+                    throw new ArgumentException($"Unknown object {taxEvent} encountered when processing section104");
             }
         }
-        // handle remaining corporate actions even if the action is after all trades in the list.
-        corporateActions.ForEach(section104.PerformCorporateAction);
     }
 }
