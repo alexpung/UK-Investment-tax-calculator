@@ -22,7 +22,7 @@ public class UkTradeCalculator : ITradeCalculator
         foreach (KeyValuePair<string, List<ITradeTaxCalculation>> assetGroup in tradeTaxCalculations)
         {
             ApplySameDayMatchingRule(assetGroup.Value);
-            ApplyBedAndBreakfastMathingRule(assetGroup.Value);
+            ApplyBedAndBreakfastMatchingRule(assetGroup.Value);
             ProcessTradeInChronologicalOrder(assetGroup.Value, assetGroup.Key);
         }
         return tradeTaxCalculations.Values.SelectMany(i => i).ToList();
@@ -52,30 +52,43 @@ public class UkTradeCalculator : ITradeCalculator
         }
     }
 
-    private void ApplyBedAndBreakfastMathingRule(IList<ITradeTaxCalculation> tradeTaxCalculations)
+    /// <summary>
+    /// Applies the "Bed and Breakfast" tax rule for trades, matching sell trades to buy trades
+    /// that occur within a 30-day window.
+    /// </summary>
+    /// <param name="tradeTaxCalculations">List of trades to process.</param>
+    private void ApplyBedAndBreakfastMatchingRule(IList<ITradeTaxCalculation> tradeTaxCalculations)
     {
         List<ITradeTaxCalculation> sortedList = tradeTaxCalculations.OrderBy(trade => trade.Date).ToList();
+
         for (int i = 0; i < sortedList.Count; i++)
         {
-            if (sortedList[i].BuySell == TradeType.BUY)
+            var currentTrade = sortedList[i];
+
+            // Skip trades that aren't BUYs
+            if (currentTrade.BuySell != TradeType.BUY) continue;
+
+            DateTime currentDate = currentTrade.Date.Date;
+
+            for (int k = i - 1; k >= 0; k--)
             {
-                int k = i - 1;
-                // lookback a 30 days window
-                while (k >= 0)
+                var lookbackTrade = sortedList[k];
+                var lookbackDate = lookbackTrade.Date.Date;
+
+                // Break if the buy trade is more than 30 days after any sell trade
+                if ((currentDate - lookbackDate).Days > 30) break;
+
+                // Apply rule for matching SELL trades within the 30-day window
+                if (lookbackTrade.BuySell == TradeType.SELL)
                 {
-                    // if the buy trade is more than 30 days after any sell trade then no bread and breakfast rules applies
-                    if (sortedList[k].Date.Date.AddDays(30) < sortedList[i].Date.Date) break;
-                    // Otherwise applies bread and breakfast rules to each sell trade within the window
-                    if (sortedList[k].BuySell == TradeType.SELL)
-                    {
-                        MatchTrade(sortedList[i], sortedList[k], TaxMatchType.BED_AND_BREAKFAST);
-                        if (sortedList[i].CalculationCompleted) break;
-                    }
-                    k--;
+                    MatchTrade(currentTrade, lookbackTrade, TaxMatchType.BED_AND_BREAKFAST);
+
+                    if (currentTrade.CalculationCompleted) break;
                 }
             }
         }
     }
+
 
     private List<StockSplit> CheckStockSplit(DateTime fromDate, DateTime toDate)
     {
@@ -101,15 +114,15 @@ public class UkTradeCalculator : ITradeCalculator
         decimal earlierTradeAdjustedmatchQuantity = matchQuantity / shareMultiplier;
         (_, WrappedMoney earlierTradeValue) = earlierTrade.MatchQty(earlierTradeAdjustedmatchQuantity);
         (_, WrappedMoney laterTradeValue) = laterTrade.MatchQty(matchQuantity);
-        WrappedMoney acquitionValue = earlierTrade.BuySell == TradeType.BUY ? earlierTradeValue : laterTradeValue;
+        WrappedMoney acquisitionValue = earlierTrade.BuySell == TradeType.BUY ? earlierTradeValue : laterTradeValue;
         WrappedMoney disposalValue = earlierTrade.BuySell == TradeType.BUY ? laterTradeValue : earlierTradeValue;
         string additionalInfo = string.Empty;
         if (shareMultiplier != 1)
         {
             additionalInfo = $"{earlierTradeAdjustedmatchQuantity} units of the earlier trade is matched with {matchQuantity} units of later trade due to share split in between.";
         }
-        earlierTrade.MatchHistory.Add(TradeMatch.CreateTradeMatch(taxMatchType, earlierTradeAdjustedmatchQuantity, acquitionValue, disposalValue, laterTrade, additionalInfo));
-        laterTrade.MatchHistory.Add(TradeMatch.CreateTradeMatch(taxMatchType, matchQuantity, acquitionValue, disposalValue, earlierTrade, additionalInfo));
+        earlierTrade.MatchHistory.Add(TradeMatch.CreateTradeMatch(taxMatchType, earlierTradeAdjustedmatchQuantity, acquisitionValue, disposalValue, laterTrade, additionalInfo));
+        laterTrade.MatchHistory.Add(TradeMatch.CreateTradeMatch(taxMatchType, matchQuantity, acquisitionValue, disposalValue, earlierTrade, additionalInfo));
     }
 
     private void ProcessTradeInChronologicalOrder(IEnumerable<ITradeTaxCalculation> tradeTaxCalculations, string assetName)
