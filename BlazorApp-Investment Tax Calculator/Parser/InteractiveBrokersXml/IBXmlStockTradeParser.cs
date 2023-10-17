@@ -9,7 +9,8 @@ public class IBXmlStockTradeParser
 {
     public IList<Trade> ParseXml(XElement document)
     {
-        IEnumerable<XElement> filteredElements = document.Descendants("Order").Where(row => row.GetAttribute("levelOfDetail") == "ORDER" && row.GetAttribute("assetCategory") == "STK");
+        IEnumerable<XElement> filteredElements = document.Descendants("Order").Where(row => row.GetAttribute("levelOfDetail") == "ORDER" &&
+                                                (row.GetAttribute("assetCategory") == "STK" || row.GetAttribute("assetCategory") == "FUT"));
         return filteredElements.Select(TradeMaker).Where(trade => trade != null).ToList()!;
     }
 
@@ -19,6 +20,7 @@ public class IBXmlStockTradeParser
         {
             return new Trade
             {
+                AssetType = GetAssetType(element),
                 BuySell = GetTradeType(element),
                 AssetName = element.GetAttribute("symbol"),
                 Description = element.GetAttribute("description"),
@@ -28,8 +30,19 @@ public class IBXmlStockTradeParser
                 Expenses = BuildExpenses(element),
             };
         }
-        catch { return null; } // TODO Implement suitable catch clause and logging
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            return null;
+        }
     }
+
+    private static AssetCatagoryType GetAssetType(XElement element) => element.GetAttribute("assetCategory") switch
+    {
+        "FUT" => AssetCatagoryType.FUTURE,
+        "STK" => AssetCatagoryType.STOCK,
+        _ => throw new NotImplementedException()
+    };
 
     private static decimal GetQuantity(XElement element) => element.GetAttribute("buySell") switch
     {

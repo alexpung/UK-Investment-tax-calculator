@@ -6,7 +6,7 @@ namespace Model.TaxEvents;
 
 public record Trade : TaxEvent, ITextFilePrintable
 {
-    public AssetCatagoryType AssetType { get; } = AssetCatagoryType.STOCK;
+    public virtual AssetCatagoryType AssetType { get; set; } = AssetCatagoryType.STOCK;
     public virtual required TradeType BuySell { get; set; }
     public virtual required decimal Quantity { get; set; }
     public virtual required DescribedMoney GrossProceed { get; set; }
@@ -34,7 +34,7 @@ public record Trade : TaxEvent, ITextFilePrintable
         return stringBuilder.ToString();
     }
 
-    public string PrintToTextFile()
+    public virtual string PrintToTextFile()
     {
         string action = BuySell switch
         {
