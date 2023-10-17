@@ -43,7 +43,10 @@ public class UkTradeCalculator : ITradeCalculator
         {
             if (sortedList[i].Date.Date == sortedList[i + 1].Date.Date)
             {
-                // No need to check BUY vs SELL. There should only be one of each in the same day after GroupTrade()
+                if (!((sortedList[i].BuySell == TradeType.SELL && sortedList[i + 1].BuySell == TradeType.BUY) || (sortedList[i].BuySell == TradeType.BUY && sortedList[i + 1].BuySell == TradeType.SELL)))
+                {
+                    throw new ArgumentException($"Unexpected same day matching with {sortedList[i]} and {sortedList[i + 1]}");
+                }
                 MatchTrade(sortedList[i], sortedList[i + 1], TaxMatchType.SAME_DAY);
             }
         }
