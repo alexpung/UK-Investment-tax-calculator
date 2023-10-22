@@ -2,9 +2,8 @@
 using Model.TaxEvents;
 
 namespace Model.Interfaces;
-public interface ITradeTaxCalculation : ITextFilePrintable
+public interface ITradeTaxCalculation : ITextFilePrintable, IAssetDatedEvent
 {
-    string AssetName { get; }
     TradeType BuySell { get; init; }
     bool CalculationCompleted { get; }
     List<TradeMatch> MatchHistory { get; init; }
@@ -13,10 +12,10 @@ public interface ITradeTaxCalculation : ITextFilePrintable
     List<Trade> TradeList { get; init; }
     WrappedMoney UnmatchedNetAmount { get; }
     decimal UnmatchedQty { get; }
-    DateTime Date { get; }
     WrappedMoney TotalProceeds { get; }
     WrappedMoney TotalAllowableCost { get; }
     WrappedMoney Gain { get; }
+    WrappedMoney GetNetAmount(decimal qty) => TotalNetAmount / TotalQty * qty;
 
     (decimal matchedQty, WrappedMoney matchedValue) MatchAll();
     (decimal matchedQty, WrappedMoney matchedValue) MatchQty(decimal demandedQty);

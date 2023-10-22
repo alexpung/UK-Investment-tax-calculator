@@ -1,22 +1,12 @@
 ﻿using Enum;
 using Model.Interfaces;
-using Model.TaxEvents;
 
 namespace Model.UkTaxModel;
 
 public record UkSection104
 {
     public string AssetName { get; init; }
-    private decimal _quantity;
-    public decimal Quantity
-    {
-        get { return _quantity; }
-        private set
-        {
-            if (value < 0) throw new ArgumentOutOfRangeException($"Section 104 cannot go below zero. Current status {this}, new value to be set {value}");
-            else _quantity = value;
-        }
-    }
+    public decimal Quantity { get; set; }
     public WrappedMoney ValueInBaseCurrency { get; private set; }
     public List<Section104History> Section104HistoryList { get; private set; } = new();
 
@@ -38,25 +28,6 @@ public record UkSection104
             RemoveAssets(tradeTaxCalculation);
         }
         else throw new ArgumentException($"Unknown BuySell Type {tradeTaxCalculation.BuySell}");
-    }
-
-    public void PerformCorporateAction(CorporateAction action)
-    {
-        switch (action)
-        {
-            case StockSplit:
-                ShareAdjustment((StockSplit)action);
-                break;
-            default:
-                throw new NotImplementedException($"{action} corporate action not implemented!");
-        }
-    }
-
-    private void ShareAdjustment(StockSplit stockSplit)
-    {
-        decimal newQuantity = stockSplit.GetSharesAfterSplit(Quantity);
-        Section104HistoryList.Add(Section104History.ShareAdjustment(stockSplit.Date, Quantity, newQuantity));
-        Quantity = newQuantity;
     }
 
     private void AddAssets(ITradeTaxCalculation tradeTaxCalculation)

@@ -71,7 +71,7 @@ Your trade data is not uploaded anywhere. They never leave your browser thanks t
    3. any shares acquired before the date of disposal which are included in an expanded ‘s. 104 holding’
    4. if the above identification rules fail to exhaust the shares disposed of, they are to be identified with subsequent acquisitions beyond the 30-day period following the disposal.
 
-Note point #4 when buying back shorted shares #1 (same day rule) and #2 (bed&breakfast) still applies.
+  Note point #4 when buying back shorted shares #1 (same day rule) and #2 (bed&breakfast) still applies.  
 
 ## Example
 Examples can be found in https://github.com/alexpung/UK-Investment-tax-calculator/tree/master/UnitTest/System%20Test/Interactive%20brokers

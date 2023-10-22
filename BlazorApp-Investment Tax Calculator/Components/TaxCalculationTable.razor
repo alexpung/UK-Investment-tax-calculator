@@ -32,7 +32,8 @@
                 <SfGrid DataSource="@tradeMatches">
                     <GridColumns>
                         <GridColumn Field=@nameof(TradeMatch.TradeMatchType) HeaderText="Match Type"> </GridColumn>
-                        <GridColumn Field=@nameof(TradeMatch.MatchQuantity) HeaderText="Match Quantity"></GridColumn>
+                        <GridColumn Field=@nameof(TradeMatch.MatchAcquitionQty) HeaderText="Match Acquition Quantity"></GridColumn>
+                        <GridColumn Field=@nameof(TradeMatch.MatchDisposalQty) HeaderText="Match Disposal Quantity"></GridColumn>
                         <GridColumn Field=@nameof(TradeMatch.BaseCurrencyMatchDisposalValue) HeaderText="Match Disposal Value"></GridColumn>
                         <GridColumn Field=@nameof(TradeMatch.BaseCurrencyMatchAcquitionValue) HeaderText="Match Acquition Value"></GridColumn>
                         <GridColumn Field=@nameof(TradeMatch.AdditionalInformation) HeaderText="Additional Information"></GridColumn>

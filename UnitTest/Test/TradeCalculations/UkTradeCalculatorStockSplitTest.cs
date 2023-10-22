@@ -52,7 +52,7 @@ public class UkTradeCalculatorStockSplitTest
         // Section 104 Holding Matching (1000 shares)
         result[1].MatchHistory[0].BaseCurrencyMatchDisposalValue.Amount.ShouldBe(1500.0m, 0.01m); // (1500 * 1000 / 2000)
         result[1].MatchHistory[0].BaseCurrencyMatchAcquitionValue.Amount.ShouldBe(500.0m, 0.01m); // (1000 * 1000 / 2000)
-        result[1].MatchHistory[0].MatchQuantity.ShouldBe(1000);
+        result[1].MatchHistory[0].MatchAcquitionQty.ShouldBe(1000);
         result[1].MatchHistory[0].TradeMatchType.ShouldBe(TaxMatchType.SECTION_104);
 
         // Gain Calculation
@@ -118,7 +118,7 @@ public class UkTradeCalculatorStockSplitTest
         result[2].MatchHistory[0].BaseCurrencyMatchDisposalValue.Amount.ShouldBe(4900m, 0.01m); // Selling 700 shares at £7
         result[2].MatchHistory[0].BaseCurrencyMatchAcquitionValue.Amount.ShouldBe(3762.50m, 0.01m); // Acquisition cost (700 shares at £5.375)
 
-        result[2].MatchHistory[0].MatchQuantity.ShouldBe(700);
+        result[2].MatchHistory[0].MatchAcquitionQty.ShouldBe(700);
 
         section104Pools.GetExistingOrInitialise("XYZ").ValueInBaseCurrency.Amount.ShouldBe(4837.50m, 0.01m); // Remaining value in pool
         section104Pools.GetExistingOrInitialise("XYZ").Quantity.ShouldBe(900); // Remaining quantity in pool

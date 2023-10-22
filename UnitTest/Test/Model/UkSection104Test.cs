@@ -22,7 +22,7 @@ public class UkSection104Test
         ukSection104.AssetName.ShouldBe("IBM");
         ukSection104.Quantity.ShouldBe(100m);
         ukSection104.ValueInBaseCurrency.ShouldBe(new WrappedMoney(buyValue));
-        mockBuyTrade.Object.MatchHistory[0].MatchQuantity.ShouldBe(buyQuantity);
+        mockBuyTrade.Object.MatchHistory[0].MatchAcquitionQty.ShouldBe(buyQuantity);
         mockBuyTrade.Object.MatchHistory[0].BaseCurrencyMatchAcquitionValue.ShouldBe(new WrappedMoney(buyValue));
         mockBuyTrade.Object.MatchHistory[0].BaseCurrencyMatchDisposalValue.ShouldBe(WrappedMoney.GetBaseCurrencyZero());
         mockBuyTrade.Object.MatchHistory[0].TradeMatchType.ShouldBe(TaxMatchType.SECTION_104);
@@ -30,7 +30,7 @@ public class UkSection104Test
         ukSection104.MatchTradeWithSection104(mockSellTrade.Object);
         ukSection104.Quantity.ShouldBe(decimal.Max(buyQuantity - sellQuantity, 0));
         ukSection104.ValueInBaseCurrency.ShouldBe(new WrappedMoney(decimal.Max((buyQuantity - sellQuantity) / buyQuantity * buyValue, 0)));
-        mockSellTrade.Object.MatchHistory[0].MatchQuantity.ShouldBe(decimal.Min(sellQuantity, buyQuantity));
+        mockSellTrade.Object.MatchHistory[0].MatchAcquitionQty.ShouldBe(decimal.Min(sellQuantity, buyQuantity));
         mockSellTrade.Object.MatchHistory[0].BaseCurrencyMatchAcquitionValue.ShouldBe(new WrappedMoney(decimal.Min(buyValue / buyQuantity * sellQuantity, buyValue)));
         mockSellTrade.Object.MatchHistory[0].BaseCurrencyMatchDisposalValue.ShouldBe(new WrappedMoney(decimal.Min(sellQuantity, buyQuantity) * sellValue / sellQuantity));
         mockSellTrade.Object.MatchHistory[0].TradeMatchType.ShouldBe(TaxMatchType.SECTION_104);
@@ -71,10 +71,10 @@ public class UkSection104Test
     {
         Mock<ITradeTaxCalculation> mockTrade1 = MockTrade.CreateMockITradeTaxCalculation(100, 1000m, TradeType.BUY);
         Mock<ITradeTaxCalculation> mockTrade2 = MockTrade.CreateMockITradeTaxCalculation(120, 1500m, TradeType.SELL);
-        CorporateAction corporateAction = new StockSplit() { AssetName = "ABC", Date = new DateTime(), NumberAfterSplit = 3, NumberBeforeSplit = 2 };
+        StockSplit corporateAction = new StockSplit() { AssetName = "ABC", Date = new DateTime(), NumberAfterSplit = 3, NumberBeforeSplit = 2 };
         UkSection104 ukSection104 = new("IBM");
         ukSection104.MatchTradeWithSection104(mockTrade1.Object);
-        ukSection104.PerformCorporateAction(corporateAction);
+        corporateAction.ChangeSection104(ukSection104);
         ukSection104.MatchTradeWithSection104(mockTrade2.Object);
         ukSection104.Quantity.ShouldBe(30); // bought 100, 150 after split - 120 sold = 30
         ukSection104.ValueInBaseCurrency.ShouldBe(new WrappedMoney(200m)); // bought shares worth 1000, remaining shares worth = 30*1000/150 = 200

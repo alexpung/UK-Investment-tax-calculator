@@ -33,6 +33,7 @@ public class TradeTaxCalculation : ITradeTaxCalculation
     public bool CalculationCompleted { get; private set; }
     public DateTime Date => TradeList[0].Date;
     public string AssetName => TradeList[0].AssetName;
+    public WrappedMoney GetNetAmount(decimal qty) => TotalNetAmount / TotalQty * qty;
 
 
     /// <summary>

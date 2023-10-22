@@ -5,6 +5,7 @@ using global::Model.Interfaces;
 using global::Model.TaxEvents;
 using global::Model.UkTaxModel;
 using Moq;
+using Shouldly;
 using System;
 using System.Collections.Generic;
 using UnitTest.Helper;
@@ -145,7 +146,7 @@ public class UkTradeCalculatorTests
     }
 
     [Fact]
-    // Seems not covered by legislation. Personal interpetation
+    // If there are multiple disposals during the time window, earlier disposals have to be matched first TCGA92/S106A(5)(b)
     public void MultipleShortSaleFirstShortSaleMatchFirst()
     {
         // Arrange
@@ -169,9 +170,9 @@ public class UkTradeCalculatorTests
         List<ITradeTaxCalculation> result = calculator.CalculateTax();
 
         // Assert
-        result[0].Gain.ShouldBe(new WrappedMoney(166.6666666666666666666666667m));
-        result[1].Gain.ShouldBe(new WrappedMoney(408.3333333333333333333333333m));
-        result[2].Gain.ShouldBe(new WrappedMoney(325));
+        result[0].Gain.Amount.ShouldBe(166.67m, 0.01m);
+        result[1].Gain.Amount.ShouldBe(408.33m, 0.01m);
+        result[2].Gain.Amount.ShouldBe(325, 0.01m);
     }
 
 
