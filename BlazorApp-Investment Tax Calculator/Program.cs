@@ -32,6 +32,7 @@ builder.Services.AddSingleton<IBXmlStockTradeParser>();
 builder.Services.AddSingleton<IBXmlDividendParser>();
 builder.Services.AddSingleton<IBXmlStockSplitParser>();
 builder.Services.AddSingleton<IBParseController>();
+builder.Services.AddSingleton<IBXmlFutureTradeParser>();
 
 // Register any new broker parsers here in order of priority
 builder.Services.AddSingleton<IEnumerable<ITaxEventFileParser>>(c => new List<ITaxEventFileParser> { c.GetService<IBParseController>()! });

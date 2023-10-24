@@ -9,14 +9,16 @@ public class IBParseController : ITaxEventFileParser
     private readonly IBXmlDividendParser _dividendParser;
     private readonly IBXmlStockTradeParser _stockTradeParser;
     private readonly IBXmlStockSplitParser _stockSplitParser;
+    private readonly IBXmlFutureTradeParser _futureTradeParser;
 
-    public IBParseController(AssetTypeToLoadSetting assetTypeToLoadSetting, IBXmlDividendParser iBXmlDividendParser, IBXmlStockTradeParser iBXmlStockTradeParser, IBXmlStockSplitParser iBXmlStockSplitParser)
+    public IBParseController(AssetTypeToLoadSetting assetTypeToLoadSetting, IBXmlDividendParser iBXmlDividendParser, IBXmlStockTradeParser iBXmlStockTradeParser,
+        IBXmlStockSplitParser iBXmlStockSplitParser, IBXmlFutureTradeParser iBXmlFutureTradeParser)
     {
         _assetTypeToLoadSetting = assetTypeToLoadSetting;
         _dividendParser = iBXmlDividendParser;
         _stockSplitParser = iBXmlStockSplitParser;
         _stockTradeParser = iBXmlStockTradeParser;
-
+        _futureTradeParser = iBXmlFutureTradeParser;
     }
     public TaxEventLists ParseFile(string data)
     {
@@ -27,6 +29,7 @@ public class IBParseController : ITaxEventFileParser
             if (_assetTypeToLoadSetting.LoadDividends) result.Dividends.AddRange(_dividendParser.ParseXml(xml));
             if (_assetTypeToLoadSetting.LoadStocks) result.CorporateActions.AddRange(_stockSplitParser.ParseXml(xml));
             if (_assetTypeToLoadSetting.LoadStocks) result.Trades.AddRange(_stockTradeParser.ParseXml(xml));
+            if (_assetTypeToLoadSetting.LoadFutures) result.Trades.AddRange(_futureTradeParser.ParseXml(xml));
         }
         return result;
     }

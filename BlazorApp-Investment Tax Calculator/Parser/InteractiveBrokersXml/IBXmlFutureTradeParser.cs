@@ -2,15 +2,16 @@
 using Model;
 using Model.TaxEvents;
 using System.Xml.Linq;
+using TaxEvents;
 
 namespace Parser.InteractiveBrokersXml;
 
-public class IBXmlStockTradeParser
+public class IBXmlFutureTradeParser
 {
     public IList<Trade> ParseXml(XElement document)
     {
         IEnumerable<XElement> filteredElements = document.Descendants("Order").Where(row => row.GetAttribute("levelOfDetail") == "ORDER" &&
-                                                 row.GetAttribute("assetCategory") == "STK");
+                                                row.GetAttribute("assetCategory") == "FUT");
         return filteredElements.Select(TradeMaker).Where(trade => trade != null).ToList()!;
     }
 
@@ -18,15 +19,16 @@ public class IBXmlStockTradeParser
     {
         try
         {
-            return new Trade
+            return new FutureContractTrade
             {
                 BuySell = GetTradeType(element),
                 AssetName = element.GetAttribute("symbol"),
                 Description = element.GetAttribute("description"),
                 Date = DateTime.Parse(element.GetAttribute("dateTime")),
                 Quantity = GetQuantity(element),
-                GrossProceed = GetContractValue(element),
+                GrossProceed = new DescribedMoney() { Amount = WrappedMoney.GetBaseCurrencyZero() },
                 Expenses = BuildExpenses(element),
+                ContractValue = GetGrossProceed(element)
             };
         }
         catch (Exception ex)
@@ -43,7 +45,7 @@ public class IBXmlStockTradeParser
         _ => throw new NotImplementedException(),
     };
 
-    private static DescribedMoney GetContractValue(XElement element) => element.GetAttribute("buySell") switch
+    private static DescribedMoney GetGrossProceed(XElement element) => element.GetAttribute("buySell") switch
     {
         "BUY" => element.BuildDescribedMoney("proceeds", "currency", "fxRateToBase", "", true),
         "SELL" => element.BuildDescribedMoney("proceeds", "currency", "fxRateToBase", ""),
@@ -71,3 +73,4 @@ public class IBXmlStockTradeParser
         return expenses;
     }
 }
+

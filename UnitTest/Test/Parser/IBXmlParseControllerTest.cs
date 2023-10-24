@@ -1,6 +1,5 @@
 ﻿using Model;
 using Parser.InteractiveBrokersXml;
-using Shouldly;
 using System.Collections;
 
 namespace UnitTest.Test.Parser;
@@ -13,7 +12,7 @@ public class IBXmlParseControllerTest
     public void TestCheckingInvalidIBXml()
     {
         string testText = File.ReadAllText(@".\Test\Resource\InvalidFile.xml");
-        IBParseController iBParseController = new(new AssetTypeToLoadSetting(), new IBXmlDividendParser(), new IBXmlStockTradeParser(), new IBXmlStockSplitParser());
+        IBParseController iBParseController = new(new AssetTypeToLoadSetting(), new IBXmlDividendParser(), new IBXmlStockTradeParser(), new IBXmlStockSplitParser(), new IBXmlFutureTradeParser());
         iBParseController.CheckFileValidity(testText, "text/xml").ShouldBeFalse();
     }
 
@@ -21,7 +20,7 @@ public class IBXmlParseControllerTest
     public void TestCheckingValidIBXml()
     {
         string testText = File.ReadAllText(@".\Test\Resource\TaxExample.xml");
-        IBParseController iBParseController = new(new AssetTypeToLoadSetting(), new IBXmlDividendParser(), new IBXmlStockTradeParser(), new IBXmlStockSplitParser());
+        IBParseController iBParseController = new(new AssetTypeToLoadSetting(), new IBXmlDividendParser(), new IBXmlStockTradeParser(), new IBXmlStockSplitParser(), new IBXmlFutureTradeParser());
         iBParseController.CheckFileValidity(testText, "text/xml").ShouldBeTrue();
     }
 
@@ -29,7 +28,7 @@ public class IBXmlParseControllerTest
     public void TestRejectingInvalidFileType()
     {
         string testText = File.ReadAllText(@".\Test\Resource\TaxExample.xml");
-        IBParseController iBParseController = new(new AssetTypeToLoadSetting(), new IBXmlDividendParser(), new IBXmlStockTradeParser(), new IBXmlStockSplitParser());
+        IBParseController iBParseController = new(new AssetTypeToLoadSetting(), new IBXmlDividendParser(), new IBXmlStockTradeParser(), new IBXmlStockSplitParser(), new IBXmlFutureTradeParser());
         iBParseController.CheckFileValidity(testText, "text").ShouldBeFalse();
     }
 
@@ -38,7 +37,7 @@ public class IBXmlParseControllerTest
     public void TestParseValidIBXml(AssetTypeToLoadSetting assetTypeToLoadSetting)
     {
         string testText = File.ReadAllText(@".\Test\Resource\TaxExample.xml");
-        IBParseController iBParseController = new(assetTypeToLoadSetting, new IBXmlDividendParser(), new IBXmlStockTradeParser(), new IBXmlStockSplitParser());
+        IBParseController iBParseController = new(assetTypeToLoadSetting, new IBXmlDividendParser(), new IBXmlStockTradeParser(), new IBXmlStockSplitParser(), new IBXmlFutureTradeParser());
         TaxEventLists results = iBParseController.ParseFile(testText);
         if (assetTypeToLoadSetting.LoadStocks)
         {
