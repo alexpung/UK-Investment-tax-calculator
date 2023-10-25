@@ -6,7 +6,7 @@ namespace Model;
 public record WrappedMoney : IComparable<WrappedMoney>
 {
     private Money _nMoney;
-    public static string BaseCurrency { get; set; } = "Gbp";
+    public const string BaseCurrency = "Gbp";
     public decimal Amount => _nMoney.Amount;
     public string Currency => _nMoney.CurrencyCode.ToString();
 

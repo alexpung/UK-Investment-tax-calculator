@@ -82,24 +82,6 @@ public class MoneyTest
         List<DescribedMoney> moneys = new List<DescribedMoney>();
         moneys.Sum(i => i.Amount).ShouldBeEquivalentTo(WrappedMoney.GetBaseCurrencyZero());
     }
-
-    [Fact]
-    public void TestChangeBaseCurrencyZero()
-    {
-        WrappedMoney.BaseCurrency = "Jpy";
-        WrappedMoney money = WrappedMoney.GetBaseCurrencyZero();
-        money.Amount.ShouldBe(0);
-        money.Currency.ShouldBe("Jpy", StringCompareShould.IgnoreCase);
-    }
-
-    [Fact]
-    public void TestChangeBaseCurrencyAmount()
-    {
-        WrappedMoney.BaseCurrency = "Jpy";
-        WrappedMoney money = new WrappedMoney(100);
-        money.Amount.ShouldBe(100);
-        money.Currency.ShouldBe("Jpy", StringCompareShould.IgnoreCase);
-    }
 }
 
 public class MoneyTestTestData : IEnumerable<object[]>

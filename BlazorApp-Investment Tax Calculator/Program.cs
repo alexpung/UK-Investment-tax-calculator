@@ -25,7 +25,6 @@ builder.Services.AddSingleton<UkCalculationResultExportService>();
 builder.Services.AddSingleton<UkSection104ExportService>();
 builder.Services.AddSingleton<ITradeCalculator, UkTradeCalculator>();
 builder.Services.AddSingleton<IDividendCalculator, UkDividendCalculator>();
-WrappedMoney.BaseCurrency = "Gbp";
 
 // IBKR parser
 builder.Services.AddSingleton<IBXmlStockTradeParser>();
