@@ -22,7 +22,7 @@ public record Trade : TaxEvent, ITextFilePrintable
         }
     }
 
-    private string GetExpensesExplanation()
+    protected string GetExpensesExplanation()
     {
         if (!Expenses.Any()) return string.Empty;
         StringBuilder stringBuilder = new();
