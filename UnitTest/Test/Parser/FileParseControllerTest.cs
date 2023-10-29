@@ -9,7 +9,7 @@ namespace UnitTest.Test.Parser;
 
 public class FileParseControllerTest
 {
-    private readonly Trade _mockTradeObject = new Trade()
+    private readonly Trade _mockTradeObject = new()
     {
         AssetName = "Test",
         Quantity = 100,
@@ -24,7 +24,7 @@ public class FileParseControllerTest
         DividendType = Enum.DividendType.WITHHOLDING,
         Proceed = new DescribedMoney() { Amount = new WrappedMoney(100, "GBP") }
     };
-    private readonly StockSplit _mockStockSplitObject = new StockSplit() { AssetName = "Test3", Date = new DateTime(2022, 1, 1), NumberAfterSplit = 1, NumberBeforeSplit = 2 };
+    private readonly StockSplit _mockStockSplitObject = new() { AssetName = "Test3", Date = new DateTime(2022, 1, 1), NumberAfterSplit = 1, NumberBeforeSplit = 2 };
     private readonly TaxEventLists _mockResult = new();
     private readonly TaxEventLists _mockResult2 = new();
 
@@ -34,7 +34,7 @@ public class FileParseControllerTest
         _mockResult2.AddData(new List<TaxEvent> { _mockTradeObject, _mockDividendObject, _mockStockSplitObject });
     }
 
-    private IBrowserFile mockIBrowserFile(string textToMock)
+    private static IBrowserFile MockIBrowserFile(string textToMock)
     {
         Mock<IBrowserFile> mockFile = new();
         mockFile.Setup(f => f.OpenReadStream(It.IsAny<long>(), It.IsAny<CancellationToken>())).Returns(new MemoryStream(Encoding.UTF8.GetBytes(textToMock)));
@@ -48,7 +48,7 @@ public class FileParseControllerTest
         mockFileParser.Setup(f => f.ParseFile(It.IsAny<string>())).Returns(_mockResult);
         mockFileParser.Setup(f => f.CheckFileValidity(It.IsAny<string>(), It.IsAny<string>())).Returns(false);
         FileParseController fileParseController = new(new List<ITaxEventFileParser>() { mockFileParser.Object });
-        TaxEventLists result = await fileParseController.ReadFile(mockIBrowserFile("Invalid text"));
+        TaxEventLists result = await fileParseController.ReadFile(MockIBrowserFile("Invalid text"));
         result.CorporateActions.Count.ShouldBe(0);
         result.Dividends.Count.ShouldBe(0);
         result.Trades.Count.ShouldBe(0);
@@ -61,7 +61,7 @@ public class FileParseControllerTest
         mock.Setup(f => f.ParseFile(It.IsAny<string>())).Returns(_mockResult);
         mock.Setup(f => f.CheckFileValidity(It.IsAny<string>(), It.IsAny<string>())).Returns(true);
         FileParseController fileParseController = new(new List<ITaxEventFileParser>() { mock.Object });
-        TaxEventLists result = await fileParseController.ReadFile(mockIBrowserFile("Valid text"));
+        TaxEventLists result = await fileParseController.ReadFile(MockIBrowserFile("Valid text"));
         result.CorporateActions.Count.ShouldBe(0);
         result.Dividends.Count.ShouldBe(1);
         result.Trades.Count.ShouldBe(1);
@@ -83,8 +83,8 @@ public class FileParseControllerTest
         mock2.SetupSequence(f => f.CheckFileValidity(It.IsAny<string>(), It.IsAny<string>())).Returns(mock2Call1).Returns(mock2Call2);
 
         FileParseController fileParseController = new(new List<ITaxEventFileParser>() { mock.Object, mock2.Object });
-        TaxEventLists result = await fileParseController.ReadFile(mockIBrowserFile("Valid text"));
-        result.AddData(await fileParseController.ReadFile(mockIBrowserFile("Valid text2")));
+        TaxEventLists result = await fileParseController.ReadFile(MockIBrowserFile("Valid text"));
+        result.AddData(await fileParseController.ReadFile(MockIBrowserFile("Valid text2")));
         int actualCount = result.CorporateActions.Count + result.Dividends.Count + result.Trades.Count;
         actualCount.ShouldBe(expectedCount);
     }

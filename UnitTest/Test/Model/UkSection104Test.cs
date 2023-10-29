@@ -71,7 +71,7 @@ public class UkSection104Test
     {
         Mock<ITradeTaxCalculation> mockTrade1 = MockTrade.CreateMockITradeTaxCalculation(100, 1000m, TradeType.BUY);
         Mock<ITradeTaxCalculation> mockTrade2 = MockTrade.CreateMockITradeTaxCalculation(120, 1500m, TradeType.SELL);
-        StockSplit corporateAction = new StockSplit() { AssetName = "ABC", Date = new DateTime(), NumberAfterSplit = 3, NumberBeforeSplit = 2 };
+        StockSplit corporateAction = new() { AssetName = "ABC", Date = new DateTime(), NumberAfterSplit = 3, NumberBeforeSplit = 2 };
         UkSection104 ukSection104 = new("IBM");
         ukSection104.MatchTradeWithSection104(mockTrade1.Object);
         corporateAction.ChangeSection104(ukSection104);

@@ -1,6 +1,5 @@
 ﻿using Model;
 using Model.Interfaces;
-using Model.UkTaxModel;
 using System.Text;
 
 namespace Services;
@@ -8,13 +7,11 @@ namespace Services;
 public class UkCalculationResultExportService : ITextFilePrintable
 {
     private readonly ITaxYear _taxYear;
-    private readonly UkSection104Pools _section104Pools;
     private readonly TradeCalculationResult _tradeCalculationResult;
 
-    public UkCalculationResultExportService(ITaxYear taxYear, UkSection104Pools ukSection104Pools, TradeCalculationResult tradeCalculationResult)
+    public UkCalculationResultExportService(ITaxYear taxYear, TradeCalculationResult tradeCalculationResult)
     {
         _taxYear = taxYear;
-        _section104Pools = ukSection104Pools;
         _tradeCalculationResult = tradeCalculationResult;
     }
 

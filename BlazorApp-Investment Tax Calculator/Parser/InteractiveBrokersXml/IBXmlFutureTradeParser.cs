@@ -61,7 +61,7 @@ public class IBXmlFutureTradeParser
 
     private static List<DescribedMoney> BuildExpenses(XElement element)
     {
-        List<DescribedMoney> expenses = new List<DescribedMoney>();
+        List<DescribedMoney> expenses = new();
         if (element.GetAttribute("ibCommission") != "0")
         {
             expenses.Add(element.BuildDescribedMoney("ibCommission", "ibCommissionCurrency", "fxRateToBase", "Commission", true));

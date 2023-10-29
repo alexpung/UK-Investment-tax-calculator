@@ -15,7 +15,7 @@ public class UkDividendCalculator : IDividendCalculator
 
     public List<DividendSummary> CalculateTax()
     {
-        List<DividendSummary> result = new List<DividendSummary>();
+        List<DividendSummary> result = new();
         var GroupedDividends = from dividend in _dividendList.Dividends
                                let taxYear = _year.ToTaxYear(dividend.Date)
                                group dividend by new { taxYear, dividend.CompanyLocation };

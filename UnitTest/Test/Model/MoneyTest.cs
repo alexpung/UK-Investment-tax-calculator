@@ -79,7 +79,7 @@ public class MoneyTest
     [Fact]
     public void TestEmptyBaseCurrencySum()
     {
-        List<DescribedMoney> moneys = new List<DescribedMoney>();
+        List<DescribedMoney> moneys = new();
         moneys.Sum(i => i.Amount).ShouldBeEquivalentTo(WrappedMoney.GetBaseCurrencyZero());
     }
 }

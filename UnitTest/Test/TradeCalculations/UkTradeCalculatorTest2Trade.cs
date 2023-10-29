@@ -31,7 +31,7 @@ public class UkTradeCalculatorTest2Trade
             GrossProceed = new() { Description = "", Amount = new(500m, "USD"), FxRate = 0.86m },
         };
         UkSection104Pools section104Pools = new();
-        TaxEventLists taxEventLists = new TaxEventLists();
+        TaxEventLists taxEventLists = new();
         taxEventLists.AddData(new List<Trade>() { trade1, trade2 });
         UkTradeCalculator calculator = new(section104Pools, taxEventLists);
         List<ITradeTaxCalculation> result = calculator.CalculateTax();
@@ -76,7 +76,7 @@ public class UkTradeCalculatorTest2Trade
         UkSection104Pools section104Pools = new();
 
         // Create a TaxEventLists instance and add the trades to it
-        TaxEventLists taxEventLists = new TaxEventLists();
+        TaxEventLists taxEventLists = new();
         taxEventLists.AddData(new List<Trade>() { buyTrade, sellTrade });
 
         // Create the UkTradeCalculator instance
@@ -125,7 +125,7 @@ public class UkTradeCalculatorTest2Trade
         UkSection104Pools section104Pools = new();
 
         // Create a TaxEventLists instance and add the trades to it
-        TaxEventLists taxEventLists = new TaxEventLists();
+        TaxEventLists taxEventLists = new();
         taxEventLists.AddData(new List<Trade>() { purchaseTrade, saleTrade });
 
         // Create the UkTradeCalculator instance

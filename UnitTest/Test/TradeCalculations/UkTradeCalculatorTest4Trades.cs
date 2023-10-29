@@ -52,7 +52,7 @@ public class UkTradeCalculatorTest4Trades
         };
         StockSplit stockSplit = new() { AssetName = "ABC", Date = DateTime.Parse("03-May-21 20:25:00"), NumberAfterSplit = 2, NumberBeforeSplit = 1 };
         UkSection104Pools section104Pools = new();
-        TaxEventLists taxEventLists = new TaxEventLists();
+        TaxEventLists taxEventLists = new();
         taxEventLists.AddData(new List<TaxEvent>() { trade1, trade2, trade3, trade4, stockSplit });
         UkTradeCalculator calculator = new(section104Pools, taxEventLists);
         List<ITradeTaxCalculation> result = calculator.CalculateTax();
@@ -125,7 +125,7 @@ public class UkTradeCalculatorTest4Trades
             GrossProceed = new() { Amount = new(2080m) },
         };
         UkSection104Pools section104Pools = new();
-        TaxEventLists taxEventLists = new TaxEventLists();
+        TaxEventLists taxEventLists = new();
         taxEventLists.AddData(new List<TaxEvent>() { trade1, trade2, trade3, trade4 });
         UkTradeCalculator calculator = new(section104Pools, taxEventLists);
         List<ITradeTaxCalculation> result = calculator.CalculateTax();

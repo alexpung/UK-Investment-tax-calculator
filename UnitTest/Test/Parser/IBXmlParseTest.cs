@@ -2,23 +2,22 @@
 using Model;
 using Model.TaxEvents;
 using Parser.InteractiveBrokersXml;
-using Shouldly;
 using System.Xml.Linq;
 
 namespace UnitTest.Test.Parser;
 
 public class IBXmlParseTest
 {
-    private readonly IBXmlDividendParser _xmlDividendParser = new IBXmlDividendParser();
-    private readonly IBXmlStockTradeParser _xmlTradeParser = new IBXmlStockTradeParser();
-    private readonly IBXmlStockSplitParser _xmlStockSplitParser = new IBXmlStockSplitParser();
+    private readonly IBXmlDividendParser _xmlDividendParser = new();
+    private readonly IBXmlStockTradeParser _xmlTradeParser = new();
+    private readonly IBXmlStockSplitParser _xmlStockSplitParser = new();
     private readonly XElement _xmlDoc = XElement.Load(@".\Test\Resource\TaxExample.xml");
 
     [Fact]
     public void TestReadingIBXmlDividends()
     {
         IList<Dividend> parsedData = _xmlDividendParser.ParseXml(_xmlDoc);
-        parsedData.Count().ShouldBe(47);
+        parsedData.Count.ShouldBe(47);
         IEnumerable<Dividend> witholdingTaxes = parsedData.Where(dataPoint => dataPoint.DividendType == DividendType.WITHHOLDING);
         witholdingTaxes.Count().ShouldBe(21);
         witholdingTaxes.Select(i => i.Proceed.Amount.Amount * i.Proceed.FxRate).Sum().ShouldBe(-1324.5492950m);

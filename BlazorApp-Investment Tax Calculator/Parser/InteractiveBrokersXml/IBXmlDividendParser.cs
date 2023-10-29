@@ -30,7 +30,7 @@ public class IBXmlDividendParser
         catch { return null; } // TODO Implement suitable catch clause and logging */
     }
 
-    private RegionInfo GetCompanyLocation(XElement dividendElement)
+    private static RegionInfo GetCompanyLocation(XElement dividendElement)
     {
         try
         {
@@ -50,7 +50,7 @@ public class IBXmlDividendParser
         }
     }
 
-    private DividendType GetDividendType(XElement dividendElement) => dividendElement.GetAttribute("type") switch
+    private static DividendType GetDividendType(XElement dividendElement) => dividendElement.GetAttribute("type") switch
     {
         "Withholding Tax" => DividendType.WITHHOLDING,
         "Dividends" => DividendType.DIVIDEND,

@@ -162,7 +162,7 @@ public class UkTradeCalculatorTest3Trades
         };
 
         // Create a TaxEventLists instance and add the trades to it
-        TaxEventLists taxEventLists = new TaxEventLists();
+        TaxEventLists taxEventLists = new();
         taxEventLists.AddData(new List<Trade>() { purchaseTrade1, saleTrade1, purchaseTrade2 });
 
         // Initialize the Section 104 pools (even though they are not used in calculations)
