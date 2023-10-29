@@ -48,7 +48,7 @@ public record TradeMatch : ITextFilePrintable
         if (TradeMatchType == TaxMatchType.SECTION_104)
         {
             output.AppendLine($"At time of disposal, section 104 contains {Section104HistorySnapshot!.OldQuantity} units with value {Section104HistorySnapshot.OldValue}");
-            output.AppendLine($"Section 104: Matched {MatchAcquisitionQty} units of the acquisition trade against {BaseCurrencyMatchDisposalValue} units of the disposal trade. acquisition cost is {BaseCurrencyMatchAcquisitionValue}");
+            output.AppendLine($"Section 104: Matched {MatchAcquisitionQty} units of the acquisition trade against {MatchDisposalQty} units of the disposal trade. acquisition cost is {BaseCurrencyMatchAcquisitionValue}");
             output.AppendLine($"Gain for this match is {BaseCurrencyMatchDisposalValue} - {BaseCurrencyMatchAcquisitionValue} " +
                                 $"= {BaseCurrencyMatchDisposalValue - BaseCurrencyMatchAcquisitionValue}");
             output.AppendLine(AdditionalInformation);
@@ -56,7 +56,7 @@ public record TradeMatch : ITextFilePrintable
         }
         else
         {
-            output.AppendLine($"{ToPrintedString(TradeMatchType)}: {MatchAcquisitionQty} units of the acquisition trade against {BaseCurrencyMatchDisposalValue} units of the disposal trade. acquisition cost is {BaseCurrencyMatchAcquisitionValue}");
+            output.AppendLine($"{ToPrintedString(TradeMatchType)}: {MatchAcquisitionQty} units of the acquisition trade against {MatchDisposalQty} units of the disposal trade. acquisition cost is {BaseCurrencyMatchAcquisitionValue}");
             output.AppendLine($"Matched trade: {string.Join("\n", MatchedGroup!.TradeList.Select(trade => trade.PrintToTextFile()))}");
             output.AppendLine($"Gain for this match is {BaseCurrencyMatchDisposalValue} - {BaseCurrencyMatchAcquisitionValue} " +
                                 $"= {BaseCurrencyMatchDisposalValue - BaseCurrencyMatchAcquisitionValue}");

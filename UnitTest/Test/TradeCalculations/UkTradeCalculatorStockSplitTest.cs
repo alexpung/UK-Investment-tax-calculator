@@ -34,7 +34,7 @@ public class UkTradeCalculatorStockSplitTest
         Trade postSplitSale = new()
         {
             AssetName = "XYZ",
-            BuySell = Enum.TradeType.SELL,
+            BuySell = TradeType.SELL,
             Date = DateTime.Parse("01-Mar-22 10:00:00"),
             Description = "Sale of 1000 shares",
             Quantity = 1000,
@@ -131,7 +131,7 @@ public class UkTradeCalculatorStockSplitTest
         Trade trade1 = new()
         {
             AssetName = "ABC",
-            BuySell = Enum.TradeType.BUY,
+            BuySell = TradeType.BUY,
             Date = DateTime.Parse("01-Apr-21"),
             Quantity = 100,
             GrossProceed = new() { Amount = new(2000m) } // £20 per share
