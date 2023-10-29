@@ -183,7 +183,7 @@ public class UkTradeCalculatorTest3Trades
         result[1].Gain.Amount.ShouldBe(totalGain, 0.01m);
         result[1].TotalAllowableCost.Amount.ShouldBe(2104.0m, 0.01m); // Cost basis for owned shares
         result[1].MatchHistory[0].TradeMatchType.ShouldBe(TaxMatchType.SAME_DAY);
-        result[2].MatchHistory[0].TradeMatchType.ShouldBe(TaxMatchType.SHORTCOVER);
+        result[1].MatchHistory[1].TradeMatchType.ShouldBe(TaxMatchType.SHORTCOVER);
     }
 
     [Fact]

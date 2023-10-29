@@ -10,7 +10,8 @@ namespace Model.UkTaxModel;
 public record TradeMatch : ITextFilePrintable
 {
     public required TaxMatchType TradeMatchType { get; set; }
-    public ITradeTaxCalculation? MatchedGroup { get; set; }
+    public ITradeTaxCalculation? MatchedBuyTrade { get; set; }
+    public ITradeTaxCalculation? MatchedSellTrade { get; set; }
     public decimal MatchAcquisitionQty { get; set; } = 0m;
     public decimal MatchDisposalQty { get; set; } = 0m;
     public virtual WrappedMoney BaseCurrencyMatchDisposalValue { get; set; } = WrappedMoney.GetBaseCurrencyZero();
@@ -27,8 +28,8 @@ public record TradeMatch : ITextFilePrintable
         return tradeMatch;
     }
 
-    public static TradeMatch CreateTradeMatch(TaxMatchType taxMatchType, decimal qty, WrappedMoney acqisitionValue, WrappedMoney disposalValue, ITradeTaxCalculation? matchedGroup = null,
-        string additionalInfo = "")
+    public static TradeMatch CreateTradeMatch(TaxMatchType taxMatchType, decimal qty, WrappedMoney acqisitionValue, WrappedMoney disposalValue, ITradeTaxCalculation? matchedSellTrade = null,
+        ITradeTaxCalculation? matchedBuyTrade = null, string additionalInfo = "")
     {
         return new()
         {
@@ -37,7 +38,8 @@ public record TradeMatch : ITextFilePrintable
             MatchDisposalQty = qty,
             BaseCurrencyMatchAcquisitionValue = acqisitionValue,
             BaseCurrencyMatchDisposalValue = disposalValue,
-            MatchedGroup = matchedGroup,
+            MatchedBuyTrade = matchedBuyTrade,
+            MatchedSellTrade = matchedSellTrade,
             AdditionalInformation = additionalInfo
         };
     }
@@ -57,7 +59,7 @@ public record TradeMatch : ITextFilePrintable
         else
         {
             output.AppendLine($"{ToPrintedString(TradeMatchType)}: {MatchAcquisitionQty} units of the acquisition trade against {MatchDisposalQty} units of the disposal trade. acquisition cost is {BaseCurrencyMatchAcquisitionValue}");
-            output.AppendLine($"Matched trade: {string.Join("\n", MatchedGroup!.TradeList.Select(trade => trade.PrintToTextFile()))}");
+            output.AppendLine($"Matched trade: {string.Join("\n", MatchedBuyTrade!.TradeList.Select(trade => trade.PrintToTextFile()))}");
             output.AppendLine($"Gain for this match is {BaseCurrencyMatchDisposalValue} - {BaseCurrencyMatchAcquisitionValue} " +
                                 $"= {BaseCurrencyMatchDisposalValue - BaseCurrencyMatchAcquisitionValue}");
             output.AppendLine(AdditionalInformation);

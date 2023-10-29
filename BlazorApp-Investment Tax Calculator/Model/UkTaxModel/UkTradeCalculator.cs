@@ -143,7 +143,8 @@ public class UkTradeCalculator : ITradeCalculator
         ITradeTaxCalculation buyTrade = trade1.BuySell == TradeType.BUY ? trade1 : trade2;
         ITradeTaxCalculation sellTrade = trade1.BuySell == TradeType.SELL ? trade1 : trade2;
         decimal proposedMatchQuantity = Math.Min(trade1.UnmatchedQty, trade2.UnmatchedQty);
-        TradeMatch proposedMatch = TradeMatch.CreateTradeMatch(taxMatchType, proposedMatchQuantity, buyTrade.GetNetAmount(proposedMatchQuantity), sellTrade.GetNetAmount(proposedMatchQuantity), buyTrade);
+        TradeMatch proposedMatch = TradeMatch.CreateTradeMatch(taxMatchType, proposedMatchQuantity, buyTrade.GetNetAmount(proposedMatchQuantity), sellTrade.GetNetAmount(proposedMatchQuantity),
+            matchedBuyTrade: buyTrade, matchedSellTrade: sellTrade);
         // trades and the proposed match are handed to each CorporateAction to modify.
         if (corporateActionInBetween is not null)
         {
@@ -172,6 +173,7 @@ public class UkTradeCalculator : ITradeCalculator
         proposedMatch.BaseCurrencyMatchDisposalValue = sellTrade.GetNetAmount(proposedMatch.MatchDisposalQty);
         buyTrade.MatchQty(proposedMatch.MatchAcquisitionQty);
         sellTrade.MatchQty(proposedMatch.MatchDisposalQty);
+        buyTrade.MatchHistory.Add(proposedMatch);
         sellTrade.MatchHistory.Add(proposedMatch);
     }
 

@@ -53,7 +53,7 @@ public record FutureTradeMatch : TradeMatch
             MatchAcquisitionContractValue = matchAcquisitionContractValue,
             BaseCurrencyMatchAcquisitionValue = baseCurrencyTotalDealingExpense + baseCurrencyMatchAcquisitionValue,
             BaseCurrencyMatchDisposalValue = baseCurrencyMatchDisposalValue,
-            MatchedGroup = matchedGroup
+            MatchedBuyTrade = matchedGroup
         };
     }
 
@@ -73,7 +73,7 @@ public record FutureTradeMatch : TradeMatch
         {
             output.AppendLine($"{ToPrintedString(TradeMatchType)}: Matched {MatchDisposalQty} units of the disposal. Acquisition contract value is {MatchAcquisitionContractValue} and disposal contract value {MatchDisposalContractValue}");
             output.AppendLine($"Total dealing cost is {BaseCurrencyTotalDealingExpense}");
-            output.AppendLine($"Matched trade: {string.Join("\n", MatchedGroup!.TradeList.Select(trade => trade.PrintToTextFile()))}");
+            output.AppendLine($"Matched trade: {string.Join("\n", MatchedBuyTrade!.TradeList.Select(trade => trade.PrintToTextFile()))}");
             output.AppendLine($"Gain for this match is ({gainCalculationFormula} = {BaseCurrencyContractValueGain - BaseCurrencyTotalDealingExpense}");
             output.AppendLine();
         }

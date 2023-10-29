@@ -135,9 +135,9 @@ public class UkTradeCalculatorTest2Trade
         List<ITradeTaxCalculation> result = calculator.CalculateTax();
 
         // Assert the expected results
-        result[0].Gain.ShouldBe(new WrappedMoney(53.27m)); // (1100 - 1) * 0.85 - (1000 + 1) * 0.88
-        result[0].TotalAllowableCost.ShouldBe(new WrappedMoney(880.88m)); // (1000 + 1) * 0.88
-        result[0].MatchHistory[0].TradeMatchType.ShouldBe(TaxMatchType.SAME_DAY);
+        result[1].Gain.ShouldBe(new WrappedMoney(53.27m)); // (1100 - 1) * 0.85 - (1000 + 1) * 0.88
+        result[1].TotalAllowableCost.ShouldBe(new WrappedMoney(880.88m)); // (1000 + 1) * 0.88
+        result[1].MatchHistory[0].TradeMatchType.ShouldBe(TaxMatchType.SAME_DAY);
 
         // Assert that Section 104 pool is updated correctly
         section104Pools.GetExistingOrInitialise("XYZ").AcquisitionCostInBaseCurrency.ShouldBe(new WrappedMoney(0m));
