@@ -1,9 +1,8 @@
 ﻿using Enum;
 using Model.Interfaces;
-using Model.UkTaxModel;
 using System.Text;
 
-namespace Model;
+namespace Model.UkTaxModel;
 
 /// <summary>
 /// Data class to provide sufficient information to describe a matching of a trade pair and calculate taxable gain/loss
@@ -12,14 +11,14 @@ public record TradeMatch : ITextFilePrintable
 {
     public required TaxMatchType TradeMatchType { get; set; }
     public ITradeTaxCalculation? MatchedGroup { get; set; }
-    public decimal MatchAcquitionQty { get; set; } = 0m;
+    public decimal MatchAcquisitionQty { get; set; } = 0m;
     public decimal MatchDisposalQty { get; set; } = 0m;
     public virtual WrappedMoney BaseCurrencyMatchDisposalValue { get; set; } = WrappedMoney.GetBaseCurrencyZero();
-    public virtual WrappedMoney BaseCurrencyMatchAcquitionValue { get; set; } = WrappedMoney.GetBaseCurrencyZero();
+    public virtual WrappedMoney BaseCurrencyMatchAcquisitionValue { get; set; } = WrappedMoney.GetBaseCurrencyZero();
     public string AdditionalInformation { get; set; } = string.Empty;
     public Section104History? Section104HistorySnapshot { get; set; }
 
-    private TradeMatch() { }
+    protected TradeMatch() { }
 
     public static TradeMatch CreateSection104Match(decimal qty, WrappedMoney acqisitionValue, WrappedMoney disposalValue, Section104History section104History)
     {
@@ -34,9 +33,9 @@ public record TradeMatch : ITextFilePrintable
         return new()
         {
             TradeMatchType = taxMatchType,
-            MatchAcquitionQty = qty,
+            MatchAcquisitionQty = qty,
             MatchDisposalQty = qty,
-            BaseCurrencyMatchAcquitionValue = acqisitionValue,
+            BaseCurrencyMatchAcquisitionValue = acqisitionValue,
             BaseCurrencyMatchDisposalValue = disposalValue,
             MatchedGroup = matchedGroup,
             AdditionalInformation = additionalInfo
@@ -49,25 +48,25 @@ public record TradeMatch : ITextFilePrintable
         if (TradeMatchType == TaxMatchType.SECTION_104)
         {
             output.AppendLine($"At time of disposal, section 104 contains {Section104HistorySnapshot!.OldQuantity} units with value {Section104HistorySnapshot.OldValue}");
-            output.AppendLine($"Section 104: Matched {MatchAcquitionQty} units of the acquition trade against {BaseCurrencyMatchDisposalValue} units of the disposal trade. Acquition cost is {BaseCurrencyMatchAcquitionValue}");
-            output.AppendLine($"Gain for this match is {BaseCurrencyMatchDisposalValue} - {BaseCurrencyMatchAcquitionValue} " +
-                                $"= {BaseCurrencyMatchDisposalValue - BaseCurrencyMatchAcquitionValue}");
+            output.AppendLine($"Section 104: Matched {MatchAcquisitionQty} units of the acquisition trade against {BaseCurrencyMatchDisposalValue} units of the disposal trade. acquisition cost is {BaseCurrencyMatchAcquisitionValue}");
+            output.AppendLine($"Gain for this match is {BaseCurrencyMatchDisposalValue} - {BaseCurrencyMatchAcquisitionValue} " +
+                                $"= {BaseCurrencyMatchDisposalValue - BaseCurrencyMatchAcquisitionValue}");
             output.AppendLine(AdditionalInformation);
             output.AppendLine();
         }
         else
         {
-            output.AppendLine($"{ToPrintedString(TradeMatchType)}: {MatchAcquitionQty} units of the acquition trade against {BaseCurrencyMatchDisposalValue} units of the disposal trade. Acquition cost is {BaseCurrencyMatchAcquitionValue}");
+            output.AppendLine($"{ToPrintedString(TradeMatchType)}: {MatchAcquisitionQty} units of the acquisition trade against {BaseCurrencyMatchDisposalValue} units of the disposal trade. acquisition cost is {BaseCurrencyMatchAcquisitionValue}");
             output.AppendLine($"Matched trade: {string.Join("\n", MatchedGroup!.TradeList.Select(trade => trade.PrintToTextFile()))}");
-            output.AppendLine($"Gain for this match is {BaseCurrencyMatchDisposalValue} - {BaseCurrencyMatchAcquitionValue} " +
-                                $"= {BaseCurrencyMatchDisposalValue - BaseCurrencyMatchAcquitionValue}");
+            output.AppendLine($"Gain for this match is {BaseCurrencyMatchDisposalValue} - {BaseCurrencyMatchAcquisitionValue} " +
+                                $"= {BaseCurrencyMatchDisposalValue - BaseCurrencyMatchAcquisitionValue}");
             output.AppendLine(AdditionalInformation);
             output.AppendLine();
         }
         return output.ToString();
     }
 
-    private static string ToPrintedString(TaxMatchType TaxMatchType) => TaxMatchType switch
+    protected static string ToPrintedString(TaxMatchType TaxMatchType) => TaxMatchType switch
     {
         TaxMatchType.SAME_DAY => "Same day",
         TaxMatchType.BED_AND_BREAKFAST => "Bed and breakfast",

@@ -2,6 +2,7 @@
 using Model;
 using Model.Interfaces;
 using Model.TaxEvents;
+using Model.UkTaxModel;
 using Moq;
 
 namespace UnitTest.Helper;

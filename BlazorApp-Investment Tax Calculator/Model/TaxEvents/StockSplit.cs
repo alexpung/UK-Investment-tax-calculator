@@ -18,8 +18,8 @@ public record StockSplit : CorporateAction, IChangeSection104, IChangeTradeMatch
         {
             if (earlierTrade.BuySell == TradeType.BUY)
             {
-                tradeMatch.MatchAcquitionQty = tradeMatch.MatchAcquitionQty * NumberBeforeSplit / NumberAfterSplit;
-                tradeMatch.BaseCurrencyMatchAcquitionValue = earlierTrade.GetNetAmount(tradeMatch.MatchAcquitionQty);
+                tradeMatch.MatchAcquisitionQty = tradeMatch.MatchAcquisitionQty * NumberBeforeSplit / NumberAfterSplit;
+                tradeMatch.BaseCurrencyMatchAcquisitionValue = earlierTrade.GetNetAmount(tradeMatch.MatchAcquisitionQty);
             }
             else
             {

@@ -37,7 +37,7 @@ public class UkSection104PoolsTests
 
         // Assert
         result.Quantity.ShouldBe(100);
-        result.ValueInBaseCurrency.ShouldBe(new WrappedMoney(2000));
+        result.AcquisitionCostInBaseCurrency.ShouldBe(new WrappedMoney(2000));
     }
 
     [Fact]

@@ -38,7 +38,7 @@ public class UkTradeCalculatorTest2Trade
         result[0].Gain.ShouldBe(new WrappedMoney(427.42m));
         result[0].TotalAllowableCost.ShouldBe(new WrappedMoney(431.29m));
         result[0].MatchHistory[0].TradeMatchType.ShouldBe(TaxMatchType.SHORTCOVER);
-        section104Pools.GetExistingOrInitialise("DEF").ValueInBaseCurrency.ShouldBe(WrappedMoney.GetBaseCurrencyZero());
+        section104Pools.GetExistingOrInitialise("DEF").AcquisitionCostInBaseCurrency.ShouldBe(WrappedMoney.GetBaseCurrencyZero());
         section104Pools.GetExistingOrInitialise("DEF").Quantity.ShouldBe(0);
     }
 
@@ -91,7 +91,7 @@ public class UkTradeCalculatorTest2Trade
         result[1].MatchHistory[0].TradeMatchType.ShouldBe(TaxMatchType.SECTION_104);
 
         // Assert that Section 104 pool is updated correctly
-        section104Pools.GetExistingOrInitialise("ABC").ValueInBaseCurrency.ShouldBe(new WrappedMoney(425.425m)); // (2000 + 2) * (50 / 200) * 0.85
+        section104Pools.GetExistingOrInitialise("ABC").AcquisitionCostInBaseCurrency.ShouldBe(new WrappedMoney(425.425m)); // (2000 + 2) * (50 / 200) * 0.85
         section104Pools.GetExistingOrInitialise("ABC").Quantity.ShouldBe(50); // 200 - 150
     }
 
@@ -140,7 +140,7 @@ public class UkTradeCalculatorTest2Trade
         result[0].MatchHistory[0].TradeMatchType.ShouldBe(TaxMatchType.SAME_DAY);
 
         // Assert that Section 104 pool is updated correctly
-        section104Pools.GetExistingOrInitialise("XYZ").ValueInBaseCurrency.ShouldBe(new WrappedMoney(0m));
+        section104Pools.GetExistingOrInitialise("XYZ").AcquisitionCostInBaseCurrency.ShouldBe(new WrappedMoney(0m));
         section104Pools.GetExistingOrInitialise("XYZ").Quantity.ShouldBe(0);
     }
 
@@ -188,7 +188,7 @@ public class UkTradeCalculatorTest2Trade
         result[1].MatchHistory[0].TradeMatchType.ShouldBe(TaxMatchType.BED_AND_BREAKFAST);
 
         // Assert that Section 104 pool is updated correctly
-        section104Pools.GetExistingOrInitialise("BBB").ValueInBaseCurrency.ShouldBe(new WrappedMoney(1063.35m)); // (2500 + 2) * 100 / 200 * 0.85
+        section104Pools.GetExistingOrInitialise("BBB").AcquisitionCostInBaseCurrency.ShouldBe(new WrappedMoney(1063.35m)); // (2500 + 2) * 100 / 200 * 0.85
         section104Pools.GetExistingOrInitialise("BBB").Quantity.ShouldBe(100);
     }
 }

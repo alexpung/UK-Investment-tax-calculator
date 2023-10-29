@@ -51,8 +51,8 @@ public class UkTradeCalculatorStockSplitTest
         // Assert the expected results
         // Section 104 Holding Matching (1000 shares)
         result[1].MatchHistory[0].BaseCurrencyMatchDisposalValue.Amount.ShouldBe(1500.0m, 0.01m); // (1500 * 1000 / 2000)
-        result[1].MatchHistory[0].BaseCurrencyMatchAcquitionValue.Amount.ShouldBe(500.0m, 0.01m); // (1000 * 1000 / 2000)
-        result[1].MatchHistory[0].MatchAcquitionQty.ShouldBe(1000);
+        result[1].MatchHistory[0].BaseCurrencyMatchAcquisitionValue.Amount.ShouldBe(500.0m, 0.01m); // (1000 * 1000 / 2000)
+        result[1].MatchHistory[0].MatchAcquisitionQty.ShouldBe(1000);
         result[1].MatchHistory[0].TradeMatchType.ShouldBe(TaxMatchType.SECTION_104);
 
         // Gain Calculation
@@ -60,7 +60,7 @@ public class UkTradeCalculatorStockSplitTest
         result[1].TotalAllowableCost.Amount.ShouldBe(500.0m, 0.01m);
 
         // Ensure the Section 104 pool is updated correctly
-        section104Pools.GetExistingOrInitialise("XYZ").ValueInBaseCurrency.Amount.ShouldBe(500.0m, 0.01m); // 1000 - 500
+        section104Pools.GetExistingOrInitialise("XYZ").AcquisitionCostInBaseCurrency.Amount.ShouldBe(500.0m, 0.01m); // 1000 - 500
         section104Pools.GetExistingOrInitialise("XYZ").Quantity.ShouldBe(1000); // 2000 - 1000
     }
 
@@ -116,11 +116,11 @@ public class UkTradeCalculatorStockSplitTest
 
         // Assert the expected results
         result[2].MatchHistory[0].BaseCurrencyMatchDisposalValue.Amount.ShouldBe(4900m, 0.01m); // Selling 700 shares at £7
-        result[2].MatchHistory[0].BaseCurrencyMatchAcquitionValue.Amount.ShouldBe(3762.50m, 0.01m); // Acquisition cost (700 shares at £5.375)
+        result[2].MatchHistory[0].BaseCurrencyMatchAcquisitionValue.Amount.ShouldBe(3762.50m, 0.01m); // Acquisition cost (700 shares at £5.375)
 
-        result[2].MatchHistory[0].MatchAcquitionQty.ShouldBe(700);
+        result[2].MatchHistory[0].MatchAcquisitionQty.ShouldBe(700);
 
-        section104Pools.GetExistingOrInitialise("XYZ").ValueInBaseCurrency.Amount.ShouldBe(4837.50m, 0.01m); // Remaining value in pool
+        section104Pools.GetExistingOrInitialise("XYZ").AcquisitionCostInBaseCurrency.Amount.ShouldBe(4837.50m, 0.01m); // Remaining value in pool
         section104Pools.GetExistingOrInitialise("XYZ").Quantity.ShouldBe(900); // Remaining quantity in pool
     }
 
@@ -177,7 +177,7 @@ public class UkTradeCalculatorStockSplitTest
         result[1].TotalProceeds.Amount.ShouldBe(2500m, 0.01m); // Total proceeds from the sale: 100 shares sold at £25 each
 
         // Verify the Section 104 pool after the sale
-        section104Pools.GetExistingOrInitialise("ABC").ValueInBaseCurrency.Amount.ShouldBe(1500m, 0.01m); // Remaining value in pool (2000 - 500)
+        section104Pools.GetExistingOrInitialise("ABC").AcquisitionCostInBaseCurrency.Amount.ShouldBe(1500m, 0.01m); // Remaining value in pool (2000 - 500)
         section104Pools.GetExistingOrInitialise("ABC").Quantity.ShouldBe(150); // Remaining quantity in pool (200 - 100)
     }
 

@@ -21,17 +21,17 @@ public class UkSection104Test
         ukSection104.MatchTradeWithSection104(mockBuyTrade.Object);
         ukSection104.AssetName.ShouldBe("IBM");
         ukSection104.Quantity.ShouldBe(100m);
-        ukSection104.ValueInBaseCurrency.ShouldBe(new WrappedMoney(buyValue));
-        mockBuyTrade.Object.MatchHistory[0].MatchAcquitionQty.ShouldBe(buyQuantity);
-        mockBuyTrade.Object.MatchHistory[0].BaseCurrencyMatchAcquitionValue.ShouldBe(new WrappedMoney(buyValue));
+        ukSection104.AcquisitionCostInBaseCurrency.ShouldBe(new WrappedMoney(buyValue));
+        mockBuyTrade.Object.MatchHistory[0].MatchAcquisitionQty.ShouldBe(buyQuantity);
+        mockBuyTrade.Object.MatchHistory[0].BaseCurrencyMatchAcquisitionValue.ShouldBe(new WrappedMoney(buyValue));
         mockBuyTrade.Object.MatchHistory[0].BaseCurrencyMatchDisposalValue.ShouldBe(WrappedMoney.GetBaseCurrencyZero());
         mockBuyTrade.Object.MatchHistory[0].TradeMatchType.ShouldBe(TaxMatchType.SECTION_104);
         Mock<ITradeTaxCalculation> mockSellTrade = MockTrade.CreateMockITradeTaxCalculation(sellQuantity, sellValue, TradeType.SELL);
         ukSection104.MatchTradeWithSection104(mockSellTrade.Object);
         ukSection104.Quantity.ShouldBe(decimal.Max(buyQuantity - sellQuantity, 0));
-        ukSection104.ValueInBaseCurrency.ShouldBe(new WrappedMoney(decimal.Max((buyQuantity - sellQuantity) / buyQuantity * buyValue, 0)));
-        mockSellTrade.Object.MatchHistory[0].MatchAcquitionQty.ShouldBe(decimal.Min(sellQuantity, buyQuantity));
-        mockSellTrade.Object.MatchHistory[0].BaseCurrencyMatchAcquitionValue.ShouldBe(new WrappedMoney(decimal.Min(buyValue / buyQuantity * sellQuantity, buyValue)));
+        ukSection104.AcquisitionCostInBaseCurrency.ShouldBe(new WrappedMoney(decimal.Max((buyQuantity - sellQuantity) / buyQuantity * buyValue, 0)));
+        mockSellTrade.Object.MatchHistory[0].MatchAcquisitionQty.ShouldBe(decimal.Min(sellQuantity, buyQuantity));
+        mockSellTrade.Object.MatchHistory[0].BaseCurrencyMatchAcquisitionValue.ShouldBe(new WrappedMoney(decimal.Min(buyValue / buyQuantity * sellQuantity, buyValue)));
         mockSellTrade.Object.MatchHistory[0].BaseCurrencyMatchDisposalValue.ShouldBe(new WrappedMoney(decimal.Min(sellQuantity, buyQuantity) * sellValue / sellQuantity));
         mockSellTrade.Object.MatchHistory[0].TradeMatchType.ShouldBe(TaxMatchType.SECTION_104);
     }
@@ -77,6 +77,6 @@ public class UkSection104Test
         corporateAction.ChangeSection104(ukSection104);
         ukSection104.MatchTradeWithSection104(mockTrade2.Object);
         ukSection104.Quantity.ShouldBe(30); // bought 100, 150 after split - 120 sold = 30
-        ukSection104.ValueInBaseCurrency.ShouldBe(new WrappedMoney(200m)); // bought shares worth 1000, remaining shares worth = 30*1000/150 = 200
+        ukSection104.AcquisitionCostInBaseCurrency.ShouldBe(new WrappedMoney(200m)); // bought shares worth 1000, remaining shares worth = 30*1000/150 = 200
     }
 }

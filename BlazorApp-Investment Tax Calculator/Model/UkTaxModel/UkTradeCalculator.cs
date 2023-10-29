@@ -156,21 +156,21 @@ public class UkTradeCalculator : ITradeCalculator
             }
         }
         // normalise match numbers if match quantity exceed number of unmatched shares
-        if (proposedMatch.MatchAcquitionQty > buyTrade.UnmatchedQty)
+        if (proposedMatch.MatchAcquisitionQty > buyTrade.UnmatchedQty)
         {
-            decimal adjustRatio = buyTrade.UnmatchedQty / proposedMatch.MatchAcquitionQty;
-            proposedMatch.MatchDisposalQty = proposedMatch.MatchDisposalQty * adjustRatio;
-            proposedMatch.MatchAcquitionQty = buyTrade.UnmatchedQty;
+            decimal adjustRatio = buyTrade.UnmatchedQty / proposedMatch.MatchAcquisitionQty;
+            proposedMatch.MatchDisposalQty *= adjustRatio;
+            proposedMatch.MatchAcquisitionQty = buyTrade.UnmatchedQty;
         }
         if (proposedMatch.MatchDisposalQty > sellTrade.UnmatchedQty)
         {
             decimal adjustRatio = sellTrade.UnmatchedQty / proposedMatch.MatchDisposalQty;
-            proposedMatch.MatchAcquitionQty = proposedMatch.MatchAcquitionQty * adjustRatio;
+            proposedMatch.MatchAcquisitionQty *= adjustRatio;
             proposedMatch.MatchDisposalQty = sellTrade.UnmatchedQty;
         }
-        proposedMatch.BaseCurrencyMatchAcquitionValue = buyTrade.GetNetAmount(proposedMatch.MatchAcquitionQty);
+        proposedMatch.BaseCurrencyMatchAcquisitionValue = buyTrade.GetNetAmount(proposedMatch.MatchAcquisitionQty);
         proposedMatch.BaseCurrencyMatchDisposalValue = sellTrade.GetNetAmount(proposedMatch.MatchDisposalQty);
-        buyTrade.MatchQty(proposedMatch.MatchAcquitionQty);
+        buyTrade.MatchQty(proposedMatch.MatchAcquisitionQty);
         sellTrade.MatchQty(proposedMatch.MatchDisposalQty);
         buyTrade.MatchHistory.Add(proposedMatch);
         sellTrade.MatchHistory.Add(proposedMatch);

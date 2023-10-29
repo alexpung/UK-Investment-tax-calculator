@@ -51,7 +51,7 @@ public class UkTradeCalculatorTest3Trades
         result[1].Gain.Amount.ShouldBe(-166.67m, 0.01m);
         result[1].TotalAllowableCost.Amount.ShouldBe(1666.67m, 0.01m);
         result[1].MatchHistory[0].TradeMatchType.ShouldBe(TaxMatchType.BED_AND_BREAKFAST);
-        section104Pools.GetExistingOrInitialise("DEF").ValueInBaseCurrency.Amount.ShouldBe(1666.67m, 0.01m);
+        section104Pools.GetExistingOrInitialise("DEF").AcquisitionCostInBaseCurrency.Amount.ShouldBe(1666.67m, 0.01m);
         section104Pools.GetExistingOrInitialise("DEF").Quantity.ShouldBe(100);
     }
 
@@ -106,13 +106,13 @@ public class UkTradeCalculatorTest3Trades
         // Assert the expected results
         // Bed and Breakfast Matching (500 shares)
         result[2].MatchHistory[0].BaseCurrencyMatchDisposalValue.ShouldBe(new WrappedMoney(750m));
-        result[2].MatchHistory[0].BaseCurrencyMatchAcquitionValue.ShouldBe(new WrappedMoney(850m));
-        result[2].MatchHistory[0].MatchAcquitionQty.ShouldBe(500);
+        result[2].MatchHistory[0].BaseCurrencyMatchAcquisitionValue.ShouldBe(new WrappedMoney(850m));
+        result[2].MatchHistory[0].MatchAcquisitionQty.ShouldBe(500);
         result[2].MatchHistory[0].TradeMatchType.ShouldBe(TaxMatchType.BED_AND_BREAKFAST);
         // Section 104 Holding Matching (3,500 shares)
         result[2].MatchHistory[1].BaseCurrencyMatchDisposalValue.ShouldBe(new WrappedMoney(5250m)); // (6000 * 3500 / 4000)
-        result[2].MatchHistory[1].BaseCurrencyMatchAcquitionValue.Amount.ShouldBe(681.58m, 0.01m); // (1850 * 3500 / 9500)
-        result[2].MatchHistory[1].MatchAcquitionQty.ShouldBe(3500);
+        result[2].MatchHistory[1].BaseCurrencyMatchAcquisitionValue.Amount.ShouldBe(681.58m, 0.01m); // (1850 * 3500 / 9500)
+        result[2].MatchHistory[1].MatchAcquisitionQty.ShouldBe(3500);
         result[2].MatchHistory[1].TradeMatchType.ShouldBe(TaxMatchType.SECTION_104);
 
         //Total
@@ -120,7 +120,7 @@ public class UkTradeCalculatorTest3Trades
         result[2].TotalAllowableCost.Amount.ShouldBe(1531.58m, 0.01m);
 
         // Ensure the Section 104 pool is updated correctly
-        section104Pools.GetExistingOrInitialise("Mesopotamia plc").ValueInBaseCurrency.Amount.ShouldBe(1168.42m, 0.01m); // 1850 - (1850 * 3500 / 9500)
+        section104Pools.GetExistingOrInitialise("Mesopotamia plc").AcquisitionCostInBaseCurrency.Amount.ShouldBe(1168.42m, 0.01m); // 1850 - (1850 * 3500 / 9500)
         section104Pools.GetExistingOrInitialise("Mesopotamia plc").Quantity.ShouldBe(6000);
     }
 
@@ -230,14 +230,14 @@ public class UkTradeCalculatorTest3Trades
         // Assert the expected results
         // Short Cover Matching (2000 shares)
         result[1].MatchHistory[0].BaseCurrencyMatchDisposalValue.Amount.ShouldBe(1666.67m, 0.01m);
-        result[1].MatchHistory[0].BaseCurrencyMatchAcquitionValue.Amount.ShouldBe(1500m, 0.01m);
-        result[1].MatchHistory[0].MatchAcquitionQty.ShouldBe(2000);
+        result[1].MatchHistory[0].BaseCurrencyMatchAcquisitionValue.Amount.ShouldBe(1500m, 0.01m);
+        result[1].MatchHistory[0].MatchAcquisitionQty.ShouldBe(2000);
         result[1].MatchHistory[0].TradeMatchType.ShouldBe(TaxMatchType.BED_AND_BREAKFAST);
 
         // Section 104 Holding Matching (1000 shares)
         result[1].MatchHistory[1].BaseCurrencyMatchDisposalValue.Amount.ShouldBe(833.33m, 0.01m);
-        result[1].MatchHistory[1].BaseCurrencyMatchAcquitionValue.Amount.ShouldBe(200m, 0.01m);
-        result[1].MatchHistory[1].MatchAcquitionQty.ShouldBe(1000);
+        result[1].MatchHistory[1].BaseCurrencyMatchAcquisitionValue.Amount.ShouldBe(200m, 0.01m);
+        result[1].MatchHistory[1].MatchAcquisitionQty.ShouldBe(1000);
         result[1].MatchHistory[1].TradeMatchType.ShouldBe(TaxMatchType.SECTION_104);
 
         //Total
@@ -245,7 +245,7 @@ public class UkTradeCalculatorTest3Trades
         result[1].TotalAllowableCost.Amount.ShouldBe(1700m, 0.01m);
 
         // Ensure the Section 104 pool is updated correctly
-        section104Pools.GetExistingOrInitialise("AncientArtifacts Ltd").ValueInBaseCurrency.Amount.ShouldBe(1800m, 0.01m);
+        section104Pools.GetExistingOrInitialise("AncientArtifacts Ltd").AcquisitionCostInBaseCurrency.Amount.ShouldBe(1800m, 0.01m);
         section104Pools.GetExistingOrInitialise("AncientArtifacts Ltd").Quantity.ShouldBe(9000);
     }
 }

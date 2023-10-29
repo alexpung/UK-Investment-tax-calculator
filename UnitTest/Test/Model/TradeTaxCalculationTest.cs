@@ -2,6 +2,7 @@
 using Enum;
 using global::Model;
 using global::Model.TaxEvents;
+using global::Model.UkTaxModel;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -159,9 +160,9 @@ public class TradeTaxCalculationTests
         matchedQty.ShouldBe(12);
         matchedValue.ShouldBe(new WrappedMoney(120));
         calculation.UnmatchedQty.ShouldBe(18);
-        calculation.UnmatchedNetAmount.ShouldBe(new WrappedMoney(180));
+        calculation.UnmatchedNetMoneyPaidOrReceived.ShouldBe(new WrappedMoney(180));
         calculation.CalculationCompleted.ShouldBeFalse();
-        calculation.TotalNetAmount.ShouldBe(new WrappedMoney(300));
+        calculation.TotalNetMoneyPaidOrReceived.ShouldBe(new WrappedMoney(300));
         calculation.TotalQty.ShouldBe(30);
     }
 
@@ -185,9 +186,9 @@ public class TradeTaxCalculationTests
         matchedQty.ShouldBe(80);
         matchedValue.ShouldBe(new WrappedMoney(800));
         calculation.UnmatchedQty.ShouldBe(0);
-        calculation.UnmatchedNetAmount.ShouldBe(WrappedMoney.GetBaseCurrencyZero());
+        calculation.UnmatchedNetMoneyPaidOrReceived.ShouldBe(WrappedMoney.GetBaseCurrencyZero());
         calculation.CalculationCompleted.ShouldBeTrue();
-        calculation.TotalNetAmount.ShouldBe(new WrappedMoney(800));
+        calculation.TotalNetMoneyPaidOrReceived.ShouldBe(new WrappedMoney(800));
         calculation.TotalQty.ShouldBe(80);
     }
 }

@@ -82,7 +82,7 @@ public class UkTradeCalculatorTests
         result[1].TotalAllowableCost.ShouldBe(new WrappedMoney(2300));
         result[1].TotalQty.ShouldBe(80m);
         section104.Quantity.ShouldBe(70);
-        section104.ValueInBaseCurrency.ShouldBe(new WrappedMoney(700));
+        section104.AcquisitionCostInBaseCurrency.ShouldBe(new WrappedMoney(700));
     }
 
 
@@ -111,7 +111,7 @@ public class UkTradeCalculatorTests
         result[1].Gain.ShouldBe(new WrappedMoney(5200));
         result[1].TotalAllowableCost.ShouldBe(new WrappedMoney(2800));
         section104.Quantity.ShouldBe(90);
-        section104.ValueInBaseCurrency.ShouldBe(new WrappedMoney(2200));
+        section104.AcquisitionCostInBaseCurrency.ShouldBe(new WrappedMoney(2200));
     }
 
     [Fact]
@@ -142,7 +142,7 @@ public class UkTradeCalculatorTests
         result[0].Gain.ShouldBe(new WrappedMoney(-3500));
         result[0].TotalAllowableCost.ShouldBe(new WrappedMoney(5000));
         section104.Quantity.ShouldBe(75);
-        section104.ValueInBaseCurrency.ShouldBe(new WrappedMoney(2500));
+        section104.AcquisitionCostInBaseCurrency.ShouldBe(new WrappedMoney(2500));
     }
 
     [Fact]

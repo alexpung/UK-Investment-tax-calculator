@@ -1,4 +1,6 @@
-﻿namespace Model.Interfaces;
+﻿using Model.UkTaxModel;
+
+namespace Model.Interfaces;
 
 public interface IChangeTradeMatchingInBetween
 {
