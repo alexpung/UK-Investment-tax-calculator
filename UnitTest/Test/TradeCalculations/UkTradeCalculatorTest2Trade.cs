@@ -13,7 +13,7 @@ public class UkTradeCalculatorTest2Trade
         Trade trade1 = new()
         {
             AssetName = "DEF",
-            BuySell = Enum.TradeType.SELL,
+            BuySell = TradeType.SELL,
             Date = DateTime.Parse("05-May-21 12:34:56"),
             Description = "DEF Example Stock",
             Quantity = 100,
@@ -23,7 +23,7 @@ public class UkTradeCalculatorTest2Trade
         Trade trade2 = new()
         {
             AssetName = "DEF",
-            BuySell = Enum.TradeType.BUY,
+            BuySell = TradeType.BUY,
             Date = DateTime.Parse("06-Dec-21 12:34:56"),
             Description = "DEF Example Stock",
             Quantity = 100,
@@ -52,7 +52,7 @@ public class UkTradeCalculatorTest2Trade
         Trade buyTrade = new()
         {
             AssetName = "ABC",
-            BuySell = Enum.TradeType.BUY,
+            BuySell = TradeType.BUY,
             Date = DateTime.Parse("01-Jan-21 10:00:00"),
             Description = "Purchase of ABC Stock",
             Quantity = 200,
@@ -64,7 +64,7 @@ public class UkTradeCalculatorTest2Trade
         Trade sellTrade = new()
         {
             AssetName = "ABC",
-            BuySell = Enum.TradeType.SELL,
+            BuySell = TradeType.SELL,
             Date = DateTime.Parse("15-Dec-21 15:30:00"),
             Description = "Sale of ABC Stock",
             Quantity = 150,
@@ -102,7 +102,7 @@ public class UkTradeCalculatorTest2Trade
         Trade purchaseTrade = new()
         {
             AssetName = "XYZ",
-            BuySell = Enum.TradeType.BUY,
+            BuySell = TradeType.BUY,
             Date = DateTime.Parse("02-Feb-22 09:30:00"),
             Description = "Purchase of XYZ Stock",
             Quantity = 100,
@@ -113,7 +113,7 @@ public class UkTradeCalculatorTest2Trade
         Trade saleTrade = new()
         {
             AssetName = "XYZ",
-            BuySell = Enum.TradeType.SELL,
+            BuySell = TradeType.SELL,
             Date = DateTime.Parse("02-Feb-22 15:45:00"),
             Description = "Sale of XYZ Stock",
             Quantity = 100,
@@ -150,7 +150,7 @@ public class UkTradeCalculatorTest2Trade
         Trade saleTrade = new()
         {
             AssetName = "BBB",
-            BuySell = Enum.TradeType.SELL,
+            BuySell = TradeType.SELL,
             Date = DateTime.Parse("12-Apr-22 15:45:00"),
             Description = "Sale of BBB Stock",
             Quantity = 100,
@@ -161,7 +161,7 @@ public class UkTradeCalculatorTest2Trade
         Trade purchaseTrade1 = new()
         {
             AssetName = "BBB",
-            BuySell = Enum.TradeType.BUY,
+            BuySell = TradeType.BUY,
             Date = DateTime.Parse("12-May-22 09:30:00"),
             Description = "Purchase of BBB Stock",
             Quantity = 200,

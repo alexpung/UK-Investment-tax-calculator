@@ -14,7 +14,7 @@ public class UkTradeCalculatorStockSplitTest
         Trade initialPurchase = new()
         {
             AssetName = "XYZ",
-            BuySell = Enum.TradeType.BUY,
+            BuySell = TradeType.BUY,
             Date = DateTime.Parse("01-Jan-22 10:00:00"),
             Description = "Purchase of 1000 shares",
             Quantity = 1000,
@@ -71,7 +71,7 @@ public class UkTradeCalculatorStockSplitTest
         Trade trade1 = new()
         {
             AssetName = "XYZ",
-            BuySell = Enum.TradeType.BUY,
+            BuySell = TradeType.BUY,
             Date = DateTime.Parse("01-Jan-22"),
             Quantity = 500,
             GrossProceed = new() { Amount = new(5000m) },  // £10 per share
@@ -90,7 +90,7 @@ public class UkTradeCalculatorStockSplitTest
         Trade trade2 = new()
         {
             AssetName = "XYZ",
-            BuySell = Enum.TradeType.BUY,
+            BuySell = TradeType.BUY,
             Date = DateTime.Parse("02-Feb-22"),
             Quantity = 600,
             GrossProceed = new() { Amount = new(3600m) },  // £6 per share
@@ -100,7 +100,7 @@ public class UkTradeCalculatorStockSplitTest
         Trade trade3 = new()
         {
             AssetName = "XYZ",
-            BuySell = Enum.TradeType.SELL,
+            BuySell = TradeType.SELL,
             Date = DateTime.Parse("03-Feb-22"),
             Quantity = 700,
             GrossProceed = new() { Amount = new(4900m) },  // £7 per share
@@ -150,7 +150,7 @@ public class UkTradeCalculatorStockSplitTest
         Trade trade2 = new()
         {
             AssetName = "ABC",
-            BuySell = Enum.TradeType.SELL,
+            BuySell = TradeType.SELL,
             Date = DateTime.Parse("02-May-21"),
             Quantity = 100,
             GrossProceed = new() { Amount = new(2500m) } // £25 per share post-split
@@ -160,7 +160,7 @@ public class UkTradeCalculatorStockSplitTest
         Trade trade3 = new()
         {
             AssetName = "ABC",
-            BuySell = Enum.TradeType.BUY,
+            BuySell = TradeType.BUY,
             Date = DateTime.Parse("03-May-21"),
             Quantity = 50,
             GrossProceed = new() { Amount = new(1300m) } // £26 per share post-split
