@@ -121,6 +121,7 @@ public class TradeTaxCalculation : ITradeTaxCalculation
         {
             output.AppendLine($"Resulting overall gain for this disposal: {GetSumFormula(MatchHistory.Select(match => match.MatchGain))}");
         }
+        output.AppendLine();
         return output.ToString();
     }
 }
