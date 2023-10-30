@@ -93,6 +93,13 @@ public class TradeTaxCalculation : ITradeTaxCalculation
         _ => throw new NotImplementedException()
     };
 
+    private static string GetSumFormula(IEnumerable<WrappedMoney> moneyNumbers)
+    {
+        WrappedMoney sum = moneyNumbers.Sum();
+        string formula = string.Join(" ", moneyNumbers.Select(n => n.Amount >= 0 ? $"+ {n}" : $"- {-n}")).TrimStart('+', ' ') + " = " + sum;
+        return formula;
+    }
+
     public string PrintToTextFile()
     {
         StringBuilder output = new();
@@ -110,7 +117,10 @@ public class TradeTaxCalculation : ITradeTaxCalculation
         {
             output.AppendLine(matching.PrintToTextFile());
         }
-        output.AppendLine();
+        if (MatchHistory.Count > 2)
+        {
+            output.AppendLine($"Resulting overall gain for this disposal: {GetSumFormula(MatchHistory.Select(match => match.MatchGain))}");
+        }
         return output.ToString();
     }
 }

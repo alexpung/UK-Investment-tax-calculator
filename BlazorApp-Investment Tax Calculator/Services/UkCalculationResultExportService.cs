@@ -56,8 +56,8 @@ public class UkCalculationResultExportService : ITextFilePrintable
         int DisposalCount = 1;
         foreach (var calculations in tradeTaxCalculations)
         {
+            output.AppendLine("*******************************************************************************");
             output.Append($"Disposal {DisposalCount}: {calculations.PrintToTextFile()}");
-            output.AppendLine();
             DisposalCount++;
         }
         return output.ToString();

@@ -16,6 +16,7 @@ public record TradeMatch : ITextFilePrintable
     public decimal MatchDisposalQty { get; set; } = 0m;
     public virtual WrappedMoney BaseCurrencyMatchDisposalValue { get; set; } = WrappedMoney.GetBaseCurrencyZero();
     public virtual WrappedMoney BaseCurrencyMatchAcquisitionValue { get; set; } = WrappedMoney.GetBaseCurrencyZero();
+    public virtual WrappedMoney MatchGain => BaseCurrencyMatchDisposalValue - BaseCurrencyMatchAcquisitionValue;
     public string AdditionalInformation { get; set; } = string.Empty;
     public Section104History? Section104HistorySnapshot { get; set; }
 
@@ -53,8 +54,7 @@ public record TradeMatch : ITextFilePrintable
             output.AppendLine($"Section 104: Matched {MatchAcquisitionQty} units of the acquisition trade against {MatchDisposalQty} units of the disposal trade. acquisition cost is {BaseCurrencyMatchAcquisitionValue}");
             output.AppendLine($"Gain for this match is {BaseCurrencyMatchDisposalValue} - {BaseCurrencyMatchAcquisitionValue} " +
                                 $"= {BaseCurrencyMatchDisposalValue - BaseCurrencyMatchAcquisitionValue}");
-            output.AppendLine(AdditionalInformation);
-            output.AppendLine();
+            if (!string.IsNullOrEmpty(AdditionalInformation)) output.AppendLine(AdditionalInformation);
         }
         else
         {
@@ -62,8 +62,7 @@ public record TradeMatch : ITextFilePrintable
             output.AppendLine($"Matched trade: {string.Join("\n", MatchedBuyTrade!.TradeList.Select(trade => trade.PrintToTextFile()))}");
             output.AppendLine($"Gain for this match is {BaseCurrencyMatchDisposalValue} - {BaseCurrencyMatchAcquisitionValue} " +
                                 $"= {BaseCurrencyMatchDisposalValue - BaseCurrencyMatchAcquisitionValue}");
-            output.AppendLine(AdditionalInformation);
-            output.AppendLine();
+            if (!string.IsNullOrEmpty(AdditionalInformation)) output.AppendLine(AdditionalInformation);
         }
         return output.ToString();
     }

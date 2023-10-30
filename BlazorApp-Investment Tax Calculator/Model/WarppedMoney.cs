@@ -45,6 +45,11 @@ public record WrappedMoney : IComparable<WrappedMoney>
         return new WrappedMoney(money1._nMoney - money2._nMoney);
     }
 
+    public static WrappedMoney operator -(WrappedMoney money)
+    {
+        return new WrappedMoney(money._nMoney * -1);
+    }
+
     public static WrappedMoney operator *(WrappedMoney money1, decimal multiplier)
     {
         Money newMoney = new(money1.Amount * multiplier, money1.Currency);
