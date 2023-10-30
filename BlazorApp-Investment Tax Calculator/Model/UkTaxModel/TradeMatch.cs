@@ -51,7 +51,7 @@ public record TradeMatch : ITextFilePrintable
         if (TradeMatchType == TaxMatchType.SECTION_104)
         {
             output.AppendLine($"At time of disposal, section 104 contains {Section104HistorySnapshot!.OldQuantity} units with value {Section104HistorySnapshot.OldValue}");
-            output.AppendLine($"Section 104: Matched {MatchAcquisitionQty} units of the acquisition trade against {MatchDisposalQty} units of the disposal trade. acquisition cost is {BaseCurrencyMatchAcquisitionValue}");
+            output.AppendLine($"Section 104: Matched {MatchDisposalQty} units of the disposal trade against the section 104 pool. acquisition cost is {BaseCurrencyMatchAcquisitionValue}");
             output.AppendLine($"Gain for this match is {BaseCurrencyMatchDisposalValue} - {BaseCurrencyMatchAcquisitionValue} " +
                                 $"= {BaseCurrencyMatchDisposalValue - BaseCurrencyMatchAcquisitionValue}");
             if (!string.IsNullOrEmpty(AdditionalInformation)) output.AppendLine(AdditionalInformation);
