@@ -29,7 +29,7 @@ public record FutureTradeMatch : TradeMatch
     /// </summary>
     /// <returns></returns>
     public static FutureTradeMatch CreateTradeMatch(TaxMatchType taxMatchType, decimal qty, WrappedMoney matchDisposalContractValue, WrappedMoney matchAcquisitionContractValue, decimal fxRate,
-        WrappedMoney baseCurrencyTotalDealingExpense, ITradeTaxCalculation? matchedGroup = null)
+                                                    WrappedMoney baseCurrencyTotalDealingExpense, ITradeTaxCalculation? matchedGroup = null)
     {
         WrappedMoney baseCurrencyMatchDisposalValue = WrappedMoney.GetBaseCurrencyZero();
         WrappedMoney baseCurrencyMatchAcquisitionValue = WrappedMoney.GetBaseCurrencyZero();
