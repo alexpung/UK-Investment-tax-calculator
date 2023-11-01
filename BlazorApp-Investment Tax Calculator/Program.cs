@@ -1,14 +1,21 @@
 using BlazorApp_Investment_Tax_Calculator;
+
 using CommunityToolkit.Mvvm.Messaging;
+
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+
 using Model;
 using Model.Interfaces;
 using Model.UkTaxModel;
+
 using Parser;
 using Parser.InteractiveBrokersXml;
+
 using Services;
+
 using Syncfusion.Blazor;
+
 using ViewModel;
 using ViewModel.Options;
 
@@ -30,11 +37,11 @@ builder.Services.AddSingleton<IDividendCalculator, UkDividendCalculator>();
 builder.Services.AddSingleton<IBXmlStockTradeParser>();
 builder.Services.AddSingleton<IBXmlDividendParser>();
 builder.Services.AddSingleton<IBXmlStockSplitParser>();
-builder.Services.AddSingleton<IBParseController>();
 builder.Services.AddSingleton<IBXmlFutureTradeParser>();
 
 // Register any new broker parsers here in order of priority
-builder.Services.AddSingleton<IEnumerable<ITaxEventFileParser>>(c => new List<ITaxEventFileParser> { c.GetService<IBParseController>()! });
+builder.Services.AddSingleton<ITaxEventFileParser, IBParseController>();
+
 // Models
 TaxEventLists taxEventLists = new();
 builder.Services.AddSingleton<IDividendLists>(taxEventLists);
