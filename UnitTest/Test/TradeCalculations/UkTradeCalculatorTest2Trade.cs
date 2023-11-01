@@ -1,8 +1,11 @@
 ﻿using Enum;
+
 using Model;
 using Model.Interfaces;
 using Model.TaxEvents;
 using Model.UkTaxModel;
+
+using UnitTest.Helper;
 
 namespace UnitTest.Test.TradeCalculations;
 public class UkTradeCalculatorTest2Trade
@@ -30,20 +33,13 @@ public class UkTradeCalculatorTest2Trade
             Expenses = new() { new() { Description = "Commission", Amount = new(1.5m, "USD"), FxRate = 0.86m } },
             GrossProceed = new() { Description = "", Amount = new(500m, "USD"), FxRate = 0.86m },
         };
-        UkSection104Pools section104Pools = new();
-        TaxEventLists taxEventLists = new();
-        taxEventLists.AddData(new List<Trade>() { trade1, trade2 });
-        UkTradeCalculator calculator = new(section104Pools, taxEventLists);
-        List<ITradeTaxCalculation> result = calculator.CalculateTax();
+        List<ITradeTaxCalculation> result = TradeCalculationHelper.CalculateTrades(new List<Trade>() { trade1, trade2 }, out UkSection104Pools section104Pools);
         result[0].Gain.ShouldBe(new WrappedMoney(427.42m));
         result[0].TotalAllowableCost.ShouldBe(new WrappedMoney(431.29m));
         result[0].MatchHistory[0].TradeMatchType.ShouldBe(TaxMatchType.SHORTCOVER);
         section104Pools.GetExistingOrInitialise("DEF").AcquisitionCostInBaseCurrency.ShouldBe(WrappedMoney.GetBaseCurrencyZero());
         section104Pools.GetExistingOrInitialise("DEF").Quantity.ShouldBe(0);
     }
-
-
-
 
     [Fact]
     public void TestSimpleSection104()
@@ -71,21 +67,7 @@ public class UkTradeCalculatorTest2Trade
             Expenses = new() { new() { Description = "Commission", Amount = new(1.5m, "USD"), FxRate = 0.85m } },
             GrossProceed = new() { Description = "", Amount = new(2250m, "USD"), FxRate = 0.85m },
         };
-
-        // Create a Section104Pools instance
-        UkSection104Pools section104Pools = new();
-
-        // Create a TaxEventLists instance and add the trades to it
-        TaxEventLists taxEventLists = new();
-        taxEventLists.AddData(new List<Trade>() { buyTrade, sellTrade });
-
-        // Create the UkTradeCalculator instance
-        UkTradeCalculator calculator = new(section104Pools, taxEventLists);
-
-        // Calculate the tax
-        List<ITradeTaxCalculation> result = calculator.CalculateTax();
-
-        // Assert the expected results
+        List<ITradeTaxCalculation> result = TradeCalculationHelper.CalculateTrades(new List<Trade>() { buyTrade, sellTrade }, out UkSection104Pools section104Pools);
         result[1].Gain.ShouldBe(new WrappedMoney(634.95m)); // (2250 - 1.5 - (2000 + 2) * (150 / 200)) * 0.85
         result[1].TotalAllowableCost.ShouldBe(new WrappedMoney(1276.275m)); // (2000 + 2) * (150 / 200) * 0.85
         result[1].MatchHistory[0].TradeMatchType.ShouldBe(TaxMatchType.SECTION_104);
@@ -120,20 +102,7 @@ public class UkTradeCalculatorTest2Trade
             Expenses = new() { new() { Description = "Commission", Amount = new(1.0m, "USD"), FxRate = 0.85m } },
             GrossProceed = new() { Description = "", Amount = new(1100m, "USD"), FxRate = 0.85m },
         };
-
-        // Create a Section104Pools instance
-        UkSection104Pools section104Pools = new();
-
-        // Create a TaxEventLists instance and add the trades to it
-        TaxEventLists taxEventLists = new();
-        taxEventLists.AddData(new List<Trade>() { purchaseTrade, saleTrade });
-
-        // Create the UkTradeCalculator instance
-        UkTradeCalculator calculator = new(section104Pools, taxEventLists);
-
-        // Calculate the tax
-        List<ITradeTaxCalculation> result = calculator.CalculateTax();
-
+        List<ITradeTaxCalculation> result = TradeCalculationHelper.CalculateTrades(new List<Trade>() { purchaseTrade, saleTrade }, out UkSection104Pools section104Pools);
         // Assert the expected results
         result[1].Gain.ShouldBe(new WrappedMoney(53.27m)); // (1100 - 1) * 0.85 - (1000 + 1) * 0.88
         result[1].TotalAllowableCost.ShouldBe(new WrappedMoney(880.88m)); // (1000 + 1) * 0.88
@@ -169,19 +138,7 @@ public class UkTradeCalculatorTest2Trade
             GrossProceed = new() { Description = "", Amount = new(2500m, "USD"), FxRate = 0.85m },
         };
 
-        // Create a Section104Pools instance
-        UkSection104Pools section104Pools = new();
-
-        // Create a TaxEventLists instance and add the trades to it
-        TaxEventLists taxEventLists = new();
-        taxEventLists.AddData(new List<Trade>() { purchaseTrade1, saleTrade });
-
-        // Create the UkTradeCalculator instance
-        UkTradeCalculator calculator = new(section104Pools, taxEventLists);
-
-        // Calculate the tax
-        List<ITradeTaxCalculation> result = calculator.CalculateTax();
-
+        List<ITradeTaxCalculation> result = TradeCalculationHelper.CalculateTrades(new List<Trade>() { purchaseTrade1, saleTrade }, out UkSection104Pools section104Pools);
         // Assert the expected results for bed and breakfast matching with different FX rates
         result[1].Gain.ShouldBe(new WrappedMoney(-96.23m)); // (1100 - 1) * 0.88 - (2500 + 2) * 100 / 200 * 0.85
         result[1].TotalAllowableCost.ShouldBe(new WrappedMoney(1063.35m)); // (2500 + 2) * 100 / 200 * 0.85

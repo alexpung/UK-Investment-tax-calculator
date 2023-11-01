@@ -1,8 +1,11 @@
 ﻿using Enum;
+
 using Model;
 using Model.Interfaces;
 using Model.TaxEvents;
 using Model.UkTaxModel;
+
+using UnitTest.Helper;
 
 namespace UnitTest.Test.TradeCalculations;
 public class UkTradeCalculatorTest4Trades
@@ -51,11 +54,7 @@ public class UkTradeCalculatorTest4Trades
             GrossProceed = new() { Description = "", Amount = new(600m, "USD"), FxRate = 0.86m },
         };
         StockSplit stockSplit = new() { AssetName = "ABC", Date = DateTime.Parse("03-May-21 20:25:00"), NumberAfterSplit = 2, NumberBeforeSplit = 1 };
-        UkSection104Pools section104Pools = new();
-        TaxEventLists taxEventLists = new();
-        taxEventLists.AddData(new List<TaxEvent>() { trade1, trade2, trade3, trade4, stockSplit });
-        UkTradeCalculator calculator = new(section104Pools, taxEventLists);
-        List<ITradeTaxCalculation> result = calculator.CalculateTax();
+        List<ITradeTaxCalculation> result = TradeCalculationHelper.CalculateTrades(new List<TaxEvent>() { trade1, trade2, trade3, trade4, stockSplit }, out UkSection104Pools section104Pools);
         result[2].TotalProceeds.ShouldBe(new WrappedMoney(1834.725m));
         result[2].Gain.ShouldBe(new WrappedMoney(5.56m));
         result[2].MatchHistory[0].TradeMatchType.ShouldBe(TaxMatchType.SAME_DAY);
@@ -124,11 +123,7 @@ public class UkTradeCalculatorTest4Trades
             Expenses = new() { new() { Description = "Commission", Amount = new(105m) } },
             GrossProceed = new() { Amount = new(2080m) },
         };
-        UkSection104Pools section104Pools = new();
-        TaxEventLists taxEventLists = new();
-        taxEventLists.AddData(new List<TaxEvent>() { trade1, trade2, trade3, trade4 });
-        UkTradeCalculator calculator = new(section104Pools, taxEventLists);
-        List<ITradeTaxCalculation> result = calculator.CalculateTax();
+        List<ITradeTaxCalculation> result = TradeCalculationHelper.CalculateTrades(new List<TaxEvent>() { trade1, trade2, trade3, trade4 }, out _);
         result[2].Gain.Amount.ShouldBe(329m, 0.99m);
         result[3].Gain.Amount.ShouldBe(300m, 0.99m);
     }
