@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Model;
 using Model.Interfaces;
 using Model.UkTaxModel;
-
+using Model.UkTaxModel.Stocks;
 using Parser;
 using Parser.InteractiveBrokersXml;
 

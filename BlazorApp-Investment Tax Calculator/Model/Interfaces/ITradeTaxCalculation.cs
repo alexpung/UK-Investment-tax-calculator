@@ -1,6 +1,6 @@
 ﻿using Enum;
 using Model.TaxEvents;
-using Model.UkTaxModel;
+using Model.UkTaxModel.Stocks;
 
 namespace Model.Interfaces;
 public interface ITradeTaxCalculation : ITextFilePrintable, IAssetDatedEvent

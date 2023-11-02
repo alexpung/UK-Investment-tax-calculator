@@ -1,14 +1,21 @@
 ﻿namespace UnitTest.Test.Model.UkTaxModel;
 using Enum;
+
 using global::Model;
 using global::Model.Interfaces;
 using global::Model.TaxEvents;
 using global::Model.UkTaxModel;
+using global::Model.UkTaxModel.Stocks;
+
 using Moq;
+
 using Shouldly;
+
 using System;
 using System.Collections.Generic;
+
 using UnitTest.Helper;
+
 using Xunit;
 
 public class UkTradeCalculatorTests

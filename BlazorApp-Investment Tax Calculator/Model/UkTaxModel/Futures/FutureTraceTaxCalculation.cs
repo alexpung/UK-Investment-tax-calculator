@@ -1,6 +1,8 @@
-﻿using TaxEvents;
+﻿using Model.UkTaxModel.Stocks;
 
-namespace Model.UkTaxModel;
+using TaxEvents;
+
+namespace Model.UkTaxModel.Futures;
 
 public class FutureTraceTaxCalculation : TradeTaxCalculation
 {
@@ -9,6 +11,9 @@ public class FutureTraceTaxCalculation : TradeTaxCalculation
         TotalContractValue = trades.Sum(trade => trade.ContractValue.BaseCurrencyAmount);
         UnmatchedContractValue = TotalContractValue;
     }
+
+    public decimal OpenQty { get; set; }
+    public decimal CloseQty { get; set; }
 
     public WrappedMoney TotalContractValue { get; private set; }
     public WrappedMoney UnmatchedContractValue { get; private set; }

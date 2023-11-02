@@ -1,8 +1,10 @@
 ﻿using Enum;
+
 using Model.Interfaces;
+
 using System.Text;
 
-namespace Model.UkTaxModel;
+namespace Model.UkTaxModel.Stocks;
 
 /// <summary>
 /// Data class to provide sufficient information to describe a matching of a trade pair and calculate taxable gain/loss

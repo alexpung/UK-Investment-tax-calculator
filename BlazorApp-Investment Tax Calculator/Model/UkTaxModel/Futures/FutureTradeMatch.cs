@@ -1,8 +1,11 @@
 ﻿using Enum;
+
 using Model.Interfaces;
+using Model.UkTaxModel.Stocks;
+
 using System.Text;
 
-namespace Model.UkTaxModel;
+namespace Model.UkTaxModel.Futures;
 
 public record FutureTradeMatch : TradeMatch
 {

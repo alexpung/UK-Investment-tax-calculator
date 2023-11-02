@@ -1,11 +1,15 @@
 ﻿namespace UnitTest.Test.Model;
 using Enum;
+
 using global::Model;
 using global::Model.TaxEvents;
-using global::Model.UkTaxModel;
+using global::Model.UkTaxModel.Stocks;
+
 using Moq;
+
 using System;
 using System.Collections.Generic;
+
 using Xunit;
 
 

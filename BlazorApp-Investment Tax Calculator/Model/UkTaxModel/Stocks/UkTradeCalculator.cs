@@ -1,9 +1,11 @@
 ﻿using Enum;
+
 using Model.Interfaces;
 using Model.TaxEvents;
+
 using Syncfusion.Blazor.Data;
 
-namespace Model.UkTaxModel;
+namespace Model.UkTaxModel.Stocks;
 
 public class UkTradeCalculator : ITradeCalculator
 {
@@ -18,8 +20,8 @@ public class UkTradeCalculator : ITradeCalculator
 
     public List<ITradeTaxCalculation> CalculateTax()
     {
-        _setion104Pools.Clear();
         Dictionary<string, List<ITradeTaxCalculation>> tradeTaxCalculations = GroupTrade(_tradeList.Trades);
+        // This is a Dict grouped by asset name. For each asset name process all trades.
         foreach (KeyValuePair<string, List<ITradeTaxCalculation>> assetGroup in tradeTaxCalculations)
         {
             IEnumerable<CorporateAction> corporateActions = _tradeList.CorporateActions.Where(i => i.AssetName == assetGroup.Key);
@@ -36,6 +38,7 @@ public class UkTradeCalculator : ITradeCalculator
     private static Dictionary<string, List<ITradeTaxCalculation>> GroupTrade(IEnumerable<Trade> trades)
     {
         var groupedTrade = from trade in trades
+                           where trade.AssetType == AssetCatagoryType.STOCK
                            group trade by new { trade.AssetName, trade.Date.Date, trade.BuySell };
         IEnumerable<ITradeTaxCalculation> groupedTradeCalculations = groupedTrade.Select(group => new TradeTaxCalculation(group)).ToList();
         return groupedTradeCalculations.GroupBy(TradeTaxCalculation => TradeTaxCalculation.TradeList.First().AssetName).ToDictionary(group => group.Key, group => group.ToList());

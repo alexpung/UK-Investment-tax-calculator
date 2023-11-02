@@ -3,6 +3,7 @@ using Model;
 using Model.Interfaces;
 using Model.TaxEvents;
 using Model.UkTaxModel;
+using Model.UkTaxModel.Stocks;
 
 namespace UnitTest.Test.TradeCalculations;
 public class UkTradeCalculatorStockSplitTest

@@ -2,6 +2,7 @@
 using Model.Interfaces;
 using Model.TaxEvents;
 using Model.UkTaxModel;
+using Model.UkTaxModel.Stocks;
 
 namespace UnitTest.Helper;
 public static class TradeCalculationHelper

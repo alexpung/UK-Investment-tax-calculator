@@ -1,6 +1,7 @@
 ﻿using Enum;
 using Model.Interfaces;
 using Model.UkTaxModel;
+using Model.UkTaxModel.Stocks;
 
 namespace Model.TaxEvents;
 

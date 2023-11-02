@@ -1,10 +1,12 @@
 ﻿using Enum;
+
 using Model;
 using Model.Interfaces;
 using Model.TaxEvents;
+
 using System.Text;
 
-namespace Model.UkTaxModel;
+namespace Model.UkTaxModel.Stocks;
 
 /// <summary>
 /// Contain trades that considered the same group in tax matching caluclation.

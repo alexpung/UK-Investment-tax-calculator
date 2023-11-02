@@ -2,6 +2,7 @@
 using Model;
 using Model.Interfaces;
 using Model.UkTaxModel;
+using Model.UkTaxModel.Stocks;
 using Moq;
 
 namespace UnitTest.Test.Model.UkTaxModel;
