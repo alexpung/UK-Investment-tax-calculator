@@ -5,6 +5,8 @@ using Model.Interfaces;
 using Model.TaxEvents;
 using Model.UkTaxModel;
 
+using System.Collections.Immutable;
+
 using TaxEvents;
 
 using UnitTest.Helper;
@@ -23,7 +25,7 @@ public class UkTradeCalculatorTest3FutureTrade
             Date = DateTime.Parse("02-Jun-22 10:00:00"),
             Description = "Purchase of GHI Future",
             Quantity = 150,
-            Expenses = new() { new() { Description = "Commission", Amount = new WrappedMoney(100m, "JPY"), FxRate = 0.007m } },
+            Expenses = ImmutableList.Create(new DescribedMoney() { Description = "Commission", Amount = new WrappedMoney(100m, "JPY"), FxRate = 0.007m }),
             GrossProceed = new() { Amount = WrappedMoney.GetBaseCurrencyZero() },
             ContractValue = new() { Amount = new WrappedMoney(1000000m, "JPY"), FxRate = 0.007m }
         };
@@ -36,7 +38,7 @@ public class UkTradeCalculatorTest3FutureTrade
             Date = DateTime.Parse("02-Jun-22 15:00:00"),
             Description = "Sale of GHI Future",
             Quantity = 100,
-            Expenses = new() { new() { Description = "Commission", Amount = new WrappedMoney(150m, "JPY"), FxRate = 0.0075m } },
+            Expenses = ImmutableList.Create(new DescribedMoney() { Description = "Commission", Amount = new WrappedMoney(150m, "JPY"), FxRate = 0.0075m }),
             GrossProceed = new() { Amount = WrappedMoney.GetBaseCurrencyZero() },
             ContractValue = new() { Amount = new WrappedMoney(1050000m, "JPY"), FxRate = 0.0075m }
         };
@@ -49,7 +51,7 @@ public class UkTradeCalculatorTest3FutureTrade
             Date = DateTime.Parse("03-Jun-22 11:00:00"),
             Description = "Sale of GHI Future",
             Quantity = 50,
-            Expenses = new() { new() { Description = "Commission", Amount = new WrappedMoney(50m, "JPY"), FxRate = 0.008m } },
+            Expenses = ImmutableList.Create(new DescribedMoney() { Description = "Commission", Amount = new WrappedMoney(50m, "JPY"), FxRate = 0.008m }),
             GrossProceed = new() { Amount = WrappedMoney.GetBaseCurrencyZero() },
             ContractValue = new() { Amount = new WrappedMoney(300000m, "JPY"), FxRate = 0.008m }
         };
@@ -75,7 +77,7 @@ public class UkTradeCalculatorTest3FutureTrade
             Date = DateTime.Parse("01-Jun-22 10:00:00"),
             Description = "Purchase of JKL Future",
             Quantity = 50,
-            Expenses = new() { new() { Description = "Commission", Amount = new WrappedMoney(100m, "JPY"), FxRate = 0.007m } },
+            Expenses = ImmutableList.Create(new DescribedMoney() { Description = "Commission", Amount = new WrappedMoney(100m, "JPY"), FxRate = 0.007m }),
             GrossProceed = new() { Amount = WrappedMoney.GetBaseCurrencyZero() },
             ContractValue = new() { Amount = new WrappedMoney(500000m, "JPY"), FxRate = 0.007m }
         };
@@ -88,7 +90,7 @@ public class UkTradeCalculatorTest3FutureTrade
             Date = DateTime.Parse("02-Jun-22 15:00:00"),
             Description = "Sale of JKL Future",
             Quantity = 150,
-            Expenses = new() { new() { Description = "Commission", Amount = new WrappedMoney(150m, "JPY"), FxRate = 0.0075m } },
+            Expenses = ImmutableList.Create(new DescribedMoney() { Description = "Commission", Amount = new WrappedMoney(150m, "JPY"), FxRate = 0.0075m }),
             GrossProceed = new() { Amount = WrappedMoney.GetBaseCurrencyZero() },
             ContractValue = new() { Amount = new WrappedMoney(1600000m, "JPY"), FxRate = 0.0075m }
         };
@@ -101,7 +103,7 @@ public class UkTradeCalculatorTest3FutureTrade
             Date = DateTime.Parse("03-Jun-22 11:00:00"),
             Description = "Purchase of JKL Future",
             Quantity = 100,
-            Expenses = new() { new() { Description = "Commission", Amount = new WrappedMoney(50m, "JPY"), FxRate = 0.008m } },
+            Expenses = ImmutableList.Create(new DescribedMoney() { Description = "Commission", Amount = new WrappedMoney(50m, "JPY"), FxRate = 0.008m }),
             GrossProceed = new() { Amount = WrappedMoney.GetBaseCurrencyZero() },
             ContractValue = new() { Amount = new WrappedMoney(1000000m, "JPY"), FxRate = 0.008m }
         };

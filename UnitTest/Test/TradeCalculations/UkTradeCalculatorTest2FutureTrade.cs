@@ -4,7 +4,9 @@ using Model;
 using Model.Interfaces;
 using Model.TaxEvents;
 using Model.UkTaxModel;
-using Model.UkTaxModel.Stocks;
+
+using System.Collections.Immutable;
+
 using TaxEvents;
 
 using UnitTest.Helper;
@@ -23,7 +25,7 @@ public class UkTradeCalculatorTest2FutureTrade
             Date = DateTime.Parse("05-May-21 12:34:56"),
             Description = "DEF Example Future",
             Quantity = 100,
-            Expenses = new() { new() { Description = "Commission", Amount = new(100m, "JPY"), FxRate = 0.006m } },
+            Expenses = ImmutableList.Create(new DescribedMoney() { Description = "Commission", Amount = new(100m, "JPY"), FxRate = 0.006m }),
             GrossProceed = new() { Amount = WrappedMoney.GetBaseCurrencyZero() },
             ContractValue = new() { Amount = new WrappedMoney(1000000, "JPY"), FxRate = 0.006m }
         };
@@ -35,15 +37,11 @@ public class UkTradeCalculatorTest2FutureTrade
             Date = DateTime.Parse("06-Dec-21 12:34:56"),
             Description = "DEF Example Future",
             Quantity = 100,
-            Expenses = new() { new() { Description = "Commission", Amount = new(200m, "JPY"), FxRate = 0.007m } },
+            Expenses = ImmutableList.Create(new DescribedMoney() { Description = "Commission", Amount = new(200m, "JPY"), FxRate = 0.007m }),
             GrossProceed = new() { Amount = WrappedMoney.GetBaseCurrencyZero() },
             ContractValue = new() { Amount = new WrappedMoney(1200000, "JPY"), FxRate = 0.007m }
         };
-        UkSection104Pools section104Pools = new();
-        TaxEventLists taxEventLists = new();
-        taxEventLists.AddData(new List<Trade>() { trade1, trade2 });
-        UkTradeCalculator calculator = new(section104Pools, taxEventLists);
-        List<ITradeTaxCalculation> result = calculator.CalculateTax();
+        List<ITradeTaxCalculation> result = TradeCalculationHelper.CalculateTrades(new List<Trade>() { trade1, trade2 }, out UkSection104Pools section104Pools);
         result[1].Gain.ShouldBe(new WrappedMoney(1398m)); // payment received: (1200000 - 1000000) * 0.007 = 1400. Gain = 1400 - 2 = 1398.
         result[1].TotalAllowableCost.ShouldBe(new WrappedMoney(2m)); // (100 * 0.006) + (200 * 0.007)
         result[1].MatchHistory[0].TradeMatchType.ShouldBe(TaxMatchType.SECTION_104); // The sell trade is an OPEN trade, it is an acquisition of a short contract position
@@ -62,7 +60,7 @@ public class UkTradeCalculatorTest2FutureTrade
             Date = DateTime.Parse("05-May-21 12:34:56"),
             Description = "Purchase of DEF Future",
             Quantity = 100,
-            Expenses = new() { new() { Description = "Commission", Amount = new(100m, "JPY"), FxRate = 0.006m } },
+            Expenses = ImmutableList.Create(new DescribedMoney() { Description = "Commission", Amount = new(100m, "JPY"), FxRate = 0.006m }),
             GrossProceed = new() { Amount = WrappedMoney.GetBaseCurrencyZero() },
             ContractValue = new() { Amount = new WrappedMoney(1000000m, "JPY"), FxRate = 0.006m }
         };
@@ -75,7 +73,7 @@ public class UkTradeCalculatorTest2FutureTrade
             Date = DateTime.Parse("06-Dec-21 12:34:56"),
             Description = "Partial Sale of DEF Future",
             Quantity = 50,
-            Expenses = new() { new() { Description = "Commission", Amount = new(100m, "JPY"), FxRate = 0.007m } },
+            Expenses = ImmutableList.Create(new DescribedMoney() { Description = "Commission", Amount = new(100m, "JPY"), FxRate = 0.007m }),
             GrossProceed = new() { Amount = WrappedMoney.GetBaseCurrencyZero() },
             ContractValue = new() { Amount = new WrappedMoney(600000m, "JPY"), FxRate = 0.007m }
         };
@@ -99,7 +97,7 @@ public class UkTradeCalculatorTest2FutureTrade
             Date = DateTime.Parse("01-Jun-22 10:30:00"),
             Description = "Purchase of DEF Future",
             Quantity = 150,
-            Expenses = new() { new() { Description = "Commission", Amount = new(150m, "JPY"), FxRate = 0.007m } },
+            Expenses = ImmutableList.Create(new DescribedMoney() { Description = "Commission", Amount = new(150m, "JPY"), FxRate = 0.007m }),
             GrossProceed = new() { Amount = WrappedMoney.GetBaseCurrencyZero() },
             ContractValue = new() { Amount = new WrappedMoney(900000m, "JPY"), FxRate = 0.007m }
         };
@@ -112,7 +110,7 @@ public class UkTradeCalculatorTest2FutureTrade
             Date = DateTime.Parse("01-Jun-22 14:45:00"),
             Description = "Sale of DEF Future",
             Quantity = 150,
-            Expenses = new() { new() { Description = "Commission", Amount = new(200m, "JPY"), FxRate = 0.007m } },
+            Expenses = ImmutableList.Create(new DescribedMoney() { Description = "Commission", Amount = new(200m, "JPY"), FxRate = 0.007m }),
             GrossProceed = new() { Amount = WrappedMoney.GetBaseCurrencyZero() },
             ContractValue = new() { Amount = new WrappedMoney(930000m, "JPY"), FxRate = 0.007m }
         };

@@ -70,14 +70,12 @@ public record WrappedMoney : IComparable<WrappedMoney>
 
     public WrappedMoney Floor()
     {
-        _nMoney = _nMoney.Floor();
-        return this;
+        return new WrappedMoney(_nMoney.Floor());
     }
 
     public WrappedMoney Ceiling()
     {
-        _nMoney = _nMoney.Ceiling();
-        return this;
+        return new WrappedMoney(_nMoney.Ceiling());
     }
 
     public int CompareTo(WrappedMoney? other)

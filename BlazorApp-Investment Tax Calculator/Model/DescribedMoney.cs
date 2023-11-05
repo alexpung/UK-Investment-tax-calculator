@@ -4,9 +4,9 @@ namespace Model;
 
 public record DescribedMoney : ITextFilePrintable
 {
-    public string Description { get; set; } = "";
-    public required WrappedMoney Amount { get; set; }
-    public decimal FxRate { get; set; } = 1;
+    public string Description { get; init; } = "";
+    public required WrappedMoney Amount { get; init; }
+    public decimal FxRate { get; init; } = 1;
 
     public WrappedMoney BaseCurrencyAmount => new(Amount.Amount * FxRate);
 

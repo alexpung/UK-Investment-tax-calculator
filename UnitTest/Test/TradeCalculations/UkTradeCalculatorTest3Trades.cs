@@ -5,6 +5,8 @@ using Model.Interfaces;
 using Model.TaxEvents;
 using Model.UkTaxModel;
 
+using System.Collections.Immutable;
+
 using UnitTest.Helper;
 
 namespace UnitTest.Test.TradeCalculations;
@@ -120,7 +122,7 @@ public class UkTradeCalculatorTest3Trades
             Date = DateTime.Parse("01-Jan-22 10:00:00"),
             Description = "Purchase of 100 shares",
             Quantity = 100,
-            Expenses = new() { new() { Description = "Commission", Amount = new(2.0m, "GBP"), FxRate = 1.0m } },
+            Expenses = ImmutableList.Create(new DescribedMoney() { Description = "Commission", Amount = new(2.0m, "GBP"), FxRate = 1.0m }),
             GrossProceed = new() { Description = "", Amount = new(1000.0m, "GBP"), FxRate = 1.0m },
         };
 
@@ -131,7 +133,7 @@ public class UkTradeCalculatorTest3Trades
             Date = DateTime.Parse("01-Jan-22 14:00:00"),
             Description = "Sale of 200 shares (Same Day)",
             Quantity = 200,
-            Expenses = new() { new() { Description = "Commission", Amount = new(1.0m, "GBP"), FxRate = 1.0m } },
+            Expenses = ImmutableList.Create(new DescribedMoney() { Description = "Commission", Amount = new(1.0m, "GBP"), FxRate = 1.0m }),
             GrossProceed = new() { Description = "", Amount = new(2200.0m, "GBP"), FxRate = 1.0m },
         };
 
@@ -142,7 +144,7 @@ public class UkTradeCalculatorTest3Trades
             Date = DateTime.Parse("01-Feb-22 10:00:00"), // Within 30 days
             Description = "Purchase of 100 shares (Bed and Breakfast)",
             Quantity = 100,
-            Expenses = new() { new() { Description = "Commission", Amount = new(2.0m, "GBP"), FxRate = 1.0m } },
+            Expenses = ImmutableList.Create(new DescribedMoney() { Description = "Commission", Amount = new(2.0m, "GBP"), FxRate = 1.0m }),
             GrossProceed = new() { Description = "", Amount = new(1100.0m, "GBP"), FxRate = 1.0m },
         };
         List<ITradeTaxCalculation> result = TradeCalculationHelper.CalculateTrades(new List<Trade>() { purchaseTrade1, saleTrade1, purchaseTrade2 }, out _);

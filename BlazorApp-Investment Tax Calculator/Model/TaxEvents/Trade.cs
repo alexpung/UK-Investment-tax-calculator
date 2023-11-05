@@ -1,5 +1,8 @@
 ﻿using Enum;
+
 using Model.Interfaces;
+
+using System.Collections.Immutable;
 using System.Text;
 
 namespace Model.TaxEvents;
@@ -11,7 +14,7 @@ public record Trade : TaxEvent, ITextFilePrintable
     public virtual required decimal Quantity { get; set; }
     public virtual required DescribedMoney GrossProceed { get; set; }
     public string Description { get; set; } = string.Empty;
-    public List<DescribedMoney> Expenses { get; set; } = new List<DescribedMoney>();
+    public ImmutableList<DescribedMoney> Expenses { get; init; } = ImmutableList<DescribedMoney>.Empty;
     public virtual WrappedMoney NetProceed
     {
         get
