@@ -25,6 +25,13 @@ public record Trade : TaxEvent, ITextFilePrintable
         }
     }
 
+    public decimal RawQuantity => BuySell switch
+    {
+        TradeType.BUY => Quantity,
+        TradeType.SELL => Quantity * -1,
+        _ => throw new NotImplementedException($"Unknown trade type {BuySell}"),
+    };
+
     protected string GetExpensesExplanation()
     {
         if (!Expenses.Any()) return string.Empty;
