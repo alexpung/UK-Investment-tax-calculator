@@ -37,7 +37,7 @@ public class TradeTaxCalculation : ITradeTaxCalculation
             if (UnmatchedQty == 0) CalculationCompleted = true;
         }
     }
-    public TradeType BuySell { get; init; }
+    public virtual TradeType BuySell { get; init; }
     public bool CalculationCompleted { get; private set; }
     public DateTime Date => TradeList[0].Date;
     public string AssetName => TradeList[0].AssetName;

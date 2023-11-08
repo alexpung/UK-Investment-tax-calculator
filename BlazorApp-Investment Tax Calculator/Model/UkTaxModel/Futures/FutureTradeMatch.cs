@@ -54,8 +54,8 @@ public record FutureTradeMatch : TradeMatch
             ClosingFxRate = fxRate,
             MatchDisposalContractValue = matchDisposalContractValue,
             MatchAcquisitionContractValue = matchAcquisitionContractValue,
-            BaseCurrencyMatchAcquisitionValue = baseCurrencyTotalDealingExpense + baseCurrencyMatchAcquisitionValue,
-            BaseCurrencyMatchDisposalValue = baseCurrencyMatchDisposalValue,
+            BaseCurrencyMatchAllowableCost = baseCurrencyTotalDealingExpense + baseCurrencyMatchAcquisitionValue,
+            BaseCurrencyMatchDisposalProceed = baseCurrencyMatchDisposalValue,
             MatchedBuyTrade = matchedGroup
         };
     }

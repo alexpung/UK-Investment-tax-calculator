@@ -16,9 +16,9 @@ public record TradeMatch : ITextFilePrintable
     public ITradeTaxCalculation? MatchedSellTrade { get; set; }
     public decimal MatchAcquisitionQty { get; set; } = 0m;
     public decimal MatchDisposalQty { get; set; } = 0m;
-    public virtual WrappedMoney BaseCurrencyMatchDisposalValue { get; set; } = WrappedMoney.GetBaseCurrencyZero();
-    public virtual WrappedMoney BaseCurrencyMatchAcquisitionValue { get; set; } = WrappedMoney.GetBaseCurrencyZero();
-    public virtual WrappedMoney MatchGain => BaseCurrencyMatchDisposalValue - BaseCurrencyMatchAcquisitionValue;
+    public virtual WrappedMoney BaseCurrencyMatchDisposalProceed { get; set; } = WrappedMoney.GetBaseCurrencyZero();
+    public virtual WrappedMoney BaseCurrencyMatchAllowableCost { get; set; } = WrappedMoney.GetBaseCurrencyZero();
+    public virtual WrappedMoney MatchGain => BaseCurrencyMatchDisposalProceed - BaseCurrencyMatchAllowableCost;
     public string AdditionalInformation { get; set; } = string.Empty;
     public Section104History? Section104HistorySnapshot { get; set; }
 
@@ -39,8 +39,8 @@ public record TradeMatch : ITextFilePrintable
             TradeMatchType = taxMatchType,
             MatchAcquisitionQty = qty,
             MatchDisposalQty = qty,
-            BaseCurrencyMatchAcquisitionValue = acqisitionValue,
-            BaseCurrencyMatchDisposalValue = disposalValue,
+            BaseCurrencyMatchAllowableCost = acqisitionValue,
+            BaseCurrencyMatchDisposalProceed = disposalValue,
             MatchedBuyTrade = matchedBuyTrade,
             MatchedSellTrade = matchedSellTrade,
             AdditionalInformation = additionalInfo
@@ -53,17 +53,17 @@ public record TradeMatch : ITextFilePrintable
         if (TradeMatchType == TaxMatchType.SECTION_104)
         {
             output.AppendLine($"At time of disposal, section 104 contains {Section104HistorySnapshot!.OldQuantity} units with value {Section104HistorySnapshot.OldValue}");
-            output.AppendLine($"Section 104: Matched {MatchDisposalQty} units of the disposal trade against the section 104 pool. Acquisition cost is {BaseCurrencyMatchAcquisitionValue}");
-            output.AppendLine($"Gain for this match is {BaseCurrencyMatchDisposalValue} - {BaseCurrencyMatchAcquisitionValue} " +
-                                $"= {BaseCurrencyMatchDisposalValue - BaseCurrencyMatchAcquisitionValue}");
+            output.AppendLine($"Section 104: Matched {MatchDisposalQty} units of the disposal trade against the section 104 pool. Acquisition cost is {BaseCurrencyMatchAllowableCost}");
+            output.AppendLine($"Gain for this match is {BaseCurrencyMatchDisposalProceed} - {BaseCurrencyMatchAllowableCost} " +
+                                $"= {BaseCurrencyMatchDisposalProceed - BaseCurrencyMatchAllowableCost}");
             if (!string.IsNullOrEmpty(AdditionalInformation)) output.AppendLine(AdditionalInformation);
         }
         else
         {
-            output.AppendLine($"{ToPrintedString(TradeMatchType)}: {MatchAcquisitionQty} units of the acquisition trade against {MatchDisposalQty} units of the disposal trade. Acquisition cost is {BaseCurrencyMatchAcquisitionValue}");
+            output.AppendLine($"{ToPrintedString(TradeMatchType)}: {MatchAcquisitionQty} units of the acquisition trade against {MatchDisposalQty} units of the disposal trade. Acquisition cost is {BaseCurrencyMatchAllowableCost}");
             output.AppendLine($"Matched trade: {string.Join("\n", MatchedBuyTrade!.TradeList.Select(trade => trade.PrintToTextFile()))}");
-            output.AppendLine($"Gain for this match is {BaseCurrencyMatchDisposalValue} - {BaseCurrencyMatchAcquisitionValue} " +
-                                $"= {BaseCurrencyMatchDisposalValue - BaseCurrencyMatchAcquisitionValue}");
+            output.AppendLine($"Gain for this match is {BaseCurrencyMatchDisposalProceed} - {BaseCurrencyMatchAllowableCost} " +
+                                $"= {BaseCurrencyMatchDisposalProceed - BaseCurrencyMatchAllowableCost}");
             if (!string.IsNullOrEmpty(AdditionalInformation)) output.AppendLine(AdditionalInformation);
         }
         return output.ToString();

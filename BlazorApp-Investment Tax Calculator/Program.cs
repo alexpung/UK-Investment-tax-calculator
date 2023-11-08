@@ -8,7 +8,9 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Model;
 using Model.Interfaces;
 using Model.UkTaxModel;
+using Model.UkTaxModel.Futures;
 using Model.UkTaxModel.Stocks;
+
 using Parser;
 using Parser.InteractiveBrokersXml;
 
@@ -30,8 +32,9 @@ builder.Services.AddSingleton<YearOptions>();
 // UK tax specific components - replace if you want to calculate some other countries.
 builder.Services.AddSingleton<UkCalculationResultExportService>();
 builder.Services.AddSingleton<UkSection104ExportService>();
-builder.Services.AddSingleton<ITradeCalculator, UkTradeCalculator>();
 builder.Services.AddSingleton<IDividendCalculator, UkDividendCalculator>();
+builder.Services.AddSingleton<ITradeCalculator, UkTradeCalculator>();
+builder.Services.AddSingleton<ITradeCalculator, UkFutureTradeCalculator>();
 
 // IBKR parser
 builder.Services.AddSingleton<IBXmlStockTradeParser>();
