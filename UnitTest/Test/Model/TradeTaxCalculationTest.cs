@@ -164,9 +164,9 @@ public class TradeTaxCalculationTests
         matchedQty.ShouldBe(12);
         matchedValue.ShouldBe(new WrappedMoney(120));
         calculation.UnmatchedQty.ShouldBe(18);
-        calculation.UnmatchedNetMoneyPaidOrReceived.ShouldBe(new WrappedMoney(180));
+        calculation.UnmatchedCostOrProceed.ShouldBe(new WrappedMoney(180));
         calculation.CalculationCompleted.ShouldBeFalse();
-        calculation.TotalNetMoneyPaidOrReceived.ShouldBe(new WrappedMoney(300));
+        calculation.TotalCostOrProceed.ShouldBe(new WrappedMoney(300));
         calculation.TotalQty.ShouldBe(30);
     }
 
@@ -190,9 +190,9 @@ public class TradeTaxCalculationTests
         matchedQty.ShouldBe(80);
         matchedValue.ShouldBe(new WrappedMoney(800));
         calculation.UnmatchedQty.ShouldBe(0);
-        calculation.UnmatchedNetMoneyPaidOrReceived.ShouldBe(WrappedMoney.GetBaseCurrencyZero());
+        calculation.UnmatchedCostOrProceed.ShouldBe(WrappedMoney.GetBaseCurrencyZero());
         calculation.CalculationCompleted.ShouldBeTrue();
-        calculation.TotalNetMoneyPaidOrReceived.ShouldBe(new WrappedMoney(800));
+        calculation.TotalCostOrProceed.ShouldBe(new WrappedMoney(800));
         calculation.TotalQty.ShouldBe(80);
     }
 }

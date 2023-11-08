@@ -19,9 +19,13 @@ public class TradeTaxCalculation : ITradeTaxCalculation
     public WrappedMoney TotalAllowableCost => MatchHistory.Sum(tradeMatch => tradeMatch.BaseCurrencyMatchAcquisitionValue);
     public WrappedMoney TotalProceeds => MatchHistory.Sum(tradeMatch => tradeMatch.BaseCurrencyMatchDisposalValue);
     public WrappedMoney Gain => TotalProceeds - TotalAllowableCost;
-    public WrappedMoney TotalNetMoneyPaidOrReceived { get; private set; }
-    public WrappedMoney UnmatchedNetMoneyPaidOrReceived { get; private set; }
-    public WrappedMoney GetNetAmount(decimal qty) => TotalNetMoneyPaidOrReceived / TotalQty * qty;
+    /// <summary>
+    /// For acquistion: Cost of buying + commission
+    /// For disposal: Proceed you get - commission
+    /// </summary>
+    public WrappedMoney TotalCostOrProceed { get; private set; }
+    public WrappedMoney UnmatchedCostOrProceed { get; private set; }
+    public WrappedMoney GetProportionedCostOrProceed(decimal qty) => TotalCostOrProceed / TotalQty * qty;
     public decimal TotalQty { get; }
     private decimal _unmatchedQty;
     public decimal UnmatchedQty
@@ -50,8 +54,8 @@ public class TradeTaxCalculation : ITradeTaxCalculation
             throw new ArgumentException("Not all trades that is put in TradeTaxCalculation is on the same BUY/SELL side");
         }
         TradeList = trades.ToList();
-        TotalNetMoneyPaidOrReceived = trades.Sum(trade => trade.NetProceed);
-        UnmatchedNetMoneyPaidOrReceived = TotalNetMoneyPaidOrReceived;
+        TotalCostOrProceed = trades.Sum(trade => trade.NetProceed);
+        UnmatchedCostOrProceed = TotalCostOrProceed;
         TotalQty = trades.Sum(trade => trade.Quantity);
         UnmatchedQty = TotalQty;
         BuySell = trades.First().BuySell;
@@ -65,16 +69,16 @@ public class TradeTaxCalculation : ITradeTaxCalculation
         if (demandedQty >= UnmatchedQty)
         {
             matchedQty = UnmatchedQty;
-            matchedValue = UnmatchedNetMoneyPaidOrReceived;
+            matchedValue = UnmatchedCostOrProceed;
             UnmatchedQty = 0;
-            UnmatchedNetMoneyPaidOrReceived = WrappedMoney.GetBaseCurrencyZero();
+            UnmatchedCostOrProceed = WrappedMoney.GetBaseCurrencyZero();
         }
         else
         {
             matchedQty = demandedQty;
-            matchedValue = TotalNetMoneyPaidOrReceived * demandedQty / TotalQty;
+            matchedValue = TotalCostOrProceed * demandedQty / TotalQty;
             UnmatchedQty -= matchedQty;
-            UnmatchedNetMoneyPaidOrReceived -= matchedValue;
+            UnmatchedCostOrProceed -= matchedValue;
         }
         return (matchedQty, matchedValue);
     }
@@ -82,9 +86,9 @@ public class TradeTaxCalculation : ITradeTaxCalculation
     public virtual (decimal matchedQty, WrappedMoney matchedValue) MatchAll()
     {
         decimal matchedQty = UnmatchedQty;
-        WrappedMoney matchedValue = UnmatchedNetMoneyPaidOrReceived;
+        WrappedMoney matchedValue = UnmatchedCostOrProceed;
         UnmatchedQty = 0;
-        UnmatchedNetMoneyPaidOrReceived = WrappedMoney.GetBaseCurrencyZero();
+        UnmatchedCostOrProceed = WrappedMoney.GetBaseCurrencyZero();
         return (matchedQty, matchedValue);
     }
 
@@ -106,7 +110,7 @@ public class TradeTaxCalculation : ITradeTaxCalculation
     {
         StringBuilder output = new();
         output.Append($"Sold {TotalQty} units of {AssetName} on " +
-            $"{Date.Date.ToString("dd-MMM-yyyy")} for {TotalNetMoneyPaidOrReceived}.\t");
+            $"{Date.Date.ToString("dd-MMM-yyyy")} for {TotalCostOrProceed}.\t");
         output.AppendLine($"Total gain (loss): {Gain}");
         output.AppendLine(UnmatchedDescription());
         output.AppendLine($"Trade details:");

@@ -39,7 +39,7 @@ public record UkSection104
         if (tradeTaxCalculation.UnmatchedQty < 0)
         {
             throw new ArgumentOutOfRangeException
-                ($"Cannot add assets with negative quantity {tradeTaxCalculation.UnmatchedQty} and value {tradeTaxCalculation.UnmatchedNetMoneyPaidOrReceived}");
+                ($"Cannot add assets with negative quantity {tradeTaxCalculation.UnmatchedQty} and value {tradeTaxCalculation.UnmatchedCostOrProceed}");
         }
         (decimal qty, WrappedMoney value) = tradeTaxCalculation.MatchAll();
         Section104History newSection104History = Section104History.AddToSection104(tradeTaxCalculation, qty, value, Quantity, AcquisitionCostInBaseCurrency);
