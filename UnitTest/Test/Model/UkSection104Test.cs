@@ -23,16 +23,16 @@ public class UkSection104Test
         ukSection104.Quantity.ShouldBe(100m);
         ukSection104.AcquisitionCostInBaseCurrency.ShouldBe(new WrappedMoney(buyValue));
         mockBuyTrade.Object.MatchHistory[0].MatchAcquisitionQty.ShouldBe(buyQuantity);
-        mockBuyTrade.Object.MatchHistory[0].BaseCurrencyMatchAcquisitionValue.ShouldBe(new WrappedMoney(buyValue));
-        mockBuyTrade.Object.MatchHistory[0].BaseCurrencyMatchDisposalValue.ShouldBe(WrappedMoney.GetBaseCurrencyZero());
+        mockBuyTrade.Object.MatchHistory[0].BaseCurrencyMatchAllowableCost.ShouldBe(new WrappedMoney(buyValue));
+        mockBuyTrade.Object.MatchHistory[0].BaseCurrencyMatchDisposalProceed.ShouldBe(WrappedMoney.GetBaseCurrencyZero());
         mockBuyTrade.Object.MatchHistory[0].TradeMatchType.ShouldBe(TaxMatchType.SECTION_104);
         Mock<ITradeTaxCalculation> mockSellTrade = MockTrade.CreateMockITradeTaxCalculation(sellQuantity, sellValue, TradeType.SELL);
         ukSection104.MatchTradeWithSection104(mockSellTrade.Object);
         ukSection104.Quantity.ShouldBe(decimal.Max(buyQuantity - sellQuantity, 0));
         ukSection104.AcquisitionCostInBaseCurrency.ShouldBe(new WrappedMoney(decimal.Max((buyQuantity - sellQuantity) / buyQuantity * buyValue, 0)));
         mockSellTrade.Object.MatchHistory[0].MatchAcquisitionQty.ShouldBe(decimal.Min(sellQuantity, buyQuantity));
-        mockSellTrade.Object.MatchHistory[0].BaseCurrencyMatchAcquisitionValue.ShouldBe(new WrappedMoney(decimal.Min(buyValue / buyQuantity * sellQuantity, buyValue)));
-        mockSellTrade.Object.MatchHistory[0].BaseCurrencyMatchDisposalValue.ShouldBe(new WrappedMoney(decimal.Min(sellQuantity, buyQuantity) * sellValue / sellQuantity));
+        mockSellTrade.Object.MatchHistory[0].BaseCurrencyMatchAllowableCost.ShouldBe(new WrappedMoney(decimal.Min(buyValue / buyQuantity * sellQuantity, buyValue)));
+        mockSellTrade.Object.MatchHistory[0].BaseCurrencyMatchDisposalProceed.ShouldBe(new WrappedMoney(decimal.Min(sellQuantity, buyQuantity) * sellValue / sellQuantity));
         mockSellTrade.Object.MatchHistory[0].TradeMatchType.ShouldBe(TaxMatchType.SECTION_104);
     }
 

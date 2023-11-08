@@ -171,8 +171,8 @@ public class UkTradeCalculator : ITradeCalculator
             proposedMatch.MatchAcquisitionQty *= adjustRatio;
             proposedMatch.MatchDisposalQty = sellTrade.UnmatchedQty;
         }
-        proposedMatch.BaseCurrencyMatchAcquisitionValue = buyTrade.GetProportionedCostOrProceed(proposedMatch.MatchAcquisitionQty);
-        proposedMatch.BaseCurrencyMatchDisposalValue = sellTrade.GetProportionedCostOrProceed(proposedMatch.MatchDisposalQty);
+        proposedMatch.BaseCurrencyMatchAllowableCost = buyTrade.GetProportionedCostOrProceed(proposedMatch.MatchAcquisitionQty);
+        proposedMatch.BaseCurrencyMatchDisposalProceed = sellTrade.GetProportionedCostOrProceed(proposedMatch.MatchDisposalQty);
         buyTrade.MatchQty(proposedMatch.MatchAcquisitionQty);
         sellTrade.MatchQty(proposedMatch.MatchDisposalQty);
         buyTrade.MatchHistory.Add(proposedMatch);

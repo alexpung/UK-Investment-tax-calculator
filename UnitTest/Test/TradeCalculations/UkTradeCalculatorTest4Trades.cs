@@ -62,18 +62,18 @@ public class UkTradeCalculatorTest4Trades
         result[2].MatchHistory[0].TradeMatchType.ShouldBe(TaxMatchType.SAME_DAY);
         result[2].MatchHistory[0].MatchDisposalQty.ShouldBe(50);
         result[2].MatchHistory[0].MatchAcquisitionQty.ShouldBe(50);
-        result[2].MatchHistory[0].BaseCurrencyMatchDisposalValue.ShouldBe(new WrappedMoney(458.68125m));
-        result[2].MatchHistory[0].BaseCurrencyMatchAcquisitionValue.ShouldBe(new WrappedMoney(460.275m));
+        result[2].MatchHistory[0].BaseCurrencyMatchDisposalProceed.ShouldBe(new WrappedMoney(458.68125m));
+        result[2].MatchHistory[0].BaseCurrencyMatchAllowableCost.ShouldBe(new WrappedMoney(460.275m));
         result[2].MatchHistory[1].TradeMatchType.ShouldBe(TaxMatchType.BED_AND_BREAKFAST);
         result[2].MatchHistory[1].MatchDisposalQty.ShouldBe(50);
         result[2].MatchHistory[1].MatchAcquisitionQty.ShouldBe(100);
-        result[2].MatchHistory[1].BaseCurrencyMatchDisposalValue.ShouldBe(new WrappedMoney(458.68125m));
-        result[2].MatchHistory[1].BaseCurrencyMatchAcquisitionValue.ShouldBe(new WrappedMoney(560.29m));
+        result[2].MatchHistory[1].BaseCurrencyMatchDisposalProceed.ShouldBe(new WrappedMoney(458.68125m));
+        result[2].MatchHistory[1].BaseCurrencyMatchAllowableCost.ShouldBe(new WrappedMoney(560.29m));
         result[2].MatchHistory[2].TradeMatchType.ShouldBe(TaxMatchType.SECTION_104);
         result[2].MatchHistory[2].MatchAcquisitionQty.ShouldBe(100);
         result[2].MatchHistory[2].MatchDisposalQty.ShouldBe(100);
-        result[2].MatchHistory[2].BaseCurrencyMatchDisposalValue.ShouldBe(new WrappedMoney(917.3625m));
-        result[2].MatchHistory[2].BaseCurrencyMatchAcquisitionValue.ShouldBe(new WrappedMoney(808.6m));
+        result[2].MatchHistory[2].BaseCurrencyMatchDisposalProceed.ShouldBe(new WrappedMoney(917.3625m));
+        result[2].MatchHistory[2].BaseCurrencyMatchAllowableCost.ShouldBe(new WrappedMoney(808.6m));
         section104Pools.GetExistingOrInitialise("ABC").AcquisitionCostInBaseCurrency.ShouldBe(new WrappedMoney(808.6m));
         section104Pools.GetExistingOrInitialise("ABC").Quantity.ShouldBe(200);
     }
