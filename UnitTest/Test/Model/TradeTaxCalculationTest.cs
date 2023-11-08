@@ -125,6 +125,7 @@ public class TradeTaxCalculationTests
         trade1.Setup(i => i.AssetName).Returns("IBM");
         trade1.Setup(i => i.BuySell).Returns(TradeType.SELL);
         trade1.Setup(i => i.NetProceed).Returns(new WrappedMoney(100));
+        trade1.Setup(i => i.Quantity).Returns(10m);
         var calculation = new TradeTaxCalculation(new List<Trade>() { trade1.Object });
         // Assert
         calculation.AssetName.ShouldBe("IBM");
@@ -158,11 +159,9 @@ public class TradeTaxCalculationTests
         var calculation = new TradeTaxCalculation(trades);
 
         // Act
-        (decimal matchedQty, WrappedMoney matchedValue) = calculation.MatchQty(12);
+        calculation.MatchQty(12);
 
         // Assert
-        matchedQty.ShouldBe(12);
-        matchedValue.ShouldBe(new WrappedMoney(120));
         calculation.UnmatchedQty.ShouldBe(18);
         calculation.UnmatchedCostOrProceed.ShouldBe(new WrappedMoney(180));
         calculation.CalculationCompleted.ShouldBeFalse();
@@ -171,7 +170,7 @@ public class TradeTaxCalculationTests
     }
 
     [Fact]
-    public void MatchAll_MatchesAllAndResetsUnmatchedQtyAndUnmatchedNetAmount()
+    public void TestUnmatchedQtyAndValueReturnCorrectResult()
     {
         // Arrange
         Mock<Trade> trade1 = new();
@@ -182,17 +181,11 @@ public class TradeTaxCalculationTests
         trade2.Setup(i => i.NetProceed).Returns(new WrappedMoney(500));
         var trades = new List<Trade> { trade1.Object, trade2.Object };
         var calculation = new TradeTaxCalculation(trades);
-
         // Act
-        (decimal matchedQty, WrappedMoney matchedValue) = calculation.MatchAll();
-
+        decimal unmatchedQty = calculation.UnmatchedQty;
+        WrappedMoney unmatchedValue = calculation.GetProportionedCostOrProceed(calculation.UnmatchedQty);
         // Assert
-        matchedQty.ShouldBe(80);
-        matchedValue.ShouldBe(new WrappedMoney(800));
-        calculation.UnmatchedQty.ShouldBe(0);
-        calculation.UnmatchedCostOrProceed.ShouldBe(WrappedMoney.GetBaseCurrencyZero());
-        calculation.CalculationCompleted.ShouldBeTrue();
-        calculation.TotalCostOrProceed.ShouldBe(new WrappedMoney(800));
-        calculation.TotalQty.ShouldBe(80);
+        unmatchedQty.ShouldBe(80);
+        unmatchedValue.ShouldBe(new WrappedMoney(800));
     }
 }

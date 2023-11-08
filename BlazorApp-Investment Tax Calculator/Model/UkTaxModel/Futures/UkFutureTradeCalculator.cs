@@ -210,11 +210,11 @@ public class UkFutureTradeCalculator : ITradeCalculator
         {
             if (trade.PositionType is FuturePositionType.OPENLONG or FuturePositionType.CLOSELONG)
             {
-                longSection104Pool.MatchTradeWithSection104(trade);
+                trade.MatchWithSection104(longSection104Pool);
             }
             else if (trade.PositionType is FuturePositionType.OPENSHORT or FuturePositionType.CLOSESHORT)
             {
-                shortSection104Pool.MatchTradeWithSection104(trade);
+                trade.MatchWithSection104(shortSection104Pool);
             }
             else throw new ArgumentException($"Unknown future position type {trade.PositionType}");
         }

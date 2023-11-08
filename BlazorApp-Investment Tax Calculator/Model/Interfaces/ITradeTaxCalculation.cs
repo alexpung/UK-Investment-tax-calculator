@@ -1,5 +1,7 @@
 ﻿using Enum;
+
 using Model.TaxEvents;
+using Model.UkTaxModel;
 using Model.UkTaxModel.Stocks;
 
 namespace Model.Interfaces;
@@ -17,7 +19,6 @@ public interface ITradeTaxCalculation : ITextFilePrintable, IAssetDatedEvent
     WrappedMoney TotalAllowableCost { get; }
     WrappedMoney Gain { get; }
     WrappedMoney GetProportionedCostOrProceed(decimal qty) => TotalCostOrProceed / TotalQty * qty;
-
-    (decimal matchedQty, WrappedMoney matchedValue) MatchAll();
-    (decimal matchedQty, WrappedMoney matchedValue) MatchQty(decimal demandedQty);
+    void MatchWithSection104(UkSection104 ukSection104);
+    void MatchQty(decimal demandedQty);
 }

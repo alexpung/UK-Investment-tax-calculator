@@ -205,7 +205,7 @@ public class UkTradeCalculator : ITradeCalculator
                             if (nextTradeToMatch.CalculationCompleted) unmatchedDisposal.Dequeue();
                         }
                     }
-                    section104.MatchTradeWithSection104(tradeTaxCalculation);
+                    tradeTaxCalculation.MatchWithSection104(section104);
                     if (!tradeTaxCalculation.CalculationCompleted && tradeTaxCalculation.BuySell == TradeType.SELL)
                     {
                         unmatchedDisposal.Enqueue(tradeTaxCalculation);

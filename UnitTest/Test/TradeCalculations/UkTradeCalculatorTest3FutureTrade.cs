@@ -3,7 +3,6 @@
 using Model;
 using Model.Interfaces;
 using Model.TaxEvents;
-using Model.UkTaxModel;
 
 using System.Collections.Immutable;
 
@@ -107,7 +106,7 @@ public class UkTradeCalculatorTest3FutureTrade
             GrossProceed = new() { Amount = WrappedMoney.GetBaseCurrencyZero() },
             ContractValue = new() { Amount = new WrappedMoney(1000000m, "JPY"), FxRate = 0.008m }
         };
-        List<ITradeTaxCalculation> result = TradeCalculationHelper.CalculateTrades(new List<Trade>() { buyTradeDay1, sellTradeDay2, buyTradeDay3 }, out UkSection104Pools section104Pools);
+        List<ITradeTaxCalculation> result = TradeCalculationHelper.CalculateTrades(new List<Trade>() { buyTradeDay1, sellTradeDay2, buyTradeDay3 }, out _);
         result[1].Gain.ShouldBe(new WrappedMoney(248.925m)); // (1600000 * 50/150 - 500,000) * 0.0075 - 150 * 0.0075 * (50/150) - 100 * 0.007 = 248.925
         result[1].TotalAllowableCost.ShouldBe(new WrappedMoney(1.075m)); // 150 * 0.0075 * (50/150) + 100 * 0.007 = 1.075
         result[1].TotalProceeds.Amount.ShouldBe(250m, 0.01m); // (1600000 * 50/150 - 500,000) * 0.0075 = 250

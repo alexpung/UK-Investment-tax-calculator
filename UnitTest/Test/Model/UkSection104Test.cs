@@ -1,9 +1,10 @@
 ﻿using Enum;
+
 using Model;
-using Model.Interfaces;
 using Model.TaxEvents;
 using Model.UkTaxModel;
-using Moq;
+using Model.UkTaxModel.Stocks;
+
 using UnitTest.Helper;
 
 namespace UnitTest.Test.Model;
@@ -16,38 +17,38 @@ public class UkSection104Test
     [InlineData(100, 1000, 150, 4000)]
     public void TestAddandRemoveSection104(decimal buyQuantity, decimal buyValue, decimal sellQuantity, decimal sellValue)
     {
-        Mock<ITradeTaxCalculation> mockBuyTrade = MockTrade.CreateMockITradeTaxCalculation(buyQuantity, buyValue, TradeType.BUY);
+        TradeTaxCalculation buyTradeTaxCalculation = MockTrade.CreateTradeTaxCalculation("IBM", new DateTime(2020, 1, 1), buyQuantity, buyValue, TradeType.BUY);
         UkSection104 ukSection104 = new("IBM");
-        ukSection104.MatchTradeWithSection104(mockBuyTrade.Object);
+        buyTradeTaxCalculation.MatchWithSection104(ukSection104);
         ukSection104.AssetName.ShouldBe("IBM");
         ukSection104.Quantity.ShouldBe(100m);
         ukSection104.AcquisitionCostInBaseCurrency.ShouldBe(new WrappedMoney(buyValue));
-        mockBuyTrade.Object.MatchHistory[0].MatchAcquisitionQty.ShouldBe(buyQuantity);
-        mockBuyTrade.Object.MatchHistory[0].BaseCurrencyMatchAllowableCost.ShouldBe(new WrappedMoney(buyValue));
-        mockBuyTrade.Object.MatchHistory[0].BaseCurrencyMatchDisposalProceed.ShouldBe(WrappedMoney.GetBaseCurrencyZero());
-        mockBuyTrade.Object.MatchHistory[0].TradeMatchType.ShouldBe(TaxMatchType.SECTION_104);
-        Mock<ITradeTaxCalculation> mockSellTrade = MockTrade.CreateMockITradeTaxCalculation(sellQuantity, sellValue, TradeType.SELL);
-        ukSection104.MatchTradeWithSection104(mockSellTrade.Object);
+        buyTradeTaxCalculation.MatchHistory[0].MatchAcquisitionQty.ShouldBe(buyQuantity);
+        buyTradeTaxCalculation.MatchHistory[0].BaseCurrencyMatchAllowableCost.ShouldBe(new WrappedMoney(buyValue));
+        buyTradeTaxCalculation.MatchHistory[0].BaseCurrencyMatchDisposalProceed.ShouldBe(WrappedMoney.GetBaseCurrencyZero());
+        buyTradeTaxCalculation.MatchHistory[0].TradeMatchType.ShouldBe(TaxMatchType.SECTION_104);
+        TradeTaxCalculation sellTradeTaxCalculation = MockTrade.CreateTradeTaxCalculation("IBM", new DateTime(2020, 1, 2), sellQuantity, sellValue, TradeType.SELL);
+        sellTradeTaxCalculation.MatchWithSection104(ukSection104);
         ukSection104.Quantity.ShouldBe(decimal.Max(buyQuantity - sellQuantity, 0));
         ukSection104.AcquisitionCostInBaseCurrency.ShouldBe(new WrappedMoney(decimal.Max((buyQuantity - sellQuantity) / buyQuantity * buyValue, 0)));
-        mockSellTrade.Object.MatchHistory[0].MatchAcquisitionQty.ShouldBe(decimal.Min(sellQuantity, buyQuantity));
-        mockSellTrade.Object.MatchHistory[0].BaseCurrencyMatchAllowableCost.ShouldBe(new WrappedMoney(decimal.Min(buyValue / buyQuantity * sellQuantity, buyValue)));
-        mockSellTrade.Object.MatchHistory[0].BaseCurrencyMatchDisposalProceed.ShouldBe(new WrappedMoney(decimal.Min(sellQuantity, buyQuantity) * sellValue / sellQuantity));
-        mockSellTrade.Object.MatchHistory[0].TradeMatchType.ShouldBe(TaxMatchType.SECTION_104);
+        sellTradeTaxCalculation.MatchHistory[0].MatchAcquisitionQty.ShouldBe(decimal.Min(sellQuantity, buyQuantity));
+        sellTradeTaxCalculation.MatchHistory[0].BaseCurrencyMatchAllowableCost.ShouldBe(new WrappedMoney(decimal.Min(buyValue / buyQuantity * sellQuantity, buyValue)));
+        sellTradeTaxCalculation.MatchHistory[0].BaseCurrencyMatchDisposalProceed.ShouldBe(new WrappedMoney(decimal.Min(sellQuantity, buyQuantity) * sellValue / sellQuantity));
+        sellTradeTaxCalculation.MatchHistory[0].TradeMatchType.ShouldBe(TaxMatchType.SECTION_104);
     }
 
     [Fact]
     public void TestSection104History()
     {
-        Mock<ITradeTaxCalculation> mockTrade1 = MockTrade.CreateMockITradeTaxCalculation(100, 1000m, TradeType.BUY);
-        Mock<ITradeTaxCalculation> mockTrade2 = MockTrade.CreateMockITradeTaxCalculation(200, 2000m, TradeType.BUY);
-        Mock<ITradeTaxCalculation> mockTrade3 = MockTrade.CreateMockITradeTaxCalculation(300, 3000m, TradeType.BUY);
-        Mock<ITradeTaxCalculation> mockTrade4 = MockTrade.CreateMockITradeTaxCalculation(400, 8000m, TradeType.SELL);
+        TradeTaxCalculation tradeTaxCalculation1 = MockTrade.CreateTradeTaxCalculation("IBM", new DateTime(2020, 1, 1), 100, 1000m, TradeType.BUY);
+        TradeTaxCalculation tradeTaxCalculation2 = MockTrade.CreateTradeTaxCalculation("IBM", new DateTime(2020, 3, 2), 200, 2000m, TradeType.BUY);
+        TradeTaxCalculation tradeTaxCalculation3 = MockTrade.CreateTradeTaxCalculation("IBM", new DateTime(2020, 5, 3), 300, 3000m, TradeType.BUY);
+        TradeTaxCalculation tradeTaxCalculation4 = MockTrade.CreateTradeTaxCalculation("IBM", new DateTime(2020, 7, 4), 400, 8000m, TradeType.SELL);
         UkSection104 ukSection104 = new("IBM");
-        ukSection104.MatchTradeWithSection104(mockTrade1.Object);
-        ukSection104.MatchTradeWithSection104(mockTrade2.Object);
-        ukSection104.MatchTradeWithSection104(mockTrade3.Object);
-        ukSection104.MatchTradeWithSection104(mockTrade4.Object);
+        tradeTaxCalculation1.MatchWithSection104(ukSection104);
+        tradeTaxCalculation2.MatchWithSection104(ukSection104);
+        tradeTaxCalculation3.MatchWithSection104(ukSection104);
+        tradeTaxCalculation4.MatchWithSection104(ukSection104);
         ukSection104.Section104HistoryList[0].OldQuantity.ShouldBe(0);
         ukSection104.Section104HistoryList[0].OldValue.ShouldBe(new WrappedMoney(0m));
         ukSection104.Section104HistoryList[0].QuantityChange.ShouldBe(100);
@@ -69,13 +70,13 @@ public class UkSection104Test
     [Fact]
     public void TestSection104HandleShareSplit()
     {
-        Mock<ITradeTaxCalculation> mockTrade1 = MockTrade.CreateMockITradeTaxCalculation(100, 1000m, TradeType.BUY);
-        Mock<ITradeTaxCalculation> mockTrade2 = MockTrade.CreateMockITradeTaxCalculation(120, 1500m, TradeType.SELL);
+        TradeTaxCalculation tradeTaxCalculation1 = MockTrade.CreateTradeTaxCalculation("IBM", new DateTime(2020, 1, 1), 100, 1000m, TradeType.BUY);
+        TradeTaxCalculation tradeTaxCalculation2 = MockTrade.CreateTradeTaxCalculation("IBM", new DateTime(2020, 3, 2), 120, 1500m, TradeType.SELL);
         StockSplit corporateAction = new() { AssetName = "ABC", Date = new DateTime(), NumberAfterSplit = 3, NumberBeforeSplit = 2 };
         UkSection104 ukSection104 = new("IBM");
-        ukSection104.MatchTradeWithSection104(mockTrade1.Object);
+        tradeTaxCalculation1.MatchWithSection104(ukSection104);
         corporateAction.ChangeSection104(ukSection104);
-        ukSection104.MatchTradeWithSection104(mockTrade2.Object);
+        tradeTaxCalculation2.MatchWithSection104(ukSection104);
         ukSection104.Quantity.ShouldBe(30); // bought 100, 150 after split - 120 sold = 30
         ukSection104.AcquisitionCostInBaseCurrency.ShouldBe(new WrappedMoney(200m)); // bought shares worth 1000, remaining shares worth = 30*1000/150 = 200
     }
