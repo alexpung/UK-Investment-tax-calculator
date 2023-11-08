@@ -2,6 +2,7 @@
 using Model.Interfaces;
 using Model.TaxEvents;
 using Model.UkTaxModel;
+using Model.UkTaxModel.Futures;
 using Model.UkTaxModel.Stocks;
 
 namespace UnitTest.Helper;
@@ -13,7 +14,9 @@ public static class TradeCalculationHelper
         TaxEventLists taxEventLists = new();
         taxEventLists.AddData(taxEvents);
         UkTradeCalculator calculator = new(section104Pools, taxEventLists);
+        UkFutureTradeCalculator futureCalculator = new(section104Pools, taxEventLists);
         List<ITradeTaxCalculation> result = calculator.CalculateTax();
+        result.AddRange(futureCalculator.CalculateTax());
         return result;
     }
 }
