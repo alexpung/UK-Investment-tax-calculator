@@ -1,5 +1,8 @@
 ﻿using CommunityToolkit.Mvvm.Messaging;
+
 using Model;
+using Model.Interfaces;
+
 using ViewModel.Messages;
 using ViewModel.Options;
 
@@ -9,6 +12,7 @@ public class CalculationResultSummaryViewModel : IRecipient<CalculationFinishedM
 {
     private readonly TradeCalculationResult _tradeCalculationResult;
     private readonly DividendCalculationResult _dividendCalculationResult;
+    private readonly ITaxYear _taxYear;
     public int NumberOfDisposals { get; set; }
     public WrappedMoney DisposalProceeds { get; set; } = WrappedMoney.GetBaseCurrencyZero();
     public WrappedMoney AllowableCosts { get; set; } = WrappedMoney.GetBaseCurrencyZero();
@@ -19,11 +23,13 @@ public class CalculationResultSummaryViewModel : IRecipient<CalculationFinishedM
     public YearOptions Years { get; init; }
 
 
-    public CalculationResultSummaryViewModel(TradeCalculationResult tradeCalculationResult, DividendCalculationResult dividendCalculationResult, YearOptions years, IMessenger messenger)
+    public CalculationResultSummaryViewModel(TradeCalculationResult tradeCalculationResult, DividendCalculationResult dividendCalculationResult,
+        YearOptions years, IMessenger messenger, ITaxYear taxYear)
     {
         _tradeCalculationResult = tradeCalculationResult;
         _dividendCalculationResult = dividendCalculationResult;
         Years = years;
+        _taxYear = taxYear;
         messenger.Register<YearSelectionChangedMessage>(this);
         messenger.Register<CalculationFinishedMessage>(this);
     }
@@ -53,10 +59,10 @@ public class CalculationResultSummaryViewModel : IRecipient<CalculationFinishedM
 
     private IEnumerable<int> GetSelectableYears()
     {
-        IEnumerable<int> yearsWithDisposal = _tradeCalculationResult.CalculatedTrade.Where(trade => trade.BuySell == Enum.TradeType.SELL)
-                                                 .Select(trade => trade.Date.Year)
+        IEnumerable<int> taxYearsWithDisposal = _tradeCalculationResult.CalculatedTrade.Where(trade => trade.BuySell == Enum.TradeType.SELL)
+                                                 .Select(trade => _taxYear.ToTaxYear(trade.Date))
                                                  .Distinct();
-        IEnumerable<int> yearsWithDividend = _dividendCalculationResult.DividendSummary.Select(dividend => dividend.TaxYear).Distinct();
-        return yearsWithDisposal.Union(yearsWithDividend).OrderByDescending(i => i);
+        IEnumerable<int> taxYearsWithDividend = _dividendCalculationResult.DividendSummary.Select(dividend => dividend.TaxYear).Distinct();
+        return taxYearsWithDisposal.Union(taxYearsWithDividend).OrderByDescending(i => i);
     }
 }
