@@ -70,7 +70,7 @@ public class TradeTaxCalculation : ITradeTaxCalculation
     {
         if (BuySell is TradeType.BUY)
         {
-            Section104History newSection104History = Section104History.AddToSection104(this, UnmatchedQty, UnmatchedCostOrProceed, ukSection104.Quantity,
+            Section104History newSection104History = Section104History.AdjustSection104(this, UnmatchedQty, UnmatchedCostOrProceed, ukSection104.Quantity,
                 ukSection104.AcquisitionCostInBaseCurrency);
             MatchHistory.Add(TradeMatch.CreateSection104Match(UnmatchedQty, UnmatchedCostOrProceed, WrappedMoney.GetBaseCurrencyZero(), newSection104History));
             ukSection104.Section104HistoryList.Add(newSection104History);
@@ -84,7 +84,7 @@ public class TradeTaxCalculation : ITradeTaxCalculation
             if (ukSection104.Quantity == 0m) return;
             decimal matchQty = Math.Min(UnmatchedQty, ukSection104.Quantity);
             acqisitionValue = ukSection104.AcquisitionCostInBaseCurrency * matchQty / ukSection104.Quantity;
-            Section104History newSection104History = Section104History.RemoveFromSection104(this, matchQty * -1, acqisitionValue * -1,
+            Section104History newSection104History = Section104History.AdjustSection104(this, matchQty * -1, acqisitionValue * -1,
                                                      ukSection104.Quantity, ukSection104.AcquisitionCostInBaseCurrency);
             MatchHistory.Add(TradeMatch.CreateSection104Match(matchQty, acqisitionValue, GetProportionedCostOrProceed(matchQty), newSection104History));
             ukSection104.Section104HistoryList.Add(newSection104History);
