@@ -23,11 +23,11 @@ public class TradeTaxCalculation : ITradeTaxCalculation
     /// For acquistion: Cost of buying + commission
     /// For disposal: Proceed you get - commission
     /// </summary>
-    public WrappedMoney TotalCostOrProceed { get; private set; }
-    public WrappedMoney UnmatchedCostOrProceed { get; private set; }
+    public virtual WrappedMoney TotalCostOrProceed { get; protected set; }
+    public WrappedMoney UnmatchedCostOrProceed { get; protected set; }
     public WrappedMoney GetProportionedCostOrProceed(decimal qty) => TotalCostOrProceed / TotalQty * qty;
     public decimal TotalQty { get; }
-    public decimal UnmatchedQty { get; private set; }
+    public decimal UnmatchedQty { get; protected set; }
     public virtual TradeType BuySell { get; init; }
     public bool CalculationCompleted => UnmatchedQty == 0;
     public DateTime Date => TradeList[0].Date;
@@ -53,7 +53,7 @@ public class TradeTaxCalculation : ITradeTaxCalculation
         BuySell = trades.First().BuySell;
     }
 
-    public void MatchQty(decimal demandedQty)
+    public virtual void MatchQty(decimal demandedQty)
     {
         if (demandedQty > UnmatchedQty)
         {
@@ -66,31 +66,21 @@ public class TradeTaxCalculation : ITradeTaxCalculation
         }
     }
 
-    public void MatchWithSection104(UkSection104 ukSection104)
+    public virtual void MatchWithSection104(UkSection104 ukSection104)
     {
         if (BuySell is TradeType.BUY)
         {
-            Section104History newSection104History = Section104History.AdjustSection104(this, UnmatchedQty, UnmatchedCostOrProceed, ukSection104.Quantity,
-                ukSection104.AcquisitionCostInBaseCurrency);
-            MatchHistory.Add(TradeMatch.CreateSection104Match(UnmatchedQty, UnmatchedCostOrProceed, WrappedMoney.GetBaseCurrencyZero(), newSection104History));
-            ukSection104.Section104HistoryList.Add(newSection104History);
-            ukSection104.AdjustValues(UnmatchedQty, UnmatchedCostOrProceed);
-            UnmatchedQty = 0;
-            UnmatchedCostOrProceed = WrappedMoney.GetBaseCurrencyZero();
+            Section104History section104History = ukSection104.AddAssets(this, UnmatchedQty, UnmatchedCostOrProceed);
+            MatchHistory.Add(TradeMatch.CreateSection104Match(UnmatchedQty, UnmatchedCostOrProceed, WrappedMoney.GetBaseCurrencyZero(), section104History));
+            MatchQty(UnmatchedQty);
         }
         else if (BuySell is TradeType.SELL)
         {
-            WrappedMoney acqisitionValue;
             if (ukSection104.Quantity == 0m) return;
             decimal matchQty = Math.Min(UnmatchedQty, ukSection104.Quantity);
-            acqisitionValue = ukSection104.AcquisitionCostInBaseCurrency * matchQty / ukSection104.Quantity;
-            Section104History newSection104History = Section104History.AdjustSection104(this, matchQty * -1, acqisitionValue * -1,
-                                                     ukSection104.Quantity, ukSection104.AcquisitionCostInBaseCurrency);
-            MatchHistory.Add(TradeMatch.CreateSection104Match(matchQty, acqisitionValue, GetProportionedCostOrProceed(matchQty), newSection104History));
-            ukSection104.Section104HistoryList.Add(newSection104History);
-            ukSection104.AdjustValues(matchQty * -1, ukSection104.AcquisitionCostInBaseCurrency * matchQty * -1 / ukSection104.Quantity);
-            UnmatchedQty -= matchQty;
-            UnmatchedCostOrProceed -= GetProportionedCostOrProceed(matchQty);
+            Section104History section104History = ukSection104.RemoveAssets(this, matchQty);
+            MatchHistory.Add(TradeMatch.CreateSection104Match(matchQty, section104History.ValueChange * -1, GetProportionedCostOrProceed(matchQty), section104History));
+            MatchQty(matchQty);
         }
     }
     public string UnmatchedDescription() => UnmatchedQty switch

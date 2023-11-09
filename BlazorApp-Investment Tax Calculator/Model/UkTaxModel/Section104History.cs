@@ -11,10 +11,10 @@ public class Section104History : ITextFilePrintable
     public DateTime Date { get; set; }
     public decimal OldQuantity { get; set; }
     public WrappedMoney OldValue { get; set; } = WrappedMoney.GetBaseCurrencyZero();
-    public WrappedMoney? OldContractValue { get; set; }
+    public WrappedMoney OldContractValue { get; set; } = WrappedMoney.GetBaseCurrencyZero();
     public decimal QuantityChange { get; set; }
     public WrappedMoney ValueChange { get; set; } = WrappedMoney.GetBaseCurrencyZero();
-    public WrappedMoney? ContractValueChange { get; set; } = WrappedMoney.GetBaseCurrencyZero();
+    public WrappedMoney ContractValueChange { get; set; } = WrappedMoney.GetBaseCurrencyZero();
     public string Explanation { get; set; } = string.Empty;
 
     public static Section104History AdjustSection104(ITradeTaxCalculation tradeTaxCalculation, decimal quantityChange, WrappedMoney valueChange, decimal oldQuantity,
@@ -28,8 +28,8 @@ public class Section104History : ITextFilePrintable
             TradeTaxCalculation = tradeTaxCalculation,
             OldQuantity = oldQuantity,
             OldValue = oldValue,
-            OldContractValue = oldContractValue,
-            ContractValueChange = contractValueChange,
+            OldContractValue = oldContractValue is null ? WrappedMoney.GetBaseCurrencyZero() : oldContractValue,
+            ContractValueChange = contractValueChange is null ? WrappedMoney.GetBaseCurrencyZero() : contractValueChange,
         };
     }
 
@@ -47,10 +47,9 @@ public class Section104History : ITextFilePrintable
     public string PrintToTextFile()
     {
         StringBuilder output = new();
-        WrappedMoney? newContractValue = (OldContractValue is not null) && (ContractValueChange is not null) ? OldContractValue + ContractValueChange : null;
         output.AppendLine($"{Date.ToShortDateString()}\t{OldQuantity + QuantityChange} ({QuantityChange.ToSignedNumberString()})\t\t\t" +
             $"{OldValue + ValueChange} ({ValueChange.ToSignedNumberString()})\t\t\t" +
-            $"{newContractValue} ({ContractValueChange?.ToSignedNumberString()})");
+            $"{OldContractValue + ContractValueChange} ({ContractValueChange.ToSignedNumberString()})");
         if (Explanation != string.Empty)
         {
             output.AppendLine($"{Explanation}");

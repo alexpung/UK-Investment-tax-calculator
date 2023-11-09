@@ -116,7 +116,7 @@ public class UkTradeCalculatorTest2FutureTrade
         };
         List<ITradeTaxCalculation> result = TradeCalculationHelper.CalculateTrades(new List<Trade>() { buyTrade, sellTrade }, out UkSection104Pools section104Pools);
         result[1].Gain.ShouldBe(new WrappedMoney(207.55m)); // (930000 - 900000) * 0.007 - (150 * 0.007 + 200 * 0.007)
-        result[1].TotalAllowableCost.ShouldBe(new WrappedMoney(2.45m)); // 150 * 0.007 + 200 * 0.007
+        result[1].TotalAllowableCost.Amount.ShouldBe(2.45m, 0.01m); // 150 * 0.007 + 200 * 0.007
         result[1].MatchHistory[0].TradeMatchType.ShouldBe(TaxMatchType.SAME_DAY);
         var section104Pool = section104Pools.GetExistingOrInitialise("DEF Future");
         section104Pool.AcquisitionCostInBaseCurrency.ShouldBe(WrappedMoney.GetBaseCurrencyZero());

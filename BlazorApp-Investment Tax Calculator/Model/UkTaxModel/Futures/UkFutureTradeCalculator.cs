@@ -63,7 +63,7 @@ public class UkFutureTradeCalculator : ITradeCalculator
     {
         decimal currentPosition = 0m; // tracking current position to determine a trade is opening or closing
         List<FutureContractTrade> resultList = new();
-        foreach (var trade in trades)
+        foreach (var trade in trades.OrderBy(trade => trade.Date))
         {
             // run through trades chronologically and catagorise trades to one of the 4 catagories.
             switch (currentPosition, trade.RawQuantity)
@@ -131,7 +131,12 @@ public class UkFutureTradeCalculator : ITradeCalculator
             if (tradesByDateAndType.TryGetValue(key, out var potentialMatches))
             {
                 var tradeToMatch = potentialMatches.FirstOrDefault();
-                if (tradeToMatch != null)
+                if (tradeToMatch is not null && (trade.CalculationCompleted || tradeToMatch.CalculationCompleted)) continue;
+                if (tradeToMatch != null && tradeToMatch.PositionType is FuturePositionType.OPENLONG or FuturePositionType.OPENSHORT)
+                {
+                    MatchTrade(tradeToMatch, trade, TaxMatchType.SAME_DAY);
+                }
+                else if (tradeToMatch != null && tradeToMatch.PositionType is FuturePositionType.CLOSELONG or FuturePositionType.CLOSESHORT)
                 {
                     MatchTrade(trade, tradeToMatch, TaxMatchType.SAME_DAY);
                 }
@@ -163,36 +168,39 @@ public class UkFutureTradeCalculator : ITradeCalculator
         {
             var oppositePositionType = GetOppositePositionType(trade.PositionType);
             var matchCandidates = tradesInChronologicalOrder.Where(nextTrade => nextTrade.PositionType == oppositePositionType
-                                                                                    && trade.Date.Date.AddDays(30) > nextTrade.Date.Date);
+                                                                                    && trade.Date.Date.AddDays(30) > nextTrade.Date.Date
+                                                                                    && trade.Date.Date < nextTrade.Date.Date);
             if (matchCandidates.Any())
             {
                 matchCandidates = matchCandidates.OrderBy(trade => trade.Date);
                 foreach (var matchCandidate in matchCandidates)
                 {
-                    MatchTrade(trade, matchCandidate, TaxMatchType.BED_AND_BREAKFAST);
+                    MatchTrade(matchCandidate, trade, TaxMatchType.BED_AND_BREAKFAST);
                 }
             }
         }
     }
 
-
     private static void MatchTrade(FutureTradeTaxCalculation openTrade, FutureTradeTaxCalculation closeTrade, TaxMatchType taxMatchType)
     {
         decimal matchQty = Math.Min(openTrade.UnmatchedQty, closeTrade.UnmatchedQty);
         WrappedMoney contractGain = closeTrade.GetProportionedContractValue(matchQty) - openTrade.GetProportionedContractValue(matchQty);
+        WrappedMoney contractGainInBaseCurrency = new WrappedMoney((contractGain * closeTrade.ContractFxRate).Amount);
         WrappedMoney allowableCost = openTrade.GetProportionedCostOrProceed(matchQty) + closeTrade.GetProportionedCostOrProceed(matchQty);
         WrappedMoney disposalProceed = WrappedMoney.GetBaseCurrencyZero();
-        if (contractGain.Amount < 0)
+        if (contractGainInBaseCurrency.Amount < 0)
         {
-            allowableCost -= contractGain;
+            allowableCost += contractGainInBaseCurrency * -1;
         }
         else
         {
-            disposalProceed += contractGain;
+            disposalProceed += contractGainInBaseCurrency;
         }
         TradeMatch match = TradeMatch.CreateTradeMatch(taxMatchType, matchQty, allowableCost, disposalProceed, closeTrade, openTrade);
         openTrade.MatchHistory.Add(match);
         closeTrade.MatchHistory.Add(match);
+        openTrade.MatchQty(match.MatchAcquisitionQty);
+        closeTrade.MatchQty(match.MatchDisposalQty);
     }
 
     /// <summary>
