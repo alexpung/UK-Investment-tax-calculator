@@ -1,5 +1,7 @@
 ﻿using Model.Interfaces;
 
+using System.Collections.Concurrent;
+
 namespace Model;
 
 public class TradeCalculationResult
@@ -11,12 +13,20 @@ public class TradeCalculationResult
         _taxYear = taxYear;
     }
 
-    public List<ITradeTaxCalculation> CalculatedTrade { get; set; } = new();
+    public ConcurrentBag<ITradeTaxCalculation> CalculatedTrade { get; set; } = new();
     public IEnumerable<ITradeTaxCalculation> GetDisposals => CalculatedTrade.Where(trade => trade.BuySell == Enum.TradeType.SELL);
+
+    public void Clear()
+    {
+        CalculatedTrade.Clear();
+    }
 
     public void SetResult(List<ITradeTaxCalculation> tradeTaxCalculations)
     {
-        CalculatedTrade = tradeTaxCalculations;
+        foreach (var trade in tradeTaxCalculations)
+        {
+            CalculatedTrade.Add(trade);
+        }
     }
 
     private bool IsTradeInSelectedTaxYear(IEnumerable<int> selectedYears, ITradeTaxCalculation taxCalculation)

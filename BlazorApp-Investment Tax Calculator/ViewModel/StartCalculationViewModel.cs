@@ -31,6 +31,7 @@ public partial class StartCalculationViewModel
     public async Task OnStartCalculation()
     {
         _ukSection104Pools.Clear();
+        _tradeCalculationResult.Clear();
         foreach (ITradeCalculator tradeCalculator in _tradeCalculators)
         {
             _tradeCalculationResult.SetResult(await Task.Run(tradeCalculator.CalculateTax));
