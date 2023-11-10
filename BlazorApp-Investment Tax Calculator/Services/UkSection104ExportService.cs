@@ -1,5 +1,6 @@
 ﻿using Model.Interfaces;
 using Model.UkTaxModel;
+
 using System.Text;
 
 namespace Services;
@@ -24,7 +25,7 @@ public class UkSection104ExportService : ITextFilePrintable
             IEnumerable<int> activeYears = pool.Section104HistoryList.Select(i => _taxYear.ToTaxYear(i.Date)).Distinct();
             if (!activeYears.Intersect(yearsToExport).Any()) continue; // skip if no activities in selected yearsToExport
             output.AppendLine($"Asset Name {pool.AssetName}");
-            output.AppendLine("Date\t\tNew Quantity (change)\t\tNew Value (change)");
+            output.AppendLine("Date\t\tNew Quantity (change)\t\tNew Value (change)\t\tContract value (for futures)");
             foreach (var history in pool.Section104HistoryList)
             {
                 output.AppendLine(history.PrintToTextFile());
@@ -40,7 +41,7 @@ public class UkSection104ExportService : ITextFilePrintable
         foreach (var pool in _section104Pools.GetSection104s())
         {
             output.AppendLine($"Asset Name {pool.AssetName}");
-            output.AppendLine("Date\t\tNew Quantity (change)\t\tNew Value (change)");
+            output.AppendLine("Date\t\tNew Quantity (change)\t\tNew Value (change)\t\tContract value (for futures)");
             foreach (var history in pool.Section104HistoryList)
             {
                 output.AppendLine(history.PrintToTextFile());
