@@ -1,8 +1,11 @@
 ﻿using Enum;
+
 using Model.Interfaces;
+using Model.UkTaxModel.Stocks;
+
 using System.Text;
 
-namespace Model.UkTaxModel;
+namespace Model.UkTaxModel.Futures;
 
 public record FutureTradeMatch : TradeMatch
 {
@@ -29,7 +32,7 @@ public record FutureTradeMatch : TradeMatch
     /// </summary>
     /// <returns></returns>
     public static FutureTradeMatch CreateTradeMatch(TaxMatchType taxMatchType, decimal qty, WrappedMoney matchDisposalContractValue, WrappedMoney matchAcquisitionContractValue, decimal fxRate,
-        WrappedMoney baseCurrencyTotalDealingExpense, ITradeTaxCalculation? matchedGroup = null)
+                                                    WrappedMoney baseCurrencyTotalDealingExpense, ITradeTaxCalculation? matchedGroup = null)
     {
         WrappedMoney baseCurrencyMatchDisposalValue = WrappedMoney.GetBaseCurrencyZero();
         WrappedMoney baseCurrencyMatchAcquisitionValue = WrappedMoney.GetBaseCurrencyZero();
@@ -51,8 +54,8 @@ public record FutureTradeMatch : TradeMatch
             ClosingFxRate = fxRate,
             MatchDisposalContractValue = matchDisposalContractValue,
             MatchAcquisitionContractValue = matchAcquisitionContractValue,
-            BaseCurrencyMatchAcquisitionValue = baseCurrencyTotalDealingExpense + baseCurrencyMatchAcquisitionValue,
-            BaseCurrencyMatchDisposalValue = baseCurrencyMatchDisposalValue,
+            BaseCurrencyMatchAllowableCost = baseCurrencyTotalDealingExpense + baseCurrencyMatchAcquisitionValue,
+            BaseCurrencyMatchDisposalProceed = baseCurrencyMatchDisposalValue,
             MatchedBuyTrade = matchedGroup
         };
     }

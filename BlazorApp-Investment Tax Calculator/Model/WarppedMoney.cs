@@ -3,7 +3,7 @@
 namespace Model;
 
 [System.Diagnostics.DebuggerDisplay("{ToString()}")]
-public record WrappedMoney : IComparable<WrappedMoney>
+public record WrappedMoney : IComparable<WrappedMoney>, IEquatable<WrappedMoney>
 {
     private Money _nMoney;
     public const string BaseCurrency = "Gbp";
@@ -70,14 +70,12 @@ public record WrappedMoney : IComparable<WrappedMoney>
 
     public WrappedMoney Floor()
     {
-        _nMoney = _nMoney.Floor();
-        return this;
+        return new WrappedMoney(_nMoney.Floor());
     }
 
     public WrappedMoney Ceiling()
     {
-        _nMoney = _nMoney.Ceiling();
-        return this;
+        return new WrappedMoney(_nMoney.Ceiling());
     }
 
     public int CompareTo(WrappedMoney? other)
@@ -86,6 +84,21 @@ public record WrappedMoney : IComparable<WrappedMoney>
         if (Amount > other.Amount) return 1;
         if (Amount < other.Amount) return -1;
         return 0;
+    }
+
+    public virtual bool Equals(WrappedMoney? other)
+    {
+        if (other == null) return false;
+        return Amount == other.Amount && Currency == other.Currency;
+    }
+
+    public override int GetHashCode()
+    {
+        return new
+        {
+            Amount,
+            Currency
+        }.GetHashCode();
     }
 }
 

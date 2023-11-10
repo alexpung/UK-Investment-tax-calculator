@@ -1,35 +1,25 @@
 ﻿namespace UnitTest.Test.Model.UkTaxModel;
 using Enum;
+
 using global::Model;
 using global::Model.Interfaces;
 using global::Model.TaxEvents;
 using global::Model.UkTaxModel;
+using global::Model.UkTaxModel.Stocks;
+
 using Moq;
+
 using Shouldly;
+
 using System;
 using System.Collections.Generic;
+
 using UnitTest.Helper;
+
 using Xunit;
 
 public class UkTradeCalculatorTests
 {
-    [Fact]
-    public void CalculateTax_ClearsSection104Pools()
-    {
-        // Arrange
-        var section104PoolsMock = new Mock<UkSection104Pools>();
-        var tradeListMock = new Mock<ITradeAndCorporateActionList>();
-        tradeListMock.Setup(t => t.Trades).Returns(new List<Trade>());
-        tradeListMock.Setup(t => t.CorporateActions).Returns(new List<CorporateAction>());
-        var calculator = new UkTradeCalculator(section104PoolsMock.Object, tradeListMock.Object);
-
-        // Act
-        calculator.CalculateTax();
-
-        // Assert
-        section104PoolsMock.Verify(p => p.Clear(), Times.Once);
-    }
-
     [Theory]
     [InlineData(TradeType.BUY, TradeType.BUY, 1, 2)]
     [InlineData(TradeType.SELL, TradeType.SELL, 1, 2)]

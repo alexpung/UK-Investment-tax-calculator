@@ -1,9 +1,11 @@
 ﻿using Enum;
+
 using Model.Interfaces;
 using Model.TaxEvents;
+
 using Syncfusion.Blazor.Data;
 
-namespace Model.UkTaxModel;
+namespace Model.UkTaxModel.Stocks;
 
 public class UkTradeCalculator : ITradeCalculator
 {
@@ -18,8 +20,8 @@ public class UkTradeCalculator : ITradeCalculator
 
     public List<ITradeTaxCalculation> CalculateTax()
     {
-        _setion104Pools.Clear();
         Dictionary<string, List<ITradeTaxCalculation>> tradeTaxCalculations = GroupTrade(_tradeList.Trades);
+        // This is a Dict grouped by asset name. For each asset name process all trades.
         foreach (KeyValuePair<string, List<ITradeTaxCalculation>> assetGroup in tradeTaxCalculations)
         {
             IEnumerable<CorporateAction> corporateActions = _tradeList.CorporateActions.Where(i => i.AssetName == assetGroup.Key);
@@ -36,6 +38,7 @@ public class UkTradeCalculator : ITradeCalculator
     private static Dictionary<string, List<ITradeTaxCalculation>> GroupTrade(IEnumerable<Trade> trades)
     {
         var groupedTrade = from trade in trades
+                           where trade.AssetType == AssetCatagoryType.STOCK
                            group trade by new { trade.AssetName, trade.Date.Date, trade.BuySell };
         IEnumerable<ITradeTaxCalculation> groupedTradeCalculations = groupedTrade.Select(group => new TradeTaxCalculation(group)).ToList();
         return groupedTradeCalculations.GroupBy(TradeTaxCalculation => TradeTaxCalculation.TradeList.First().AssetName).ToDictionary(group => group.Key, group => group.ToList());
@@ -48,7 +51,6 @@ public class UkTradeCalculator : ITradeCalculator
     /// <param name="taxEventsInChronologicalOrder"></param>
     private static void ApplySameDayMatchingRule(List<IAssetDatedEvent> taxEventsInChronologicalOrder)
     {
-        // 
         List<CorporateAction> corporateActionsInBetween = new();
         ITradeTaxCalculation? sameDayTrade = null;
         foreach (var taxEvent in taxEventsInChronologicalOrder)
@@ -143,7 +145,7 @@ public class UkTradeCalculator : ITradeCalculator
         ITradeTaxCalculation buyTrade = trade1.BuySell == TradeType.BUY ? trade1 : trade2;
         ITradeTaxCalculation sellTrade = trade1.BuySell == TradeType.SELL ? trade1 : trade2;
         decimal proposedMatchQuantity = Math.Min(trade1.UnmatchedQty, trade2.UnmatchedQty);
-        TradeMatch proposedMatch = TradeMatch.CreateTradeMatch(taxMatchType, proposedMatchQuantity, buyTrade.GetNetAmount(proposedMatchQuantity), sellTrade.GetNetAmount(proposedMatchQuantity),
+        TradeMatch proposedMatch = TradeMatch.CreateTradeMatch(taxMatchType, proposedMatchQuantity, buyTrade.GetProportionedCostOrProceed(proposedMatchQuantity), sellTrade.GetProportionedCostOrProceed(proposedMatchQuantity),
             matchedBuyTrade: buyTrade, matchedSellTrade: sellTrade);
         // trades and the proposed match are handed to each CorporateAction to modify.
         if (corporateActionInBetween is not null)
@@ -169,8 +171,8 @@ public class UkTradeCalculator : ITradeCalculator
             proposedMatch.MatchAcquisitionQty *= adjustRatio;
             proposedMatch.MatchDisposalQty = sellTrade.UnmatchedQty;
         }
-        proposedMatch.BaseCurrencyMatchAcquisitionValue = buyTrade.GetNetAmount(proposedMatch.MatchAcquisitionQty);
-        proposedMatch.BaseCurrencyMatchDisposalValue = sellTrade.GetNetAmount(proposedMatch.MatchDisposalQty);
+        proposedMatch.BaseCurrencyMatchAllowableCost = buyTrade.GetProportionedCostOrProceed(proposedMatch.MatchAcquisitionQty);
+        proposedMatch.BaseCurrencyMatchDisposalProceed = sellTrade.GetProportionedCostOrProceed(proposedMatch.MatchDisposalQty);
         buyTrade.MatchQty(proposedMatch.MatchAcquisitionQty);
         sellTrade.MatchQty(proposedMatch.MatchDisposalQty);
         buyTrade.MatchHistory.Add(proposedMatch);
@@ -203,7 +205,7 @@ public class UkTradeCalculator : ITradeCalculator
                             if (nextTradeToMatch.CalculationCompleted) unmatchedDisposal.Dequeue();
                         }
                     }
-                    section104.MatchTradeWithSection104(tradeTaxCalculation);
+                    tradeTaxCalculation.MatchWithSection104(section104);
                     if (!tradeTaxCalculation.CalculationCompleted && tradeTaxCalculation.BuySell == TradeType.SELL)
                     {
                         unmatchedDisposal.Enqueue(tradeTaxCalculation);

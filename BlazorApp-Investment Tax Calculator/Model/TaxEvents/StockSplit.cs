@@ -1,6 +1,7 @@
 ﻿using Enum;
 using Model.Interfaces;
 using Model.UkTaxModel;
+using Model.UkTaxModel.Stocks;
 
 namespace Model.TaxEvents;
 
@@ -19,12 +20,12 @@ public record StockSplit : CorporateAction, IChangeSection104, IChangeTradeMatch
             if (earlierTrade.BuySell == TradeType.BUY)
             {
                 tradeMatch.MatchAcquisitionQty = tradeMatch.MatchAcquisitionQty * NumberBeforeSplit / NumberAfterSplit;
-                tradeMatch.BaseCurrencyMatchAcquisitionValue = earlierTrade.GetNetAmount(tradeMatch.MatchAcquisitionQty);
+                tradeMatch.BaseCurrencyMatchAllowableCost = earlierTrade.GetProportionedCostOrProceed(tradeMatch.MatchAcquisitionQty);
             }
             else
             {
                 tradeMatch.MatchDisposalQty = tradeMatch.MatchDisposalQty * NumberBeforeSplit / NumberAfterSplit;
-                tradeMatch.BaseCurrencyMatchDisposalValue = earlierTrade.GetNetAmount(tradeMatch.MatchDisposalQty);
+                tradeMatch.BaseCurrencyMatchDisposalProceed = earlierTrade.GetProportionedCostOrProceed(tradeMatch.MatchDisposalQty);
             }
             tradeMatch.AdditionalInformation += $"Stock split occurred at {Date.Date} with ratio of {NumberAfterSplit} for {NumberBeforeSplit}\n";
         }

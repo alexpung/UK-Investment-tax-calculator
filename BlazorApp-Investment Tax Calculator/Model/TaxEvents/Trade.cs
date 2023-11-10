@@ -1,5 +1,8 @@
 ﻿using Enum;
+
 using Model.Interfaces;
+
+using System.Collections.Immutable;
 using System.Text;
 
 namespace Model.TaxEvents;
@@ -11,7 +14,7 @@ public record Trade : TaxEvent, ITextFilePrintable
     public virtual required decimal Quantity { get; set; }
     public virtual required DescribedMoney GrossProceed { get; set; }
     public string Description { get; set; } = string.Empty;
-    public List<DescribedMoney> Expenses { get; set; } = new List<DescribedMoney>();
+    public ImmutableList<DescribedMoney> Expenses { get; init; } = ImmutableList<DescribedMoney>.Empty;
     public virtual WrappedMoney NetProceed
     {
         get
@@ -21,6 +24,13 @@ public record Trade : TaxEvent, ITextFilePrintable
             else return GrossProceed.BaseCurrencyAmount - Expenses.Select(i => i.BaseCurrencyAmount).Sum();
         }
     }
+
+    public decimal RawQuantity => BuySell switch
+    {
+        TradeType.BUY => Quantity,
+        TradeType.SELL => Quantity * -1,
+        _ => throw new NotImplementedException($"Unknown trade type {BuySell}"),
+    };
 
     protected string GetExpensesExplanation()
     {

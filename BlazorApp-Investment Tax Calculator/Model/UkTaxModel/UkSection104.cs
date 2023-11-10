@@ -1,5 +1,4 @@
-﻿using Enum;
-using Model.Interfaces;
+﻿using Model.Interfaces;
 
 namespace Model.UkTaxModel;
 
@@ -7,9 +6,9 @@ public record UkSection104
 {
     public string AssetName { get; init; }
     public decimal Quantity { get; set; }
-    public WrappedMoney AcquisitionCostInBaseCurrency { get; private set; }
+    public WrappedMoney AcquisitionCostInBaseCurrency { get; set; }
     public WrappedMoney TotalContractValue { get; private set; } // Contract value that determine profit and loss but not actually money paid or received e.g. future cotract price
-    public List<Section104History> Section104HistoryList { get; private set; } = new();
+    public List<Section104History> Section104HistoryList { get; set; } = new();
 
     public UkSection104(string name)
     {
@@ -19,53 +18,39 @@ public record UkSection104
         TotalContractValue = WrappedMoney.GetBaseCurrencyZero();
     }
 
-    public void MatchTradeWithSection104(ITradeTaxCalculation tradeTaxCalculation)
+    public void AdjustValues(decimal quantity, WrappedMoney acquisitionCostInBaseCurrency, WrappedMoney? contractValue = null)
     {
-        if (tradeTaxCalculation.BuySell == TradeType.BUY)
+        Quantity += quantity;
+        AcquisitionCostInBaseCurrency += acquisitionCostInBaseCurrency;
+        if (TotalContractValue == WrappedMoney.GetBaseCurrencyZero() && contractValue != null)
         {
-            AddAssets(tradeTaxCalculation);
+            TotalContractValue = contractValue;
         }
-        else if (tradeTaxCalculation.BuySell == TradeType.SELL)
+        else if (contractValue != null)
         {
-            RemoveAssets(tradeTaxCalculation);
+            TotalContractValue += contractValue;
         }
-        else throw new ArgumentException($"Unknown BuySell Type {tradeTaxCalculation.BuySell}");
     }
 
-    private void AddAssets(ITradeTaxCalculation tradeTaxCalculation)
+    public Section104History AddAssets(ITradeTaxCalculation tradeTaxCalculation, decimal addedQuantity, WrappedMoney addedAcquisitionCostInBaseCurrency,
+                                       WrappedMoney? addedContractValue = null)
     {
-        if (tradeTaxCalculation.UnmatchedQty < 0)
-        {
-            throw new ArgumentOutOfRangeException
-                ($"Cannot add assets with negative quantity {tradeTaxCalculation.UnmatchedQty} and value {tradeTaxCalculation.UnmatchedNetMoneyPaidOrReceived}");
-        }
-        (decimal qty, WrappedMoney value) = tradeTaxCalculation.MatchAll();
-        Section104History newSection104History = Section104History.AddToSection104(tradeTaxCalculation, qty, value, Quantity, AcquisitionCostInBaseCurrency);
-        tradeTaxCalculation.MatchHistory.Add(TradeMatch.CreateSection104Match(qty, value, WrappedMoney.GetBaseCurrencyZero(), newSection104History));
+        Section104History newSection104History = Section104History.AdjustSection104(tradeTaxCalculation, addedQuantity, addedAcquisitionCostInBaseCurrency, Quantity,
+                AcquisitionCostInBaseCurrency, TotalContractValue, addedContractValue);
         Section104HistoryList.Add(newSection104History);
-        Quantity += qty;
-        AcquisitionCostInBaseCurrency += value;
+        AdjustValues(addedQuantity, addedAcquisitionCostInBaseCurrency, addedContractValue);
+        return newSection104History;
     }
 
-    private void RemoveAssets(ITradeTaxCalculation tradeTaxCalculation)
+    public Section104History RemoveAssets(ITradeTaxCalculation tradeTaxCalculation, decimal removedQuantity)
     {
-        decimal qty;
-        WrappedMoney disposalValue, acqisitionValue;
-        if (Quantity == 0m) return;
-        if (tradeTaxCalculation.UnmatchedQty <= Quantity)
-        {
-            (qty, disposalValue) = tradeTaxCalculation.MatchAll();
-
-        }
-        else
-        {
-            (qty, disposalValue) = tradeTaxCalculation.MatchQty(Quantity);
-        }
-        acqisitionValue = AcquisitionCostInBaseCurrency * qty / Quantity;
-        Section104History newSection104History = Section104History.RemoveFromSection104(tradeTaxCalculation, qty * -1, acqisitionValue * -1, Quantity, AcquisitionCostInBaseCurrency);
-        tradeTaxCalculation.MatchHistory.Add(TradeMatch.CreateSection104Match(qty, acqisitionValue, disposalValue, newSection104History));
+        WrappedMoney costAdjustment = AcquisitionCostInBaseCurrency * removedQuantity * -1 / Quantity;
+        WrappedMoney contractValueAdjustment = TotalContractValue * removedQuantity * -1 / Quantity;
+        decimal quantityAdjustment = removedQuantity * -1;
+        Section104History newSection104History = Section104History.AdjustSection104(tradeTaxCalculation, quantityAdjustment, costAdjustment, Quantity,
+                AcquisitionCostInBaseCurrency, TotalContractValue, contractValueAdjustment);
         Section104HistoryList.Add(newSection104History);
-        Quantity -= qty;
-        AcquisitionCostInBaseCurrency -= acqisitionValue;
+        AdjustValues(quantityAdjustment, costAdjustment, contractValueAdjustment);
+        return newSection104History;
     }
 }

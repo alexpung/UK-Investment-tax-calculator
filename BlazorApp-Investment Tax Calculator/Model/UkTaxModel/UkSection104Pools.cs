@@ -1,6 +1,4 @@
-﻿using Model.Interfaces;
-
-namespace Model.UkTaxModel;
+﻿namespace Model.UkTaxModel;
 public class UkSection104Pools
 {
     private readonly Dictionary<string, UkSection104> _section104Pools = new();
@@ -29,19 +27,5 @@ public class UkSection104Pools
     public virtual void Clear()
     {
         _section104Pools.Clear();
-    }
-
-    /// <summary>
-    /// Get Section104 history up until the occurrence of the trade calculation group
-    /// </summary>
-    /// <param name="taxCalculation"></param>
-    /// <returns></returns>
-    public List<Section104History> GetHistory(ITradeTaxCalculation taxCalculation)
-    {
-        string assetName = taxCalculation.AssetName;
-        List<Section104History> section104Histories = _section104Pools[assetName].Section104HistoryList;
-        return section104Histories.TakeWhile(i => i.TradeTaxCalculation != taxCalculation)
-                                  .Concat(section104Histories.Where(i => i.TradeTaxCalculation == taxCalculation))
-                                  .ToList();
     }
 }

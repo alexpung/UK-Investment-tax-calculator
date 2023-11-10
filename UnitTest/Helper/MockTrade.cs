@@ -1,8 +1,10 @@
 ﻿using Enum;
+
 using Model;
 using Model.Interfaces;
 using Model.TaxEvents;
-using Model.UkTaxModel;
+using Model.UkTaxModel.Stocks;
+
 using Moq;
 
 namespace UnitTest.Helper;
@@ -12,12 +14,12 @@ public static class MockTrade
     public static Mock<ITradeTaxCalculation> CreateMockITradeTaxCalculation(decimal quantity, decimal value, TradeType tradeType)
     {
         Mock<ITradeTaxCalculation> mockTrade = new();
-        mockTrade.Setup(f => f.MatchAll()).Returns((quantity, new WrappedMoney(value)));
         mockTrade.Setup(f => f.BuySell).Returns(tradeType);
         mockTrade.Setup(f => f.MatchHistory).Returns(new List<TradeMatch>());
         mockTrade.Setup(f => f.UnmatchedQty).Returns(quantity);
+        mockTrade.Setup(f => f.UnmatchedCostOrProceed).Returns(new WrappedMoney(value));
         mockTrade.Setup(f => f.TradeList).Returns(new List<Trade>());
-        mockTrade.Setup(f => f.MatchQty(It.IsAny<decimal>())).Returns<decimal>(x => (x, new WrappedMoney(value * x / quantity)));
+        mockTrade.Setup(f => f.MatchQty(It.IsAny<decimal>()));
         return mockTrade;
     }
 
@@ -30,5 +32,11 @@ public static class MockTrade
         mockTrade.SetupGet(t => t.Quantity).Returns(quantity);
         mockTrade.SetupGet(t => t.NetProceed).Returns(new WrappedMoney(baseCurrencyAmount));
         return mockTrade;
+    }
+
+    public static TradeTaxCalculation CreateTradeTaxCalculation(string assetName, DateTime dateTime, decimal quantity, decimal value, TradeType tradeType)
+    {
+        Mock<Trade> trade = CreateMockTrade(assetName, dateTime, tradeType, quantity, value);
+        return new TradeTaxCalculation(new List<Trade> { trade.Object });
     }
 }

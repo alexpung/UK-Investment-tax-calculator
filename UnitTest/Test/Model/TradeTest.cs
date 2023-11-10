@@ -1,6 +1,9 @@
 using Enum;
+
 using Model;
 using Model.TaxEvents;
+
+using System.Collections.Immutable;
 
 namespace UnitTest.Test.Model;
 
@@ -49,7 +52,7 @@ public class TradeTests
             {
                 new DescribedMoney { Amount = new WrappedMoney(10), Description = "Expense 1" },
                 new DescribedMoney { Amount = new WrappedMoney(20), Description = "Expense 2" }
-            }
+            }.ToImmutableList(),
         };
 
         // Act

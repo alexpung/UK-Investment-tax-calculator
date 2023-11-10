@@ -3,6 +3,7 @@
 @using Syncfusion.Blazor.Grids;
 @using Model.TaxEvents;
 @using Model.UkTaxModel;
+@using Model.UkTaxModel.Stocks;
 
 @inject TradeCalculationResult tradeCalculationResult
 
@@ -35,8 +36,8 @@
                         <GridColumn Field=@nameof(TradeMatch.TradeMatchType) HeaderText="Match Type"> </GridColumn>
                         <GridColumn Field=@nameof(TradeMatch.MatchAcquisitionQty) HeaderText="Match Acquisition Quantity"></GridColumn>
                         <GridColumn Field=@nameof(TradeMatch.MatchDisposalQty) HeaderText="Match Disposal Quantity"></GridColumn>
-                        <GridColumn Field=@nameof(TradeMatch.BaseCurrencyMatchDisposalValue) HeaderText="Match Disposal Value"></GridColumn>
-                        <GridColumn Field=@nameof(TradeMatch.BaseCurrencyMatchAcquisitionValue) HeaderText="Match Acquisition Value"></GridColumn>
+                        <GridColumn Field=@nameof(TradeMatch.BaseCurrencyMatchDisposalProceed) HeaderText="Match Disposal Value"></GridColumn>
+                        <GridColumn Field=@nameof(TradeMatch.BaseCurrencyMatchAllowableCost) HeaderText="Match Acquisition Value"></GridColumn>
                         <GridColumn Field=@nameof(TradeMatch.AdditionalInformation) HeaderText="Additional Information"></GridColumn>
                     </GridColumns>
                 </SfGrid>

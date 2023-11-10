@@ -1,6 +1,9 @@
 ﻿using Enum;
+
 using Model;
 using Model.TaxEvents;
+
+using System.Collections.Immutable;
 using System.Xml.Linq;
 
 namespace Parser.InteractiveBrokersXml;
@@ -57,7 +60,7 @@ public class IBXmlStockTradeParser
         _ => throw new NotImplementedException($"Unrecognised trade type {element.GetAttribute("buySell")}")
     };
 
-    private static List<DescribedMoney> BuildExpenses(XElement element)
+    private static ImmutableList<DescribedMoney> BuildExpenses(XElement element)
     {
         List<DescribedMoney> expenses = new();
         if (element.GetAttribute("ibCommission") != "0")
@@ -68,6 +71,6 @@ public class IBXmlStockTradeParser
         {
             expenses.Add(element.BuildDescribedMoney("taxes", "currency", "fxRateToBase", "Tax", true));
         }
-        return expenses;
+        return expenses.ToImmutableList();
     }
 }

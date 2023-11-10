@@ -1,5 +1,7 @@
 ﻿using Model.Interfaces;
+
 using Services;
+
 using System.Text;
 
 namespace Model.UkTaxModel;
@@ -9,11 +11,14 @@ public class Section104History : ITextFilePrintable
     public DateTime Date { get; set; }
     public decimal OldQuantity { get; set; }
     public WrappedMoney OldValue { get; set; } = WrappedMoney.GetBaseCurrencyZero();
+    public WrappedMoney OldContractValue { get; set; } = WrappedMoney.GetBaseCurrencyZero();
     public decimal QuantityChange { get; set; }
     public WrappedMoney ValueChange { get; set; } = WrappedMoney.GetBaseCurrencyZero();
+    public WrappedMoney ContractValueChange { get; set; } = WrappedMoney.GetBaseCurrencyZero();
     public string Explanation { get; set; } = string.Empty;
 
-    public static Section104History AddToSection104(ITradeTaxCalculation tradeTaxCalculation, decimal quantityChange, WrappedMoney valueChange, decimal oldQuantity, WrappedMoney oldValue)
+    public static Section104History AdjustSection104(ITradeTaxCalculation tradeTaxCalculation, decimal quantityChange, WrappedMoney valueChange, decimal oldQuantity,
+                                                    WrappedMoney oldValue, WrappedMoney? oldContractValue = null, WrappedMoney? contractValueChange = null)
     {
         return new Section104History
         {
@@ -23,19 +28,8 @@ public class Section104History : ITextFilePrintable
             TradeTaxCalculation = tradeTaxCalculation,
             OldQuantity = oldQuantity,
             OldValue = oldValue,
-        };
-    }
-
-    public static Section104History RemoveFromSection104(ITradeTaxCalculation tradeTaxCalculation, decimal quantityChange, WrappedMoney valueChange, decimal oldQuantity, WrappedMoney oldValue)
-    {
-        return new Section104History
-        {
-            Date = tradeTaxCalculation.Date,
-            QuantityChange = quantityChange,
-            ValueChange = valueChange,
-            TradeTaxCalculation = tradeTaxCalculation,
-            OldQuantity = oldQuantity,
-            OldValue = oldValue,
+            OldContractValue = oldContractValue is null ? WrappedMoney.GetBaseCurrencyZero() : oldContractValue,
+            ContractValueChange = contractValueChange is null ? WrappedMoney.GetBaseCurrencyZero() : contractValueChange,
         };
     }
 
@@ -53,8 +47,16 @@ public class Section104History : ITextFilePrintable
     public string PrintToTextFile()
     {
         StringBuilder output = new();
-        output.AppendLine($"{Date.ToShortDateString()}\t{OldQuantity + QuantityChange} ({QuantityChange.ToSignedNumberString()})\t\t\t" +
-            $"{OldValue + ValueChange} ({ValueChange.ToSignedNumberString()})\t\t");
+        string contractValueString;
+        contractValueString = (OldContractValue.Amount, ContractValueChange.Amount) switch
+        {
+            (0, 0) => "",
+            (0, not 0) => $"{ContractValueChange} ({ContractValueChange.ToSignedNumberString()})",
+            (not 0, not 0) => $"{OldContractValue + ContractValueChange} ({ContractValueChange.ToSignedNumberString()})",
+        };
+        output.AppendLine($"{Date.ToShortDateString()}\t{OldQuantity + QuantityChange} ({QuantityChange.ToSignedNumberString()})\t\t\t\t" +
+            $"{OldValue + ValueChange} ({ValueChange.ToSignedNumberString()})\t\t\t" +
+            contractValueString);
         if (Explanation != string.Empty)
         {
             output.AppendLine($"{Explanation}");
