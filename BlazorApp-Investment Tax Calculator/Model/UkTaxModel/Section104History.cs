@@ -47,9 +47,16 @@ public class Section104History : ITextFilePrintable
     public string PrintToTextFile()
     {
         StringBuilder output = new();
-        output.AppendLine($"{Date.ToShortDateString()}\t{OldQuantity + QuantityChange} ({QuantityChange.ToSignedNumberString()})\t\t\t" +
+        string contractValueString;
+        contractValueString = (OldContractValue.Amount, ContractValueChange.Amount) switch
+        {
+            (0, 0) => "",
+            (0, not 0) => $"{ContractValueChange} ({ContractValueChange.ToSignedNumberString()})",
+            (not 0, not 0) => $"{OldContractValue + ContractValueChange} ({ContractValueChange.ToSignedNumberString()})",
+        };
+        output.AppendLine($"{Date.ToShortDateString()}\t{OldQuantity + QuantityChange} ({QuantityChange.ToSignedNumberString()})\t\t\t\t" +
             $"{OldValue + ValueChange} ({ValueChange.ToSignedNumberString()})\t\t\t" +
-            $"{OldContractValue + ContractValueChange} ({ContractValueChange.ToSignedNumberString()})");
+            contractValueString);
         if (Explanation != string.Empty)
         {
             output.AppendLine($"{Explanation}");
