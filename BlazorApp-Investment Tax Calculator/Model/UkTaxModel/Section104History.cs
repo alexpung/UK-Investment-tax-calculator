@@ -52,7 +52,7 @@ public class Section104History : ITextFilePrintable
         {
             (0, 0) => "",
             (0, not 0) => $"{ContractValueChange} ({ContractValueChange.ToSignedNumberString()})",
-            (not 0, not 0) => $"{OldContractValue + ContractValueChange} ({ContractValueChange.ToSignedNumberString()})",
+            (not 0, _) => $"{OldContractValue + ContractValueChange} ({ContractValueChange.ToSignedNumberString()})",
         };
         output.AppendLine($"{Date.ToShortDateString()}\t{OldQuantity + QuantityChange} ({QuantityChange.ToSignedNumberString()})\t\t\t\t" +
             $"{OldValue + ValueChange} ({ValueChange.ToSignedNumberString()})\t\t\t" +
