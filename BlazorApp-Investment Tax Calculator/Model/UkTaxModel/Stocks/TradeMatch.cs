@@ -22,25 +22,16 @@ public record TradeMatch : ITextFilePrintable
     public string AdditionalInformation { get; set; } = string.Empty;
     public Section104History? Section104HistorySnapshot { get; set; }
 
-    protected TradeMatch() { }
-
-    public static TradeMatch CreateSection104Match(decimal qty, WrappedMoney acqisitionValue, WrappedMoney disposalValue, Section104History section104History)
-    {
-        TradeMatch tradeMatch = CreateTradeMatch(TaxMatchType.SECTION_104, qty, acqisitionValue, disposalValue);
-        tradeMatch.Section104HistorySnapshot = section104History;
-        return tradeMatch;
-    }
-
-    public static TradeMatch CreateTradeMatch(TaxMatchType taxMatchType, decimal qty, WrappedMoney acqisitionValue, WrappedMoney disposalValue, ITradeTaxCalculation? matchedSellTrade = null,
-        ITradeTaxCalculation? matchedBuyTrade = null, string additionalInfo = "")
+    public static TradeMatch CreateTradeMatch(TaxMatchType taxMatchType, decimal qty, WrappedMoney baseCurrencyMatchAllowableCost, WrappedMoney baseCurrencyMatchDisposalProceed,
+        ITradeTaxCalculation? matchedSellTrade = null, ITradeTaxCalculation? matchedBuyTrade = null, string additionalInfo = "")
     {
         return new()
         {
             TradeMatchType = taxMatchType,
             MatchAcquisitionQty = qty,
             MatchDisposalQty = qty,
-            BaseCurrencyMatchAllowableCost = acqisitionValue,
-            BaseCurrencyMatchDisposalProceed = disposalValue,
+            BaseCurrencyMatchAllowableCost = baseCurrencyMatchAllowableCost,
+            BaseCurrencyMatchDisposalProceed = baseCurrencyMatchDisposalProceed,
             MatchedBuyTrade = matchedBuyTrade,
             MatchedSellTrade = matchedSellTrade,
             AdditionalInformation = additionalInfo
@@ -53,14 +44,16 @@ public record TradeMatch : ITextFilePrintable
         if (TradeMatchType == TaxMatchType.SECTION_104)
         {
             output.AppendLine($"At time of disposal, section 104 contains {Section104HistorySnapshot!.OldQuantity} units with value {Section104HistorySnapshot.OldValue}");
-            output.AppendLine($"Section 104: Matched {MatchDisposalQty} units of the disposal trade against the section 104 pool. Acquisition cost is {BaseCurrencyMatchAllowableCost}");
+            output.AppendLine($"Section 104: Matched {MatchDisposalQty} units of the disposal trade against the section 104 pool. " +
+                $"Acquisition cost is {BaseCurrencyMatchAllowableCost}");
             output.AppendLine($"Gain for this match is {BaseCurrencyMatchDisposalProceed} - {BaseCurrencyMatchAllowableCost} " +
                                 $"= {BaseCurrencyMatchDisposalProceed - BaseCurrencyMatchAllowableCost}");
             if (!string.IsNullOrEmpty(AdditionalInformation)) output.AppendLine(AdditionalInformation);
         }
         else
         {
-            output.AppendLine($"{ToPrintedString(TradeMatchType)}: {MatchAcquisitionQty} units of the acquisition trade against {MatchDisposalQty} units of the disposal trade. Acquisition cost is {BaseCurrencyMatchAllowableCost}");
+            output.AppendLine($"{ToPrintedString(TradeMatchType)}: {MatchAcquisitionQty} units of the acquisition trade against {MatchDisposalQty} units of the disposal trade. " +
+                $"Acquisition cost is {BaseCurrencyMatchAllowableCost}");
             output.AppendLine($"Matched trade: {string.Join("\n", MatchedBuyTrade!.TradeList.Select(trade => trade.PrintToTextFile()))}");
             output.AppendLine($"Gain for this match is {BaseCurrencyMatchDisposalProceed} - {BaseCurrencyMatchAllowableCost} " +
                                 $"= {BaseCurrencyMatchDisposalProceed - BaseCurrencyMatchAllowableCost}");

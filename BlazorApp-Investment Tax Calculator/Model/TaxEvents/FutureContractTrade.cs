@@ -49,7 +49,7 @@ public record FutureContractTrade : Trade
             _ => throw new NotImplementedException()
         };
         return $"{action} {Quantity} unit(s) of {AssetName} on {Date:dd-MMM-yyyy HH:mm} with contract value {ContractValue.Amount} " +
-            $"with total expense {Expenses.Sum(expenses => expenses.BaseCurrencyAmount)}, {netExplanation}"
+            $"with total expense {Expenses.Sum(expenses => expenses.BaseCurrencyAmount)}"
             + GetExpensesExplanation();
     }
 }

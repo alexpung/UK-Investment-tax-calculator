@@ -2,6 +2,8 @@
 
 using Model.UkTaxModel.Stocks;
 
+using System.Text;
+
 using TaxEvents;
 
 namespace Model.UkTaxModel.Futures;
@@ -38,10 +40,27 @@ public class FutureTradeTaxCalculation : TradeTaxCalculation
 
     public override void MatchWithSection104(UkSection104 ukSection104)
     {
+        if (CalculationCompleted) return;
         if (BuySell is TradeType.BUY)
         {
             Section104History section104History = ukSection104.AddAssets(this, UnmatchedQty, UnmatchedCostOrProceed, UnmatchedContractValue);
-            MatchHistory.Add(TradeMatch.CreateSection104Match(UnmatchedQty, UnmatchedCostOrProceed, WrappedMoney.GetBaseCurrencyZero(), section104History));
+            FutureTradeMatch tradeMatch = new()
+            {
+                TradeMatchType = TaxMatchType.SECTION_104,
+                MatchAcquisitionQty = UnmatchedQty,
+                MatchDisposalQty = 0,
+                BaseCurrencyMatchAllowableCost = UnmatchedCostOrProceed,
+                BaseCurrencyMatchDisposalProceed = WrappedMoney.GetBaseCurrencyZero(),
+                MatchedBuyTrade = null,
+                MatchedSellTrade = null,
+                AdditionalInformation = "",
+                MatchAcquisitionContractValue = UnmatchedContractValue,
+                BaseCurrencyAcqusitionDealingCost = UnmatchedCostOrProceed,
+                BaseCurrencyDisposalDealingCost = WrappedMoney.GetBaseCurrencyZero(),
+                ClosingFxRate = 0,
+                Section104HistorySnapshot = section104History,
+            };
+            MatchHistory.Add(tradeMatch);
             MatchQty(UnmatchedQty);
         }
         else if (BuySell is TradeType.SELL)
@@ -61,8 +80,49 @@ public class FutureTradeTaxCalculation : TradeTaxCalculation
             {
                 acquisitionValue += contractGainInBaseCurrency * -1;
             }
-            MatchHistory.Add(TradeMatch.CreateSection104Match(matchQty, acquisitionValue, disposalValue, section104History));
+            FutureTradeMatch tradeMatch = new()
+            {
+                TradeMatchType = TaxMatchType.SECTION_104,
+                MatchAcquisitionQty = matchQty,
+                MatchDisposalQty = matchQty,
+                BaseCurrencyMatchAllowableCost = acquisitionValue,
+                BaseCurrencyMatchDisposalProceed = disposalValue,
+                MatchedBuyTrade = null,
+                MatchedSellTrade = null,
+                AdditionalInformation = "",
+                MatchAcquisitionContractValue = section104History.ContractValueChange * -1,
+                MatchDisposalContractValue = GetProportionedContractValue(matchQty),
+                BaseCurrencyAcqusitionDealingCost = section104History.ValueChange * -1,
+                BaseCurrencyDisposalDealingCost = GetProportionedCostOrProceed(matchQty),
+                ClosingFxRate = ContractFxRate,
+                Section104HistorySnapshot = section104History,
+            };
+            MatchHistory.Add(tradeMatch);
             MatchQty(matchQty);
         }
+    }
+
+    public override string PrintToTextFile()
+    {
+        StringBuilder output = new();
+        output.Append($"{PositionType.GetDescription()} {TotalQty} units of {AssetName} on " +
+            $"{Date.Date.ToString("dd-MMM-yyyy")}.\t");
+        output.AppendLine($"Total gain (loss): {Gain}");
+        output.AppendLine($"Trade details:");
+        foreach (var trade in TradeList)
+        {
+            output.AppendLine($"\t{trade.PrintToTextFile()}");
+        }
+        output.AppendLine($"Trade matching:");
+        foreach (var matching in MatchHistory)
+        {
+            output.AppendLine(matching.PrintToTextFile());
+        }
+        if (MatchHistory.Count > 2)
+        {
+            output.AppendLine($"Resulting overall gain for this disposal: {GetSumFormula(MatchHistory.Select(match => match.MatchGain))}");
+        }
+        output.AppendLine();
+        return output.ToString();
     }
 }

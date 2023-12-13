@@ -71,7 +71,16 @@ public class TradeTaxCalculation : ITradeTaxCalculation
         if (BuySell is TradeType.BUY)
         {
             Section104History section104History = ukSection104.AddAssets(this, UnmatchedQty, UnmatchedCostOrProceed);
-            MatchHistory.Add(TradeMatch.CreateSection104Match(UnmatchedQty, UnmatchedCostOrProceed, WrappedMoney.GetBaseCurrencyZero(), section104History));
+            MatchHistory.Add(
+                new TradeMatch()
+                {
+                    TradeMatchType = TaxMatchType.SECTION_104,
+                    MatchAcquisitionQty = UnmatchedQty,
+                    MatchDisposalQty = UnmatchedQty,
+                    BaseCurrencyMatchAllowableCost = UnmatchedCostOrProceed,
+                    BaseCurrencyMatchDisposalProceed = WrappedMoney.GetBaseCurrencyZero(),
+                    Section104HistorySnapshot = section104History
+                });
             MatchQty(UnmatchedQty);
         }
         else if (BuySell is TradeType.SELL)
@@ -79,7 +88,16 @@ public class TradeTaxCalculation : ITradeTaxCalculation
             if (ukSection104.Quantity == 0m) return;
             decimal matchQty = Math.Min(UnmatchedQty, ukSection104.Quantity);
             Section104History section104History = ukSection104.RemoveAssets(this, matchQty);
-            MatchHistory.Add(TradeMatch.CreateSection104Match(matchQty, section104History.ValueChange * -1, GetProportionedCostOrProceed(matchQty), section104History));
+            MatchHistory.Add(
+                new TradeMatch()
+                {
+                    TradeMatchType = TaxMatchType.SECTION_104,
+                    MatchAcquisitionQty = matchQty,
+                    MatchDisposalQty = matchQty,
+                    BaseCurrencyMatchAllowableCost = section104History.ValueChange * -1,
+                    BaseCurrencyMatchDisposalProceed = GetProportionedCostOrProceed(matchQty),
+                    Section104HistorySnapshot = section104History
+                });
             MatchQty(matchQty);
         }
     }
@@ -89,14 +107,14 @@ public class TradeTaxCalculation : ITradeTaxCalculation
         > 0 => $"{UnmatchedQty} units of disposals are not matched (short sale).",
         _ => throw new NotImplementedException()
     };
-    private static string GetSumFormula(IEnumerable<WrappedMoney> moneyNumbers)
+    protected static string GetSumFormula(IEnumerable<WrappedMoney> moneyNumbers)
     {
         WrappedMoney sum = moneyNumbers.Sum();
         string formula = string.Join(" ", moneyNumbers.Select(n => n.Amount >= 0 ? $"+ {n}" : $"- {-n}")).TrimStart('+', ' ') + " = " + sum;
         return formula;
     }
 
-    public string PrintToTextFile()
+    public virtual string PrintToTextFile()
     {
         StringBuilder output = new();
         output.Append($"Sold {TotalQty} units of {AssetName} on " +
