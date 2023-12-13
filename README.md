@@ -28,6 +28,7 @@ https://github.com/alexpung/UK-Investment-tax-calculator/tree/master/BlazorApp-I
 ### Parsed trade type:
 1. Trades:
     1. Stock orders
+    2. Future contracts (closed, not settled)
 2. Dividend income
     1. Dividend cash income
     2. Witholding tax paid
@@ -37,9 +38,8 @@ https://github.com/alexpung/UK-Investment-tax-calculator/tree/master/BlazorApp-I
 4. View trade calculations and dividend data in a table 
 
 #### Pending implementation
-FX, Futures (not sure if I want to handle delivery calculation.....)  
+FX  
 More corporate actions  
-Viewing imported trade and flattened trade matching details in tables.
 Add missing trade and export it.  
 Tests and feedback are welcome, bugs are to be expected.  
 
