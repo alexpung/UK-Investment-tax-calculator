@@ -2,8 +2,19 @@
 <FlexStatements count="1">
 <FlexStatement accountId="TestAccount" fromDate="04-Jan-21" toDate="31-Dec-21" period="Last365CalendarDays" whenGenerated="01-Jan-22 00:00:00">
 <Trades>
-<Order currency="JPY" fxRateToBase="0.006" assetCategory="FUT" symbol="NIYH3" description="NIY 10MAR23" dateTime="07-Mar-23 12:34:56" quantity="-2" proceeds="29000000" taxes="0" ibCommission="-700" ibCommissionCurrency="JPY" buySell="SELL" levelOfDetail="ORDER"/>
 <Order currency="JPY" fxRateToBase="0.006" assetCategory="FUT" symbol="NIYH3" description="NIY 10MAR23" dateTime="05-Mar-23 12:34:56" quantity="2" proceeds="-27000000" taxes="0" ibCommission="-700" ibCommissionCurrency="JPY" buySell="BUY" levelOfDetail="ORDER"/>
+<Order currency="JPY" fxRateToBase="0.006" assetCategory="FUT" symbol="NIYH3" description="NIY 10MAR23" dateTime="07-Mar-23 12:34:56" quantity="-2" proceeds="29000000" taxes="0" ibCommission="-800" ibCommissionCurrency="JPY" buySell="SELL" levelOfDetail="ORDER"/>
+
+
+<Order currency="JPY" fxRateToBase="0.008" assetCategory="FUT" symbol="NIYH4" description="NIY 12MAR23" dateTime="05-Mar-23 12:34:56" quantity="-2" proceeds="27000000" taxes="0" ibCommission="-700" ibCommissionCurrency="JPY" buySell="SELL" levelOfDetail="ORDER"/>
+<Order currency="JPY" fxRateToBase="0.007" assetCategory="FUT" symbol="NIYH4" description="NIY 12MAR23" dateTime="05-Mar-23 12:35:56" quantity="2" proceeds="-31000000" taxes="0" ibCommission="-900" ibCommissionCurrency="JPY" buySell="BUY" levelOfDetail="ORDER"/>
+
+<Order currency="JPY" fxRateToBase="0.01" assetCategory="FUT" symbol="NIYH5" description="NIY 14MAR23" dateTime="05-Mar-23 12:34:56" quantity="2" proceeds="-27000000" taxes="0" ibCommission="-700" ibCommissionCurrency="JPY" buySell="BUY" levelOfDetail="ORDER"/>
+<Order currency="JPY" fxRateToBase="0.009" assetCategory="FUT" symbol="NIYH5" description="NIY 14MAR23" dateTime="07-Mar-23 12:34:56" quantity="-2" proceeds="29000000" taxes="0" ibCommission="-500" ibCommissionCurrency="JPY" buySell="SELL" levelOfDetail="ORDER"/>
+<Order currency="JPY" fxRateToBase="0.009" assetCategory="FUT" symbol="NIYH5" description="NIY 14MAR23" dateTime="09-Mar-23 12:34:56" quantity="2" proceeds="-25000000" taxes="0" ibCommission="-800" ibCommissionCurrency="JPY" buySell="BUY" levelOfDetail="ORDER"/>
+
+<Order currency="JPY" fxRateToBase="0.006" assetCategory="FUT" symbol="NIYH6" description="NIY 15MAR23" dateTime="05-Mar-23 12:34:56" quantity="2" proceeds="-27000000" taxes="0" ibCommission="-700" ibCommissionCurrency="JPY" buySell="BUY" levelOfDetail="ORDER"/>
+<Order currency="JPY" fxRateToBase="0.006" assetCategory="FUT" symbol="NIYH6" description="NIY 15MAR23" dateTime="07-Mar-23 12:34:56" quantity="-2" proceeds="20000000" taxes="0" ibCommission="-800" ibCommissionCurrency="JPY" buySell="SELL" levelOfDetail="ORDER"/>
 </Trades>
 </FlexStatement>
 </FlexStatements>
