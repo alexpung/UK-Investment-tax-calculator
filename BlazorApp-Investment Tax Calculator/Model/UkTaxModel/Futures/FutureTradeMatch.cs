@@ -26,7 +26,7 @@ public record FutureTradeMatch : TradeMatch
             >= 0 => $"Payment received to close the contract as gain is ({MatchDisposalContractValue} - {MatchAcquisitionContractValue}) * {ClosingFxRate} = {BaseCurrencyContractValueGain}," +
             $" added to disposal proceed."
         };
-        string gainCalculationFormula = $"({BaseCurrencyContractValueGain} - {BaseCurrencyTotalDealingExpense} ";
+        string gainCalculationFormula = $"{BaseCurrencyContractValueGain} - {BaseCurrencyTotalDealingExpense} ";
         if (TradeMatchType == TaxMatchType.SECTION_104)
         {
             output.AppendLine($"At time of disposal, section 104 contains {Section104HistorySnapshot!.OldQuantity} units with contract value {Section104HistorySnapshot.OldContractValue}");
@@ -34,7 +34,7 @@ public record FutureTradeMatch : TradeMatch
                 $"and disposal contract value {MatchDisposalContractValue}, proportioned dealing cost is {BaseCurrencyAcqusitionDealingCost}");
             output.AppendLine(paymentForContractGainOrLoss);
             output.AppendLine($"Total dealing cost is {BaseCurrencyTotalDealingExpense}");
-            output.AppendLine($"Gain for this match is ({gainCalculationFormula} = {BaseCurrencyContractValueGain - BaseCurrencyTotalDealingExpense}");
+            output.AppendLine($"Gain for this match is {gainCalculationFormula} = {BaseCurrencyContractValueGain - BaseCurrencyTotalDealingExpense}");
             output.AppendLine();
         }
         else
