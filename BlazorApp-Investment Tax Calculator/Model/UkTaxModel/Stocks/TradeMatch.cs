@@ -22,14 +22,6 @@ public record TradeMatch : ITextFilePrintable
     public string AdditionalInformation { get; set; } = string.Empty;
     public Section104History? Section104HistorySnapshot { get; set; }
 
-    public static TradeMatch CreateSection104Match(decimal qty, WrappedMoney baseCurrencyMatchAllowableCost, WrappedMoney baseCurrencyMatchDisposalProceed,
-        Section104History section104History)
-    {
-        TradeMatch tradeMatch = CreateTradeMatch(TaxMatchType.SECTION_104, qty, baseCurrencyMatchAllowableCost, baseCurrencyMatchDisposalProceed);
-        tradeMatch.Section104HistorySnapshot = section104History;
-        return tradeMatch;
-    }
-
     public static TradeMatch CreateTradeMatch(TaxMatchType taxMatchType, decimal qty, WrappedMoney baseCurrencyMatchAllowableCost, WrappedMoney baseCurrencyMatchDisposalProceed,
         ITradeTaxCalculation? matchedSellTrade = null, ITradeTaxCalculation? matchedBuyTrade = null, string additionalInfo = "")
     {

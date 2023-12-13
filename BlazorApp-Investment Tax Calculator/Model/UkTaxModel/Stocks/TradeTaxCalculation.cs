@@ -107,14 +107,14 @@ public class TradeTaxCalculation : ITradeTaxCalculation
         > 0 => $"{UnmatchedQty} units of disposals are not matched (short sale).",
         _ => throw new NotImplementedException()
     };
-    private static string GetSumFormula(IEnumerable<WrappedMoney> moneyNumbers)
+    protected static string GetSumFormula(IEnumerable<WrappedMoney> moneyNumbers)
     {
         WrappedMoney sum = moneyNumbers.Sum();
         string formula = string.Join(" ", moneyNumbers.Select(n => n.Amount >= 0 ? $"+ {n}" : $"- {-n}")).TrimStart('+', ' ') + " = " + sum;
         return formula;
     }
 
-    public string PrintToTextFile()
+    public virtual string PrintToTextFile()
     {
         StringBuilder output = new();
         output.Append($"Sold {TotalQty} units of {AssetName} on " +

@@ -2,7 +2,6 @@
 
 using Model.Interfaces;
 using Model.TaxEvents;
-using Model.UkTaxModel.Stocks;
 
 using Syncfusion.Blazor.Data;
 
@@ -185,7 +184,7 @@ public class UkFutureTradeCalculator : ITradeCalculator
     {
         decimal matchQty = Math.Min(openTrade.UnmatchedQty, closeTrade.UnmatchedQty);
         WrappedMoney contractGain = closeTrade.GetProportionedContractValue(matchQty) - openTrade.GetProportionedContractValue(matchQty);
-        WrappedMoney contractGainInBaseCurrency = new WrappedMoney((contractGain * closeTrade.ContractFxRate).Amount);
+        WrappedMoney contractGainInBaseCurrency = new((contractGain * closeTrade.ContractFxRate).Amount);
         WrappedMoney allowableCost = openTrade.GetProportionedCostOrProceed(matchQty) + closeTrade.GetProportionedCostOrProceed(matchQty);
         WrappedMoney disposalProceed = WrappedMoney.GetBaseCurrencyZero();
         if (contractGainInBaseCurrency.Amount < 0)
@@ -196,7 +195,22 @@ public class UkFutureTradeCalculator : ITradeCalculator
         {
             disposalProceed += contractGainInBaseCurrency;
         }
-        TradeMatch match = TradeMatch.CreateTradeMatch(taxMatchType, matchQty, allowableCost, disposalProceed, closeTrade, openTrade);
+        FutureTradeMatch match = new()
+        {
+            TradeMatchType = taxMatchType,
+            MatchAcquisitionQty = matchQty,
+            MatchDisposalQty = matchQty,
+            BaseCurrencyMatchAllowableCost = allowableCost,
+            BaseCurrencyMatchDisposalProceed = disposalProceed,
+            MatchedBuyTrade = openTrade,
+            MatchedSellTrade = closeTrade,
+            AdditionalInformation = "",
+            MatchAcquisitionContractValue = openTrade.GetProportionedContractValue(matchQty),
+            MatchDisposalContractValue = closeTrade.GetProportionedContractValue(matchQty),
+            BaseCurrencyAcqusitionDealingCost = openTrade.GetProportionedCostOrProceed(matchQty),
+            BaseCurrencyDisposalDealingCost = closeTrade.GetProportionedCostOrProceed(matchQty),
+            ClosingFxRate = closeTrade.ContractFxRate
+        };
         openTrade.MatchHistory.Add(match);
         closeTrade.MatchHistory.Add(match);
         openTrade.MatchQty(match.MatchAcquisitionQty);
