@@ -42,9 +42,47 @@ public class UkTradeCalculatorTest2FutureTrade
             ContractValue = new() { Amount = new WrappedMoney(1200000, "JPY"), FxRate = 0.007m }
         };
         List<ITradeTaxCalculation> result = TradeCalculationHelper.CalculateTrades(new List<Trade>() { trade1, trade2 }, out UkSection104Pools section104Pools);
-        result[1].Gain.ShouldBe(new WrappedMoney(1398m)); // payment received: (1200000 - 1000000) * 0.007 = 1400. Gain = 1400 - 2 = 1398.
-        result[1].TotalAllowableCost.ShouldBe(new WrappedMoney(2m)); // (100 * 0.006) + (200 * 0.007)
+        result[1].Gain.ShouldBe(new WrappedMoney(-1402m)); // payment received: (1000000 - 1200000) * 0.007 = -1400. Gain = -1400 - 2 = -1402.
+        result[1].TotalAllowableCost.ShouldBe(new WrappedMoney(1402m)); // same as the loss
+        result[1].TotalProceeds.ShouldBe(new WrappedMoney(0m));
         result[1].MatchHistory[0].TradeMatchType.ShouldBe(TaxMatchType.SECTION_104); // The sell trade is an OPEN trade, it is an acquisition of a short contract position
+        section104Pools.GetExistingOrInitialise("DEF Future").AcquisitionCostInBaseCurrency.ShouldBe(WrappedMoney.GetBaseCurrencyZero());
+        section104Pools.GetExistingOrInitialise("DEF Future").Quantity.ShouldBe(0);
+    }
+
+
+    [Fact]
+    public void TestShortFutureContractSameDay()
+    {
+        // Open short position
+        FutureContractTrade trade1 = new()
+        {
+            AssetName = "DEF Future",
+            BuySell = TradeType.SELL,
+            Date = DateTime.Parse("05-May-21 12:34:56"),
+            Description = "DEF Example Future",
+            Quantity = 100,
+            Expenses = ImmutableList.Create(new DescribedMoney() { Description = "Commission", Amount = new(100m, "JPY"), FxRate = 0.006m }),
+            GrossProceed = new() { Amount = WrappedMoney.GetBaseCurrencyZero() },
+            ContractValue = new() { Amount = new WrappedMoney(1000000, "JPY"), FxRate = 0.006m }
+        };
+        // Close short position
+        FutureContractTrade trade2 = new()
+        {
+            AssetName = "DEF Future",
+            BuySell = TradeType.BUY,
+            Date = DateTime.Parse("05-May-21 13:34:56"),
+            Description = "DEF Example Future",
+            Quantity = 100,
+            Expenses = ImmutableList.Create(new DescribedMoney() { Description = "Commission", Amount = new(200m, "JPY"), FxRate = 0.007m }),
+            GrossProceed = new() { Amount = WrappedMoney.GetBaseCurrencyZero() },
+            ContractValue = new() { Amount = new WrappedMoney(1200000, "JPY"), FxRate = 0.007m }
+        };
+        List<ITradeTaxCalculation> result = TradeCalculationHelper.CalculateTrades(new List<Trade>() { trade1, trade2 }, out UkSection104Pools section104Pools);
+        result[1].Gain.ShouldBe(new WrappedMoney(-1402m)); // payment received: (1000000 - 1200000) * 0.007 = -1400. Gain = -1400 - 2 = -1402.
+        result[1].TotalAllowableCost.ShouldBe(new WrappedMoney(1402m)); // same as the loss
+        result[1].TotalProceeds.ShouldBe(new WrappedMoney(0m));
+        result[1].MatchHistory[0].TradeMatchType.ShouldBe(TaxMatchType.SAME_DAY); // The sell trade is an OPEN trade, it is an acquisition of a short contract position
         section104Pools.GetExistingOrInitialise("DEF Future").AcquisitionCostInBaseCurrency.ShouldBe(WrappedMoney.GetBaseCurrencyZero());
         section104Pools.GetExistingOrInitialise("DEF Future").Quantity.ShouldBe(0);
     }

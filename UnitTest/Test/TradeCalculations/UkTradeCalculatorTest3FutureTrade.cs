@@ -112,9 +112,9 @@ public class UkTradeCalculatorTest3FutureTrade
         result[2].TotalAllowableCost.Amount.ShouldBe(1.075m, 0.01m); // 150 * 0.0075 * (50/150) + 100 * 0.007 = 1.075
         result[2].TotalProceeds.Amount.ShouldBe(250m, 0.01m); // (1600000 * 50/150 - 500,000) * 0.0075 = 250
         result[2].MatchHistory[0].TradeMatchType.ShouldBe(TaxMatchType.SAME_DAY);
-        result[3].Gain.Amount.ShouldBe(-534.48m, 0.01m); // (1000000 - 100/150 * 1600000) * 0.008 - 50 * 0.008 - (100/150) * 150 * 0.0075
-        result[3].TotalAllowableCost.Amount.ShouldBe(534.48m, 0.01m); // Same as loss above
-        result[3].TotalProceeds.Amount.ShouldBe(0); // No proceeds from a loss-making future contract sale
+        result[3].Gain.Amount.ShouldBe(532.18m, 0.01m); // (100/150 * 1600000 - 1000000) * 0.008 - 50 * 0.008 - (100/150) * 150 * 0.0075
+        result[3].TotalAllowableCost.Amount.ShouldBe(1.15m, 0.01m); // 50 * 0.008 + (100/150) * 150 * 0.0075
+        result[3].TotalProceeds.Amount.ShouldBe(533.33m, 0.01m); // (100/150 * 1600000 - 1000000) * 0.008
         result[3].MatchHistory[0].TradeMatchType.ShouldBe(TaxMatchType.SECTION_104); // not bed and breakfast. An open short position is closed
     }
 }

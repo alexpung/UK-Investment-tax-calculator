@@ -54,7 +54,7 @@ public class FutureTradeTaxCalculation : TradeTaxCalculation
                 MatchedBuyTrade = null,
                 MatchedSellTrade = null,
                 AdditionalInformation = "",
-                MatchAcquisitionContractValue = UnmatchedContractValue,
+                MatchBuyContractValue = UnmatchedContractValue,
                 BaseCurrencyAcqusitionDealingCost = UnmatchedCostOrProceed,
                 BaseCurrencyDisposalDealingCost = WrappedMoney.GetBaseCurrencyZero(),
                 ClosingFxRate = 0,
@@ -68,7 +68,20 @@ public class FutureTradeTaxCalculation : TradeTaxCalculation
             if (ukSection104.Quantity == 0m) return;
             decimal matchQty = Math.Min(UnmatchedQty, ukSection104.Quantity);
             Section104History section104History = ukSection104.RemoveAssets(this, UnmatchedQty);
-            WrappedMoney contractGain = GetProportionedContractValue(matchQty) + section104History.ContractValueChange;
+
+            WrappedMoney buyContractValue = PositionType switch
+            {
+                FuturePositionType.CLOSELONG => section104History.ContractValueChange * -1,
+                FuturePositionType.CLOSESHORT => GetProportionedContractValue(matchQty),
+                _ => throw new ArgumentException($"Unexpected future position type {PositionType} for close position")
+            };
+            WrappedMoney sellContractValue = PositionType switch
+            {
+                FuturePositionType.CLOSELONG => GetProportionedContractValue(matchQty),
+                FuturePositionType.CLOSESHORT => section104History.ContractValueChange * -1,
+                _ => throw new ArgumentException($"Unexpected future position type {PositionType} for close position")
+            };
+            WrappedMoney contractGain = sellContractValue - buyContractValue;
             WrappedMoney contractGainInBaseCurrency = new((contractGain * ContractFxRate).Amount);
             WrappedMoney acquisitionValue = (section104History.ValueChange * -1) + GetProportionedCostOrProceed(matchQty);
             WrappedMoney disposalValue = WrappedMoney.GetBaseCurrencyZero();
@@ -90,8 +103,8 @@ public class FutureTradeTaxCalculation : TradeTaxCalculation
                 MatchedBuyTrade = null,
                 MatchedSellTrade = null,
                 AdditionalInformation = "",
-                MatchAcquisitionContractValue = section104History.ContractValueChange * -1,
-                MatchDisposalContractValue = GetProportionedContractValue(matchQty),
+                MatchBuyContractValue = buyContractValue,
+                MatchSellContractValue = sellContractValue,
                 BaseCurrencyAcqusitionDealingCost = section104History.ValueChange * -1,
                 BaseCurrencyDisposalDealingCost = GetProportionedCostOrProceed(matchQty),
                 ClosingFxRate = ContractFxRate,

@@ -183,7 +183,19 @@ public class UkFutureTradeCalculator : ITradeCalculator
     private static void MatchTrade(FutureTradeTaxCalculation openTrade, FutureTradeTaxCalculation closeTrade, TaxMatchType taxMatchType)
     {
         decimal matchQty = Math.Min(openTrade.UnmatchedQty, closeTrade.UnmatchedQty);
-        WrappedMoney contractGain = closeTrade.GetProportionedContractValue(matchQty) - openTrade.GetProportionedContractValue(matchQty);
+        WrappedMoney buyContractValue = openTrade.PositionType switch
+        {
+            FuturePositionType.OPENLONG => openTrade.GetProportionedContractValue(matchQty),
+            FuturePositionType.OPENSHORT => closeTrade.GetProportionedContractValue(matchQty),
+            _ => throw new ArgumentException($"Unexpected future position type {openTrade.PositionType} for open position")
+        };
+        WrappedMoney sellContractValue = openTrade.PositionType switch
+        {
+            FuturePositionType.OPENLONG => closeTrade.GetProportionedContractValue(matchQty),
+            FuturePositionType.OPENSHORT => openTrade.GetProportionedContractValue(matchQty),
+            _ => throw new ArgumentException($"Unexpected future position type {openTrade.PositionType} for open position")
+        };
+        WrappedMoney contractGain = sellContractValue - buyContractValue;
         WrappedMoney contractGainInBaseCurrency = new((contractGain * closeTrade.ContractFxRate).Amount);
         WrappedMoney allowableCost = openTrade.GetProportionedCostOrProceed(matchQty) + closeTrade.GetProportionedCostOrProceed(matchQty);
         WrappedMoney disposalProceed = WrappedMoney.GetBaseCurrencyZero();
@@ -205,8 +217,8 @@ public class UkFutureTradeCalculator : ITradeCalculator
             MatchedBuyTrade = openTrade,
             MatchedSellTrade = closeTrade,
             AdditionalInformation = "",
-            MatchAcquisitionContractValue = openTrade.GetProportionedContractValue(matchQty),
-            MatchDisposalContractValue = closeTrade.GetProportionedContractValue(matchQty),
+            MatchBuyContractValue = buyContractValue,
+            MatchSellContractValue = sellContractValue,
             BaseCurrencyAcqusitionDealingCost = openTrade.GetProportionedCostOrProceed(matchQty),
             BaseCurrencyDisposalDealingCost = closeTrade.GetProportionedCostOrProceed(matchQty),
             ClosingFxRate = closeTrade.ContractFxRate
