@@ -33,7 +33,7 @@ public class IBXmlFutureTradeParser
                 Quantity = GetQuantity(element),
                 GrossProceed = new DescribedMoney() { Amount = WrappedMoney.GetBaseCurrencyZero() },
                 Expenses = BuildExpenses(element),
-                ContractValue = GetGrossProceed(element)
+                ContractValue = GetContractValue(element)
             };
         }
         catch (Exception ex)
@@ -50,7 +50,7 @@ public class IBXmlFutureTradeParser
         _ => throw new NotImplementedException(),
     };
 
-    private static DescribedMoney GetGrossProceed(XElement element) => element.GetAttribute("buySell") switch
+    private static DescribedMoney GetContractValue(XElement element) => element.GetAttribute("buySell") switch
     {
         "BUY" => element.BuildDescribedMoney("proceeds", "currency", "fxRateToBase", "", true),
         "SELL" => element.BuildDescribedMoney("proceeds", "currency", "fxRateToBase", ""),
