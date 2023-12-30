@@ -68,6 +68,7 @@ public class TradeTaxCalculation : ITradeTaxCalculation
 
     public virtual void MatchWithSection104(UkSection104 ukSection104)
     {
+        if (UnmatchedQty == 0m) return;
         if (BuySell is TradeType.BUY)
         {
             Section104History section104History = ukSection104.AddAssets(this, UnmatchedQty, UnmatchedCostOrProceed);
