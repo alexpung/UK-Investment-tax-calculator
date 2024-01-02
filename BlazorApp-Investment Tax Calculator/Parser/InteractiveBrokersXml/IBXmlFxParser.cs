@@ -41,11 +41,11 @@ public class IBXmlFxParser
         {
             decimal amountOfFx = Math.Abs(decimal.Parse(element.GetAttribute("amount")));
             string currency = element.GetAttribute("currency");
-            DateTime transactionDate = DateTime.Parse(element.GetAttribute("date"));
+            DateTime reportDate = DateTime.Parse(element.GetAttribute("reportDate"));
             DescribedMoney valueInSterlingWrapped = new()
             {
                 Amount = new WrappedMoney(amountOfFx, currency),
-                FxRate = FetchFxRate(currency, WrappedMoney.BaseCurrency, transactionDate)
+                FxRate = FetchFxRate(currency, WrappedMoney.BaseCurrency, reportDate)
             };
             return new FxTrade
             {
@@ -53,7 +53,7 @@ public class IBXmlFxParser
                 AssetName = currency,
                 AssetType = AssetCatagoryType.FX,
                 Description = element.GetAttribute("activityDescription"),
-                Date = transactionDate,
+                Date = reportDate,
                 Quantity = amountOfFx,
                 GrossProceed = valueInSterlingWrapped
             };
