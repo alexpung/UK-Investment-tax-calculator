@@ -152,3 +152,38 @@ Dividend Summary
     
     03/05/2021	200 (+100)			£0.00 (+£0.00)		
     Share adjustment on 03/05/2021 due to corporate action.
+
+### Future Contracts
+        Disposal 1: Close short position 2 units of NIYH4 on 05-Mar-2023.	Total gain (loss): -£28,011.90
+    Trade details:
+	    Bought 2 unit(s) of NIYH4 on 05-Mar-2023 12:35 with contract value ¥31,000,000 with total expense £6.30
+	    Expenses: Commission: ¥900 = £6.30 Fx rate = 0.007	
+    Trade matching:
+    Same day: Matched 2 units of the disposal. Acquisition contract value is ¥31,000,000 and disposal contract value is ¥27,000,000
+    Payment made to close the contract as loss is (¥27,000,000 - ¥31,000,000) * 0.007 = -£28,000.00, added to allowable cost
+    Total dealing cost is £11.90
+    Matched trade: Sold 2 unit(s) of NIYH4 on 05-Mar-2023 12:34 with contract value ¥27,000,000 with total expense £5.60
+	    Expenses: Commission: ¥700 = £5.60 Fx rate = 0.008	
+    Gain for this match is -£28,000.00 - £11.90  = -£28,011.90
+
+    *******************************************************************************
+    Disposal 2: Close long position 2 units of NIYH6 on 07-Mar-2023.	Total gain (loss): -£42,009.00
+    Trade details:
+	    Sold 2 unit(s) of NIYH6 on 07-Mar-2023 12:34 with contract value ¥20,000,000 with total expense £4.80
+	    Expenses: Commission: ¥800 = £4.80 Fx rate = 0.006	
+    Trade matching:
+    At time of disposal, section 104 contains 2 units with contract value ¥27,000,000
+    Section 104: Matched 2 units of the disposal. Acquisition contract value is ¥27,000,000 and disposal contract value ¥20,000,000, proportioned dealing cost is £4.20
+    Payment made to close the contract as loss is (¥20,000,000 - ¥27,000,000) * 0.006 = -£42,000.00, added to allowable cost
+    Total dealing cost is £9.00
+    Gain for this match is -£42,000.00 - £9.00  = -£42,009.00
+
+### FX
+        Disposal 1: Dispose 375 units of USD on 17-Dec-2019 for £285.59.	Total gain (loss): -£1.14
+    All units of the disposals are matched with acquisitions
+    Trade details:
+	    Dispose 375 unit(s) of USD on 17-Dec-2019 00:00 for $375.00 = £285.59 Fx rate = 0.76158. Description: Testing
+    Trade matching:
+    Bed and breakfast: 375 units of the acquisition trade against 375 units of the disposal trade. Acquisition cost is £286.74
+    Matched trade: Acquire 425 unit(s) of USD on 18-Dec-2019 00:00 for $425.00 = £324.97 Fx rate = 0.76463. Description: Testing 2
+    Gain for this match is £285.59 - £286.74 = -£1.14
