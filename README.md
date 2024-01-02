@@ -55,6 +55,7 @@ File sample is [here](https://github.com/alexpung/UK-Investment-tax-calculator/b
    1. Cash Transactions: Level of detail: Detail
    2. Corporate actions
    3. Trades: Level of detail: Orders
+   4. Enable "Include exchange rates" at the bottom of the setting (for Fx transactions calculation)"
 3. Download the flex query for each year in xml format using web browser.
 4. Open the web application.
 5. Go to the import sections and select the files, then press the "Upload" button.
