@@ -40,6 +40,7 @@ public class IBXmlFxParser
         try
         {
             decimal amountOfFx = Math.Abs(decimal.Parse(element.GetAttribute("amount")));
+            if (amountOfFx == 0) return null; // Nothing to tax if amount is 0.
             string currency = element.GetAttribute("currency");
             DateTime reportDate = DateTime.Parse(element.GetAttribute("reportDate"));
             DescribedMoney valueInSterlingWrapped = new()
