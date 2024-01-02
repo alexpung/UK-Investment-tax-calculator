@@ -52,10 +52,11 @@ Tests and feedback are welcome, bugs are to be expected.
 File sample is [here](https://github.com/alexpung/UK-Investment-tax-calculator/blob/master/UnitTest/System%20Test/Interactive%20brokers/TaxExample.xml "here"), you can download it and put it in the web app to see how it works.
 1. You should configure the base currency of your IBKR account to GBP.
 2. Configure flex query from interactive brokers. Following report required. Date format dd-MMM-yy, the date and time separator should be set to a single space.
-   1. Cash Transactions: Level of detail: Detail
-   2. Corporate actions
-   3. Trades: Level of detail: Orders
-   4. Enable "Include exchange rates" at the bottom of the setting (for Fx transactions calculation)"
+   1. Cash Transactions: Level of detail: Detail (for dividends)
+   2. Corporate actions (for stocks)
+   3. Trades: Level of detail: Orders (for stocks)
+   4. Statement of Funds: Level of detail: Currency (for Fx transactions) 
+   5. Enable "Include exchange rates" at the bottom of the setting (for Fx transactions)"
 3. Download the flex query for each year in xml format using web browser.
 4. Open the web application.
 5. Go to the import sections and select the files, then press the "Upload" button.

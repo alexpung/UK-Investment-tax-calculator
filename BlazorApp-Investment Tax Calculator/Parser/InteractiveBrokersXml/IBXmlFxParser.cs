@@ -15,7 +15,8 @@ public class IBXmlFxParser
         CacheExchangeRates(document);
         IEnumerable<XElement> filteredElements = document.Descendants("StatementOfFundsLine")
             .Where(trade => !trade.GetAttribute("currency").Equals(WrappedMoney.BaseCurrency, StringComparison.OrdinalIgnoreCase))
-            .Where(trade => !trade.GetAttribute("activityDescription").Contains("System Transfer"));
+            .Where(trade => !trade.GetAttribute("activityDescription").Contains("System Transfer"))
+            .Where(trade => trade.GetAttribute("levelOfDetail").Equals("Currency"));
         return filteredElements.Select(TradeMaker).Where(trade => trade != null).ToList<Trade?>()!;
     }
 
