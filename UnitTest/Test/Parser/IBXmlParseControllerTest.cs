@@ -41,16 +41,27 @@ public class IBXmlParseControllerTest
         string testText = File.ReadAllText(@".\Test\Resource\TaxExample.xml");
         IBParseController iBParseController = new(assetTypeToLoadSetting);
         TaxEventLists results = iBParseController.ParseFile(testText);
-        if (assetTypeToLoadSetting.LoadStocks)
+        if (assetTypeToLoadSetting.LoadStocks && !assetTypeToLoadSetting.LoadFx)
         {
             results.Trades.Count.ShouldBe(58);
             results.CorporateActions.Count.ShouldBe(2);
+        }
+        else if (assetTypeToLoadSetting.LoadStocks && assetTypeToLoadSetting.LoadFx)
+        {
+            results.Trades.Count.ShouldBe(185);
+            results.CorporateActions.Count.ShouldBe(2);
+        }
+        else if (!assetTypeToLoadSetting.LoadStocks && assetTypeToLoadSetting.LoadFx)
+        {
+            results.Trades.Count.ShouldBe(127);
+            results.CorporateActions.Count.ShouldBe(0);
         }
         else
         {
             results.Trades.Count.ShouldBe(0);
             results.CorporateActions.Count.ShouldBe(0);
         }
+
         if (assetTypeToLoadSetting.LoadDividends)
         {
             results.Dividends.Count.ShouldBe(47);
