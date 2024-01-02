@@ -36,12 +36,6 @@ builder.Services.AddSingleton<IDividendCalculator, UkDividendCalculator>();
 builder.Services.AddSingleton<ITradeCalculator, UkTradeCalculator>();
 builder.Services.AddSingleton<ITradeCalculator, UkFutureTradeCalculator>();
 
-// IBKR parser
-builder.Services.AddSingleton<IBXmlStockTradeParser>();
-builder.Services.AddSingleton<IBXmlDividendParser>();
-builder.Services.AddSingleton<IBXmlStockSplitParser>();
-builder.Services.AddSingleton<IBXmlFutureTradeParser>();
-
 // Register any new broker parsers here in order of priority
 builder.Services.AddSingleton<ITaxEventFileParser, IBParseController>();
 

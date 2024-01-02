@@ -10,16 +10,16 @@ using TaxEvents;
 
 namespace Parser.InteractiveBrokersXml;
 
-public class IBXmlFutureTradeParser
+public static class IBXmlFutureTradeParser
 {
-    public IList<Trade> ParseXml(XElement document)
+    public static IList<Trade> ParseXml(XElement document)
     {
         IEnumerable<XElement> filteredElements = document.Descendants("Order").Where(row => row.GetAttribute("levelOfDetail") == "ORDER" &&
                                                 row.GetAttribute("assetCategory") == "FUT");
         return filteredElements.Select(TradeMaker).Where(trade => trade != null).ToList()!;
     }
 
-    private Trade? TradeMaker(XElement element)
+    private static Trade? TradeMaker(XElement element)
     {
         try
         {

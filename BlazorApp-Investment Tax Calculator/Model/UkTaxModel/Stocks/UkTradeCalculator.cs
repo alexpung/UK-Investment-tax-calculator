@@ -2,6 +2,7 @@
 
 using Model.Interfaces;
 using Model.TaxEvents;
+using Model.UkTaxModel.Fx;
 
 using Syncfusion.Blazor.Data;
 
@@ -40,7 +41,12 @@ public class UkTradeCalculator : ITradeCalculator
         var groupedTrade = from trade in trades
                            where trade.AssetType == AssetCatagoryType.STOCK
                            group trade by new { trade.AssetName, trade.Date.Date, trade.BuySell };
+        var groupedFxTrade = from trade in trades
+                             where trade.AssetType == AssetCatagoryType.FX
+                             group trade by new { trade.AssetName, trade.Date.Date, trade.BuySell };
         IEnumerable<ITradeTaxCalculation> groupedTradeCalculations = groupedTrade.Select(group => new TradeTaxCalculation(group)).ToList();
+        IEnumerable<ITradeTaxCalculation> groupedFxTradeCalculations = groupedFxTrade.Select(group => new FxTradeTaxCalculation(group)).ToList();
+        groupedTradeCalculations = groupedTradeCalculations.Concat(groupedFxTradeCalculations);
         return groupedTradeCalculations.GroupBy(TradeTaxCalculation => TradeTaxCalculation.TradeList.First().AssetName).ToDictionary(group => group.Key, group => group.ToList());
     }
 

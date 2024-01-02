@@ -8,16 +8,16 @@ using System.Xml.Linq;
 
 namespace Parser.InteractiveBrokersXml;
 
-public class IBXmlStockTradeParser
+public static class IBXmlStockTradeParser
 {
-    public IList<Trade> ParseXml(XElement document)
+    public static IList<Trade> ParseXml(XElement document)
     {
         IEnumerable<XElement> filteredElements = document.Descendants("Order").Where(row => row.GetAttribute("levelOfDetail") == "ORDER" &&
                                                  row.GetAttribute("assetCategory") == "STK");
         return filteredElements.Select(TradeMaker).Where(trade => trade != null).ToList()!;
     }
 
-    private Trade? TradeMaker(XElement element)
+    private static Trade? TradeMaker(XElement element)
     {
         try
         {

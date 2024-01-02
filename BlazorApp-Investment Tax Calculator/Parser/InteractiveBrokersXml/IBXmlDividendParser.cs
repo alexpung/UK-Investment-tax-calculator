@@ -1,20 +1,22 @@
 ﻿using Enum;
+
 using Model.TaxEvents;
+
 using System.Globalization;
 using System.Xml.Linq;
 
 namespace Parser.InteractiveBrokersXml;
 
 
-public class IBXmlDividendParser
+public static class IBXmlDividendParser
 {
-    public IList<Dividend> ParseXml(XElement document)
+    public static IList<Dividend> ParseXml(XElement document)
     {
         IEnumerable<XElement> filteredElements = document.Descendants("CashTransaction").Where(row => GetDividendType(row) != DividendType.NOT_DIVIDEND && row.GetAttribute("levelOfDetail") == "DETAIL");
         return filteredElements.Select(DividendMaker).Where(dividend => dividend != null).ToList()!;
     }
 
-    private Dividend? DividendMaker(XElement element)
+    private static Dividend? DividendMaker(XElement element)
     {
         try
         {

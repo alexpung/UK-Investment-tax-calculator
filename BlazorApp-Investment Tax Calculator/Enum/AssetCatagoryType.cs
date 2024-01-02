@@ -3,5 +3,6 @@
 public enum AssetCatagoryType
 {
     STOCK,
-    FUTURE
+    FUTURE,
+    FX
 }
