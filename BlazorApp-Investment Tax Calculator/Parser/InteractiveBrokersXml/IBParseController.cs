@@ -7,6 +7,7 @@ namespace Parser.InteractiveBrokersXml;
 public class IBParseController : ITaxEventFileParser
 {
     private readonly AssetTypeToLoadSetting _assetTypeToLoadSetting;
+    private readonly IBXmlFxParser _xmlFxParser = new();
 
     public IBParseController(AssetTypeToLoadSetting assetTypeToLoadSetting)
     {
@@ -22,7 +23,7 @@ public class IBParseController : ITaxEventFileParser
             if (_assetTypeToLoadSetting.LoadStocks) result.CorporateActions.AddRange(IBXmlStockSplitParser.ParseXml(xml));
             if (_assetTypeToLoadSetting.LoadStocks) result.Trades.AddRange(IBXmlStockTradeParser.ParseXml(xml));
             if (_assetTypeToLoadSetting.LoadFutures) result.Trades.AddRange(IBXmlFutureTradeParser.ParseXml(xml));
-            if (_assetTypeToLoadSetting.LoadFx) result.Trades.AddRange(IBXmlFxParser.ParseXml(xml));
+            if (_assetTypeToLoadSetting.LoadFx) result.Trades.AddRange(_xmlFxParser.ParseXml(xml));
         }
         return result;
     }
