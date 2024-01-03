@@ -3,8 +3,6 @@ using Enum;
 using Model;
 using Model.TaxEvents;
 
-using System.Collections.Immutable;
-
 namespace UnitTest.Test.Model;
 
 public class TradeTests
@@ -16,7 +14,7 @@ public class TradeTests
         var trade = new Trade
         {
             AssetName = "Test",
-            Date = new DateTime(2023, 1, 1),
+            Date = new DateTime(2023, 1, 1, 0, 0, 0, DateTimeKind.Local),
             BuySell = TradeType.BUY,
             Quantity = 10,
             GrossProceed = new DescribedMoney
@@ -40,7 +38,7 @@ public class TradeTests
         var trade = new Trade
         {
             AssetName = "Test",
-            Date = new DateTime(2023, 1, 1),
+            Date = new DateTime(2023, 1, 1, 0, 0, 0, DateTimeKind.Local),
             BuySell = TradeType.SELL,
             Quantity = 5,
             GrossProceed = new DescribedMoney

@@ -2,7 +2,9 @@
 using Model.Interfaces;
 using Model.TaxEvents;
 using Model.UkTaxModel;
+
 using Moq;
+
 using System.Globalization;
 
 namespace UnitTest.Test.Model;
@@ -25,7 +27,7 @@ public class UkDividendCalculatorTest
                 AssetName = "MTR Corporation",
                 CompanyLocation = new RegionInfo("HK"),
                 DividendType = Enum.DividendType.DIVIDEND,
-                Date = new DateTime(2022, 4, 5),
+                Date = new DateTime(2022, 4, 5, 0, 0, 0, DateTimeKind.Local),
                 Proceed = new DescribedMoney { Amount = new WrappedMoney(1000, "HKD"), Description = "MTR Corporation dividend", FxRate = 0.11m }
             },
             new Dividend()
@@ -33,7 +35,7 @@ public class UkDividendCalculatorTest
                 AssetName = "HSBC Bank",
                 CompanyLocation = new RegionInfo("HK"),
                 DividendType = Enum.DividendType.DIVIDEND_IN_LIEU,
-                Date = new DateTime(2022, 4, 5),
+                Date = new DateTime(2022, 4, 5, 0, 0, 0, DateTimeKind.Local),
                 Proceed = new DescribedMoney { Amount = new WrappedMoney(500, "HKD"), Description = "HSBC Bank dividend", FxRate = 0.11m }
             },
             new Dividend()
@@ -41,7 +43,7 @@ public class UkDividendCalculatorTest
                 AssetName = "Shell",
                 CompanyLocation = new RegionInfo("GB"),
                 DividendType = Enum.DividendType.DIVIDEND,
-                Date = new DateTime(2022, 4, 4),
+                Date = new DateTime(2022, 4, 4, 0, 0, 0, DateTimeKind.Local),
                 Proceed = new DescribedMoney { Amount = new WrappedMoney(2000, "GBP"), Description = "Shell dividend", FxRate = 1m }
             },
             new Dividend()
@@ -49,7 +51,7 @@ public class UkDividendCalculatorTest
                 AssetName = "Shell",
                 CompanyLocation = new RegionInfo("GB"),
                 DividendType = Enum.DividendType.WITHHOLDING,
-                Date = new DateTime(2022, 4, 4),
+                Date = new DateTime(2022, 4, 4, 0, 0, 0, DateTimeKind.Local),
                 Proceed = new DescribedMoney { Amount = new WrappedMoney(100, "GBP"), Description = "Shell withholding tax", FxRate = 1m }
             },
             new Dividend()
@@ -57,7 +59,7 @@ public class UkDividendCalculatorTest
                 AssetName = "Sony Corporation",
                 CompanyLocation = new RegionInfo("JP"),
                 DividendType = Enum.DividendType.DIVIDEND,
-                Date = new DateTime(2022, 4, 6),
+                Date = new DateTime(2022, 4, 6, 0, 0, 0, DateTimeKind.Local),
                 Proceed = new DescribedMoney { Amount = new WrappedMoney(20000, "JPY"), Description = "Sony Corporation dividend", FxRate = 0.0063m }
             },
             new Dividend()
@@ -65,7 +67,7 @@ public class UkDividendCalculatorTest
                 AssetName = "Sony Corporation",
                 CompanyLocation = new RegionInfo("JP"),
                 DividendType = Enum.DividendType.WITHHOLDING,
-                Date = new DateTime(2022, 4, 6),
+                Date = new DateTime(2022, 4, 6, 0, 0, 0, DateTimeKind.Local),
                 Proceed = new DescribedMoney { Amount = new WrappedMoney(3000, "JPY"), Description = "Sony Corporation withholding tax", FxRate = 0.0063m }
             },
             new Dividend()
@@ -73,7 +75,7 @@ public class UkDividendCalculatorTest
                 AssetName = "Sony Corporation",
                 CompanyLocation = new RegionInfo("JP"),
                 DividendType = Enum.DividendType.DIVIDEND,
-                Date = new DateTime(2022, 8, 6),
+                Date = new DateTime(2022, 8, 6, 0, 0, 0, DateTimeKind.Local),
                 Proceed = new DescribedMoney { Amount = new WrappedMoney(10000, "JPY"), Description = "Sony Corporation dividend", FxRate = 0.007m }
             },
             new Dividend()
@@ -81,7 +83,7 @@ public class UkDividendCalculatorTest
                 AssetName = "Sony Corporation",
                 CompanyLocation = new RegionInfo("JP"),
                 DividendType = Enum.DividendType.WITHHOLDING,
-                Date = new DateTime(2022, 8, 6),
+                Date = new DateTime(2022, 8, 6, 0, 0, 0, DateTimeKind.Local),
                 Proceed = new DescribedMoney { Amount = new WrappedMoney(1500, "JPY"), Description = "Sony Corporation withholding tax", FxRate = 0.007m }
             }
         ];
