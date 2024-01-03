@@ -4,9 +4,9 @@ using Model.TaxEvents;
 namespace Model;
 public record TaxEventLists : IDividendLists, ITradeAndCorporateActionList
 {
-    public List<Trade> Trades { get; set; } = new List<Trade>();
-    public List<CorporateAction> CorporateActions { get; set; } = new List<CorporateAction>();
-    public List<Dividend> Dividends { get; set; } = new List<Dividend>();
+    public List<Trade> Trades { get; set; } = [];
+    public List<CorporateAction> CorporateActions { get; set; } = [];
+    public List<Dividend> Dividends { get; set; } = [];
 
     public void AddData(TaxEventLists taxEventLists)
     {

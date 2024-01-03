@@ -5,7 +5,7 @@ using Model.Interfaces;
 using Model.TaxEvents;
 using Model.UkTaxModel;
 
-using System.Collections.Immutable;
+using System.Globalization;
 
 using UnitTest.Helper;
 
@@ -19,20 +19,20 @@ public class UkTradeCalculatorTest2Trade
         {
             AssetName = "DEF",
             BuySell = TradeType.SELL,
-            Date = DateTime.Parse("05-May-21 12:34:56"),
+            Date = DateTime.Parse("05-May-21 12:34:56", CultureInfo.InvariantCulture),
             Description = "DEF Example Stock",
             Quantity = 100,
-            Expenses = ImmutableList.Create(new DescribedMoney() { Description = "Commission", Amount = new(1.5m, "USD"), FxRate = 0.86m }),
+            Expenses = [new DescribedMoney() { Description = "Commission", Amount = new(1.5m, "USD"), FxRate = 0.86m }],
             GrossProceed = new() { Description = "Commission", Amount = new(1000m, "USD"), FxRate = 0.86m },
         };
         Trade trade2 = new()
         {
             AssetName = "DEF",
             BuySell = TradeType.BUY,
-            Date = DateTime.Parse("06-Dec-21 12:34:56"),
+            Date = DateTime.Parse("06-Dec-21 12:34:56", CultureInfo.InvariantCulture),
             Description = "DEF Example Stock",
             Quantity = 100,
-            Expenses = ImmutableList.Create(new DescribedMoney() { Description = "Commission", Amount = new(1.5m, "USD"), FxRate = 0.86m }),
+            Expenses = [new DescribedMoney() { Description = "Commission", Amount = new(1.5m, "USD"), FxRate = 0.86m }],
             GrossProceed = new() { Description = "", Amount = new(500m, "USD"), FxRate = 0.86m },
         };
         List<ITradeTaxCalculation> result = TradeCalculationHelper.CalculateTrades(new List<Trade>() { trade1, trade2 }, out UkSection104Pools section104Pools);
@@ -51,10 +51,10 @@ public class UkTradeCalculatorTest2Trade
         {
             AssetName = "ABC",
             BuySell = TradeType.BUY,
-            Date = DateTime.Parse("01-Jan-21 10:00:00"),
+            Date = DateTime.Parse("01-Jan-21 10:00:00", CultureInfo.InvariantCulture),
             Description = "Purchase of ABC Stock",
             Quantity = 200,
-            Expenses = ImmutableList.Create(new DescribedMoney() { Description = "Commission", Amount = new(2.0m, "USD"), FxRate = 0.85m }),
+            Expenses = [new DescribedMoney() { Description = "Commission", Amount = new(2.0m, "USD"), FxRate = 0.85m }],
             GrossProceed = new() { Description = "", Amount = new(2000m, "USD"), FxRate = 0.85m },
         };
 
@@ -63,10 +63,10 @@ public class UkTradeCalculatorTest2Trade
         {
             AssetName = "ABC",
             BuySell = TradeType.SELL,
-            Date = DateTime.Parse("15-Dec-21 15:30:00"),
+            Date = DateTime.Parse("15-Dec-21 15:30:00", CultureInfo.InvariantCulture),
             Description = "Sale of ABC Stock",
             Quantity = 150,
-            Expenses = ImmutableList.Create(new DescribedMoney() { Description = "Commission", Amount = new(1.5m, "USD"), FxRate = 0.85m }),
+            Expenses = [new DescribedMoney() { Description = "Commission", Amount = new(1.5m, "USD"), FxRate = 0.85m }],
             GrossProceed = new() { Description = "", Amount = new(2250m, "USD"), FxRate = 0.85m },
         };
         List<ITradeTaxCalculation> result = TradeCalculationHelper.CalculateTrades(new List<Trade>() { buyTrade, sellTrade }, out UkSection104Pools section104Pools);
@@ -87,10 +87,10 @@ public class UkTradeCalculatorTest2Trade
         {
             AssetName = "XYZ",
             BuySell = TradeType.BUY,
-            Date = DateTime.Parse("02-Feb-22 09:30:00"),
+            Date = DateTime.Parse("02-Feb-22 09:30:00", CultureInfo.InvariantCulture),
             Description = "Purchase of XYZ Stock",
             Quantity = 100,
-            Expenses = ImmutableList.Create(new DescribedMoney() { Description = "Commission", Amount = new(1.0m, "USD"), FxRate = 0.88m }),
+            Expenses = [new DescribedMoney() { Description = "Commission", Amount = new(1.0m, "USD"), FxRate = 0.88m }],
             GrossProceed = new() { Description = "", Amount = new(1000m, "USD"), FxRate = 0.88m },
         };
 
@@ -98,10 +98,10 @@ public class UkTradeCalculatorTest2Trade
         {
             AssetName = "XYZ",
             BuySell = TradeType.SELL,
-            Date = DateTime.Parse("02-Feb-22 15:45:00"),
+            Date = DateTime.Parse("02-Feb-22 15:45:00", CultureInfo.InvariantCulture),
             Description = "Sale of XYZ Stock",
             Quantity = 100,
-            Expenses = ImmutableList.Create(new DescribedMoney() { Description = "Commission", Amount = new(1.0m, "USD"), FxRate = 0.85m }),
+            Expenses = [new DescribedMoney() { Description = "Commission", Amount = new(1.0m, "USD"), FxRate = 0.85m }],
             GrossProceed = new() { Description = "", Amount = new(1100m, "USD"), FxRate = 0.85m },
         };
         List<ITradeTaxCalculation> result = TradeCalculationHelper.CalculateTrades(new List<Trade>() { purchaseTrade, saleTrade }, out UkSection104Pools section104Pools);
@@ -122,10 +122,10 @@ public class UkTradeCalculatorTest2Trade
         {
             AssetName = "BBB",
             BuySell = TradeType.SELL,
-            Date = DateTime.Parse("12-Apr-22 15:45:00"),
+            Date = DateTime.Parse("12-Apr-22 15:45:00", CultureInfo.InvariantCulture),
             Description = "Sale of BBB Stock",
             Quantity = 100,
-            Expenses = ImmutableList.Create(new DescribedMoney() { Description = "Commission", Amount = new(1.0m, "USD"), FxRate = 0.88m }), // Different FX rate
+            Expenses = [new DescribedMoney() { Description = "Commission", Amount = new(1.0m, "USD"), FxRate = 0.88m }], // Different FX rate
             GrossProceed = new() { Description = "", Amount = new(1100m, "USD"), FxRate = 0.88m }, // Different FX rate
         };
 
@@ -133,10 +133,10 @@ public class UkTradeCalculatorTest2Trade
         {
             AssetName = "BBB",
             BuySell = TradeType.BUY,
-            Date = DateTime.Parse("12-May-22 09:30:00"),
+            Date = DateTime.Parse("12-May-22 09:30:00", CultureInfo.InvariantCulture),
             Description = "Purchase of BBB Stock",
             Quantity = 200,
-            Expenses = ImmutableList.Create(new DescribedMoney() { Description = "Commission", Amount = new(2.0m, "USD"), FxRate = 0.85m }),
+            Expenses = [new DescribedMoney() { Description = "Commission", Amount = new(2.0m, "USD"), FxRate = 0.85m }],
             GrossProceed = new() { Description = "", Amount = new(2500m, "USD"), FxRate = 0.85m },
         };
 

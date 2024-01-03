@@ -1,5 +1,7 @@
 ﻿using Model.UkTaxModel;
 
+using System.Globalization;
+
 namespace UnitTest.Test.Model.UkTaxModel;
 
 public class UKTaxYearTests
@@ -15,7 +17,7 @@ public class UKTaxYearTests
     {
         // Arrange
         var taxYear = new UKTaxYear();
-        DateTime date = DateTime.Parse(dateString);
+        DateTime date = DateTime.Parse(dateString, CultureInfo.InvariantCulture);
 
         // Act
         int result = taxYear.ToTaxYear(date);

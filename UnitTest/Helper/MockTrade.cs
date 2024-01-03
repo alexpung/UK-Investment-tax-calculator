@@ -15,10 +15,10 @@ public static class MockTrade
     {
         Mock<ITradeTaxCalculation> mockTrade = new();
         mockTrade.Setup(f => f.BuySell).Returns(tradeType);
-        mockTrade.Setup(f => f.MatchHistory).Returns(new List<TradeMatch>());
+        mockTrade.Setup(f => f.MatchHistory).Returns([]);
         mockTrade.Setup(f => f.UnmatchedQty).Returns(quantity);
         mockTrade.Setup(f => f.UnmatchedCostOrProceed).Returns(new WrappedMoney(value));
-        mockTrade.Setup(f => f.TradeList).Returns(new List<Trade>());
+        mockTrade.Setup(f => f.TradeList).Returns([]);
         mockTrade.Setup(f => f.MatchQty(It.IsAny<decimal>()));
         return mockTrade;
     }

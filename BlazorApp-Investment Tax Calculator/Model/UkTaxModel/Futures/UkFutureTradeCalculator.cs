@@ -9,23 +9,14 @@ using TaxEvents;
 
 namespace Model.UkTaxModel.Futures;
 
-public class UkFutureTradeCalculator : ITradeCalculator
+public class UkFutureTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorporateActionList tradeList) : ITradeCalculator
 {
-    private readonly ITradeAndCorporateActionList _tradeList;
-    private readonly UkSection104Pools _setion104Pools;
-
-    public UkFutureTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorporateActionList tradeList)
-    {
-        _setion104Pools = section104Pools;
-        _tradeList = tradeList;
-    }
-
     public List<ITradeTaxCalculation> CalculateTax()
     {
-        List<FutureTradeTaxCalculation> tradeTaxCalculations = GroupTrade(_tradeList.Trades);
+        List<FutureTradeTaxCalculation> tradeTaxCalculations = GroupTrade(tradeList.Trades);
         foreach (var trades in tradeTaxCalculations.GroupBy(trade => trade.AssetName))
         {
-            List<FutureTradeTaxCalculation> taxEventsInChronologicalOrder = trades.OrderBy(item => item.Date).ToList();
+            List<FutureTradeTaxCalculation> taxEventsInChronologicalOrder = [.. trades.OrderBy(item => item.Date)];
             ApplySameDayMatchingRule(taxEventsInChronologicalOrder);
             ApplyBedAndBreakfastMatchingRule(taxEventsInChronologicalOrder);
             ProcessTradeInChronologicalOrder(trades.Key, taxEventsInChronologicalOrder);
@@ -42,7 +33,7 @@ public class UkFutureTradeCalculator : ITradeCalculator
     /// <exception cref="NotImplementedException"></exception>
     private static List<FutureTradeTaxCalculation> GroupTrade(IEnumerable<Trade> trades)
     {
-        List<FutureTradeTaxCalculation> groupedTrade = new();
+        List<FutureTradeTaxCalculation> groupedTrade = [];
         foreach (var tradeGroup in GroupFutureContractTradeByAssetName(trades))
         {
             List<FutureContractTrade> taggedTrades = TagTradesWithOpenClose(tradeGroup);
@@ -61,7 +52,7 @@ public class UkFutureTradeCalculator : ITradeCalculator
     private static List<FutureContractTrade> TagTradesWithOpenClose(IEnumerable<FutureContractTrade> trades)
     {
         decimal currentPosition = 0m; // tracking current position to determine a trade is opening or closing
-        List<FutureContractTrade> resultList = new();
+        List<FutureContractTrade> resultList = [];
         foreach (var trade in trades.OrderBy(trade => trade.Date))
         {
             // run through trades chronologically and catagorise trades to one of the 4 catagories.
@@ -237,8 +228,8 @@ public class UkFutureTradeCalculator : ITradeCalculator
     /// <exception cref="ArgumentException"></exception>
     private void ProcessTradeInChronologicalOrder(string assetName, IEnumerable<FutureTradeTaxCalculation> tradesInChronologicalOrder)
     {
-        UkSection104 longSection104Pool = _setion104Pools.GetExistingOrInitialise(assetName);
-        UkSection104 shortSection104Pool = _setion104Pools.GetExistingOrInitialise($"Short contract {assetName}");
+        UkSection104 longSection104Pool = section104Pools.GetExistingOrInitialise(assetName);
+        UkSection104 shortSection104Pool = section104Pools.GetExistingOrInitialise($"Short contract {assetName}");
 
         foreach (var trade in tradesInChronologicalOrder)
         {

@@ -8,24 +8,15 @@ using Syncfusion.Blazor.Data;
 
 namespace Model.UkTaxModel.Stocks;
 
-public class UkTradeCalculator : ITradeCalculator
+public class UkTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorporateActionList tradeList) : ITradeCalculator
 {
-    private readonly ITradeAndCorporateActionList _tradeList;
-    private readonly UkSection104Pools _setion104Pools;
-
-    public UkTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorporateActionList tradeList)
-    {
-        _setion104Pools = section104Pools;
-        _tradeList = tradeList;
-    }
-
     public List<ITradeTaxCalculation> CalculateTax()
     {
-        Dictionary<string, List<ITradeTaxCalculation>> tradeTaxCalculations = GroupTrade(_tradeList.Trades);
+        Dictionary<string, List<ITradeTaxCalculation>> tradeTaxCalculations = GroupTrade(tradeList.Trades);
         // This is a Dict grouped by asset name. For each asset name process all trades.
         foreach (KeyValuePair<string, List<ITradeTaxCalculation>> assetGroup in tradeTaxCalculations)
         {
-            IEnumerable<CorporateAction> corporateActions = _tradeList.CorporateActions.Where(i => i.AssetName == assetGroup.Key);
+            IEnumerable<CorporateAction> corporateActions = tradeList.CorporateActions.Where(i => i.AssetName == assetGroup.Key);
             List<IAssetDatedEvent> taxEventsInChronologicalOrder = assetGroup.Value.Select(a => new { Item = (IAssetDatedEvent)a, a.Date })
                               .Concat(corporateActions.Select(b => new { Item = (IAssetDatedEvent)b, b.Date }))
                               .OrderBy(item => item.Date).Select(item => item.Item).ToList();
@@ -47,7 +38,7 @@ public class UkTradeCalculator : ITradeCalculator
         IEnumerable<ITradeTaxCalculation> groupedTradeCalculations = groupedTrade.Select(group => new TradeTaxCalculation(group)).ToList();
         IEnumerable<ITradeTaxCalculation> groupedFxTradeCalculations = groupedFxTrade.Select(group => new FxTradeTaxCalculation(group)).ToList();
         groupedTradeCalculations = groupedTradeCalculations.Concat(groupedFxTradeCalculations);
-        return groupedTradeCalculations.GroupBy(TradeTaxCalculation => TradeTaxCalculation.TradeList.First().AssetName).ToDictionary(group => group.Key, group => group.ToList());
+        return groupedTradeCalculations.GroupBy(TradeTaxCalculation => TradeTaxCalculation.TradeList[0].AssetName).ToDictionary(group => group.Key, group => group.ToList());
     }
 
     /// <summary>
@@ -57,7 +48,7 @@ public class UkTradeCalculator : ITradeCalculator
     /// <param name="taxEventsInChronologicalOrder"></param>
     private static void ApplySameDayMatchingRule(List<IAssetDatedEvent> taxEventsInChronologicalOrder)
     {
-        List<CorporateAction> corporateActionsInBetween = new();
+        List<CorporateAction> corporateActionsInBetween = [];
         ITradeTaxCalculation? sameDayTrade = null;
         foreach (var taxEvent in taxEventsInChronologicalOrder)
         {
@@ -99,7 +90,7 @@ public class UkTradeCalculator : ITradeCalculator
     /// </summary>
     private static void ApplyBedAndBreakfastMatchingRule(List<IAssetDatedEvent> taxEventsInChronologicalOrder)
     {
-        List<CorporateAction> corporateActionsInBetween = new();
+        List<CorporateAction> corporateActionsInBetween = [];
         Queue<ITradeTaxCalculation> sellTradeQueue = new();
         foreach (var taxEvent in taxEventsInChronologicalOrder)
         {
@@ -195,16 +186,16 @@ public class UkTradeCalculator : ITradeCalculator
     private void ProcessTradeInChronologicalOrder(string assetName, IEnumerable<IAssetDatedEvent> taxEventsInChronologicalOrder)
     {
         Queue<ITradeTaxCalculation> unmatchedDisposal = new();
-        UkSection104 section104 = _setion104Pools.GetExistingOrInitialise(assetName);
+        UkSection104 section104 = section104Pools.GetExistingOrInitialise(assetName);
         foreach (IAssetDatedEvent taxEvent in taxEventsInChronologicalOrder)
         {
             switch (taxEvent)
             {
                 case ITradeTaxCalculation tradeTaxCalculation:
                     if (tradeTaxCalculation.CalculationCompleted) continue;
-                    if (unmatchedDisposal.Any() && tradeTaxCalculation.BuySell == TradeType.BUY)
+                    if (unmatchedDisposal.Count != 0 && tradeTaxCalculation.BuySell == TradeType.BUY)
                     {
-                        while (unmatchedDisposal.Any() && !tradeTaxCalculation.CalculationCompleted)
+                        while (unmatchedDisposal.Count != 0 && !tradeTaxCalculation.CalculationCompleted)
                         {
                             var nextTradeToMatch = unmatchedDisposal.Peek();
                             MatchTrade(nextTradeToMatch, tradeTaxCalculation, TaxMatchType.SHORTCOVER);

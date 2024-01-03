@@ -8,7 +8,7 @@ public record UkSection104
     public decimal Quantity { get; set; }
     public WrappedMoney AcquisitionCostInBaseCurrency { get; set; }
     public WrappedMoney TotalContractValue { get; private set; } // Contract value that determine profit and loss but not actually money paid or received e.g. future cotract price
-    public List<Section104History> Section104HistoryList { get; set; } = new();
+    public List<Section104History> Section104HistoryList { get; set; } = [];
 
     public UkSection104(string name)
     {

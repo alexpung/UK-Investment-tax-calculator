@@ -19,7 +19,7 @@ public class DividendCalculationResultTests
         dividendSummaryMock2.Setup(i => i.TaxYear).Returns(2022);
         dividendSummaryMock3.Setup(i => i.TaxYear).Returns(2023);
         var result = new DividendCalculationResult();
-        result.SetResult(new List<DividendSummary>() { dividendSummaryMock1.Object, dividendSummaryMock2.Object, dividendSummaryMock3.Object });
+        result.SetResult([dividendSummaryMock1.Object, dividendSummaryMock2.Object, dividendSummaryMock3.Object]);
         var yearFilter = new List<int> { 2021, 2023 };
 
         // Act
@@ -43,7 +43,7 @@ public class DividendCalculationResultTests
         dividendSummaryMock2.Setup(i => i.TaxYear).Returns(2022);
         dividendSummaryMock3.Setup(i => i.TaxYear).Returns(2023);
         var result = new DividendCalculationResult();
-        result.SetResult(new List<DividendSummary>() { dividendSummaryMock1.Object, dividendSummaryMock2.Object, dividendSummaryMock3.Object });
+        result.SetResult([dividendSummaryMock1.Object, dividendSummaryMock2.Object, dividendSummaryMock3.Object]);
         var yearFilter = new List<int> { 2022, 2023 };
 
         // Act
@@ -67,7 +67,7 @@ public class DividendCalculationResultTests
         dividendSummaryMock2.Setup(i => i.TaxYear).Returns(2022);
         dividendSummaryMock3.Setup(i => i.TaxYear).Returns(2023);
         var result = new DividendCalculationResult();
-        result.SetResult(new List<DividendSummary>() { dividendSummaryMock1.Object, dividendSummaryMock2.Object, dividendSummaryMock3.Object });
+        result.SetResult([dividendSummaryMock1.Object, dividendSummaryMock2.Object, dividendSummaryMock3.Object]);
         var yearFilter = new List<int>();
 
         // Act

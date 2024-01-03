@@ -1,16 +1,12 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+
 using Model;
 
 namespace ViewModel;
 
-public class AssetTypeToLoadSettingViewModel : ObservableObject
+public class AssetTypeToLoadSettingViewModel(AssetTypeToLoadSetting assetTypeToLoadSetting) : ObservableObject
 {
-    public AssetTypeToLoadSetting AssetTypeToLoadSetting { get; }
-
-    public AssetTypeToLoadSettingViewModel(AssetTypeToLoadSetting assetTypeToLoadSetting)
-    {
-        AssetTypeToLoadSetting = assetTypeToLoadSetting;
-    }
+    public AssetTypeToLoadSetting AssetTypeToLoadSetting { get; } = assetTypeToLoadSetting;
 
     public bool LoadStocks
     {

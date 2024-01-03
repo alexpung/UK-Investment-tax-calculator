@@ -3,10 +3,10 @@ using ViewModel.Messages;
 
 namespace ViewModel.Options;
 
-public class YearOptions
+public class YearOptions(IMessenger messenger)
 {
-    public List<DropdownYearItems> Options { get; set; } = new();
-    private List<int> _selectedOptions = new();
+    public List<DropdownYearItems> Options { get; set; } = [];
+    private List<int> _selectedOptions = [];
     public List<int> SelectedOptions
     {
         get { return _selectedOptions; }
@@ -14,20 +14,14 @@ public class YearOptions
         {
             if (value is null)
             {
-                _selectedOptions = new List<int>();
+                _selectedOptions = [];
             }
             else
             {
                 _selectedOptions = value;
             }
-            _messenger.Send<YearSelectionChangedMessage>();
+            messenger.Send<YearSelectionChangedMessage>();
         }
-    }
-    private readonly IMessenger _messenger;
-
-    public YearOptions(IMessenger messenger)
-    {
-        _messenger = messenger;
     }
 
     public void SetYears(IEnumerable<int> years)

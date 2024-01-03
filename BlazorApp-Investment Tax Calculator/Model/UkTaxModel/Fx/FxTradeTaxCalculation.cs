@@ -5,12 +5,8 @@ using System.Text;
 
 namespace Model.UkTaxModel.Fx;
 
-public class FxTradeTaxCalculation : TradeTaxCalculation
+public class FxTradeTaxCalculation(IEnumerable<Trade> trades) : TradeTaxCalculation(trades)
 {
-    public FxTradeTaxCalculation(IEnumerable<Trade> trades) : base(trades)
-    {
-    }
-
     public override string PrintToTextFile()
     {
         StringBuilder output = new();
