@@ -19,7 +19,7 @@ public record Trade : TaxEvent, ITextFilePrintable
     {
         get
         {
-            if (!Expenses.Any()) return GrossProceed.BaseCurrencyAmount;
+            if (Expenses.IsEmpty) return GrossProceed.BaseCurrencyAmount;
             if (BuySell == TradeType.BUY) return GrossProceed.BaseCurrencyAmount + Expenses.Select(i => i.BaseCurrencyAmount).Sum();
             else return GrossProceed.BaseCurrencyAmount - Expenses.Select(i => i.BaseCurrencyAmount).Sum();
         }
@@ -34,7 +34,7 @@ public record Trade : TaxEvent, ITextFilePrintable
 
     protected string GetExpensesExplanation()
     {
-        if (!Expenses.Any()) return string.Empty;
+        if (Expenses.IsEmpty) return string.Empty;
         StringBuilder stringBuilder = new();
         stringBuilder.Append("\n\tExpenses: ");
         foreach (var expense in Expenses)

@@ -38,7 +38,7 @@ public class UkTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorpo
         IEnumerable<ITradeTaxCalculation> groupedTradeCalculations = groupedTrade.Select(group => new TradeTaxCalculation(group)).ToList();
         IEnumerable<ITradeTaxCalculation> groupedFxTradeCalculations = groupedFxTrade.Select(group => new FxTradeTaxCalculation(group)).ToList();
         groupedTradeCalculations = groupedTradeCalculations.Concat(groupedFxTradeCalculations);
-        return groupedTradeCalculations.GroupBy(TradeTaxCalculation => TradeTaxCalculation.TradeList.First().AssetName).ToDictionary(group => group.Key, group => group.ToList());
+        return groupedTradeCalculations.GroupBy(TradeTaxCalculation => TradeTaxCalculation.TradeList[0].AssetName).ToDictionary(group => group.Key, group => group.ToList());
     }
 
     /// <summary>
@@ -193,9 +193,9 @@ public class UkTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorpo
             {
                 case ITradeTaxCalculation tradeTaxCalculation:
                     if (tradeTaxCalculation.CalculationCompleted) continue;
-                    if (unmatchedDisposal.Any() && tradeTaxCalculation.BuySell == TradeType.BUY)
+                    if (unmatchedDisposal.Count != 0 && tradeTaxCalculation.BuySell == TradeType.BUY)
                     {
-                        while (unmatchedDisposal.Any() && !tradeTaxCalculation.CalculationCompleted)
+                        while (unmatchedDisposal.Count != 0 && !tradeTaxCalculation.CalculationCompleted)
                         {
                             var nextTradeToMatch = unmatchedDisposal.Peek();
                             MatchTrade(nextTradeToMatch, tradeTaxCalculation, TaxMatchType.SHORTCOVER);
