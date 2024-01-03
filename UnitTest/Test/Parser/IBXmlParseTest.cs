@@ -5,6 +5,7 @@ using Model.TaxEvents;
 
 using Parser.InteractiveBrokersXml;
 
+using System.Globalization;
 using System.Xml.Linq;
 
 namespace UnitTest.Test.Parser;
@@ -55,7 +56,7 @@ public class IBXmlParseTest
         IList<StockSplit> parsedData = IBXmlStockSplitParser.ParseXml(_xmlDoc);
         parsedData.Count.ShouldBe(2);
         parsedData[0].AssetName.ShouldBe("4369.T");
-        parsedData[0].Date.ShouldBe(DateTime.Parse("27-Jan-21 20:25:00"));
+        parsedData[0].Date.ShouldBe(DateTime.Parse("27-Jan-21 20:25:00", CultureInfo.InvariantCulture));
         parsedData[0].NumberBeforeSplit.ShouldBe(1);
         parsedData[0].NumberAfterSplit.ShouldBe(4);
     }

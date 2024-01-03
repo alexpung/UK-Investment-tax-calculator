@@ -4,6 +4,7 @@ using Model;
 using Model.TaxEvents;
 
 using System.Collections.Immutable;
+using System.Globalization;
 using System.Xml.Linq;
 
 namespace Parser.InteractiveBrokersXml;
@@ -26,7 +27,7 @@ public static class IBXmlStockTradeParser
                 BuySell = GetTradeType(element),
                 AssetName = element.GetAttribute("symbol"),
                 Description = element.GetAttribute("description"),
-                Date = DateTime.Parse(element.GetAttribute("dateTime")),
+                Date = DateTime.Parse(element.GetAttribute("dateTime"), CultureInfo.InvariantCulture),
                 Quantity = GetQuantity(element),
                 GrossProceed = GetGrossProceed(element),
                 Expenses = BuildExpenses(element),

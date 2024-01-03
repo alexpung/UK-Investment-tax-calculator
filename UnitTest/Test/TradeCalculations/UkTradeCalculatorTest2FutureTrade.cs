@@ -5,6 +5,8 @@ using Model.Interfaces;
 using Model.TaxEvents;
 using Model.UkTaxModel;
 
+using System.Globalization;
+
 using TaxEvents;
 
 using UnitTest.Helper;
@@ -20,7 +22,7 @@ public class UkTradeCalculatorTest2FutureTrade
         {
             AssetName = "DEF Future",
             BuySell = TradeType.SELL,
-            Date = DateTime.Parse("05-May-21 12:34:56"),
+            Date = DateTime.Parse("05-May-21 12:34:56", CultureInfo.InvariantCulture),
             Description = "DEF Example Future",
             Quantity = 100,
             Expenses = [new DescribedMoney() { Description = "Commission", Amount = new(100m, "JPY"), FxRate = 0.006m }],
@@ -32,7 +34,7 @@ public class UkTradeCalculatorTest2FutureTrade
         {
             AssetName = "DEF Future",
             BuySell = TradeType.BUY,
-            Date = DateTime.Parse("06-Dec-21 12:34:56"),
+            Date = DateTime.Parse("06-Dec-21 12:34:56", CultureInfo.InvariantCulture),
             Description = "DEF Example Future",
             Quantity = 100,
             Expenses = [new DescribedMoney() { Description = "Commission", Amount = new(200m, "JPY"), FxRate = 0.007m }],
@@ -57,7 +59,7 @@ public class UkTradeCalculatorTest2FutureTrade
         {
             AssetName = "DEF Future",
             BuySell = TradeType.SELL,
-            Date = DateTime.Parse("05-May-21 12:34:56"),
+            Date = DateTime.Parse("05-May-21 12:34:56", CultureInfo.InvariantCulture),
             Description = "DEF Example Future",
             Quantity = 100,
             Expenses = [new DescribedMoney() { Description = "Commission", Amount = new(100m, "JPY"), FxRate = 0.006m }],
@@ -69,7 +71,7 @@ public class UkTradeCalculatorTest2FutureTrade
         {
             AssetName = "DEF Future",
             BuySell = TradeType.BUY,
-            Date = DateTime.Parse("05-May-21 13:34:56"),
+            Date = DateTime.Parse("05-May-21 13:34:56", CultureInfo.InvariantCulture),
             Description = "DEF Example Future",
             Quantity = 100,
             Expenses = [new DescribedMoney() { Description = "Commission", Amount = new(200m, "JPY"), FxRate = 0.007m }],
@@ -93,7 +95,7 @@ public class UkTradeCalculatorTest2FutureTrade
         {
             AssetName = "DEF Future",
             BuySell = TradeType.BUY,
-            Date = DateTime.Parse("05-May-21 12:34:56"),
+            Date = DateTime.Parse("05-May-21 12:34:56", CultureInfo.InvariantCulture),
             Description = "Purchase of DEF Future",
             Quantity = 100,
             Expenses = [new DescribedMoney() { Description = "Commission", Amount = new(100m, "JPY"), FxRate = 0.006m }],
@@ -106,7 +108,7 @@ public class UkTradeCalculatorTest2FutureTrade
         {
             AssetName = "DEF Future",
             BuySell = TradeType.SELL,
-            Date = DateTime.Parse("06-Dec-21 12:34:56"),
+            Date = DateTime.Parse("06-Dec-21 12:34:56", CultureInfo.InvariantCulture),
             Description = "Partial Sale of DEF Future",
             Quantity = 50,
             Expenses = [new DescribedMoney() { Description = "Commission", Amount = new(100m, "JPY"), FxRate = 0.007m }],
@@ -130,7 +132,7 @@ public class UkTradeCalculatorTest2FutureTrade
         {
             AssetName = "DEF Future",
             BuySell = TradeType.BUY,
-            Date = DateTime.Parse("01-Jun-22 10:30:00"),
+            Date = DateTime.Parse("01-Jun-22 10:30:00", CultureInfo.InvariantCulture),
             Description = "Purchase of DEF Future",
             Quantity = 150,
             Expenses = [new DescribedMoney() { Description = "Commission", Amount = new(150m, "JPY"), FxRate = 0.007m }],
@@ -143,7 +145,7 @@ public class UkTradeCalculatorTest2FutureTrade
         {
             AssetName = "DEF Future",
             BuySell = TradeType.SELL,
-            Date = DateTime.Parse("01-Jun-22 14:45:00"),
+            Date = DateTime.Parse("01-Jun-22 14:45:00", CultureInfo.InvariantCulture),
             Description = "Sale of DEF Future",
             Quantity = 150,
             Expenses = [new DescribedMoney() { Description = "Commission", Amount = new(200m, "JPY"), FxRate = 0.007m }],

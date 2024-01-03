@@ -3,6 +3,7 @@
 using Model;
 using Model.TaxEvents;
 
+using System.Globalization;
 using System.Xml.Linq;
 
 namespace Parser.InteractiveBrokersXml;
@@ -28,7 +29,7 @@ public class IBXmlFxParser
         foreach (XElement exchangeRate in exchangeRates)
         {
             ExchangeRateKey exchangeRateKey = new(
-                Date: DateOnly.Parse(exchangeRate.GetAttribute("reportDate")),
+                Date: DateOnly.Parse(exchangeRate.GetAttribute("reportDate"), CultureInfo.InvariantCulture),
                 FromCurrency: exchangeRate.GetAttribute("fromCurrency").ToLower(),
                 ToCurrency: exchangeRate.GetAttribute("toCurrency").ToLower()
             );
@@ -43,7 +44,7 @@ public class IBXmlFxParser
             decimal amountOfFx = Math.Abs(decimal.Parse(element.GetAttribute("amount")));
             if (amountOfFx == 0) return null; // Nothing to tax if amount is 0.
             string currency = element.GetAttribute("currency");
-            DateTime reportDate = DateTime.Parse(element.GetAttribute("reportDate"));
+            DateTime reportDate = DateTime.Parse(element.GetAttribute("reportDate"), CultureInfo.InvariantCulture);
             DescribedMoney valueInSterlingWrapped = new()
             {
                 Amount = new WrappedMoney(amountOfFx, currency),

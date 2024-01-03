@@ -5,7 +5,7 @@ using Model.Interfaces;
 using Model.TaxEvents;
 using Model.UkTaxModel;
 
-using System.Collections.Immutable;
+using System.Globalization;
 
 using UnitTest.Helper;
 
@@ -19,7 +19,7 @@ public class UkTradeCalculatorTest4Trades
         {
             AssetName = "ABC",
             BuySell = TradeType.BUY,
-            Date = DateTime.Parse("01-May-21 12:34:56"),
+            Date = DateTime.Parse("01-May-21 12:34:56", CultureInfo.InvariantCulture),
             Description = "ABC Example Stock",
             Quantity = 200,
             Expenses =
@@ -33,7 +33,7 @@ public class UkTradeCalculatorTest4Trades
         {
             AssetName = "ABC",
             BuySell = TradeType.BUY,
-            Date = DateTime.Parse("03-May-21 12:33:56"),
+            Date = DateTime.Parse("03-May-21 12:33:56", CultureInfo.InvariantCulture),
             Description = "ABC Example Stock",
             Quantity = 50,
             Expenses =
@@ -47,7 +47,7 @@ public class UkTradeCalculatorTest4Trades
         {
             AssetName = "ABC",
             BuySell = TradeType.SELL,
-            Date = DateTime.Parse("03-May-21 12:34:56"),
+            Date = DateTime.Parse("03-May-21 12:34:56", CultureInfo.InvariantCulture),
             Description = "ABC Example Stock",
             Quantity = 200,
             Expenses =
@@ -61,7 +61,7 @@ public class UkTradeCalculatorTest4Trades
         {
             AssetName = "ABC",
             BuySell = TradeType.BUY,
-            Date = DateTime.Parse("04-May-21 12:34:56"),
+            Date = DateTime.Parse("04-May-21 12:34:56", CultureInfo.InvariantCulture),
             Description = "ABC Example Stock",
             Quantity = 100,
             Expenses =
@@ -71,7 +71,7 @@ public class UkTradeCalculatorTest4Trades
             ],
             GrossProceed = new() { Description = "", Amount = new(600m, "USD"), FxRate = 0.86m },
         };
-        StockSplit stockSplit = new() { AssetName = "ABC", Date = DateTime.Parse("03-May-21 20:25:00"), NumberAfterSplit = 2, NumberBeforeSplit = 1 };
+        StockSplit stockSplit = new() { AssetName = "ABC", Date = DateTime.Parse("03-May-21 20:25:00", CultureInfo.InvariantCulture), NumberAfterSplit = 2, NumberBeforeSplit = 1 };
         List<ITradeTaxCalculation> result = TradeCalculationHelper.CalculateTrades(new List<TaxEvent>() { trade1, trade2, trade3, trade4, stockSplit }, out UkSection104Pools section104Pools);
         result[2].TotalProceeds.ShouldBe(new WrappedMoney(1834.725m));
         result[2].Gain.ShouldBe(new WrappedMoney(5.56m));
@@ -102,7 +102,7 @@ public class UkTradeCalculatorTest4Trades
         {
             AssetName = "Lobster plc",
             BuySell = TradeType.BUY,
-            Date = DateTime.Parse("01-Apr-14 12:33:56"),
+            Date = DateTime.Parse("01-Apr-14 12:33:56", CultureInfo.InvariantCulture),
             Description = "Lobster plc",
             Quantity = 1000,
             Expenses = [new DescribedMoney() { Description = "Commission", Amount = new(150m) }],
@@ -113,7 +113,7 @@ public class UkTradeCalculatorTest4Trades
         {
             AssetName = "Lobster plc",
             BuySell = TradeType.BUY,
-            Date = DateTime.Parse("01-Sep-17 12:33:56"),
+            Date = DateTime.Parse("01-Sep-17 12:33:56", CultureInfo.InvariantCulture),
             Description = "Lobster plc",
             Quantity = 500,
             Expenses = [new DescribedMoney() { Description = "Commission", Amount = new(80m) }],
@@ -124,7 +124,7 @@ public class UkTradeCalculatorTest4Trades
         {
             AssetName = "Lobster plc",
             BuySell = TradeType.SELL,
-            Date = DateTime.Parse("01-May-22 12:33:56"),
+            Date = DateTime.Parse("01-May-22 12:33:56", CultureInfo.InvariantCulture),
             Description = "Lobster plc",
             Quantity = 700,
             Expenses = [new DescribedMoney() { Description = "Commission", Amount = new(100m) }],
@@ -135,7 +135,7 @@ public class UkTradeCalculatorTest4Trades
         {
             AssetName = "Lobster plc",
             BuySell = TradeType.SELL,
-            Date = DateTime.Parse("01-Feb-23 12:33:56"),
+            Date = DateTime.Parse("01-Feb-23 12:33:56", CultureInfo.InvariantCulture),
             Description = "Lobster plc",
             Quantity = 400,
             Expenses = [new DescribedMoney() { Description = "Commission", Amount = new(105m) }],

@@ -5,7 +5,7 @@ using Model.Interfaces;
 using Model.TaxEvents;
 using Model.UkTaxModel;
 
-using System.Collections.Immutable;
+using System.Globalization;
 
 using UnitTest.Helper;
 
@@ -22,7 +22,7 @@ public class UkTradeCalculatorTest3Trades
         {
             AssetName = "DEF",
             BuySell = TradeType.SELL,
-            Date = DateTime.Parse("08-Apr-21 12:34:56"),
+            Date = DateTime.Parse("08-Apr-21 12:34:56", CultureInfo.InvariantCulture),
             Description = "DEF Example Stock",
             Quantity = 100,
             GrossProceed = new() { Description = "Commission", Amount = new(1000m) },
@@ -31,7 +31,7 @@ public class UkTradeCalculatorTest3Trades
         {
             AssetName = "DEF",
             BuySell = TradeType.SELL,
-            Date = DateTime.Parse("06-May-21 13:34:56"),
+            Date = DateTime.Parse("06-May-21 13:34:56", CultureInfo.InvariantCulture),
             Description = "DEF Example Stock",
             Quantity = 100,
             GrossProceed = new() { Description = "Commission", Amount = new(1500m) },
@@ -40,7 +40,7 @@ public class UkTradeCalculatorTest3Trades
         {
             AssetName = "DEF",
             BuySell = TradeType.BUY,
-            Date = DateTime.Parse("09-May-21 13:34:56"),
+            Date = DateTime.Parse("09-May-21 13:34:56", CultureInfo.InvariantCulture),
             Description = "DEF Example Stock",
             Quantity = 300,
             GrossProceed = new() { Description = "", Amount = new(5000m) },
@@ -63,7 +63,7 @@ public class UkTradeCalculatorTest3Trades
         {
             AssetName = "Mesopotamia plc",
             BuySell = TradeType.BUY,
-            Date = DateTime.Parse("11-Sep-20 12:00:00"),
+            Date = DateTime.Parse("11-Sep-20 12:00:00", CultureInfo.InvariantCulture),
             Description = "Purchase of 9500 shares",
             Quantity = 9500,
             GrossProceed = new() { Description = "", Amount = new(1850.0m, "GBP"), FxRate = 1.0m },
@@ -73,7 +73,7 @@ public class UkTradeCalculatorTest3Trades
         {
             AssetName = "Mesopotamia plc",
             BuySell = TradeType.SELL,
-            Date = DateTime.Parse("30-Aug-21 14:00:00"),
+            Date = DateTime.Parse("30-Aug-21 14:00:00", CultureInfo.InvariantCulture),
             Description = "Sale of 4,000 shares",
             Quantity = 4000,
             GrossProceed = new() { Description = "", Amount = new(6000.0m, "GBP"), FxRate = 1.0m },
@@ -85,7 +85,7 @@ public class UkTradeCalculatorTest3Trades
         {
             AssetName = "Mesopotamia plc",
             BuySell = TradeType.BUY,
-            Date = DateTime.Parse("11-Sep-21 12:00:00"),
+            Date = DateTime.Parse("11-Sep-21 12:00:00", CultureInfo.InvariantCulture),
             Description = "Purchase of 500 shares",
             Quantity = 500,
             GrossProceed = new() { Description = "", Amount = new(850.0m, "GBP"), FxRate = 1.0m },
@@ -119,7 +119,7 @@ public class UkTradeCalculatorTest3Trades
         {
             AssetName = "ABC",
             BuySell = TradeType.BUY,
-            Date = DateTime.Parse("01-Jan-22 10:00:00"),
+            Date = DateTime.Parse("01-Jan-22 10:00:00", CultureInfo.InvariantCulture),
             Description = "Purchase of 100 shares",
             Quantity = 100,
             Expenses = [new DescribedMoney() { Description = "Commission", Amount = new(2.0m, "GBP"), FxRate = 1.0m }],
@@ -130,7 +130,7 @@ public class UkTradeCalculatorTest3Trades
         {
             AssetName = "ABC",
             BuySell = TradeType.SELL,
-            Date = DateTime.Parse("01-Jan-22 14:00:00"),
+            Date = DateTime.Parse("01-Jan-22 14:00:00", CultureInfo.InvariantCulture),
             Description = "Sale of 200 shares (Same Day)",
             Quantity = 200,
             Expenses = [new DescribedMoney() { Description = "Commission", Amount = new(1.0m, "GBP"), FxRate = 1.0m }],
@@ -141,7 +141,7 @@ public class UkTradeCalculatorTest3Trades
         {
             AssetName = "ABC",
             BuySell = TradeType.BUY,
-            Date = DateTime.Parse("01-Feb-22 10:00:00"), // Within 30 days
+            Date = DateTime.Parse("01-Feb-22 10:00:00", CultureInfo.InvariantCulture), // Within 30 days
             Description = "Purchase of 100 shares (Bed and Breakfast)",
             Quantity = 100,
             Expenses = [new DescribedMoney() { Description = "Commission", Amount = new(2.0m, "GBP"), FxRate = 1.0m }],
@@ -166,7 +166,7 @@ public class UkTradeCalculatorTest3Trades
         {
             AssetName = "AncientArtifacts Ltd",
             BuySell = TradeType.BUY,
-            Date = DateTime.Parse("15-Jan-20 10:00:00"),
+            Date = DateTime.Parse("15-Jan-20 10:00:00", CultureInfo.InvariantCulture),
             Description = "Purchase of 10,000 shares",
             Quantity = 10000,
             GrossProceed = new() { Description = "", Amount = new(2000.0m, "GBP"), FxRate = 1.0m },
@@ -176,7 +176,7 @@ public class UkTradeCalculatorTest3Trades
         {
             AssetName = "AncientArtifacts Ltd",
             BuySell = TradeType.SELL,
-            Date = DateTime.Parse("20-Aug-21 11:00:00"),
+            Date = DateTime.Parse("20-Aug-21 11:00:00", CultureInfo.InvariantCulture),
             Description = "Sale of 3,000 shares",
             Quantity = 3000,
             GrossProceed = new() { Description = "", Amount = new(2500.0m, "GBP"), FxRate = 1.0m },
@@ -186,7 +186,7 @@ public class UkTradeCalculatorTest3Trades
         {
             AssetName = "AncientArtifacts Ltd",
             BuySell = TradeType.BUY,
-            Date = DateTime.Parse("01-Sep-21 15:00:00"),
+            Date = DateTime.Parse("01-Sep-21 15:00:00", CultureInfo.InvariantCulture),
             Description = "Purchase of 2,000 shares",
             Quantity = 2000,
             GrossProceed = new() { Description = "", Amount = new(1500.0m, "GBP"), FxRate = 1.0m },

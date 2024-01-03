@@ -1,5 +1,6 @@
 ﻿using Model.TaxEvents;
 
+using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
@@ -22,7 +23,7 @@ public static class IBXmlStockSplitParser
         return new StockSplit
         {
             AssetName = element.GetAttribute("symbol"),
-            Date = DateTime.Parse(element.GetAttribute("dateTime")),
+            Date = DateTime.Parse(element.GetAttribute("dateTime"), CultureInfo.InvariantCulture),
             NumberBeforeSplit = ushort.Parse(matchResult.Groups[2].Value),
             NumberAfterSplit = ushort.Parse(matchResult.Groups[1].Value),
         };

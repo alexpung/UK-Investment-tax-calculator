@@ -5,7 +5,7 @@ using Model.Interfaces;
 using Model.TaxEvents;
 using Model.UkTaxModel;
 
-using System.Collections.Immutable;
+using System.Globalization;
 
 using UnitTest.Helper;
 
@@ -19,7 +19,7 @@ public class UkTradeCalculatorTest2Trade
         {
             AssetName = "DEF",
             BuySell = TradeType.SELL,
-            Date = DateTime.Parse("05-May-21 12:34:56"),
+            Date = DateTime.Parse("05-May-21 12:34:56", CultureInfo.InvariantCulture),
             Description = "DEF Example Stock",
             Quantity = 100,
             Expenses = [new DescribedMoney() { Description = "Commission", Amount = new(1.5m, "USD"), FxRate = 0.86m }],
@@ -29,7 +29,7 @@ public class UkTradeCalculatorTest2Trade
         {
             AssetName = "DEF",
             BuySell = TradeType.BUY,
-            Date = DateTime.Parse("06-Dec-21 12:34:56"),
+            Date = DateTime.Parse("06-Dec-21 12:34:56", CultureInfo.InvariantCulture),
             Description = "DEF Example Stock",
             Quantity = 100,
             Expenses = [new DescribedMoney() { Description = "Commission", Amount = new(1.5m, "USD"), FxRate = 0.86m }],
@@ -51,7 +51,7 @@ public class UkTradeCalculatorTest2Trade
         {
             AssetName = "ABC",
             BuySell = TradeType.BUY,
-            Date = DateTime.Parse("01-Jan-21 10:00:00"),
+            Date = DateTime.Parse("01-Jan-21 10:00:00", CultureInfo.InvariantCulture),
             Description = "Purchase of ABC Stock",
             Quantity = 200,
             Expenses = [new DescribedMoney() { Description = "Commission", Amount = new(2.0m, "USD"), FxRate = 0.85m }],
@@ -63,7 +63,7 @@ public class UkTradeCalculatorTest2Trade
         {
             AssetName = "ABC",
             BuySell = TradeType.SELL,
-            Date = DateTime.Parse("15-Dec-21 15:30:00"),
+            Date = DateTime.Parse("15-Dec-21 15:30:00", CultureInfo.InvariantCulture),
             Description = "Sale of ABC Stock",
             Quantity = 150,
             Expenses = [new DescribedMoney() { Description = "Commission", Amount = new(1.5m, "USD"), FxRate = 0.85m }],
@@ -87,7 +87,7 @@ public class UkTradeCalculatorTest2Trade
         {
             AssetName = "XYZ",
             BuySell = TradeType.BUY,
-            Date = DateTime.Parse("02-Feb-22 09:30:00"),
+            Date = DateTime.Parse("02-Feb-22 09:30:00", CultureInfo.InvariantCulture),
             Description = "Purchase of XYZ Stock",
             Quantity = 100,
             Expenses = [new DescribedMoney() { Description = "Commission", Amount = new(1.0m, "USD"), FxRate = 0.88m }],
@@ -98,7 +98,7 @@ public class UkTradeCalculatorTest2Trade
         {
             AssetName = "XYZ",
             BuySell = TradeType.SELL,
-            Date = DateTime.Parse("02-Feb-22 15:45:00"),
+            Date = DateTime.Parse("02-Feb-22 15:45:00", CultureInfo.InvariantCulture),
             Description = "Sale of XYZ Stock",
             Quantity = 100,
             Expenses = [new DescribedMoney() { Description = "Commission", Amount = new(1.0m, "USD"), FxRate = 0.85m }],
@@ -122,7 +122,7 @@ public class UkTradeCalculatorTest2Trade
         {
             AssetName = "BBB",
             BuySell = TradeType.SELL,
-            Date = DateTime.Parse("12-Apr-22 15:45:00"),
+            Date = DateTime.Parse("12-Apr-22 15:45:00", CultureInfo.InvariantCulture),
             Description = "Sale of BBB Stock",
             Quantity = 100,
             Expenses = [new DescribedMoney() { Description = "Commission", Amount = new(1.0m, "USD"), FxRate = 0.88m }], // Different FX rate
@@ -133,7 +133,7 @@ public class UkTradeCalculatorTest2Trade
         {
             AssetName = "BBB",
             BuySell = TradeType.BUY,
-            Date = DateTime.Parse("12-May-22 09:30:00"),
+            Date = DateTime.Parse("12-May-22 09:30:00", CultureInfo.InvariantCulture),
             Description = "Purchase of BBB Stock",
             Quantity = 200,
             Expenses = [new DescribedMoney() { Description = "Commission", Amount = new(2.0m, "USD"), FxRate = 0.85m }],

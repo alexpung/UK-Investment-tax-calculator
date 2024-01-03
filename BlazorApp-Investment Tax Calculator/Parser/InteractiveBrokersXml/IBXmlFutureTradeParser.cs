@@ -4,6 +4,7 @@ using Model;
 using Model.TaxEvents;
 
 using System.Collections.Immutable;
+using System.Globalization;
 using System.Xml.Linq;
 
 using TaxEvents;
@@ -29,7 +30,7 @@ public static class IBXmlFutureTradeParser
                 BuySell = GetTradeType(element),
                 AssetName = element.GetAttribute("symbol"),
                 Description = element.GetAttribute("description"),
-                Date = DateTime.Parse(element.GetAttribute("dateTime")),
+                Date = DateTime.Parse(element.GetAttribute("dateTime"), CultureInfo.InvariantCulture),
                 Quantity = GetQuantity(element),
                 GrossProceed = new DescribedMoney() { Amount = WrappedMoney.GetBaseCurrencyZero() },
                 Expenses = BuildExpenses(element),

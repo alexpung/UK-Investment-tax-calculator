@@ -24,7 +24,7 @@ public static class IBXmlDividendParser
             {
                 DividendType = GetDividendType(element),
                 AssetName = element.GetAttribute("symbol"),
-                Date = DateTime.Parse(element.GetAttribute("settleDate")),
+                Date = DateTime.Parse(element.GetAttribute("settleDate"), CultureInfo.InvariantCulture),
                 CompanyLocation = GetCompanyLocation(element),
                 Proceed = element.BuildDescribedMoney("amount", "currency", "fxRateToBase", element.GetAttribute("description"))
             };
