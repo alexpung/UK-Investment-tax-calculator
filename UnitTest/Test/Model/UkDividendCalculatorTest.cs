@@ -19,7 +19,7 @@ public class UkDividendCalculatorTest
     [Fact]
     public void TestDividendCalculation()
     {
-        List<Dividend> data = new() {
+        List<Dividend> data = [
             new Dividend()
             {
                 AssetName = "MTR Corporation",
@@ -84,7 +84,7 @@ public class UkDividendCalculatorTest
                 Date = new DateTime(2022, 8, 6),
                 Proceed = new DescribedMoney { Amount = new WrappedMoney(1500, "JPY"), Description = "Sony Corporation withholding tax", FxRate = 0.007m }
             }
-        };
+        ];
         UkDividendCalculator calculator = SetUpCalculator(data);
         List<DividendSummary> result = calculator.CalculateTax();
         result.Count.ShouldBe(3);

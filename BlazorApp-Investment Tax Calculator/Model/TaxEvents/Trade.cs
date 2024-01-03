@@ -14,7 +14,7 @@ public record Trade : TaxEvent, ITextFilePrintable
     public virtual required decimal Quantity { get; set; }
     public virtual required DescribedMoney GrossProceed { get; set; }
     public string Description { get; set; } = string.Empty;
-    public ImmutableList<DescribedMoney> Expenses { get; init; } = ImmutableList<DescribedMoney>.Empty;
+    public ImmutableList<DescribedMoney> Expenses { get; init; } = [];
     public virtual WrappedMoney NetProceed
     {
         get

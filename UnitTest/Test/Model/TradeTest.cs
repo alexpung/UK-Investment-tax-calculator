@@ -48,11 +48,11 @@ public class TradeTests
                 Amount = new WrappedMoney(100),
                 Description = "Trade gross proceed"
             },
-            Expenses = new List<DescribedMoney>
-            {
+            Expenses =
+            [
                 new DescribedMoney { Amount = new WrappedMoney(10), Description = "Expense 1" },
                 new DescribedMoney { Amount = new WrappedMoney(20), Description = "Expense 2" }
-            }.ToImmutableList(),
+            ],
         };
 
         // Act

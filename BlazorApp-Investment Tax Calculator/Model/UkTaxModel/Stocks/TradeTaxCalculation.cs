@@ -15,7 +15,7 @@ namespace Model.UkTaxModel.Stocks;
 public class TradeTaxCalculation : ITradeTaxCalculation
 {
     public List<Trade> TradeList { get; init; }
-    public List<TradeMatch> MatchHistory { get; init; } = new List<TradeMatch>();
+    public List<TradeMatch> MatchHistory { get; init; } = [];
     public WrappedMoney TotalAllowableCost => MatchHistory.Sum(tradeMatch => tradeMatch.BaseCurrencyMatchAllowableCost);
     public WrappedMoney TotalProceeds => MatchHistory.Sum(tradeMatch => tradeMatch.BaseCurrencyMatchDisposalProceed);
     public WrappedMoney Gain => TotalProceeds - TotalAllowableCost;

@@ -4,16 +4,9 @@ using System.Collections.Concurrent;
 
 namespace Model;
 
-public class TradeCalculationResult
+public class TradeCalculationResult(ITaxYear taxYear)
 {
-    private readonly ITaxYear _taxYear;
-
-    public TradeCalculationResult(ITaxYear taxYear)
-    {
-        _taxYear = taxYear;
-    }
-
-    public ConcurrentBag<ITradeTaxCalculation> CalculatedTrade { get; set; } = new();
+    public ConcurrentBag<ITradeTaxCalculation> CalculatedTrade { get; set; } = [];
     public IEnumerable<ITradeTaxCalculation> GetDisposals => CalculatedTrade.Where(trade => trade.BuySell == Enum.TradeType.SELL);
 
     public void Clear()
@@ -31,7 +24,7 @@ public class TradeCalculationResult
 
     private bool IsTradeInSelectedTaxYear(IEnumerable<int> selectedYears, ITradeTaxCalculation taxCalculation)
     {
-        return selectedYears.Contains(_taxYear.ToTaxYear(taxCalculation.Date));
+        return selectedYears.Contains(taxYear.ToTaxYear(taxCalculation.Date));
     }
 
     // Rounding to tax payer benefit https://www.gov.uk/hmrc-internal-manuals/self-assessment-manual/sam121370

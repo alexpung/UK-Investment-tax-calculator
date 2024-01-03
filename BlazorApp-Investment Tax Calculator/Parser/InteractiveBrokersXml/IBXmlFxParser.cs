@@ -9,7 +9,7 @@ namespace Parser.InteractiveBrokersXml;
 
 public class IBXmlFxParser
 {
-    private readonly Dictionary<ExchangeRateKey, decimal> _exchangeRateCache = new();
+    private readonly Dictionary<ExchangeRateKey, decimal> _exchangeRateCache = [];
     public IList<Trade> ParseXml(XElement document)
     {
         CacheExchangeRates(document);

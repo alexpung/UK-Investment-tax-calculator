@@ -1,11 +1,11 @@
 ﻿namespace Model.UkTaxModel;
 public class UkSection104Pools
 {
-    private readonly Dictionary<string, UkSection104> _section104Pools = new();
+    private readonly Dictionary<string, UkSection104> _section104Pools = [];
 
     public List<UkSection104> GetSection104s()
     {
-        return _section104Pools.Values.ToList();
+        return [.. _section104Pools.Values];
     }
 
     /// <summary>

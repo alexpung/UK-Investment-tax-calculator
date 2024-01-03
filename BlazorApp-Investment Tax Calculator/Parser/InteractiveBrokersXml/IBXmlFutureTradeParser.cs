@@ -66,7 +66,7 @@ public static class IBXmlFutureTradeParser
 
     private static ImmutableList<DescribedMoney> BuildExpenses(XElement element)
     {
-        List<DescribedMoney> expenses = new();
+        List<DescribedMoney> expenses = [];
         if (element.GetAttribute("ibCommission") != "0")
         {
             expenses.Add(element.BuildDescribedMoney("ibCommission", "ibCommissionCurrency", "fxRateToBase", "Commission", true));
@@ -75,7 +75,7 @@ public static class IBXmlFutureTradeParser
         {
             expenses.Add(element.BuildDescribedMoney("taxes", "currency", "fxRateToBase", "Tax", true));
         }
-        return expenses.ToImmutableList();
+        return [.. expenses];
     }
 }
 
