@@ -1,10 +1,27 @@
-﻿@using Model;
-@using Model.Interfaces;
-@using Services;
+﻿@using Model
+@using Model.Interfaces
+@using Services
+@using Syncfusion.Blazor.DropDowns
 
 @inject TradeCalculationResult tradeCalculationResult
 @inject DividendCalculationResult dividendCalculationResult
 @inject YearOptions years
+@inject YearOptions yearOptions
+
+<p>Select Year to display/Export:</p>
+<SfMultiSelect 
+    @bind-Value="yearOptions.SelectedOptions" 
+    Placeholder="Select Years"
+    Mode="VisualMode.CheckBox"
+    ShowSelectAll=true
+    SelectAllText="Select All"
+    UnSelectAllText="Unselect All"
+    DataSource=@yearOptions.Options>
+    <MultiSelectFieldSettings
+        Text="Years"
+        Value="Years">
+    </MultiSelectFieldSettings>
+</SfMultiSelect>
 
 <h3><p>Tax Summary:</p></h3>
 
@@ -16,3 +33,6 @@
 <p>Total Dividend: @dividendCalculationResult.GetTotalDividend(years.SelectedOptions)</p>
 <p>Total Foreign Witholding Tax Paid: @dividendCalculationResult.GetForeignTaxPaid(years.SelectedOptions)</p>
 
+@code{
+    [Parameter] public Func<bool>? ShouldReRender { get; set; }
+}
