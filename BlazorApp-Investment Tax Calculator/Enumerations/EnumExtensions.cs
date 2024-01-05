@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Reflection;
-namespace Enum;
+namespace Enumerations;
 public static class EnumExtensions
 {
     /// <summary>

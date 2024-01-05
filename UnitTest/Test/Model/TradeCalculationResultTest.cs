@@ -1,6 +1,6 @@
 ﻿namespace UnitTest.Test.Model;
 
-using Enum;
+using Enumerations;
 
 using global::Model;
 using global::Model.Interfaces;

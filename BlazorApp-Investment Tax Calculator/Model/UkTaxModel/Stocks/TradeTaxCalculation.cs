@@ -1,4 +1,4 @@
-﻿using Enum;
+﻿using Enumerations;
 
 using Model;
 using Model.Interfaces;

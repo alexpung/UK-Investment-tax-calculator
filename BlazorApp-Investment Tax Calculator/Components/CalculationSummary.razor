@@ -1,0 +1,18 @@
+﻿@using Model;
+@using Model.Interfaces;
+@using Services;
+
+@inject TradeCalculationResult tradeCalculationResult
+@inject DividendCalculationResult dividendCalculationResult
+@inject YearOptions years
+
+<h3><p>Tax Summary:</p></h3>
+
+<p>Number of disposals: @tradeCalculationResult.NumberOfDisposals(years.SelectedOptions)</p>
+<p>Total Disposal Proceed: @tradeCalculationResult.DisposalProceeds(years.SelectedOptions)</p>
+<p>Total Allowable Cost: @tradeCalculationResult.AllowableCosts(years.SelectedOptions)</p>
+<p>Total Gain: @tradeCalculationResult.TotalGain(years.SelectedOptions)</p>
+<p>Total Loss: @tradeCalculationResult.TotalLoss(years.SelectedOptions)</p>
+<p>Total Dividend: @dividendCalculationResult.GetTotalDividend(years.SelectedOptions)</p>
+<p>Total Foreign Witholding Tax Paid: @dividendCalculationResult.GetForeignTaxPaid(years.SelectedOptions)</p>
+

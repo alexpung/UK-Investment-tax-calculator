@@ -1,0 +1,19 @@
+﻿@using Services
+@using Syncfusion.Blazor.DropDowns
+
+@inject YearOptions yearOptions;
+
+<p>Select Year to display/Export:</p>
+<SfMultiSelect 
+    @bind-Value="yearOptions.SelectedOptions" 
+    Placeholder="Select Years"
+    Mode="VisualMode.CheckBox"
+    ShowSelectAll=true
+    SelectAllText="Select All"
+    UnSelectAllText="Unselect All"
+    DataSource=@yearOptions.Options>
+    <MultiSelectFieldSettings
+        Text="Years"
+        Value="Years">
+    </MultiSelectFieldSettings>
+</SfMultiSelect>

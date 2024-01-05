@@ -1,0 +1,43 @@
+﻿@using Syncfusion.Blazor.Buttons
+@using System.Collections.ObjectModel;
+@using Model.UkTaxModel;
+@using Model;
+@using Model.Interfaces;
+@using Enumerations;
+
+
+@using Services
+@inject UkSection104Pools section104Pools
+@inject IDividendCalculator dividendCalculator
+@inject DividendCalculationResult dividendCalculationResult
+@inject TradeCalculationResult tradeCalculationResult
+@inject IEnumerable<ITradeCalculator> tradeCalculators
+@inject YearOptions years
+@inject ITaxYear taxYear
+
+<h3><p>Calculation</p></h3>
+
+<SfButton @onclick="OnStartCalculation"> Start Calculation </SfButton>
+
+@code{
+        public async Task OnStartCalculation()
+        {
+            section104Pools.Clear();
+            tradeCalculationResult.Clear();
+            foreach (ITradeCalculator tradeCalculator in tradeCalculators)
+            {
+                tradeCalculationResult.SetResult(await Task.Run(tradeCalculator.CalculateTax));
+            }
+            dividendCalculationResult.SetResult(await Task.Run(dividendCalculator.CalculateTax));
+            years.SetYears(GetSelectableYears());
+        }
+
+    private IEnumerable<int> GetSelectableYears()
+    {
+        IEnumerable<int> taxYearsWithDisposal = tradeCalculationResult.CalculatedTrade.Where(trade => trade.BuySell == TradeType.SELL)
+                                                 .Select(trade => taxYear.ToTaxYear(trade.Date))
+                                                 .Distinct();
+        IEnumerable<int> taxYearsWithDividend = dividendCalculationResult.DividendSummary.Select(dividend => dividend.TaxYear).Distinct();
+        return taxYearsWithDisposal.Union(taxYearsWithDividend).OrderByDescending(i => i);
+    }
+}

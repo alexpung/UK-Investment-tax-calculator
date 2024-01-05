@@ -1,5 +1,7 @@
 ﻿using Model;
+
 using NMoneys;
+
 using System.Collections;
 
 namespace UnitTest.Test.Model;
@@ -69,9 +71,9 @@ public class MoneyTest
     public void TestObjectWithCurrencySum()
     {
         List<DescribedMoney> moneys =
-        [new DescribedMoney() { Amount= new WrappedMoney(10m, "Gbp") },
-          new DescribedMoney() { Amount= new WrappedMoney(20.1m, "Gbp") },
-          new DescribedMoney() { Amount= new WrappedMoney(0.2m, "Gbp") },
+        [new DescribedMoney() { Amount = new WrappedMoney(10m, "Gbp") },
+            new DescribedMoney() { Amount = new WrappedMoney(20.1m, "Gbp") },
+            new DescribedMoney() { Amount = new WrappedMoney(0.2m, "Gbp") },
         ];
         moneys.Sum(i => i.Amount).ShouldBeEquivalentTo(new WrappedMoney(30.3m, "Gbp"));
     }

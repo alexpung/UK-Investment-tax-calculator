@@ -1,4 +1,4 @@
-﻿using Enum;
+﻿using Enumerations;
 
 namespace Model.TaxEvents;
 

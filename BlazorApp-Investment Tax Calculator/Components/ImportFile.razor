@@ -1,9 +1,11 @@
-﻿@using ViewModel;
-@using Model.Interfaces;
+﻿@using Model.Interfaces;
 @using Syncfusion.Blazor.Inputs
+@using Microsoft.AspNetCore.Components.Forms;
+@using Model;
+@using Parser;
 
-@inject LoadFileViewModel loadFileViewModel
-@inject LoadedFilesStatisticsViewModel loadedFileStatisticsViewModel
+@inject TaxEventLists taxEventLists;
+@inject FileParseController fileParseController;
 
 <p>Import and Export</p>
 
@@ -22,17 +24,17 @@
         <UploaderEvents ValueChange="LoadFiles"></UploaderEvents>
 </SfUploader>
 </p>
-<p> Number of tax events: @loadedFileStatisticsViewModel.NumberOfTaxEvents</p>
-<p> Number of dividends imported: @loadedFileStatisticsViewModel.NumberOfDividends</p>
-<p> Number of trades imported: @loadedFileStatisticsViewModel.NumberOfTrades</p>
-<p> Number of corporate actions imported: @loadedFileStatisticsViewModel.NumberOfCorporateActions</p>
+<p> Number of tax events: @taxEventLists.GetTotalNumberOfEvents()</p>
+<p> Number of dividends imported: @taxEventLists.Dividends.Count</p>
+<p> Number of trades imported: @taxEventLists.Trades.Count</p>
+<p> Number of corporate actions imported: @taxEventLists.CorporateActions.Count</p>
 
 @code {
     private async Task LoadFiles(UploadChangeEventArgs args)
     {
         foreach (var file in args.Files)
         {
-            await loadFileViewModel.LoadFile(file.File);
+            taxEventLists.AddData(await fileParseController.ReadFile(file.File));
         }
         args.Files.Clear();
     }

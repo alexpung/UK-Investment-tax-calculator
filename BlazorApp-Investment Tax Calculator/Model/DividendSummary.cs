@@ -1,5 +1,7 @@
-﻿using Enum;
+﻿using Enumerations;
+
 using Model.TaxEvents;
+
 using System.Globalization;
 
 namespace Model;

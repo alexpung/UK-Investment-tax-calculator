@@ -1,9 +1,6 @@
-﻿using CommunityToolkit.Mvvm.Messaging;
-using ViewModel.Messages;
+﻿namespace Services;
 
-namespace ViewModel.Options;
-
-public class YearOptions(IMessenger messenger)
+public class YearOptions
 {
     public List<DropdownYearItems> Options { get; set; } = [];
     private List<int> _selectedOptions = [];
@@ -20,7 +17,6 @@ public class YearOptions(IMessenger messenger)
             {
                 _selectedOptions = value;
             }
-            messenger.Send<YearSelectionChangedMessage>();
         }
     }
 

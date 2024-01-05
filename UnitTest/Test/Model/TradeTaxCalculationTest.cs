@@ -1,5 +1,5 @@
 ﻿namespace UnitTest.Test.Model;
-using Enum;
+using Enumerations;
 
 using global::Model;
 using global::Model.TaxEvents;
@@ -11,7 +11,6 @@ using System;
 using System.Collections.Generic;
 
 using Xunit;
-
 
 public class TradeTaxCalculationTests
 {
