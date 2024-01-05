@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Components.Forms;
+﻿using Enumerations;
+
+using Microsoft.AspNetCore.Components.Forms;
 
 using Model;
 using Model.TaxEvents;
@@ -17,7 +19,7 @@ public class FileParseControllerTest
     {
         AssetName = "Test",
         Quantity = 100,
-        BuySell = Enum.TradeType.BUY,
+        BuySell = TradeType.BUY,
         Date = new DateTime(2022, 1, 1, 0, 0, 0, DateTimeKind.Local),
         GrossProceed = new DescribedMoney() { Amount = new WrappedMoney(100, "GBP") }
     };
@@ -25,7 +27,7 @@ public class FileParseControllerTest
     {
         AssetName = "Test2",
         Date = new DateTime(2022, 1, 1, 0, 0, 0, DateTimeKind.Local),
-        DividendType = Enum.DividendType.WITHHOLDING,
+        DividendType = DividendType.WITHHOLDING,
         Proceed = new DescribedMoney() { Amount = new WrappedMoney(100, "GBP") }
     };
     private readonly StockSplit _mockStockSplitObject = new() { AssetName = "Test3", Date = new DateTime(2022, 1, 1, 0, 0, 0, DateTimeKind.Local), NumberAfterSplit = 1, NumberBeforeSplit = 2 };

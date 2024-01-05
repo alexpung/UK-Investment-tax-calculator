@@ -1,4 +1,5 @@
-﻿using Enum;
+﻿using Enumerations;
+
 using Model.Interfaces;
 using Model.UkTaxModel;
 using Model.UkTaxModel.Stocks;

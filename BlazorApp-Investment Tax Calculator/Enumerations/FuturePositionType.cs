@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace Enum;
+namespace Enumerations;
 
 public enum FuturePositionType
 {

@@ -1,5 +1,5 @@
 ﻿namespace UnitTest.Test.Model.UkTaxModel;
-using Enum;
+using Enumerations;
 
 using global::Model;
 using global::Model.Interfaces;

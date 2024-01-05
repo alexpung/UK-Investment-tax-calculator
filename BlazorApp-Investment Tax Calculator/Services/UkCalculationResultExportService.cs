@@ -1,5 +1,8 @@
-﻿using Model;
+﻿using Enumerations;
+
+using Model;
 using Model.Interfaces;
+
 using System.Text;
 
 namespace Services;
@@ -12,8 +15,9 @@ public class UkCalculationResultExportService(ITaxYear taxYear, TradeCalculation
         foreach (int year in yearsToExport.OrderByDescending(i => i))
         {
             output.Append(WriteTaxYearSummary(year, tradeCalculationResult));
-            IEnumerable<ITradeTaxCalculation> yearFilteredTradeCalculations = tradeCalculationResult.CalculatedTrade.Where(i => taxYear.ToTaxYear(i.Date) == year && i.BuySell == Enum.TradeType.SELL)
-                                                                                                 .OrderBy(i => i.Date);
+            IEnumerable<ITradeTaxCalculation> yearFilteredTradeCalculations = tradeCalculationResult
+                .CalculatedTrade.Where(i => taxYear.ToTaxYear(i.Date) == year && i.BuySell == TradeType.SELL)
+                .OrderBy(i => i.Date);
             output.AppendLine();
             output.Append(WriteDisposalDetails(yearFilteredTradeCalculations));
             output.AppendLine();

@@ -1,4 +1,5 @@
 using Model;
+
 using Moq;
 
 namespace UnitTest.Test.Model;
