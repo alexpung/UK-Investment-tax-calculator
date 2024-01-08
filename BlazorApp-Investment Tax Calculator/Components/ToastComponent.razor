@@ -2,19 +2,9 @@
 @using Syncfusion.Blazor.Notifications
 @inject ToastService ToastService
  
-<SfToast @ref="Toast" Timeout=50000 ExtendedTimeout=50000 Title="@Options.Title" Content="@Options.Content" CssClass="@ToastCssClass" ShowCloseButton=true>
+<SfToast @ref="Toast" Timeout=5000 ExtendedTimeout=20000 Title="@Options.Title" Content="@Options.Content" CssClass="@ToastCssClass" ShowCloseButton=true>
     <ToastPosition X="Center" Y="Bottom"></ToastPosition>
 </SfToast>
-
-<style>
-    .e-toast .e-toast-danger {
-        width: 600px; /* Adjust width as necessary */
-        height: auto; /* Height adjusts to content */
-        overflow: auto; /* Adds scrollbar if content overflows */
-        word-wrap: break-word; /* Ensures long words don't overflow */
-        padding: 10px; /* Adjust padding as necessary */
-    }
-</style>
   
 @code{
 

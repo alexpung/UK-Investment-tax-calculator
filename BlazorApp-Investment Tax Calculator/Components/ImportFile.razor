@@ -1,11 +1,13 @@
-﻿@using Model.Interfaces;
+﻿@using Model.Interfaces
 @using Syncfusion.Blazor.Inputs
-@using Microsoft.AspNetCore.Components.Forms;
-@using Model;
-@using Parser;
+@using Microsoft.AspNetCore.Components.Forms
+@using Model
+@using Parser
+@using Services
 
-@inject TaxEventLists taxEventLists;
-@inject FileParseController fileParseController;
+@inject TaxEventLists taxEventLists
+@inject FileParseController fileParseController
+@inject ToastService toastService
 
 <p>Import and Export</p>
 
@@ -37,5 +39,6 @@
             taxEventLists.AddData(await fileParseController.ReadFile(file.File));
         }
         args.Files.Clear();
+        toastService.ShowToast("Information", "File loading completed.", ToastOptionType.Info);
     }
 }

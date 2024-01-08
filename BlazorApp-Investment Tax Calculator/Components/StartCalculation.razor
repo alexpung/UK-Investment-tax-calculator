@@ -14,6 +14,7 @@
 @inject IEnumerable<ITradeCalculator> tradeCalculators
 @inject YearOptions years
 @inject ITaxYear taxYear
+@inject ToastService toastService
 
 <h3><p>Calculation</p></h3>
 
@@ -32,6 +33,7 @@
             dividendCalculationResult.SetResult(await Task.Run(dividendCalculator.CalculateTax));
             years.SetYears(GetSelectableYears());
             StateHasChanged();
+            toastService.ShowToast("Information", "Calculation completed.", ToastOptionType.Info);
         }
 
     private IEnumerable<int> GetSelectableYears()
