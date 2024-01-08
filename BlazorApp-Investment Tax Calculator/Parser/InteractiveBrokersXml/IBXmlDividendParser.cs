@@ -29,7 +29,11 @@ public static class IBXmlDividendParser
                 Proceed = element.BuildDescribedMoney("amount", "currency", "fxRateToBase", element.GetAttribute("description"))
             };
         }
-        catch { return null; } // TODO Implement suitable catch clause and logging */
+        catch (Exception ex)
+        {
+            string exceptionMessage = $"Exception occurred processing XElement: {element} - Original Exception: {ex.Message}";
+            throw new Exception(exceptionMessage, ex);
+        }
     }
 
     private static RegionInfo GetCompanyLocation(XElement dividendElement)

@@ -1,0 +1,51 @@
+﻿@using Services
+@using Syncfusion.Blazor.Notifications
+@inject ToastService ToastService
+ 
+<SfToast @ref="Toast" Timeout=50000 ExtendedTimeout=50000 Title="@Options.Title" Content="@Options.Content" CssClass="@ToastCssClass" ShowCloseButton=true>
+    <ToastPosition X="Center" Y="Bottom"></ToastPosition>
+</SfToast>
+
+<style>
+    .e-toast .e-toast-danger {
+        width: 600px; /* Adjust width as necessary */
+        height: auto; /* Height adjusts to content */
+        overflow: auto; /* Adds scrollbar if content overflows */
+        word-wrap: break-word; /* Ensures long words don't overflow */
+        padding: 10px; /* Adjust padding as necessary */
+    }
+</style>
+  
+@code{
+
+    public required SfToast Toast;
+
+    private bool IsToastVisible { get; set; } = false;
+    private string ToastCssClass = "";
+
+    private ToastOption Options = new ToastOption() { Title = "", Content = "", Type = ToastOptionType.Success };
+
+    protected override void OnInitialized()
+    {
+        ToastService.ShowToastTrigger += (ToastOption options) =>
+        {
+            InvokeAsync(() =>
+            {
+                this.Options.Title = options.Title;
+                this.Options.Content = options.Content;
+                this.ToastCssClass = options.Type switch
+                {
+                    ToastOptionType.Warning => "e-toast-warning",
+                    ToastOptionType.Error => "e-toast-danger",
+                    ToastOptionType.Success => "e-toast-success",
+                    ToastOptionType.Info => "e-toast-info",
+                    _ => throw new NotImplementedException()
+                };
+                this.IsToastVisible = true;
+                this.StateHasChanged();
+                this.Toast.ShowAsync();
+            });
+        };
+        base.OnInitialized();
+    }
+}
