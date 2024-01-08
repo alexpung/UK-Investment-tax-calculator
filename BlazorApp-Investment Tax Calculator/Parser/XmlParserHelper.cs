@@ -13,7 +13,13 @@ public static class XmlParserHelper
         {
             return xAttribute.Value;
         }
-        else throw new ArgumentException(@$"The attribute ""{attributeName}"" is not found in ""{xElement.Name}"", please include this attribute in your XML statement");
+        else
+        {
+            string attributeDump = string.Join(", ", xElement.Attributes().Select(i => i.Value));
+            throw new ParseException(@$"The attribute ""{attributeName}"" is not found in ""{xElement.Name}"" in the line with data: {attributeDump}, 
+            please include this attribute in your XML statement");
+        }
+
     }
 
     public static WrappedMoney BuildMoney(this XElement xElement, string amountAttributeName, string currencyAttributeName)
@@ -30,5 +36,20 @@ public static class XmlParserHelper
             Description = description,
             FxRate = decimal.Parse(xElement.GetAttribute(exchangeRateAttributeName))
         };
+    }
+
+    public static T ParserExceptionManager<T>(Func<XElement, T> parseFunc, XElement xElement)
+    {
+        try
+        {
+            return parseFunc.Invoke(xElement);
+        }
+        catch (FormatException ex)
+        {
+            string attributeDump = string.Join(", ", xElement.Attributes().Select(i => i.Value));
+            string exceptionMessage = $"Error processing date in the line with data: {attributeDump}, make sure timestamps is in the format of " +
+                $"01-May-21 12:34:56";
+            throw new ParseException(exceptionMessage, ex);
+        }
     }
 }

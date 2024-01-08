@@ -39,33 +39,25 @@ public class IBXmlFxParser
 
     private FxTrade? TradeMaker(XElement element)
     {
-        try
+        decimal amountOfFx = Math.Abs(decimal.Parse(element.GetAttribute("amount")));
+        if (amountOfFx == 0) return null; // Nothing to tax if amount is 0.
+        string currency = element.GetAttribute("currency");
+        DateTime reportDate = DateTime.Parse(element.GetAttribute("reportDate"), CultureInfo.InvariantCulture);
+        DescribedMoney valueInSterlingWrapped = new()
         {
-            decimal amountOfFx = Math.Abs(decimal.Parse(element.GetAttribute("amount")));
-            if (amountOfFx == 0) return null; // Nothing to tax if amount is 0.
-            string currency = element.GetAttribute("currency");
-            DateTime reportDate = DateTime.Parse(element.GetAttribute("reportDate"), CultureInfo.InvariantCulture);
-            DescribedMoney valueInSterlingWrapped = new()
-            {
-                Amount = new WrappedMoney(amountOfFx, currency),
-                FxRate = FetchFxRate(currency, WrappedMoney.BaseCurrency, reportDate)
-            };
-            return new FxTrade
-            {
-                BuySell = GetTradeType(element),
-                AssetName = currency,
-                AssetType = AssetCatagoryType.FX,
-                Description = element.GetAttribute("activityDescription"),
-                Date = reportDate,
-                Quantity = amountOfFx,
-                GrossProceed = valueInSterlingWrapped
-            };
-        }
-        catch (Exception ex)
+            Amount = new WrappedMoney(amountOfFx, currency),
+            FxRate = FetchFxRate(currency, WrappedMoney.BaseCurrency, reportDate)
+        };
+        return new FxTrade
         {
-            Console.WriteLine(ex);
-            return null;
-        }
+            BuySell = GetTradeType(element),
+            AssetName = currency,
+            AssetType = AssetCatagoryType.FX,
+            Description = element.GetAttribute("activityDescription"),
+            Date = reportDate,
+            Quantity = amountOfFx,
+            GrossProceed = valueInSterlingWrapped
+        };
     }
 
     private static TradeType GetTradeType(XElement element) => decimal.Parse(element.GetAttribute("amount")) switch

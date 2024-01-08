@@ -15,29 +15,21 @@ public static class IBXmlStockTradeParser
     {
         IEnumerable<XElement> filteredElements = document.Descendants("Order").Where(row => row.GetAttribute("levelOfDetail") == "ORDER" &&
                                                  row.GetAttribute("assetCategory") == "STK");
-        return filteredElements.Select(TradeMaker).Where(trade => trade != null).ToList()!;
+        return filteredElements.Select(element => XmlParserHelper.ParserExceptionManager(TradeMaker, element)).Where(trade => trade != null).ToList()!;
     }
 
     private static Trade? TradeMaker(XElement element)
     {
-        try
+        return new Trade
         {
-            return new Trade
-            {
-                BuySell = GetTradeType(element),
-                AssetName = element.GetAttribute("symbol"),
-                Description = element.GetAttribute("description"),
-                Date = DateTime.Parse(element.GetAttribute("dateTime"), CultureInfo.InvariantCulture),
-                Quantity = GetQuantity(element),
-                GrossProceed = GetGrossProceed(element),
-                Expenses = BuildExpenses(element),
-            };
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex);
-            return null;
-        }
+            BuySell = GetTradeType(element),
+            AssetName = element.GetAttribute("symbol"),
+            Description = element.GetAttribute("description"),
+            Date = DateTime.Parse(element.GetAttribute("dateTime"), CultureInfo.InvariantCulture),
+            Quantity = GetQuantity(element),
+            GrossProceed = GetGrossProceed(element),
+            Expenses = BuildExpenses(element),
+        };
     }
 
     private static decimal GetQuantity(XElement element) => element.GetAttribute("buySell") switch

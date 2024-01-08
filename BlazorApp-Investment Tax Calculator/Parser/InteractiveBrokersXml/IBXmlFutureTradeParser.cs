@@ -22,26 +22,18 @@ public static class IBXmlFutureTradeParser
 
     private static Trade? TradeMaker(XElement element)
     {
-        try
+        return new FutureContractTrade
         {
-            return new FutureContractTrade
-            {
-                AssetType = AssetCatagoryType.FUTURE,
-                BuySell = GetTradeType(element),
-                AssetName = element.GetAttribute("symbol"),
-                Description = element.GetAttribute("description"),
-                Date = DateTime.Parse(element.GetAttribute("dateTime"), CultureInfo.InvariantCulture),
-                Quantity = GetQuantity(element),
-                GrossProceed = new DescribedMoney() { Amount = WrappedMoney.GetBaseCurrencyZero() },
-                Expenses = BuildExpenses(element),
-                ContractValue = GetContractValue(element)
-            };
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex);
-            return null;
-        }
+            AssetType = AssetCatagoryType.FUTURE,
+            BuySell = GetTradeType(element),
+            AssetName = element.GetAttribute("symbol"),
+            Description = element.GetAttribute("description"),
+            Date = DateTime.Parse(element.GetAttribute("dateTime"), CultureInfo.InvariantCulture),
+            Quantity = GetQuantity(element),
+            GrossProceed = new DescribedMoney() { Amount = WrappedMoney.GetBaseCurrencyZero() },
+            Expenses = BuildExpenses(element),
+            ContractValue = GetContractValue(element)
+        };
     }
 
     private static decimal GetQuantity(XElement element) => element.GetAttribute("buySell") switch
