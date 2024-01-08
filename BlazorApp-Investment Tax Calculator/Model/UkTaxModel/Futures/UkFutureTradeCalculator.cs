@@ -174,6 +174,7 @@ public class UkFutureTradeCalculator(UkSection104Pools section104Pools, ITradeAn
     private static void MatchTrade(FutureTradeTaxCalculation openTrade, FutureTradeTaxCalculation closeTrade, TaxMatchType taxMatchType)
     {
         decimal matchQty = Math.Min(openTrade.UnmatchedQty, closeTrade.UnmatchedQty);
+        if (matchQty == 0) return;
         WrappedMoney buyContractValue = openTrade.PositionType switch
         {
             FuturePositionType.OPENLONG => openTrade.GetProportionedContractValue(matchQty),
