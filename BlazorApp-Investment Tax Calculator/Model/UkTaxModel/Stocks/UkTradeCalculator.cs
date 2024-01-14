@@ -142,8 +142,13 @@ public class UkTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorpo
         ITradeTaxCalculation buyTrade = trade1.BuySell == TradeType.BUY ? trade1 : trade2;
         ITradeTaxCalculation sellTrade = trade1.BuySell == TradeType.SELL ? trade1 : trade2;
         decimal proposedMatchQuantity = Math.Min(trade1.UnmatchedQty, trade2.UnmatchedQty);
-        TradeMatch proposedMatch = TradeMatch.CreateTradeMatch(taxMatchType, proposedMatchQuantity, buyTrade.GetProportionedCostOrProceed(proposedMatchQuantity), sellTrade.GetProportionedCostOrProceed(proposedMatchQuantity),
-            matchedBuyTrade: buyTrade, matchedSellTrade: sellTrade);
+        TradeMatch proposedMatch = TradeMatch.CreateTradeMatch(
+            taxMatchType: taxMatchType,
+            qty: proposedMatchQuantity,
+            baseCurrencyMatchAllowableCost: buyTrade.GetProportionedCostOrProceed(proposedMatchQuantity),
+            baseCurrencyMatchDisposalProceed: sellTrade.GetProportionedCostOrProceed(proposedMatchQuantity),
+            matchedBuyTrade: buyTrade,
+            matchedSellTrade: sellTrade);
         // trades and the proposed match are handed to each CorporateAction to modify.
         if (corporateActionInBetween is not null)
         {
