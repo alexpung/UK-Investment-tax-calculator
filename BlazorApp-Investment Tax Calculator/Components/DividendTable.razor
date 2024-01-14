@@ -19,6 +19,7 @@
         <GridColumn Field=@nameof(Dividend.CompanyLocation) HeaderText="Company location"></GridColumn>
         <GridColumn Field=@(nameof(Dividend.Proceed) + "." + nameof(DescribedMoney.BaseCurrencyAmount)) HeaderText="Sterling Amount"></GridColumn>
         <GridColumn Field=@(nameof(Dividend.Proceed) + "." + nameof(DescribedMoney.Amount)) HeaderText="Local Currency Amount"></GridColumn>
+        <GridColumn Field=@(nameof(Dividend.Proceed) + "." + nameof(DescribedMoney.FxRate)) HeaderText="Exchange rate"></GridColumn>
         <GridColumn Field=@(nameof(Dividend.Proceed) + "." + nameof(DescribedMoney.Description)) HeaderText="Description"></GridColumn>
     </GridColumns>
 </SfGrid>
