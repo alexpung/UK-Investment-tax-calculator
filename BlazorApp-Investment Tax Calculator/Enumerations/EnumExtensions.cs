@@ -8,7 +8,7 @@ public static class EnumExtensions
     /// </summary>
     /// <param name="value"></param>
     /// <returns></returns>
-    public static string GetDescription(this System.Enum value)
+    public static string GetDescription(this Enum value)
     {
         FieldInfo? field = value.GetType().GetField(value.ToString());
         if (field == null) return value.ToString();
