@@ -31,6 +31,7 @@ public class TradeTaxCalculation : ITradeTaxCalculation
     public virtual TradeType BuySell { get; init; }
     public bool CalculationCompleted => UnmatchedQty == 0;
     public DateTime Date => TradeList[0].Date;
+    public AssetCatagoryType AssetCatagoryType => TradeList[0].AssetType;
     public string AssetName => TradeList[0].AssetName;
 
 
@@ -76,6 +77,7 @@ public class TradeTaxCalculation : ITradeTaxCalculation
                 new TradeMatch()
                 {
                     TradeMatchType = TaxMatchType.SECTION_104,
+                    MatchedBuyTrade = this,
                     MatchAcquisitionQty = UnmatchedQty,
                     MatchDisposalQty = UnmatchedQty,
                     BaseCurrencyMatchAllowableCost = UnmatchedCostOrProceed,
@@ -93,6 +95,7 @@ public class TradeTaxCalculation : ITradeTaxCalculation
                 new TradeMatch()
                 {
                     TradeMatchType = TaxMatchType.SECTION_104,
+                    MatchedSellTrade = this,
                     MatchAcquisitionQty = matchQty,
                     MatchDisposalQty = matchQty,
                     BaseCurrencyMatchAllowableCost = section104History.ValueChange * -1,
