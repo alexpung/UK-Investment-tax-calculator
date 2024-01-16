@@ -10,6 +10,8 @@ using Moq;
 using System;
 using System.Collections.Generic;
 
+using UnitTest.Helper;
+
 using Xunit;
 
 public class TradeTaxCalculationTests
@@ -57,8 +59,8 @@ public class TradeTaxCalculationTests
         Mock<Trade> trade1 = new();
         trade1.Setup(i => i.BuySell).Returns(TradeType.SELL);
         trade1.Setup(i => i.NetProceed).Returns(new WrappedMoney(100));
-        var matchHistory = new List<TradeMatch> { TradeMatch.CreateTradeMatch(TaxMatchType.SECTION_104, 100, new WrappedMoney(100), new WrappedMoney(150)),
-                                                  TradeMatch.CreateTradeMatch(TaxMatchType.SECTION_104, 100, new WrappedMoney(200), new WrappedMoney(250))
+        var matchHistory = new List<TradeMatch> { TradeCalculationHelper.CreateTradeMatch(TaxMatchType.SECTION_104, 100, new WrappedMoney(100), new WrappedMoney(150)),
+                                                  TradeCalculationHelper.CreateTradeMatch(TaxMatchType.SECTION_104, 100, new WrappedMoney(200), new WrappedMoney(250))
                                                 };
         var calculation = new TradeTaxCalculation(new List<Trade>() { trade1.Object })
         {
@@ -79,8 +81,8 @@ public class TradeTaxCalculationTests
         Mock<Trade> trade1 = new();
         trade1.Setup(i => i.BuySell).Returns(TradeType.SELL);
         trade1.Setup(i => i.NetProceed).Returns(new WrappedMoney(100));
-        var matchHistory = new List<TradeMatch> { TradeMatch.CreateTradeMatch(TaxMatchType.SECTION_104, 100, WrappedMoney.GetBaseCurrencyZero(), new WrappedMoney(100)),
-                                                  TradeMatch.CreateTradeMatch(TaxMatchType.SECTION_104, 100, WrappedMoney.GetBaseCurrencyZero(), new WrappedMoney(200))
+        var matchHistory = new List<TradeMatch> { TradeCalculationHelper.CreateTradeMatch(TaxMatchType.SECTION_104, 100, WrappedMoney.GetBaseCurrencyZero(), new WrappedMoney(100)),
+                                                  TradeCalculationHelper.CreateTradeMatch(TaxMatchType.SECTION_104, 100, WrappedMoney.GetBaseCurrencyZero(), new WrappedMoney(200))
                                                 };
         var calculation = new TradeTaxCalculation(new List<Trade>() { trade1.Object })
         {
@@ -101,8 +103,8 @@ public class TradeTaxCalculationTests
         Mock<Trade> trade1 = new();
         trade1.Setup(i => i.BuySell).Returns(TradeType.SELL);
         trade1.Setup(i => i.NetProceed).Returns(new WrappedMoney(100));
-        var matchHistory = new List<TradeMatch> { TradeMatch.CreateTradeMatch(TaxMatchType.SECTION_104, 100, new WrappedMoney(70), new WrappedMoney(100)),
-                                                  TradeMatch.CreateTradeMatch(TaxMatchType.SECTION_104, 100, new WrappedMoney(210), new WrappedMoney(200))
+        var matchHistory = new List<TradeMatch> { TradeCalculationHelper.CreateTradeMatch(TaxMatchType.SECTION_104, 100, new WrappedMoney(70), new WrappedMoney(100)),
+                                                  TradeCalculationHelper.CreateTradeMatch(TaxMatchType.SECTION_104, 100, new WrappedMoney(210), new WrappedMoney(200))
                                                 };
         var calculation = new TradeTaxCalculation(new List<Trade>() { trade1.Object })
         {

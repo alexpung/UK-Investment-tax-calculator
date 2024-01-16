@@ -46,6 +46,8 @@ public class FutureTradeTaxCalculation : TradeTaxCalculation
             Section104History section104History = ukSection104.AddAssets(this, UnmatchedQty, UnmatchedCostOrProceed, UnmatchedContractValue);
             FutureTradeMatch tradeMatch = new()
             {
+                Date = DateOnly.FromDateTime(Date),
+                AssetName = AssetName,
                 TradeMatchType = TaxMatchType.SECTION_104,
                 MatchAcquisitionQty = UnmatchedQty,
                 MatchDisposalQty = 0,
@@ -95,6 +97,8 @@ public class FutureTradeTaxCalculation : TradeTaxCalculation
             }
             FutureTradeMatch tradeMatch = new()
             {
+                Date = DateOnly.FromDateTime(Date),
+                AssetName = AssetName,
                 TradeMatchType = TaxMatchType.SECTION_104,
                 MatchAcquisitionQty = matchQty,
                 MatchDisposalQty = matchQty,

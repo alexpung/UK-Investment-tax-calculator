@@ -76,6 +76,8 @@ public class TradeTaxCalculation : ITradeTaxCalculation
             MatchHistory.Add(
                 new TradeMatch()
                 {
+                    Date = DateOnly.FromDateTime(Date),
+                    AssetName = AssetName,
                     TradeMatchType = TaxMatchType.SECTION_104,
                     MatchedBuyTrade = this,
                     MatchAcquisitionQty = UnmatchedQty,
@@ -94,6 +96,8 @@ public class TradeTaxCalculation : ITradeTaxCalculation
             MatchHistory.Add(
                 new TradeMatch()
                 {
+                    Date = DateOnly.FromDateTime(Date),
+                    AssetName = AssetName,
                     TradeMatchType = TaxMatchType.SECTION_104,
                     MatchedSellTrade = this,
                     MatchAcquisitionQty = matchQty,
