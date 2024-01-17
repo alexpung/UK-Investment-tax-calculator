@@ -14,6 +14,9 @@ namespace Model.UkTaxModel.Stocks;
 /// </summary>
 public class TradeTaxCalculation : ITradeTaxCalculation
 {
+    private static int _nextId = 0;
+
+    public int Id { get; init; }
     public List<Trade> TradeList { get; init; }
     public List<TradeMatch> MatchHistory { get; init; } = [];
     public WrappedMoney TotalAllowableCost => MatchHistory.Sum(tradeMatch => tradeMatch.BaseCurrencyMatchAllowableCost);
@@ -52,6 +55,7 @@ public class TradeTaxCalculation : ITradeTaxCalculation
         TotalQty = trades.Sum(trade => trade.Quantity);
         UnmatchedQty = TotalQty;
         BuySell = trades.First().BuySell;
+        Id = Interlocked.Increment(ref _nextId);
     }
 
     public virtual void MatchQty(decimal demandedQty)
