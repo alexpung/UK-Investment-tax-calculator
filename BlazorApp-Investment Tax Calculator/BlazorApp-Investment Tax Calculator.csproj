@@ -16,14 +16,14 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.0" PrivateAssets="all" />
     <PackageReference Include="NMoneys" Version="7.0.0" />
     <PackageReference Include="PublishSPAforGitHubPages.Build" Version="2.1.0" />
-    <PackageReference Include="Syncfusion.Blazor.Buttons" Version="23.1.36" />
-    <PackageReference Include="Syncfusion.Blazor.Core" Version="23.1.36" />
-    <PackageReference Include="Syncfusion.Blazor.DropDowns" Version="23.1.36" />
-    <PackageReference Include="Syncfusion.Blazor.Grid" Version="23.1.36" />
-    <PackageReference Include="Syncfusion.Blazor.Inputs" Version="23.1.36" />
-    <PackageReference Include="Syncfusion.Blazor.Lists" Version="23.1.36" />
-    <PackageReference Include="Syncfusion.Blazor.Navigations" Version="23.1.36" />
-    <PackageReference Include="Syncfusion.Blazor.Themes" Version="23.1.36" />
+    <PackageReference Include="Syncfusion.Blazor.Buttons" Version="24.1.41" />
+    <PackageReference Include="Syncfusion.Blazor.Core" Version="24.1.41" />
+    <PackageReference Include="Syncfusion.Blazor.DropDowns" Version="24.1.41" />
+    <PackageReference Include="Syncfusion.Blazor.Grid" Version="24.1.41" />
+    <PackageReference Include="Syncfusion.Blazor.Inputs" Version="24.1.41" />
+    <PackageReference Include="Syncfusion.Blazor.Lists" Version="24.1.41" />
+    <PackageReference Include="Syncfusion.Blazor.Navigations" Version="24.1.41" />
+    <PackageReference Include="Syncfusion.Blazor.Themes" Version="24.1.41" />
   </ItemGroup>
 
   <ItemGroup>
