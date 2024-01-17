@@ -8,30 +8,32 @@
 @inject YearOptions years
 @inject YearOptions yearOptions
 
-<p>Select Year to display/Export:</p>
-<SfMultiSelect 
-    @bind-Value="yearOptions.SelectedOptions" 
-    Placeholder="Select Years"
-    Mode="VisualMode.CheckBox"
-    ShowSelectAll=true
-    SelectAllText="Select All"
-    UnSelectAllText="Unselect All"
-    DataSource=@yearOptions.Options>
-    <MultiSelectFieldSettings
-        Text="Years"
-        Value="Years">
-    </MultiSelectFieldSettings>
-</SfMultiSelect>
+<div class="mt-4">
+    <h4>Select Year to display/Export:</h4>
+    <SfMultiSelect @bind-Value="yearOptions.SelectedOptions"
+                    Placeholder="Select Years"
+                    Mode="VisualMode.CheckBox"
+                    ShowSelectAll=true
+                    SelectAllText="Select All"
+                    UnSelectAllText="Unselect All"
+                    DataSource=@yearOptions.Options>
+        <MultiSelectFieldSettings Text="Years"
+                                    Value="Years">
+        </MultiSelectFieldSettings>
+    </SfMultiSelect>
+</div>
 
-<h3><p>Tax Summary:</p></h3>
+<div class="mt-4">
+    <h3 class="mb-3">Tax Summary:</h3>
+    <p>Number of disposals: @tradeCalculationResult.NumberOfDisposals(years.SelectedOptions)</p>
+    <p>Total Disposal Proceed: @tradeCalculationResult.DisposalProceeds(years.SelectedOptions)</p>
+    <p>Total Allowable Cost: @tradeCalculationResult.AllowableCosts(years.SelectedOptions)</p>
+    <p>Total Gain: @tradeCalculationResult.TotalGain(years.SelectedOptions)</p>
+    <p>Total Loss: @tradeCalculationResult.TotalLoss(years.SelectedOptions)</p>
+    <p>Total Dividend: @dividendCalculationResult.GetTotalDividend(years.SelectedOptions)</p>
+    <p>Total Foreign Witholding Tax Paid: @dividendCalculationResult.GetForeignTaxPaid(years.SelectedOptions)</p>
+</div>
 
-<p>Number of disposals: @tradeCalculationResult.NumberOfDisposals(years.SelectedOptions)</p>
-<p>Total Disposal Proceed: @tradeCalculationResult.DisposalProceeds(years.SelectedOptions)</p>
-<p>Total Allowable Cost: @tradeCalculationResult.AllowableCosts(years.SelectedOptions)</p>
-<p>Total Gain: @tradeCalculationResult.TotalGain(years.SelectedOptions)</p>
-<p>Total Loss: @tradeCalculationResult.TotalLoss(years.SelectedOptions)</p>
-<p>Total Dividend: @dividendCalculationResult.GetTotalDividend(years.SelectedOptions)</p>
-<p>Total Foreign Witholding Tax Paid: @dividendCalculationResult.GetForeignTaxPaid(years.SelectedOptions)</p>
 
 @code{
     [Parameter] public Func<bool>? ShouldReRender { get; set; }

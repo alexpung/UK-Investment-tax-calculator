@@ -16,10 +16,18 @@
 @inject ITaxYear taxYear
 @inject ToastService toastService
 
-<h3><p>Calculation</p></h3>
+<div class="container mt-4 mb-4 bg-dark text-light p-3">
+    <h3 class="mb-3">Calculation</h3>
+    
+    <div class="mb-4">
+        <SfButton @onclick="OnStartCalculation" CssClass="btn btn-primary">Start Calculation</SfButton>
+    </div>
 
-<SfButton @onclick="OnStartCalculation"> Start Calculation </SfButton>
-<CalculationSummary ShouldReRender="ShouldRender"></CalculationSummary>
+    <div class="mb-4">
+        <CalculationSummary ShouldReRender="ShouldRender"></CalculationSummary>
+    </div>
+</div>
+
 
 @code{
         public async Task OnStartCalculation()

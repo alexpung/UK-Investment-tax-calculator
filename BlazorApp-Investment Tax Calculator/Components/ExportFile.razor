@@ -8,11 +8,26 @@
 @inject UkCalculationResultExportService calculationResultExportService
 @inject UkSection104ExportService ukSection104ExportService
 
-<h3>Export calculation result to files</h3>
+<div class="container bg-dark text-light mb-4">
+    <div class="row">
+        <div class="col">
+            <h3>Export Calculation Result to Files</h3>
+        </div>
+    </div>
 
-<SfButton @onclick="InvokeExportDividend"> Export Dividends </SfButton>
-<SfButton @onclick="InvokeExportTrades"> Export Trades </SfButton>
-<SfButton @onclick="InvokeExportSection104"> Export Section104 </SfButton>
+    <div class="row mt-3">
+        <div class="col-md-4 mb-2">
+            <SfButton @onclick="InvokeExportDividend" CssClass="btn btn-primary w-100">Export Dividends</SfButton>
+        </div>
+        <div class="col-md-4 mb-2">
+            <SfButton @onclick="InvokeExportTrades" CssClass="btn btn-primary w-100">Export Trades</SfButton>
+        </div>
+        <div class="col-md-4 mb-2">
+            <SfButton @onclick="InvokeExportSection104" CssClass="btn btn-primary w-100">Export Section104</SfButton>
+        </div>
+    </div>
+</div>
+
 
 @code {
     private IJSObjectReference? _downloadFileJsScript;

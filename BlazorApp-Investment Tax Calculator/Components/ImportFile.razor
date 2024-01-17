@@ -9,27 +9,40 @@
 @inject FileParseController fileParseController
 @inject ToastService toastService
 
-<p>Import and Export</p>
+<div class="container bg-dark text-light p-3">
+    <h2 class="mb-3">Import and Export</h2>
 
-<p>Load Options</p>
-<AssetTypeToLoad></AssetTypeToLoad>
+    <div class="mb-4">
+        <h4>Load Options</h4>
+        <AssetTypeToLoad></AssetTypeToLoad>
+    </div>
 
-<p>Import Files</p>
-<p>
-    <SfUploader AutoUpload="false">
-        <UploaderEvents ValueChange="LoadFiles"></UploaderEvents>
-    </SfUploader>
-</p>
-<p>Import Folders</p>
-<p>
-<SfUploader ID="UploadFiles" AutoUpload=false DirectoryUpload=true>
-        <UploaderEvents ValueChange="LoadFiles"></UploaderEvents>
-</SfUploader>
-</p>
-<p> Number of tax events: @taxEventLists.GetTotalNumberOfEvents()</p>
-<p> Number of dividends imported: @taxEventLists.Dividends.Count</p>
-<p> Number of trades imported: @taxEventLists.Trades.Count</p>
-<p> Number of corporate actions imported: @taxEventLists.CorporateActions.Count</p>
+    <div class="mb-4">
+        <h4>Import Files</h4>
+        <div class="p-2">
+            <SfUploader AutoUpload="false">
+                <UploaderEvents ValueChange="LoadFiles"></UploaderEvents>
+            </SfUploader>
+        </div>
+    </div>
+
+    <div class="mb-4">
+        <h4>Import Folders</h4>
+        <div class="p-2">
+            <SfUploader ID="UploadFiles" AutoUpload=false DirectoryUpload=true>
+                <UploaderEvents ValueChange="LoadFiles"></UploaderEvents>
+            </SfUploader>
+        </div>
+    </div>
+
+    <div class="mt-4 p-2">
+        <p>Number of tax events: @taxEventLists.GetTotalNumberOfEvents()</p>
+        <p>Number of dividends imported: @taxEventLists.Dividends.Count</p>
+        <p>Number of trades imported: @taxEventLists.Trades.Count</p>
+        <p>Number of corporate actions imported: @taxEventLists.CorporateActions.Count</p>
+    </div>
+</div>
+
 
 @code {
     private async Task LoadFiles(UploadChangeEventArgs args)
