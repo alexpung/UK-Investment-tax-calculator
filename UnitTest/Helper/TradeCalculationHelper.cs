@@ -28,6 +28,8 @@ public static class TradeCalculationHelper
         {
             Date = DateOnly.MinValue,
             AssetName = "",
+            MatchAcquisitionQty = qty,
+            MatchDisposalQty = qty,
             TradeMatchType = taxMatchType,
             BaseCurrencyMatchAllowableCost = allowableCost,
             BaseCurrencyMatchDisposalProceed = disposalProceed
