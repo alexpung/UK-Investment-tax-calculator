@@ -201,6 +201,8 @@ public class UkFutureTradeCalculator(UkSection104Pools section104Pools, ITradeAn
         }
         FutureTradeMatch match = new()
         {
+            Date = DateOnly.FromDateTime(closeTrade.Date),
+            AssetName = closeTrade.AssetName,
             TradeMatchType = taxMatchType,
             MatchAcquisitionQty = matchQty,
             MatchDisposalQty = matchQty,

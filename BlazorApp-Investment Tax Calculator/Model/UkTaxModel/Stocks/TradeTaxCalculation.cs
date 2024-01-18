@@ -14,6 +14,9 @@ namespace Model.UkTaxModel.Stocks;
 /// </summary>
 public class TradeTaxCalculation : ITradeTaxCalculation
 {
+    private static int _nextId = 0;
+
+    public int Id { get; init; }
     public List<Trade> TradeList { get; init; }
     public List<TradeMatch> MatchHistory { get; init; } = [];
     public WrappedMoney TotalAllowableCost => MatchHistory.Sum(tradeMatch => tradeMatch.BaseCurrencyMatchAllowableCost);
@@ -31,6 +34,7 @@ public class TradeTaxCalculation : ITradeTaxCalculation
     public virtual TradeType BuySell { get; init; }
     public bool CalculationCompleted => UnmatchedQty == 0;
     public DateTime Date => TradeList[0].Date;
+    public AssetCatagoryType AssetCatagoryType => TradeList[0].AssetType;
     public string AssetName => TradeList[0].AssetName;
 
 
@@ -51,6 +55,7 @@ public class TradeTaxCalculation : ITradeTaxCalculation
         TotalQty = trades.Sum(trade => trade.Quantity);
         UnmatchedQty = TotalQty;
         BuySell = trades.First().BuySell;
+        Id = Interlocked.Increment(ref _nextId);
     }
 
     public virtual void MatchQty(decimal demandedQty)
@@ -75,7 +80,10 @@ public class TradeTaxCalculation : ITradeTaxCalculation
             MatchHistory.Add(
                 new TradeMatch()
                 {
+                    Date = DateOnly.FromDateTime(Date),
+                    AssetName = AssetName,
                     TradeMatchType = TaxMatchType.SECTION_104,
+                    MatchedBuyTrade = this,
                     MatchAcquisitionQty = UnmatchedQty,
                     MatchDisposalQty = UnmatchedQty,
                     BaseCurrencyMatchAllowableCost = UnmatchedCostOrProceed,
@@ -92,7 +100,10 @@ public class TradeTaxCalculation : ITradeTaxCalculation
             MatchHistory.Add(
                 new TradeMatch()
                 {
+                    Date = DateOnly.FromDateTime(Date),
+                    AssetName = AssetName,
                     TradeMatchType = TaxMatchType.SECTION_104,
+                    MatchedSellTrade = this,
                     MatchAcquisitionQty = matchQty,
                     MatchDisposalQty = matchQty,
                     BaseCurrencyMatchAllowableCost = section104History.ValueChange * -1,

@@ -5,23 +5,35 @@
 
 @inject IDividendLists dividendList
 
-<p>Imported Dividends and withholding taxes</p>
+<div class="container-fluid bg-dark text-light">
+    <div class="row my-4">
+        <div class="col">
+            <h3>Imported Dividends and Withholding Taxes</h3>
+        </div>
+    </div>
 
-<SfGrid ID="ImportedDividendGrid" @ref="importedDividendGrid" DataSource="@dividendList.Dividends"
-        AllowPaging="true" AllowSorting="true" AllowPdfExport="true" AllowExcelExport="true" AllowResizing="true"
-        Toolbar="@(new List<string>() { "PdfExport", "ExcelExport", "Print" })" Height="1000px">
-    <GridPageSettings PageSizes="true"></GridPageSettings>
-    <GridEvents OnToolbarClick="ToolbarClickHandler" TValue="Dividend"></GridEvents>
-    <GridColumns>
-        <GridColumn Field=@nameof(Dividend.Date) HeaderText="Date" Format="d"></GridColumn>
-        <GridColumn Field=@nameof(Dividend.DividendType) HeaderText="Dividend/Withholding tax"></GridColumn>
-        <GridColumn Field=@nameof(Dividend.AssetName) HeaderText="Asset Name"></GridColumn>
-        <GridColumn Field=@nameof(Dividend.CompanyLocation) HeaderText="Company location"></GridColumn>
-        <GridColumn Field=@(nameof(Dividend.Proceed) + "." + nameof(DescribedMoney.BaseCurrencyAmount)) HeaderText="Sterling Amount"></GridColumn>
-        <GridColumn Field=@(nameof(Dividend.Proceed) + "." + nameof(DescribedMoney.Amount)) HeaderText="Local Currency Amount"></GridColumn>
-        <GridColumn Field=@(nameof(Dividend.Proceed) + "." + nameof(DescribedMoney.Description)) HeaderText="Description"></GridColumn>
-    </GridColumns>
-</SfGrid>
+    <div class="row mt-3">
+        <div class="col">
+            <SfGrid ID="ImportedDividendGrid" @ref="importedDividendGrid" DataSource="@dividendList.Dividends"
+                    AllowPaging="true" AllowSorting="true" AllowPdfExport="true" AllowExcelExport="true" AllowResizing="true"
+                    Toolbar="@(new List<string>() { "PdfExport", "ExcelExport", "Print"})" Height="1000px">
+                <GridPageSettings PageSizes="true"></GridPageSettings>
+                <GridEvents OnToolbarClick="ToolbarClickHandler" TValue="Dividend"></GridEvents>
+                <GridColumns>
+                    <GridColumn Field=@nameof(Dividend.Date) HeaderText="Date" Format="d"></GridColumn>
+                    <GridColumn Field=@nameof(Dividend.DividendType) HeaderText="Dividend/Withholding Tax"></GridColumn>
+                    <GridColumn Field=@nameof(Dividend.AssetName) HeaderText="Asset Name"></GridColumn>
+                    <GridColumn Field=@nameof(Dividend.CompanyLocation) HeaderText="Company Location"></GridColumn>
+                    <GridColumn Field=@(nameof(Dividend.Proceed) + "." + nameof(DescribedMoney.BaseCurrencyAmount)) HeaderText="Sterling Amount"></GridColumn>
+                    <GridColumn Field=@(nameof(Dividend.Proceed) + "." + nameof(DescribedMoney.Amount)) HeaderText="Local Currency Amount"></GridColumn>
+                    <GridColumn Field=@(nameof(Dividend.Proceed) + "." + nameof(DescribedMoney.FxRate)) HeaderText="Exchange Rate"></GridColumn>
+                    <GridColumn Field=@(nameof(Dividend.Proceed) + "." + nameof(DescribedMoney.Description)) HeaderText="Description"></GridColumn>
+                </GridColumns>
+            </SfGrid>
+        </div>
+    </div>
+</div>
+
 
 @code {
     private SfGrid<Dividend> importedDividendGrid = new();

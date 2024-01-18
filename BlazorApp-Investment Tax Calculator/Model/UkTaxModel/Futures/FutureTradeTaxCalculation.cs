@@ -46,12 +46,14 @@ public class FutureTradeTaxCalculation : TradeTaxCalculation
             Section104History section104History = ukSection104.AddAssets(this, UnmatchedQty, UnmatchedCostOrProceed, UnmatchedContractValue);
             FutureTradeMatch tradeMatch = new()
             {
+                Date = DateOnly.FromDateTime(Date),
+                AssetName = AssetName,
                 TradeMatchType = TaxMatchType.SECTION_104,
                 MatchAcquisitionQty = UnmatchedQty,
                 MatchDisposalQty = 0,
                 BaseCurrencyMatchAllowableCost = UnmatchedCostOrProceed,
                 BaseCurrencyMatchDisposalProceed = WrappedMoney.GetBaseCurrencyZero(),
-                MatchedBuyTrade = null,
+                MatchedBuyTrade = this,
                 MatchedSellTrade = null,
                 AdditionalInformation = "",
                 MatchBuyContractValue = UnmatchedContractValue,
@@ -95,13 +97,15 @@ public class FutureTradeTaxCalculation : TradeTaxCalculation
             }
             FutureTradeMatch tradeMatch = new()
             {
+                Date = DateOnly.FromDateTime(Date),
+                AssetName = AssetName,
                 TradeMatchType = TaxMatchType.SECTION_104,
                 MatchAcquisitionQty = matchQty,
                 MatchDisposalQty = matchQty,
                 BaseCurrencyMatchAllowableCost = acquisitionValue,
                 BaseCurrencyMatchDisposalProceed = disposalValue,
                 MatchedBuyTrade = null,
-                MatchedSellTrade = null,
+                MatchedSellTrade = this,
                 AdditionalInformation = "",
                 MatchBuyContractValue = buyContractValue,
                 MatchSellContractValue = sellContractValue,

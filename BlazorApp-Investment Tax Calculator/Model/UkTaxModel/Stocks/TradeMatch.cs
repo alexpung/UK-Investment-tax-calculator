@@ -11,32 +11,18 @@ namespace Model.UkTaxModel.Stocks;
 /// </summary>
 public record TradeMatch : ITextFilePrintable
 {
-    public required TaxMatchType TradeMatchType { get; set; }
-    public ITradeTaxCalculation? MatchedBuyTrade { get; set; }
-    public ITradeTaxCalculation? MatchedSellTrade { get; set; }
+    public required TaxMatchType TradeMatchType { get; init; }
+    public ITradeTaxCalculation? MatchedBuyTrade { get; init; }
+    public ITradeTaxCalculation? MatchedSellTrade { get; init; }
     public decimal MatchAcquisitionQty { get; set; } = 0m;
     public decimal MatchDisposalQty { get; set; } = 0m;
     public virtual WrappedMoney BaseCurrencyMatchDisposalProceed { get; set; } = WrappedMoney.GetBaseCurrencyZero();
     public virtual WrappedMoney BaseCurrencyMatchAllowableCost { get; set; } = WrappedMoney.GetBaseCurrencyZero();
     public virtual WrappedMoney MatchGain => BaseCurrencyMatchDisposalProceed - BaseCurrencyMatchAllowableCost;
     public string AdditionalInformation { get; set; } = string.Empty;
-    public Section104History? Section104HistorySnapshot { get; set; }
-
-    public static TradeMatch CreateTradeMatch(TaxMatchType taxMatchType, decimal qty, WrappedMoney baseCurrencyMatchAllowableCost, WrappedMoney baseCurrencyMatchDisposalProceed,
-        ITradeTaxCalculation? matchedSellTrade = null, ITradeTaxCalculation? matchedBuyTrade = null, string additionalInfo = "")
-    {
-        return new()
-        {
-            TradeMatchType = taxMatchType,
-            MatchAcquisitionQty = qty,
-            MatchDisposalQty = qty,
-            BaseCurrencyMatchAllowableCost = baseCurrencyMatchAllowableCost,
-            BaseCurrencyMatchDisposalProceed = baseCurrencyMatchDisposalProceed,
-            MatchedBuyTrade = matchedBuyTrade,
-            MatchedSellTrade = matchedSellTrade,
-            AdditionalInformation = additionalInfo
-        };
-    }
+    public Section104History? Section104HistorySnapshot { get; init; }
+    public required DateOnly Date { get; init; }
+    public required string AssetName { get; init; }
 
     public virtual string PrintToTextFile()
     {

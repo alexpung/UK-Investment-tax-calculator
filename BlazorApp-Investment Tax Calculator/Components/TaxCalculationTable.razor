@@ -1,53 +1,46 @@
 ﻿@using Model
-@using Model.Interfaces;
-@using Syncfusion.Blazor.Grids;
-@using Model.TaxEvents;
-@using Model.UkTaxModel;
-@using Model.UkTaxModel.Stocks;
+@using Model.Interfaces
+@using Syncfusion.Blazor.Grids
+@using Model.TaxEvents
+@using Model.UkTaxModel
+@using Model.UkTaxModel.Stocks
+@using Enumerations
+@using BlazorApp_Investment_Tax_Calculator.Components
 
 @inject TradeCalculationResult tradeCalculationResult
 
-<p>Disposal calculation summary</p>
-
-<SfGrid ID="DisposalCalculationGrid" @ref="disposalCalculationGrid" DataSource="@tradeCalculationResult.GetDisposals"
+<div class="container-fluid bg-dark text-light">
+    <div class="row my-4">
+        <div class="col">
+            <h3>Disposal calculation summary</h3>
+        </div>
+    </div>
+    <AssetTypeFilter OnSelectCategoryCallBack="OnSelectCategory"></AssetTypeFilter>
+<SfGrid ID="DisposalCalculationGrid" @ref="disposalCalculationGrid" DataSource="@_trades"
         AllowPaging="true" AllowSorting="true" AllowPdfExport="true" AllowExcelExport="true" AllowResizing="true"
         Toolbar="@(new List<string>() { "PdfExport", "ExcelExport", "Print" })" Height="1000px">
     <GridPageSettings PageSizes="true"></GridPageSettings>
     <GridEvents OnToolbarClick="ToolbarClickHandler" TValue="ITradeTaxCalculation"></GridEvents>
     <GridColumns>
+        <GridColumn Field=@nameof(ITradeTaxCalculation.Id) HeaderText="Trade Id"></GridColumn>
         <GridColumn Field=@nameof(ITradeTaxCalculation.Date) HeaderText="Date" Format="d"></GridColumn>
-        <GridColumn Field=@nameof(ITradeTaxCalculation.BuySell) HeaderText="Trade Type"></GridColumn>
         <GridColumn Field=@nameof(ITradeTaxCalculation.AssetName) HeaderText="Asset Name"></GridColumn>
-        <GridColumn Field=@nameof(ITradeTaxCalculation.TotalQty) HeaderText="Total Quantity"></GridColumn>
+        <GridColumn Field=@nameof(ITradeTaxCalculation.TotalQty) HeaderText="Total Quantity disposed"></GridColumn>
         <GridColumn Field=@nameof(ITradeTaxCalculation.TotalProceeds) HeaderText="Total Proceeeds"></GridColumn>
         <GridColumn Field=@nameof(ITradeTaxCalculation.TotalAllowableCost) HeaderText="Allowable Cost"></GridColumn>
         <GridColumn Field=@nameof(ITradeTaxCalculation.Gain) HeaderText="Gain (Loss)"></GridColumn>
         <GridColumn Field=@nameof(ITradeTaxCalculation.UnmatchedQty) HeaderText="Unmatched shares"></GridColumn>
     </GridColumns>
-    <GridTemplates>
-        <DetailTemplate>
-            @{
-                var tradeTaxCalculation = (context as ITradeTaxCalculation);
-                List<TradeMatch> tradeMatches = tradeTaxCalculation!.MatchHistory;
-                List<Trade> trades = tradeTaxCalculation.TradeList;
-                <p>Trade Matches</p>
-                <SfGrid DataSource="@tradeMatches">
-                    <GridColumns>
-                        <GridColumn Field=@nameof(TradeMatch.TradeMatchType) HeaderText="Match Type"> </GridColumn>
-                        <GridColumn Field=@nameof(TradeMatch.MatchAcquisitionQty) HeaderText="Match Acquisition Quantity"></GridColumn>
-                        <GridColumn Field=@nameof(TradeMatch.MatchDisposalQty) HeaderText="Match Disposal Quantity"></GridColumn>
-                        <GridColumn Field=@nameof(TradeMatch.BaseCurrencyMatchDisposalProceed) HeaderText="Match Disposal Value"></GridColumn>
-                        <GridColumn Field=@nameof(TradeMatch.BaseCurrencyMatchAllowableCost) HeaderText="Match Acquisition Value"></GridColumn>
-                        <GridColumn Field=@nameof(TradeMatch.AdditionalInformation) HeaderText="Additional Information"></GridColumn>
-                    </GridColumns>
-                </SfGrid>
-            }
-        </DetailTemplate>
-    </GridTemplates>
 </SfGrid>
+</div>
 
 @code {
+    public AssetCatagoryType SelectedAssetCatagoryType { get; set; } = AssetCatagoryType.STOCK;
+    private AssetTypeFilter _assetTypeFilter = new();
     private SfGrid<ITradeTaxCalculation> disposalCalculationGrid = new();
+    private IEnumerable<ITradeTaxCalculation> _trades => tradeCalculationResult.CalculatedTrade
+                                                                           .Where(trade => trade.AssetCatagoryType == SelectedAssetCatagoryType)
+                                                                           .Where(trade => trade.BuySell == TradeType.SELL);
 
     public async Task ToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)
     {
@@ -64,5 +57,10 @@
         {
             await disposalCalculationGrid.ExportToExcelAsync();
         }
+    }
+
+    private void OnSelectCategory(AssetCatagoryType type)
+    {
+        SelectedAssetCatagoryType = type;
     }
 }
