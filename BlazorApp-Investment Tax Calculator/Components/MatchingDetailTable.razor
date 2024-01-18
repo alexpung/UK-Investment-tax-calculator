@@ -11,18 +11,18 @@
 
 @inject TradeCalculationResult tradeCalculationResult
 
-<div class="container-fluid bg-dark text-light">
+<div class="bg-dark text-light">
     <div class="row my-4">
         <div class="col">
             <h3>Matching Details</h3>
         </div>
     </div>
     <AssetTypeFilter OnSelectCategoryCallBack="OnSelectCategory"></AssetTypeFilter>
-    <div class="row">
+    <div class="row me-3">
         <div class="col">
             <SfGrid ID="TradeMatchesGrid" @ref="tradeMatchesGrid" DataSource="@_tradeMatches"
                     AllowPaging="true" AllowSorting="true" AllowPdfExport="true" AllowExcelExport="true" AllowResizing="true"
-                    Toolbar="@(new List<string>() { "PdfExport", "ExcelExport", "Print" })" Height="1000px">
+                    Toolbar="@(new List<string>() { "PdfExport", "ExcelExport", "Print" })">
                 <GridPageSettings PageSizes=@(new List<int>() {25, 50, 100}) PageSize="25"></GridPageSettings>
                 <GridEvents OnToolbarClick="ToolbarClickHandler" TValue="TradeMatch"></GridEvents>
                 <GridColumns>

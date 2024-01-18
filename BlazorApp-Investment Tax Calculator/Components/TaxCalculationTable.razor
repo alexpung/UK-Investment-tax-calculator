@@ -9,29 +9,33 @@
 
 @inject TradeCalculationResult tradeCalculationResult
 
-<div class="container-fluid bg-dark text-light">
+<div class="bg-dark text-light">
     <div class="row my-4">
         <div class="col">
             <h3>Disposal calculation summary</h3>
         </div>
     </div>
     <AssetTypeFilter OnSelectCategoryCallBack="OnSelectCategory"></AssetTypeFilter>
-<SfGrid ID="DisposalCalculationGrid" @ref="disposalCalculationGrid" DataSource="@_trades"
-        AllowPaging="true" AllowSorting="true" AllowPdfExport="true" AllowExcelExport="true" AllowResizing="true"
-        Toolbar="@(new List<string>() { "PdfExport", "ExcelExport", "Print" })" Height="1000px">
-    <GridPageSettings PageSizes="true"></GridPageSettings>
-    <GridEvents OnToolbarClick="ToolbarClickHandler" TValue="ITradeTaxCalculation"></GridEvents>
-    <GridColumns>
-        <GridColumn Field=@nameof(ITradeTaxCalculation.Id) HeaderText="Trade Id"></GridColumn>
-        <GridColumn Field=@nameof(ITradeTaxCalculation.Date) HeaderText="Date" Format="d"></GridColumn>
-        <GridColumn Field=@nameof(ITradeTaxCalculation.AssetName) HeaderText="Asset Name"></GridColumn>
-        <GridColumn Field=@nameof(ITradeTaxCalculation.TotalQty) HeaderText="Total Quantity disposed"></GridColumn>
-        <GridColumn Field=@nameof(ITradeTaxCalculation.TotalProceeds) HeaderText="Total Proceeeds"></GridColumn>
-        <GridColumn Field=@nameof(ITradeTaxCalculation.TotalAllowableCost) HeaderText="Allowable Cost"></GridColumn>
-        <GridColumn Field=@nameof(ITradeTaxCalculation.Gain) HeaderText="Gain (Loss)"></GridColumn>
-        <GridColumn Field=@nameof(ITradeTaxCalculation.UnmatchedQty) HeaderText="Unmatched shares"></GridColumn>
-    </GridColumns>
-</SfGrid>
+    <div class="row me-3">
+        <div class="col">
+            <SfGrid ID="DisposalCalculationGrid" @ref="disposalCalculationGrid" DataSource="@_trades"
+                    AllowPaging="true" AllowSorting="true" AllowPdfExport="true" AllowExcelExport="true" AllowResizing="true"
+                    Toolbar="@(new List<string>() { "PdfExport", "ExcelExport", "Print" })">
+                <GridPageSettings PageSizes=@(new List<int>() {25, 50, 100}) PageSize="25"></GridPageSettings>
+                <GridEvents OnToolbarClick="ToolbarClickHandler" TValue="ITradeTaxCalculation"></GridEvents>
+                <GridColumns>
+                    <GridColumn Field=@nameof(ITradeTaxCalculation.Id) HeaderText="Trade Id"></GridColumn>
+                    <GridColumn Field=@nameof(ITradeTaxCalculation.Date) HeaderText="Date" Format="d"></GridColumn>
+                    <GridColumn Field=@nameof(ITradeTaxCalculation.AssetName) HeaderText="Asset Name"></GridColumn>
+                    <GridColumn Field=@nameof(ITradeTaxCalculation.TotalQty) HeaderText="Total Quantity disposed"></GridColumn>
+                    <GridColumn Field=@nameof(ITradeTaxCalculation.TotalProceeds) HeaderText="Total Proceeeds"></GridColumn>
+                    <GridColumn Field=@nameof(ITradeTaxCalculation.TotalAllowableCost) HeaderText="Allowable Cost"></GridColumn>
+                    <GridColumn Field=@nameof(ITradeTaxCalculation.Gain) HeaderText="Gain (Loss)"></GridColumn>
+                    <GridColumn Field=@nameof(ITradeTaxCalculation.UnmatchedQty) HeaderText="Unmatched shares"></GridColumn>
+                </GridColumns>
+            </SfGrid>
+        </div>
+    </div>
 </div>
 
 @code {
