@@ -7,6 +7,7 @@
 @using Model.UkTaxModel.Stocks
 @using Syncfusion.Blazor.SplitButtons
 @using Enumerations
+@using BlazorApp_Investment_Tax_Calculator.Components
 
 @inject TradeCalculationResult tradeCalculationResult
 
@@ -16,28 +17,12 @@
             <h3>Matching Details</h3>
         </div>
     </div>
-
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <label for="assetCategoryDropdown" class="form-label">Select asset category to display:</label>
-            <SfDropDownList TValue="AssetCatagoryType"
-                            TItem="string"
-                            DataSource="@AssetCategoryValues"
-                            @bind-Value="@SelectedAssetCatagoryType"
-                            Placeholder="Select asset type to display"
-                            CssClass="form-control"
-                            ID="assetCategoryDropdown">
-                <DropDownListEvents TValue="AssetCatagoryType" TItem="string" ValueChange="OnChange"></DropDownListEvents>
-            </SfDropDownList>
-        </div>
-    </div>
-
+    <AssetTypeFilter OnSelectCategoryCallBack="OnSelectCategory"></AssetTypeFilter>
     <div class="row">
         <div class="col">
             <SfGrid ID="TradeMatchesGrid" @ref="tradeMatchesGrid" DataSource="@_tradeMatches"
                     AllowPaging="true" AllowSorting="true" AllowPdfExport="true" AllowExcelExport="true" AllowResizing="true"
                     Toolbar="@(new List<string>() { "PdfExport", "ExcelExport", "Print" })" Height="1000px">
-                <GridEvents TValue="TradeMatch" OnActionFailure="@ActionFailure"></GridEvents>
                 <GridPageSettings PageSizes=@(new List<int>() {25, 50, 100}) PageSize="25"></GridPageSettings>
                 <GridEvents OnToolbarClick="ToolbarClickHandler" TValue="TradeMatch"></GridEvents>
                 <GridColumns>
@@ -66,8 +51,8 @@
 
 
 @code {
-    public string[] AssetCategoryValues = Enum.GetNames(typeof(AssetCatagoryType));
     public AssetCatagoryType SelectedAssetCatagoryType { get; set; } = AssetCatagoryType.STOCK;
+    private AssetTypeFilter _assetTypeFilter = new();
     private SfGrid<TradeMatch> tradeMatchesGrid = default!;
     private IEnumerable<TradeMatch> _tradeMatches => tradeCalculationResult.CalculatedTrade
                                                                            .Where(trade => trade.AssetCatagoryType == SelectedAssetCatagoryType)
@@ -91,16 +76,9 @@
         }
     }
 
-    private void OnChange(ChangeEventArgs<AssetCatagoryType, string> args)
+    private void OnSelectCategory(AssetCatagoryType type)
     {
-        SelectedAssetCatagoryType = args.Value;
-        StateHasChanged();
-    }
-
-    public void ActionFailure(FailureEventArgs args)
-    {
-        Console.WriteLine(args);
-        StateHasChanged();
+        SelectedAssetCatagoryType = type;
     }
 }
 
