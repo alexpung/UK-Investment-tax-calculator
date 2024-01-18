@@ -1,7 +1,8 @@
-﻿@using Model;
-@using Model.TaxEvents;
-@using Model.Interfaces;
-@using Syncfusion.Blazor.Grids;
+﻿@using Model
+@using Model.TaxEvents
+@using Model.Interfaces
+@using Syncfusion.Blazor.Grids
+@using Enumerations
 
 @inject IDividendLists dividendList
 
@@ -21,7 +22,15 @@
                 <GridEvents OnToolbarClick="ToolbarClickHandler" TValue="Dividend"></GridEvents>
                 <GridColumns>
                     <GridColumn Field=@nameof(Dividend.Date) HeaderText="Date" Format="d"></GridColumn>
-                    <GridColumn Field=@nameof(Dividend.DividendType) HeaderText="Dividend/Withholding Tax"></GridColumn>
+                    <GridColumn Field=@nameof(Dividend.DividendType) HeaderText="Dividend/Withholding Tax">
+                        <Template>
+                            @{
+                                var dividend = context as Dividend;
+                                var dividendType = dividend?.DividendType.GetDescription();
+                                <span>@dividendType</span>
+                            }
+                        </Template>
+                    </GridColumn>
                     <GridColumn Field=@nameof(Dividend.AssetName) HeaderText="Asset Name"></GridColumn>
                     <GridColumn Field=@nameof(Dividend.CompanyLocation) HeaderText="Company Location"></GridColumn>
                     <GridColumn Field=@(nameof(Dividend.Proceed) + "." + nameof(DescribedMoney.BaseCurrencyAmount)) HeaderText="Sterling Amount"></GridColumn>
