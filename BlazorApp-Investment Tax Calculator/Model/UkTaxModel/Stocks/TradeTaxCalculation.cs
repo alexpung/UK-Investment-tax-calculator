@@ -21,7 +21,7 @@ public class TradeTaxCalculation : ITradeTaxCalculation
     public List<TradeMatch> MatchHistory { get; init; } = [];
     public WrappedMoney TotalAllowableCost => MatchHistory.Sum(tradeMatch => tradeMatch.BaseCurrencyMatchAllowableCost);
     public WrappedMoney TotalProceeds => MatchHistory.Sum(tradeMatch => tradeMatch.BaseCurrencyMatchDisposalProceed);
-    public WrappedMoney Gain => TotalProceeds - TotalAllowableCost;
+    public WrappedMoney Gain => AcquisitionDisposal == TradeType.DISPOSAL ? TotalProceeds - TotalAllowableCost : WrappedMoney.GetBaseCurrencyZero();
     /// <summary>
     /// For acquistion: Cost of buying + commission
     /// For disposal: Proceed you get - commission
