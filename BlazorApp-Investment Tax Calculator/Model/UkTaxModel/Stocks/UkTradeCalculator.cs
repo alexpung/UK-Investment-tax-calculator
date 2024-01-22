@@ -31,10 +31,10 @@ public class UkTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorpo
     {
         var groupedTrade = from trade in trades
                            where trade.AssetType == AssetCatagoryType.STOCK
-                           group trade by new { trade.AssetName, trade.Date.Date, trade.BuySell };
+                           group trade by new { trade.AssetName, trade.Date.Date, trade.AcquisitionDisposal };
         var groupedFxTrade = from trade in trades
                              where trade.AssetType == AssetCatagoryType.FX
-                             group trade by new { trade.AssetName, trade.Date.Date, trade.BuySell };
+                             group trade by new { trade.AssetName, trade.Date.Date, trade.AcquisitionDisposal };
         IEnumerable<ITradeTaxCalculation> groupedTradeCalculations = groupedTrade.Select(group => new TradeTaxCalculation(group)).ToList();
         IEnumerable<ITradeTaxCalculation> groupedFxTradeCalculations = groupedFxTrade.Select(group => new FxTradeTaxCalculation(group)).ToList();
         groupedTradeCalculations = groupedTradeCalculations.Concat(groupedFxTradeCalculations);
@@ -59,8 +59,8 @@ public class UkTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorpo
                     {
                         // guard against unexpected matching
                         if (!(
-                          (sameDayTrade.BuySell == TradeType.BUY && trade.BuySell == TradeType.SELL) ||
-                          (sameDayTrade.BuySell == TradeType.SELL && trade.BuySell == TradeType.BUY)
+                          (sameDayTrade.AcquisitionDisposal == TradeType.ACQUISITION && trade.AcquisitionDisposal == TradeType.DISPOSAL) ||
+                          (sameDayTrade.AcquisitionDisposal == TradeType.DISPOSAL && trade.AcquisitionDisposal == TradeType.ACQUISITION)
                          ))
                         {
                             throw new ArgumentException("It is not one buy and one sell trade");
@@ -96,10 +96,10 @@ public class UkTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorpo
         {
             switch (taxEvent)
             {
-                case ITradeTaxCalculation sellTrade when sellTrade.BuySell == TradeType.SELL:
+                case ITradeTaxCalculation sellTrade when sellTrade.AcquisitionDisposal == TradeType.DISPOSAL:
                     sellTradeQueue.Enqueue(sellTrade);
                     break;
-                case ITradeTaxCalculation buyTrade when buyTrade.BuySell == TradeType.BUY:
+                case ITradeTaxCalculation buyTrade when buyTrade.AcquisitionDisposal == TradeType.ACQUISITION:
                     while (sellTradeQueue.Count > 0 && !buyTrade.CalculationCompleted)
                     {
                         var sellTradeToMatch = sellTradeQueue.Peek();
@@ -132,15 +132,15 @@ public class UkTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorpo
     private static void MatchTrade(ITradeTaxCalculation trade1, ITradeTaxCalculation trade2, TaxMatchType taxMatchType, IEnumerable<CorporateAction>? corporateActionInBetween = null)
     {
         if (!(
-            (trade1.BuySell == TradeType.BUY && trade2.BuySell == TradeType.SELL) ||
-            (trade1.BuySell == TradeType.SELL && trade2.BuySell == TradeType.BUY)
+            (trade1.AcquisitionDisposal == TradeType.ACQUISITION && trade2.AcquisitionDisposal == TradeType.DISPOSAL) ||
+            (trade1.AcquisitionDisposal == TradeType.DISPOSAL && trade2.AcquisitionDisposal == TradeType.ACQUISITION)
             ))
         {
             throw new ArgumentException("The provided trades should consist of one buy and one sell trade.");
         }
         if (trade1.CalculationCompleted || trade2.CalculationCompleted) return;
-        ITradeTaxCalculation buyTrade = trade1.BuySell == TradeType.BUY ? trade1 : trade2;
-        ITradeTaxCalculation sellTrade = trade1.BuySell == TradeType.SELL ? trade1 : trade2;
+        ITradeTaxCalculation buyTrade = trade1.AcquisitionDisposal == TradeType.ACQUISITION ? trade1 : trade2;
+        ITradeTaxCalculation sellTrade = trade1.AcquisitionDisposal == TradeType.DISPOSAL ? trade1 : trade2;
         decimal proposedMatchQuantity = Math.Min(trade1.UnmatchedQty, trade2.UnmatchedQty);
         TradeMatch proposedMatch = new()
         {
@@ -203,7 +203,7 @@ public class UkTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorpo
             {
                 case ITradeTaxCalculation tradeTaxCalculation:
                     if (tradeTaxCalculation.CalculationCompleted) continue;
-                    if (unmatchedDisposal.Count != 0 && tradeTaxCalculation.BuySell == TradeType.BUY)
+                    if (unmatchedDisposal.Count != 0 && tradeTaxCalculation.AcquisitionDisposal == TradeType.ACQUISITION)
                     {
                         while (unmatchedDisposal.Count != 0 && !tradeTaxCalculation.CalculationCompleted)
                         {
@@ -213,7 +213,7 @@ public class UkTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorpo
                         }
                     }
                     tradeTaxCalculation.MatchWithSection104(section104);
-                    if (!tradeTaxCalculation.CalculationCompleted && tradeTaxCalculation.BuySell == TradeType.SELL)
+                    if (!tradeTaxCalculation.CalculationCompleted && tradeTaxCalculation.AcquisitionDisposal == TradeType.DISPOSAL)
                     {
                         unmatchedDisposal.Enqueue(tradeTaxCalculation);
                     }

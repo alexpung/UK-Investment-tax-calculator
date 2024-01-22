@@ -93,11 +93,11 @@ public class UkFutureTradeCalculator(UkSection104Pools section104Pools, ITradeAn
                     resultList.Add(closingTrade);
                     break;
             }
-            currentPosition += trade.BuySell switch
+            currentPosition += trade.AcquisitionDisposal switch
             {
-                TradeType.BUY => trade.Quantity,
-                TradeType.SELL => trade.Quantity * -1,
-                _ => throw new NotImplementedException($"Unexpected tradeType {trade.BuySell}")
+                TradeType.ACQUISITION => trade.Quantity,
+                TradeType.DISPOSAL => trade.Quantity * -1,
+                _ => throw new NotImplementedException($"Unexpected tradeType {trade.AcquisitionDisposal}")
             };
         }
         return resultList;

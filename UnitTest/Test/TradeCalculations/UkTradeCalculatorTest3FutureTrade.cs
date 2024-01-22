@@ -20,7 +20,7 @@ public class UkTradeCalculatorTest3FutureTrade
         FutureContractTrade buyTrade = new()
         {
             AssetName = "GHI Future",
-            BuySell = TradeType.BUY,
+            AcquisitionDisposal = TradeType.ACQUISITION,
             Date = DateTime.Parse("02-Jun-22 10:00:00", CultureInfo.InvariantCulture),
             Description = "Purchase of GHI Future",
             Quantity = 150,
@@ -33,7 +33,7 @@ public class UkTradeCalculatorTest3FutureTrade
         FutureContractTrade sellTradeSameDay = new()
         {
             AssetName = "GHI Future",
-            BuySell = TradeType.SELL,
+            AcquisitionDisposal = TradeType.DISPOSAL,
             Date = DateTime.Parse("02-Jun-22 15:00:00", CultureInfo.InvariantCulture),
             Description = "Sale of GHI Future",
             Quantity = 100,
@@ -46,7 +46,7 @@ public class UkTradeCalculatorTest3FutureTrade
         FutureContractTrade sellTradeDifferentDay = new()
         {
             AssetName = "GHI Future",
-            BuySell = TradeType.SELL,
+            AcquisitionDisposal = TradeType.DISPOSAL,
             Date = DateTime.Parse("03-Jun-22 11:00:00", CultureInfo.InvariantCulture),
             Description = "Sale of GHI Future",
             Quantity = 50,
@@ -72,7 +72,7 @@ public class UkTradeCalculatorTest3FutureTrade
         FutureContractTrade buyTradeDay1 = new()
         {
             AssetName = "JKL Future",
-            BuySell = TradeType.BUY,
+            AcquisitionDisposal = TradeType.ACQUISITION,
             Date = DateTime.Parse("01-Jun-22 10:00:00", CultureInfo.InvariantCulture),
             Description = "Purchase of JKL Future",
             Quantity = 50,
@@ -85,7 +85,7 @@ public class UkTradeCalculatorTest3FutureTrade
         FutureContractTrade sellTradeDay2 = new()
         {
             AssetName = "JKL Future",
-            BuySell = TradeType.SELL,
+            AcquisitionDisposal = TradeType.DISPOSAL,
             Date = DateTime.Parse("01-Jun-22 15:00:00", CultureInfo.InvariantCulture),
             Description = "Sale of JKL Future",
             Quantity = 150,
@@ -98,7 +98,7 @@ public class UkTradeCalculatorTest3FutureTrade
         FutureContractTrade buyTradeDay3 = new()
         {
             AssetName = "JKL Future",
-            BuySell = TradeType.BUY,
+            AcquisitionDisposal = TradeType.ACQUISITION,
             Date = DateTime.Parse("03-Jun-22 11:00:00", CultureInfo.InvariantCulture),
             Description = "Purchase of JKL Future",
             Quantity = 100,

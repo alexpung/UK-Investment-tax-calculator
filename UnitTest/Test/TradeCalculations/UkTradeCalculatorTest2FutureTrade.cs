@@ -21,7 +21,7 @@ public class UkTradeCalculatorTest2FutureTrade
         FutureContractTrade trade1 = new()
         {
             AssetName = "DEF Future",
-            BuySell = TradeType.SELL,
+            AcquisitionDisposal = TradeType.DISPOSAL,
             Date = DateTime.Parse("05-May-21 12:34:56", CultureInfo.InvariantCulture),
             Description = "DEF Example Future",
             Quantity = 100,
@@ -33,7 +33,7 @@ public class UkTradeCalculatorTest2FutureTrade
         FutureContractTrade trade2 = new()
         {
             AssetName = "DEF Future",
-            BuySell = TradeType.BUY,
+            AcquisitionDisposal = TradeType.ACQUISITION,
             Date = DateTime.Parse("06-Dec-21 12:34:56", CultureInfo.InvariantCulture),
             Description = "DEF Example Future",
             Quantity = 100,
@@ -58,7 +58,7 @@ public class UkTradeCalculatorTest2FutureTrade
         FutureContractTrade trade1 = new()
         {
             AssetName = "DEF Future",
-            BuySell = TradeType.SELL,
+            AcquisitionDisposal = TradeType.DISPOSAL,
             Date = DateTime.Parse("05-May-21 12:34:56", CultureInfo.InvariantCulture),
             Description = "DEF Example Future",
             Quantity = 100,
@@ -70,7 +70,7 @@ public class UkTradeCalculatorTest2FutureTrade
         FutureContractTrade trade2 = new()
         {
             AssetName = "DEF Future",
-            BuySell = TradeType.BUY,
+            AcquisitionDisposal = TradeType.ACQUISITION,
             Date = DateTime.Parse("05-May-21 13:34:56", CultureInfo.InvariantCulture),
             Description = "DEF Example Future",
             Quantity = 100,
@@ -94,7 +94,7 @@ public class UkTradeCalculatorTest2FutureTrade
         FutureContractTrade buyTrade = new()
         {
             AssetName = "DEF Future",
-            BuySell = TradeType.BUY,
+            AcquisitionDisposal = TradeType.ACQUISITION,
             Date = DateTime.Parse("05-May-21 12:34:56", CultureInfo.InvariantCulture),
             Description = "Purchase of DEF Future",
             Quantity = 100,
@@ -107,7 +107,7 @@ public class UkTradeCalculatorTest2FutureTrade
         FutureContractTrade sellTrade = new()
         {
             AssetName = "DEF Future",
-            BuySell = TradeType.SELL,
+            AcquisitionDisposal = TradeType.DISPOSAL,
             Date = DateTime.Parse("06-Dec-21 12:34:56", CultureInfo.InvariantCulture),
             Description = "Partial Sale of DEF Future",
             Quantity = 50,
@@ -131,7 +131,7 @@ public class UkTradeCalculatorTest2FutureTrade
         FutureContractTrade buyTrade = new()
         {
             AssetName = "DEF Future",
-            BuySell = TradeType.BUY,
+            AcquisitionDisposal = TradeType.ACQUISITION,
             Date = DateTime.Parse("01-Jun-22 10:30:00", CultureInfo.InvariantCulture),
             Description = "Purchase of DEF Future",
             Quantity = 150,
@@ -144,7 +144,7 @@ public class UkTradeCalculatorTest2FutureTrade
         FutureContractTrade sellTrade = new()
         {
             AssetName = "DEF Future",
-            BuySell = TradeType.SELL,
+            AcquisitionDisposal = TradeType.DISPOSAL,
             Date = DateTime.Parse("01-Jun-22 14:45:00", CultureInfo.InvariantCulture),
             Description = "Sale of DEF Future",
             Quantity = 150,

@@ -14,7 +14,7 @@ public static class MockTrade
     public static Mock<ITradeTaxCalculation> CreateMockITradeTaxCalculation(decimal quantity, decimal value, TradeType tradeType)
     {
         Mock<ITradeTaxCalculation> mockTrade = new();
-        mockTrade.Setup(f => f.BuySell).Returns(tradeType);
+        mockTrade.Setup(f => f.AcquisitionDisposal).Returns(tradeType);
         mockTrade.Setup(f => f.MatchHistory).Returns([]);
         mockTrade.Setup(f => f.UnmatchedQty).Returns(quantity);
         mockTrade.Setup(f => f.UnmatchedCostOrProceed).Returns(new WrappedMoney(value));
@@ -28,7 +28,7 @@ public static class MockTrade
         var mockTrade = new Mock<Trade>();
         mockTrade.SetupGet(t => t.AssetName).Returns(assetName);
         mockTrade.SetupGet(t => t.Date).Returns(dateTime);
-        mockTrade.SetupGet(t => t.BuySell).Returns(tradeType);
+        mockTrade.SetupGet(t => t.AcquisitionDisposal).Returns(tradeType);
         mockTrade.SetupGet(t => t.Quantity).Returns(quantity);
         mockTrade.SetupGet(t => t.NetProceed).Returns(new WrappedMoney(baseCurrencyAmount));
         return mockTrade;

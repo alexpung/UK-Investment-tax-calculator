@@ -16,7 +16,7 @@ public class UkCalculationResultExportService(ITaxYear taxYear, TradeCalculation
         {
             output.Append(WriteTaxYearSummary(year, tradeCalculationResult));
             IEnumerable<ITradeTaxCalculation> yearFilteredTradeCalculations = tradeCalculationResult
-                .CalculatedTrade.Where(i => taxYear.ToTaxYear(i.Date) == year && i.BuySell == TradeType.SELL)
+                .CalculatedTrade.Where(i => taxYear.ToTaxYear(i.Date) == year && i.AcquisitionDisposal == TradeType.DISPOSAL)
                 .OrderBy(i => i.Date);
             output.AppendLine();
             output.Append(WriteDisposalDetails(yearFilteredTradeCalculations));

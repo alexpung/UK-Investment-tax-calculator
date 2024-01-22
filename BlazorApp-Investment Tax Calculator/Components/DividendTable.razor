@@ -1,10 +1,12 @@
 ﻿@using Model
+@using ViewModel
 @using Model.TaxEvents
 @using Model.Interfaces
 @using Syncfusion.Blazor.Grids
 @using Enumerations
+@using System.Globalization
 
-@inject IDividendLists dividendList
+@inject IDividendLists _dividendList
 
 <div class="bg-dark text-light">
     <div class="row my-4">
@@ -15,28 +17,22 @@
 
     <div class="row mt-3 me-3">
         <div class="col">
-            <SfGrid ID="ImportedDividendGrid" @ref="importedDividendGrid" DataSource="@dividendList.Dividends"
-                    AllowPaging="true" AllowSorting="true" AllowPdfExport="true" AllowExcelExport="true" AllowResizing="true"
+            <SfGrid ID="ImportedDividendGrid" @ref="importedDividendGrid" DataSource="@DividendViewModels"
+                    AllowPaging="true" AllowSorting="true" AllowPdfExport="true" AllowExcelExport="true" AllowResizing="true" AllowFiltering=true
                     Toolbar="@(new List<string>() { "PdfExport", "ExcelExport", "Print"})">
+                <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
                 <GridPageSettings PageSizes=@(new List<int>() {25, 50, 100}) PageSize="25"></GridPageSettings>
-                <GridEvents OnToolbarClick="ToolbarClickHandler" TValue="Dividend"></GridEvents>
+                <GridEvents OnToolbarClick="ToolbarClickHandler" TValue="DividendViewModel?"></GridEvents>
                 <GridColumns>
-                    <GridColumn Field=@nameof(Dividend.Date) HeaderText="Date" Format="d"></GridColumn>
-                    <GridColumn Field=@nameof(Dividend.DividendType) HeaderText="Dividend/Withholding Tax">
-                        <Template>
-                            @{
-                                var dividend = context as Dividend;
-                                var dividendType = dividend?.DividendType.GetDescription();
-                                <span>@dividendType</span>
-                            }
-                        </Template>
-                    </GridColumn>
-                    <GridColumn Field=@nameof(Dividend.AssetName) HeaderText="Asset Name"></GridColumn>
-                    <GridColumn Field=@nameof(Dividend.CompanyLocation) HeaderText="Company Location"></GridColumn>
-                    <GridColumn Field=@(nameof(Dividend.Proceed) + "." + nameof(DescribedMoney.BaseCurrencyAmount)) HeaderText="Sterling Amount"></GridColumn>
-                    <GridColumn Field=@(nameof(Dividend.Proceed) + "." + nameof(DescribedMoney.Amount)) HeaderText="Local Currency Amount"></GridColumn>
-                    <GridColumn Field=@(nameof(Dividend.Proceed) + "." + nameof(DescribedMoney.FxRate)) HeaderText="Exchange Rate"></GridColumn>
-                    <GridColumn Field=@(nameof(Dividend.Proceed) + "." + nameof(DescribedMoney.Description)) HeaderText="Description"></GridColumn>
+                    <GridColumn Field=@nameof(DividendViewModel.Date) HeaderText="Date" Format="d"></GridColumn>
+                    <GridColumn Field=@nameof(DividendViewModel.DividendType) HeaderText="Dividend/Withholding Tax"></GridColumn>
+                    <GridColumn Field=@nameof(DividendViewModel.AssetName) HeaderText="Asset Name"></GridColumn>
+                    <GridColumn Field=@nameof(DividendViewModel.CompanyLocaton) HeaderText="Company Location"></GridColumn>
+                    <GridColumn Field=@nameof(DividendViewModel.SterlingAmount) HeaderText="Sterling Amount"></GridColumn>
+                    <GridColumn Field=@nameof(DividendViewModel.Currency) HeaderText="Currency"></GridColumn>
+                    <GridColumn Field=@nameof(DividendViewModel.LocalCurrencyAmount) HeaderText="Local Currency Amount"></GridColumn>
+                    <GridColumn Field=@nameof(DividendViewModel.ExchangeRate) HeaderText="Exchange Rate"></GridColumn>
+                    <GridColumn Field=@nameof(DividendViewModel.Description) HeaderText="Description"></GridColumn>
                 </GridColumns>
             </SfGrid>
         </div>
@@ -45,7 +41,9 @@
 
 
 @code {
-    private SfGrid<Dividend> importedDividendGrid = new();
+    public IEnumerable<DividendViewModel?> DividendViewModels => _dividendList.Dividends.Select(dividend => new DividendViewModel(dividend)).DefaultIfEmpty();
+
+    private SfGrid<DividendViewModel?> importedDividendGrid = new();
 
     public async Task ToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)
     {
@@ -54,13 +52,16 @@
             var pdfExportProperties = new PdfExportProperties()
             {
                 PageOrientation = PageOrientation.Landscape,
-                PageSize = PdfPageSize.A4
+                PageSize = PdfPageSize.A4,
+                IncludeTemplateColumn = true
             };
             await importedDividendGrid.ExportToPdfAsync(pdfExportProperties);
         }
         if (args.Item.Id == "ImportedDividendGrid_excelexport")  //Id is combination of Grid's ID and itemname
         {
-            await importedDividendGrid.ExportToExcelAsync();
+            ExcelExportProperties exportProperties = new ExcelExportProperties();
+            exportProperties.IncludeTemplateColumn = true;
+            await importedDividendGrid.ExportToExcelAsync(exportProperties);
         }
     }
 }

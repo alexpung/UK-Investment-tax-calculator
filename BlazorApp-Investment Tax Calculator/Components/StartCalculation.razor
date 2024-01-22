@@ -46,7 +46,7 @@
 
     private IEnumerable<int> GetSelectableYears()
     {
-        IEnumerable<int> taxYearsWithDisposal = tradeCalculationResult.CalculatedTrade.Where(trade => trade.BuySell == TradeType.SELL)
+        IEnumerable<int> taxYearsWithDisposal = tradeCalculationResult.CalculatedTrade.Where(trade => trade.AcquisitionDisposal == TradeType.DISPOSAL)
                                                  .Select(trade => taxYear.ToTaxYear(trade.Date))
                                                  .Distinct();
         IEnumerable<int> taxYearsWithDividend = dividendCalculationResult.DividendSummary.Select(dividend => dividend.TaxYear).Distinct();

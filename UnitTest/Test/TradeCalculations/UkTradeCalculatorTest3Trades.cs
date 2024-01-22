@@ -21,7 +21,7 @@ public class UkTradeCalculatorTest3Trades
         Trade trade1 = new()
         {
             AssetName = "DEF",
-            BuySell = TradeType.SELL,
+            AcquisitionDisposal = TradeType.DISPOSAL,
             Date = DateTime.Parse("08-Apr-21 12:34:56", CultureInfo.InvariantCulture),
             Description = "DEF Example Stock",
             Quantity = 100,
@@ -30,7 +30,7 @@ public class UkTradeCalculatorTest3Trades
         Trade trade2 = new()
         {
             AssetName = "DEF",
-            BuySell = TradeType.SELL,
+            AcquisitionDisposal = TradeType.DISPOSAL,
             Date = DateTime.Parse("06-May-21 13:34:56", CultureInfo.InvariantCulture),
             Description = "DEF Example Stock",
             Quantity = 100,
@@ -39,7 +39,7 @@ public class UkTradeCalculatorTest3Trades
         Trade trade3 = new()
         {
             AssetName = "DEF",
-            BuySell = TradeType.BUY,
+            AcquisitionDisposal = TradeType.ACQUISITION,
             Date = DateTime.Parse("09-May-21 13:34:56", CultureInfo.InvariantCulture),
             Description = "DEF Example Stock",
             Quantity = 300,
@@ -62,7 +62,7 @@ public class UkTradeCalculatorTest3Trades
         Trade initSection104 = new()
         {
             AssetName = "Mesopotamia plc",
-            BuySell = TradeType.BUY,
+            AcquisitionDisposal = TradeType.ACQUISITION,
             Date = DateTime.Parse("11-Sep-20 12:00:00", CultureInfo.InvariantCulture),
             Description = "Purchase of 9500 shares",
             Quantity = 9500,
@@ -72,7 +72,7 @@ public class UkTradeCalculatorTest3Trades
         Trade saleTrade1 = new()
         {
             AssetName = "Mesopotamia plc",
-            BuySell = TradeType.SELL,
+            AcquisitionDisposal = TradeType.DISPOSAL,
             Date = DateTime.Parse("30-Aug-21 14:00:00", CultureInfo.InvariantCulture),
             Description = "Sale of 4,000 shares",
             Quantity = 4000,
@@ -84,7 +84,7 @@ public class UkTradeCalculatorTest3Trades
         Trade purchaseTrade1 = new()
         {
             AssetName = "Mesopotamia plc",
-            BuySell = TradeType.BUY,
+            AcquisitionDisposal = TradeType.ACQUISITION,
             Date = DateTime.Parse("11-Sep-21 12:00:00", CultureInfo.InvariantCulture),
             Description = "Purchase of 500 shares",
             Quantity = 500,
@@ -118,7 +118,7 @@ public class UkTradeCalculatorTest3Trades
         Trade purchaseTrade1 = new()
         {
             AssetName = "ABC",
-            BuySell = TradeType.BUY,
+            AcquisitionDisposal = TradeType.ACQUISITION,
             Date = DateTime.Parse("01-Jan-22 10:00:00", CultureInfo.InvariantCulture),
             Description = "Purchase of 100 shares",
             Quantity = 100,
@@ -129,7 +129,7 @@ public class UkTradeCalculatorTest3Trades
         Trade saleTrade1 = new()
         {
             AssetName = "ABC",
-            BuySell = TradeType.SELL,
+            AcquisitionDisposal = TradeType.DISPOSAL,
             Date = DateTime.Parse("01-Jan-22 14:00:00", CultureInfo.InvariantCulture),
             Description = "Sale of 200 shares (Same Day)",
             Quantity = 200,
@@ -140,7 +140,7 @@ public class UkTradeCalculatorTest3Trades
         Trade purchaseTrade2 = new()
         {
             AssetName = "ABC",
-            BuySell = TradeType.BUY,
+            AcquisitionDisposal = TradeType.ACQUISITION,
             Date = DateTime.Parse("01-Feb-22 10:00:00", CultureInfo.InvariantCulture), // Within 30 days
             Description = "Purchase of 100 shares (Bed and Breakfast)",
             Quantity = 100,
@@ -165,7 +165,7 @@ public class UkTradeCalculatorTest3Trades
         Trade initialPurchase = new()
         {
             AssetName = "AncientArtifacts Ltd",
-            BuySell = TradeType.BUY,
+            AcquisitionDisposal = TradeType.ACQUISITION,
             Date = DateTime.Parse("15-Jan-20 10:00:00", CultureInfo.InvariantCulture),
             Description = "Purchase of 10,000 shares",
             Quantity = 10000,
@@ -175,7 +175,7 @@ public class UkTradeCalculatorTest3Trades
         Trade saleTrade = new()
         {
             AssetName = "AncientArtifacts Ltd",
-            BuySell = TradeType.SELL,
+            AcquisitionDisposal = TradeType.DISPOSAL,
             Date = DateTime.Parse("20-Aug-21 11:00:00", CultureInfo.InvariantCulture),
             Description = "Sale of 3,000 shares",
             Quantity = 3000,
@@ -185,7 +185,7 @@ public class UkTradeCalculatorTest3Trades
         Trade additionalPurchase = new()
         {
             AssetName = "AncientArtifacts Ltd",
-            BuySell = TradeType.BUY,
+            AcquisitionDisposal = TradeType.ACQUISITION,
             Date = DateTime.Parse("01-Sep-21 15:00:00", CultureInfo.InvariantCulture),
             Description = "Purchase of 2,000 shares",
             Quantity = 2000,

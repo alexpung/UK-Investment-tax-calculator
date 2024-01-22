@@ -19,7 +19,7 @@ public class UkTradeCalculatorTestBedAndBreakfast
         FutureContractTrade buyTrade = new()
         {
             AssetName = "GHI Future",
-            BuySell = TradeType.BUY,
+            AcquisitionDisposal = TradeType.ACQUISITION,
             Date = DateTime.Parse("02-Jun-22 10:00:00", CultureInfo.InvariantCulture),
             Description = "Purchase of GHI Future",
             Quantity = 5000,
@@ -31,7 +31,7 @@ public class UkTradeCalculatorTestBedAndBreakfast
         FutureContractTrade disposeLongPosition = new()
         {
             AssetName = "GHI Future",
-            BuySell = TradeType.SELL,
+            AcquisitionDisposal = TradeType.DISPOSAL,
             Date = DateTime.Parse("03-Jun-22 15:00:00", CultureInfo.InvariantCulture),
             Description = "Sale of GHI Future",
             Quantity = 100,
@@ -43,7 +43,7 @@ public class UkTradeCalculatorTestBedAndBreakfast
         FutureContractTrade bedAndBreakfastBuy1 = new()
         {
             AssetName = "GHI Future",
-            BuySell = TradeType.BUY,
+            AcquisitionDisposal = TradeType.ACQUISITION,
             Date = DateTime.Parse("04-Jun-22 11:00:00", CultureInfo.InvariantCulture),
             Description = "Bed and breakfast purchase of GHI Future",
             Quantity = 100,
@@ -55,7 +55,7 @@ public class UkTradeCalculatorTestBedAndBreakfast
         FutureContractTrade bedAndBreakfastBuy2 = new()
         {
             AssetName = "GHI Future",
-            BuySell = TradeType.BUY,
+            AcquisitionDisposal = TradeType.ACQUISITION,
             Date = DateTime.Parse("05-Jun-22 11:00:00", CultureInfo.InvariantCulture),
             Description = "Bed and breakfast purchase of GHI Future 2",
             Quantity = 100,
@@ -74,7 +74,7 @@ public class UkTradeCalculatorTestBedAndBreakfast
         FutureContractTrade buyTrade = new()
         {
             AssetName = "GHI Future",
-            BuySell = TradeType.SELL,
+            AcquisitionDisposal = TradeType.DISPOSAL,
             Date = DateTime.Parse("02-Jun-22 10:00:00", CultureInfo.InvariantCulture),
             Description = "Purchase of GHI Future",
             Quantity = 5000,
@@ -86,7 +86,7 @@ public class UkTradeCalculatorTestBedAndBreakfast
         FutureContractTrade disposeLongPosition = new()
         {
             AssetName = "GHI Future",
-            BuySell = TradeType.BUY,
+            AcquisitionDisposal = TradeType.ACQUISITION,
             Date = DateTime.Parse("03-Jun-22 15:00:00", CultureInfo.InvariantCulture),
             Description = "Sale of GHI Future",
             Quantity = 100,
@@ -98,7 +98,7 @@ public class UkTradeCalculatorTestBedAndBreakfast
         FutureContractTrade bedAndBreakfastBuy1 = new()
         {
             AssetName = "GHI Future",
-            BuySell = TradeType.SELL,
+            AcquisitionDisposal = TradeType.DISPOSAL,
             Date = DateTime.Parse("04-Jun-22 11:00:00", CultureInfo.InvariantCulture),
             Description = "Bed and breakfast purchase of GHI Future",
             Quantity = 100,
@@ -110,7 +110,7 @@ public class UkTradeCalculatorTestBedAndBreakfast
         FutureContractTrade bedAndBreakfastBuy2 = new()
         {
             AssetName = "GHI Future",
-            BuySell = TradeType.SELL,
+            AcquisitionDisposal = TradeType.DISPOSAL,
             Date = DateTime.Parse("05-Jun-22 11:00:00", CultureInfo.InvariantCulture),
             Description = "Bed and breakfast purchase of GHI Future 2",
             Quantity = 100,

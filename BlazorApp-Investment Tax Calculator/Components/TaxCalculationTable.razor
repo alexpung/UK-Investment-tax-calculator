@@ -1,4 +1,5 @@
 ﻿@using Model
+@using ViewModel
 @using Model.Interfaces
 @using Syncfusion.Blazor.Grids
 @using Model.TaxEvents
@@ -15,23 +16,38 @@
             <h3>Disposal calculation summary</h3>
         </div>
     </div>
-    <AssetTypeFilter OnSelectCategoryCallBack="OnSelectCategory"></AssetTypeFilter>
     <div class="row me-3">
         <div class="col">
             <SfGrid ID="DisposalCalculationGrid" @ref="disposalCalculationGrid" DataSource="@_trades"
-                    AllowPaging="true" AllowSorting="true" AllowPdfExport="true" AllowExcelExport="true" AllowResizing="true"
+                    AllowPaging="true" AllowSorting="true" AllowPdfExport="true" AllowExcelExport="true" AllowResizing="true" AllowFiltering="true"
                     Toolbar="@(new List<string>() { "PdfExport", "ExcelExport", "Print" })">
+                <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
                 <GridPageSettings PageSizes=@(new List<int>() {25, 50, 100}) PageSize="25"></GridPageSettings>
-                <GridEvents OnToolbarClick="ToolbarClickHandler" TValue="ITradeTaxCalculation"></GridEvents>
+                <GridEvents OnToolbarClick="ToolbarClickHandler" TValue="TradeTaxCalculationViewModel?"></GridEvents>
                 <GridColumns>
-                    <GridColumn Field=@nameof(ITradeTaxCalculation.Id) HeaderText="Trade Id"></GridColumn>
-                    <GridColumn Field=@nameof(ITradeTaxCalculation.Date) HeaderText="Date" Format="d"></GridColumn>
-                    <GridColumn Field=@nameof(ITradeTaxCalculation.AssetName) HeaderText="Asset Name"></GridColumn>
-                    <GridColumn Field=@nameof(ITradeTaxCalculation.TotalQty) HeaderText="Total Quantity disposed"></GridColumn>
-                    <GridColumn Field=@nameof(ITradeTaxCalculation.TotalProceeds) HeaderText="Total Proceeeds"></GridColumn>
-                    <GridColumn Field=@nameof(ITradeTaxCalculation.TotalAllowableCost) HeaderText="Allowable Cost"></GridColumn>
-                    <GridColumn Field=@nameof(ITradeTaxCalculation.Gain) HeaderText="Gain (Loss)"></GridColumn>
-                    <GridColumn Field=@nameof(ITradeTaxCalculation.UnmatchedQty) HeaderText="Unmatched shares"></GridColumn>
+                    <GridColumn Field=@nameof(TradeTaxCalculationViewModel.TradeId) HeaderText="Trade Id"></GridColumn>
+                    <GridColumn Field=@nameof(TradeTaxCalculationViewModel.Date) HeaderText="Date" Format="d"></GridColumn>
+                    <GridColumn Field=@nameof(TradeTaxCalculationViewModel.AssetType) HeaderText="Asset Type"></GridColumn>
+                    <GridColumn Field=@nameof(TradeTaxCalculationViewModel.AssetName) HeaderText="Asset Name"></GridColumn>
+                    <GridColumn Field=@nameof(TradeTaxCalculationViewModel.AcquisitionOrDisposal) HeaderText="Acquisition/Disposal"></GridColumn>
+                    <GridColumn HeaderText="Matching Quantity">
+                        <GridColumns>
+                            <GridColumn Field=@nameof(TradeTaxCalculationViewModel.Qty) HeaderText="Total Quantity disposed"></GridColumn>
+                            <GridColumn Field=@nameof(TradeTaxCalculationViewModel.SameDayMatchQty) HeaderText="Same day"></GridColumn>
+                            <GridColumn Field=@nameof(TradeTaxCalculationViewModel.BedAndBreakfastMatchQty) HeaderText="Bed and Breakfast"></GridColumn>
+                            <GridColumn Field=@nameof(TradeTaxCalculationViewModel.Section104MatchQty) HeaderText="Section 104"></GridColumn>
+                            <GridColumn Field=@nameof(TradeTaxCalculationViewModel.CoveredShortMatchQty) HeaderText="Cover short sale"></GridColumn>
+                            <GridColumn Field=@nameof(TradeTaxCalculationViewModel.UnmatchedQty) HeaderText="Unmatched shares"></GridColumn>
+                        </GridColumns>
+                    </GridColumn>
+                    <GridColumn HeaderText="Calculation Result">
+                        <GridColumns>
+                            <GridColumn Field=@nameof(TradeTaxCalculationViewModel.TotalProceed) HeaderText="Total Proceeeds"></GridColumn>
+                            <GridColumn Field=@nameof(TradeTaxCalculationViewModel.TotalAllowableCost) HeaderText="Allowable Cost"></GridColumn>
+                            <GridColumn Field=@nameof(TradeTaxCalculationViewModel.ContractValue) HeaderText="Contract value (Future only)"></GridColumn>
+                            <GridColumn Field=@nameof(TradeTaxCalculationViewModel.Gain) HeaderText="Gain (Loss)"></GridColumn>
+                        </GridColumns>
+                    </GridColumn>
                 </GridColumns>
             </SfGrid>
         </div>
@@ -39,12 +55,10 @@
 </div>
 
 @code {
-    public AssetCatagoryType SelectedAssetCatagoryType { get; set; } = AssetCatagoryType.STOCK;
-    private AssetTypeFilter _assetTypeFilter = new();
-    private SfGrid<ITradeTaxCalculation> disposalCalculationGrid = new();
-    private IEnumerable<ITradeTaxCalculation> _trades => tradeCalculationResult.CalculatedTrade
-                                                                           .Where(trade => trade.AssetCatagoryType == SelectedAssetCatagoryType)
-                                                                           .Where(trade => trade.BuySell == TradeType.SELL);
+    private SfGrid<TradeTaxCalculationViewModel?> disposalCalculationGrid = new();
+    private IEnumerable<TradeTaxCalculationViewModel?> _trades => tradeCalculationResult.CalculatedTrade
+                                                                .Select(trade => new TradeTaxCalculationViewModel(trade))
+                                                                .DefaultIfEmpty();
 
     public async Task ToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)
     {
@@ -53,18 +67,16 @@
             var pdfExportProperties = new PdfExportProperties()
             {
                 PageOrientation = PageOrientation.Landscape,
-                PageSize = PdfPageSize.A4
+                PageSize = PdfPageSize.A4,
+                IncludeTemplateColumn = true
             };
             await disposalCalculationGrid.ExportToPdfAsync(pdfExportProperties);
         }
         if (args.Item.Id == "DisposalCalculationGrid_excelexport")  //Id is combination of Grid's ID and itemname
         {
-            await disposalCalculationGrid.ExportToExcelAsync();
+            ExcelExportProperties exportProperties = new ExcelExportProperties();
+            exportProperties.IncludeTemplateColumn = true;
+            await disposalCalculationGrid.ExportToExcelAsync(exportProperties);
         }
-    }
-
-    private void OnSelectCategory(AssetCatagoryType type)
-    {
-        SelectedAssetCatagoryType = type;
     }
 }
