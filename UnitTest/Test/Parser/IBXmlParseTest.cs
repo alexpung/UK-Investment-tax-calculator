@@ -35,8 +35,8 @@ public class IBXmlParseTest
     public void TestReadingIBXmlTrades()
     {
         IList<Trade> parsedData = IBXmlStockTradeParser.ParseXml(_xmlDoc);
-        parsedData.Count(trade => trade.BuySell == TradeType.BUY).ShouldBe(27);
-        parsedData.Count(trade => trade.BuySell == TradeType.SELL).ShouldBe(31);
+        parsedData.Count(trade => trade.AcquisitionDisposal == TradeType.ACQUISITION).ShouldBe(27);
+        parsedData.Count(trade => trade.AcquisitionDisposal == TradeType.DISPOSAL).ShouldBe(31);
 
     }
 

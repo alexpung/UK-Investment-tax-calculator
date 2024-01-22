@@ -25,7 +25,7 @@ public static class IBXmlFutureTradeParser
         return new FutureContractTrade
         {
             AssetType = AssetCatagoryType.FUTURE,
-            BuySell = GetTradeType(element),
+            AcquisitionDisposal = GetTradeType(element),
             AssetName = element.GetAttribute("symbol"),
             Description = element.GetAttribute("description"),
             Date = DateTime.Parse(element.GetAttribute("dateTime"), CultureInfo.InvariantCulture),
@@ -52,8 +52,8 @@ public static class IBXmlFutureTradeParser
 
     private static TradeType GetTradeType(XElement element) => element.GetAttribute("buySell") switch
     {
-        "BUY" => TradeType.BUY,
-        "SELL" => TradeType.SELL,
+        "BUY" => TradeType.ACQUISITION,
+        "SELL" => TradeType.DISPOSAL,
         _ => throw new NotImplementedException($"Unrecognised trade type {element.GetAttribute("buySell")}")
     };
 

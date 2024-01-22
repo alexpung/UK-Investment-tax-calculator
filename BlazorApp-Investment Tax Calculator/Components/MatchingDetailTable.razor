@@ -1,4 +1,5 @@
 ﻿@using Model
+@using ViewModel
 @using Model.Interfaces
 @using Syncfusion.Blazor.DropDowns
 @using Syncfusion.Blazor.Grids
@@ -17,32 +18,25 @@
             <h3>Matching Details</h3>
         </div>
     </div>
-    <AssetTypeFilter OnSelectCategoryCallBack="OnSelectCategory"></AssetTypeFilter>
     <div class="row me-3">
         <div class="col">
             <SfGrid ID="TradeMatchesGrid" @ref="tradeMatchesGrid" DataSource="@_tradeMatches"
-                    AllowPaging="true" AllowSorting="true" AllowPdfExport="true" AllowExcelExport="true" AllowResizing="true"
+                    AllowPaging="true" AllowSorting="true" AllowPdfExport="true" AllowExcelExport="true" AllowResizing="true" AllowFiltering="true"
                     Toolbar="@(new List<string>() { "PdfExport", "ExcelExport", "Print" })">
+                <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
                 <GridPageSettings PageSizes=@(new List<int>() {25, 50, 100}) PageSize="25"></GridPageSettings>
-                <GridEvents OnToolbarClick="ToolbarClickHandler" TValue="TradeMatch"></GridEvents>
+                <GridEvents OnToolbarClick="ToolbarClickHandler" TValue="TradeMatchViewModel?"></GridEvents>
                 <GridColumns>
-                    <GridColumn Field=@nameof(TradeMatch.Date) HeaderText="Disposal Date" Type="ColumnType.DateOnly"></GridColumn>
-                    <GridColumn Field=@nameof(TradeMatch.AssetName) HeaderText="Asset Name" Type="ColumnType.String"></GridColumn>
-                    <GridColumn Field=@nameof(TradeMatch.TradeMatchType) HeaderText="Match Type" Type="ColumnType.String">
-                        <Template>
-                            @{
-                                var tradeMatch = context as TradeMatch;
-                                var tradeMatchType = tradeMatch?.TradeMatchType.GetDescription();
-                                <span>@tradeMatchType</span>
-                            }
-                        </Template>
-                    </GridColumn>
-                    <GridColumn Field=@(nameof(TradeMatch.MatchedBuyTrade) + "." + nameof(ITradeTaxCalculation.Id)) HeaderText="Acquisition trade ID"></GridColumn>
-                    <GridColumn Field=@(nameof(TradeMatch.MatchedSellTrade) + "." + nameof(ITradeTaxCalculation.Id)) HeaderText="Disposal trade ID"></GridColumn>
-                    <GridColumn Field=@nameof(TradeMatch.MatchDisposalQty) HeaderText="Matched disposal Quantity" Type="ColumnType.Decimal" Format="C2"></GridColumn>
-                    <GridColumn Field=@nameof(TradeMatch.BaseCurrencyMatchDisposalProceed) HeaderText="Disposal Proceed" Type="ColumnType.String"></GridColumn>
-                    <GridColumn Field=@nameof(TradeMatch.BaseCurrencyMatchAllowableCost) HeaderText="Allowable Cost" Type="ColumnType.String"></GridColumn>
-                    <GridColumn Field=@nameof(TradeMatch.MatchGain) HeaderText="Gain" Type="ColumnType.String"></GridColumn>
+                    <GridColumn Field=@nameof(TradeMatchViewModel.DisposalDate) HeaderText="Disposal Date"></GridColumn>
+                    <GridColumn Field=@nameof(TradeMatchViewModel.AssetType) HeaderText="Asset Type"></GridColumn>
+                    <GridColumn Field=@nameof(TradeMatchViewModel.AssetName) HeaderText="Asset Name"></GridColumn>
+                    <GridColumn Field=@nameof(TradeMatchViewModel.MatchType) HeaderText="Match Type"></GridColumn>
+                    <GridColumn Field=@nameof(TradeMatchViewModel.AcquistionTradeId) HeaderText="Acquisition trade ID"></GridColumn>
+                    <GridColumn Field=@nameof(TradeMatchViewModel.DisposalTradeId) HeaderText="Disposal trade ID"></GridColumn>
+                    <GridColumn Field=@nameof(TradeMatchViewModel.MatchDisposalQty) HeaderText="Matched disposal Quantity" Format="F2"></GridColumn>
+                    <GridColumn Field=@nameof(TradeMatchViewModel.DisposalProceed) HeaderText="Disposal Proceed"></GridColumn>
+                    <GridColumn Field=@nameof(TradeMatchViewModel.AllowableCost) HeaderText="Allowable Cost"></GridColumn>
+                    <GridColumn Field=@nameof(TradeMatchViewModel.Gain) HeaderText="Gain"></GridColumn>
                 </GridColumns>
             </SfGrid>
         </div>
@@ -52,12 +46,13 @@
 
 @code {
     public AssetCatagoryType SelectedAssetCatagoryType { get; set; } = AssetCatagoryType.STOCK;
-    private AssetTypeFilter _assetTypeFilter = new();
-    private SfGrid<TradeMatch> tradeMatchesGrid = default!;
-    private IEnumerable<TradeMatch> _tradeMatches => tradeCalculationResult.CalculatedTrade
-                                                                           .Where(trade => trade.AssetCatagoryType == SelectedAssetCatagoryType)
-                                                                           .Where(trade => trade.BuySell == TradeType.SELL)
-                                                                           .SelectMany(trade => trade.MatchHistory);
+    private SfGrid<TradeMatchViewModel?> tradeMatchesGrid = default!;
+    private IEnumerable<TradeMatchViewModel?> _tradeMatches => tradeCalculationResult.CalculatedTrade
+                                                                           .Where(trade => trade.AcquisitionDisposal == TradeType.DISPOSAL)
+                                                                           .SelectMany(trade => trade.MatchHistory)
+                                                                           .Select(tradeMatch => new TradeMatchViewModel(tradeMatch))
+                                                                           .DefaultIfEmpty();
+
 
     public async Task ToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)
     {
@@ -66,19 +61,17 @@
             var pdfExportProperties = new PdfExportProperties()
                 {
                     PageOrientation = PageOrientation.Landscape,
-                    PageSize = PdfPageSize.A4
+                    PageSize = PdfPageSize.A4,
+                    IncludeTemplateColumn = true
                 };
             await tradeMatchesGrid.ExportToPdfAsync(pdfExportProperties);
         }
         if (args.Item.Id == "TradeMatchesGrid_excelexport")  //Id is combination of Grid's ID and itemname
         {
-            await tradeMatchesGrid.ExportToExcelAsync();
+            ExcelExportProperties exportProperties = new ExcelExportProperties();
+            exportProperties.IncludeTemplateColumn = true;
+            await tradeMatchesGrid.ExportToExcelAsync(exportProperties);
         }
-    }
-
-    private void OnSelectCategory(AssetCatagoryType type)
-    {
-        SelectedAssetCatagoryType = type;
     }
 }
 

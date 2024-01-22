@@ -36,10 +36,10 @@ public record FutureContractTrade : Trade
 
     public override string PrintToTextFile()
     {
-        string action = BuySell switch
+        string action = AcquisitionDisposal switch
         {
-            TradeType.BUY => "Bought",
-            TradeType.SELL => "Sold",
+            TradeType.ACQUISITION => "Bought",
+            TradeType.DISPOSAL => "Sold",
             _ => throw new NotImplementedException()
         };
         return $"{action} {Quantity} unit(s) of {AssetName} on {Date:dd-MMM-yyyy HH:mm} with contract value {ContractValue.Amount} " +

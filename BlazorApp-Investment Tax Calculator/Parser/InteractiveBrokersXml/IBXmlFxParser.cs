@@ -50,7 +50,7 @@ public class IBXmlFxParser
         };
         return new FxTrade
         {
-            BuySell = GetTradeType(element),
+            AcquisitionDisposal = GetTradeType(element),
             AssetName = currency,
             AssetType = AssetCatagoryType.FX,
             Description = element.GetAttribute("activityDescription"),
@@ -62,8 +62,8 @@ public class IBXmlFxParser
 
     private static TradeType GetTradeType(XElement element) => decimal.Parse(element.GetAttribute("amount")) switch
     {
-        >= 0 => TradeType.BUY,
-        < 0 => TradeType.SELL,
+        >= 0 => TradeType.ACQUISITION,
+        < 0 => TradeType.DISPOSAL,
     };
 
     private decimal FetchFxRate(string currency, string baseCurrency, DateTime date)

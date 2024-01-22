@@ -6,10 +6,10 @@ public record FxTrade : Trade
 {
     public override string PrintToTextFile()
     {
-        string action = BuySell switch
+        string action = AcquisitionDisposal switch
         {
-            TradeType.BUY => "Acquire",
-            TradeType.SELL => "Dispose",
+            TradeType.ACQUISITION => "Acquire",
+            TradeType.DISPOSAL => "Dispose",
             _ => throw new NotImplementedException()
         };
 

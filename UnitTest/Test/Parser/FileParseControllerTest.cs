@@ -19,7 +19,7 @@ public class FileParseControllerTest
     {
         AssetName = "Test",
         Quantity = 100,
-        BuySell = TradeType.BUY,
+        AcquisitionDisposal = TradeType.ACQUISITION,
         Date = new DateTime(2022, 1, 1, 0, 0, 0, DateTimeKind.Local),
         GrossProceed = new DescribedMoney() { Amount = new WrappedMoney(100, "GBP") }
     };

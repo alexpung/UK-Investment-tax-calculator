@@ -4,8 +4,8 @@ namespace Enumerations;
 
 public enum TradeType
 {
-    [Description("Acqusition")]
-    BUY,
+    [Description("acquisition")]
+    ACQUISITION,
     [Description("Disposal")]
-    SELL
+    DISPOSAL
 }

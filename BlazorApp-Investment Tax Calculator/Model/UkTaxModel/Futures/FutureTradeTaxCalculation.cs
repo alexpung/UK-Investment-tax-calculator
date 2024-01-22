@@ -10,7 +10,7 @@ namespace Model.UkTaxModel.Futures;
 
 public class FutureTradeTaxCalculation : TradeTaxCalculation
 {
-    public override TradeType BuySell => PositionType is FuturePositionType.OPENLONG or FuturePositionType.OPENSHORT ? TradeType.BUY : TradeType.SELL;
+    public override TradeType AcquisitionDisposal => PositionType is FuturePositionType.OPENLONG or FuturePositionType.OPENSHORT ? TradeType.ACQUISITION : TradeType.DISPOSAL;
     public FuturePositionType PositionType => ((FutureContractTrade)TradeList[0]).FuturePositionType;
     public WrappedMoney TotalContractValue { get; private set; }
     public decimal ContractFxRate { get; private init; }
@@ -41,7 +41,7 @@ public class FutureTradeTaxCalculation : TradeTaxCalculation
     public override void MatchWithSection104(UkSection104 ukSection104)
     {
         if (CalculationCompleted) return;
-        if (BuySell is TradeType.BUY)
+        if (AcquisitionDisposal is TradeType.ACQUISITION)
         {
             Section104History section104History = ukSection104.AddAssets(this, UnmatchedQty, UnmatchedCostOrProceed, UnmatchedContractValue);
             FutureTradeMatch tradeMatch = new()
@@ -65,7 +65,7 @@ public class FutureTradeTaxCalculation : TradeTaxCalculation
             MatchHistory.Add(tradeMatch);
             MatchQty(UnmatchedQty);
         }
-        else if (BuySell is TradeType.SELL)
+        else if (AcquisitionDisposal is TradeType.DISPOSAL)
         {
             if (ukSection104.Quantity == 0m) return;
             decimal matchQty = Math.Min(UnmatchedQty, ukSection104.Quantity);

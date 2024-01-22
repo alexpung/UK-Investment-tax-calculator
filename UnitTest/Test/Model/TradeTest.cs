@@ -15,7 +15,7 @@ public class TradeTests
         {
             AssetName = "Test",
             Date = new DateTime(2023, 1, 1, 0, 0, 0, DateTimeKind.Local),
-            BuySell = TradeType.BUY,
+            AcquisitionDisposal = TradeType.ACQUISITION,
             Quantity = 10,
             GrossProceed = new DescribedMoney
             {
@@ -39,7 +39,7 @@ public class TradeTests
         {
             AssetName = "Test",
             Date = new DateTime(2023, 1, 1, 0, 0, 0, DateTimeKind.Local),
-            BuySell = TradeType.SELL,
+            AcquisitionDisposal = TradeType.DISPOSAL,
             Quantity = 5,
             GrossProceed = new DescribedMoney
             {

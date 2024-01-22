@@ -8,7 +8,7 @@ namespace Model.Interfaces;
 public interface ITradeTaxCalculation : ITextFilePrintable, IAssetDatedEvent
 {
     int Id { get; }
-    TradeType BuySell { get; init; }
+    TradeType AcquisitionDisposal { get; init; }
     AssetCatagoryType AssetCatagoryType { get; }
     bool CalculationCompleted { get; }
     List<TradeMatch> MatchHistory { get; init; }

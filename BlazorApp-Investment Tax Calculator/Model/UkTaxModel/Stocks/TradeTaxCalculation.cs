@@ -31,7 +31,7 @@ public class TradeTaxCalculation : ITradeTaxCalculation
     public WrappedMoney GetProportionedCostOrProceed(decimal qty) => TotalCostOrProceed / TotalQty * qty;
     public decimal TotalQty { get; }
     public decimal UnmatchedQty { get; protected set; }
-    public virtual TradeType BuySell { get; init; }
+    public virtual TradeType AcquisitionDisposal { get; init; }
     public bool CalculationCompleted => UnmatchedQty == 0;
     public DateTime Date => TradeList[0].Date;
     public AssetCatagoryType AssetCatagoryType => TradeList[0].AssetType;
@@ -45,7 +45,7 @@ public class TradeTaxCalculation : ITradeTaxCalculation
     /// <param name="trades">Only accept trade from the same side</param>
     public TradeTaxCalculation(IEnumerable<Trade> trades)
     {
-        if (!trades.All(i => i.BuySell.Equals(trades.First().BuySell)))
+        if (!trades.All(i => i.AcquisitionDisposal.Equals(trades.First().AcquisitionDisposal)))
         {
             throw new ArgumentException("Not all trades that is put in TradeTaxCalculation is on the same BUY/SELL side");
         }
@@ -54,7 +54,7 @@ public class TradeTaxCalculation : ITradeTaxCalculation
         UnmatchedCostOrProceed = TotalCostOrProceed;
         TotalQty = trades.Sum(trade => trade.Quantity);
         UnmatchedQty = TotalQty;
-        BuySell = trades.First().BuySell;
+        AcquisitionDisposal = trades.First().AcquisitionDisposal;
         Id = Interlocked.Increment(ref _nextId);
     }
 
@@ -74,7 +74,7 @@ public class TradeTaxCalculation : ITradeTaxCalculation
     public virtual void MatchWithSection104(UkSection104 ukSection104)
     {
         if (UnmatchedQty == 0m) return;
-        if (BuySell is TradeType.BUY)
+        if (AcquisitionDisposal is TradeType.ACQUISITION)
         {
             Section104History section104History = ukSection104.AddAssets(this, UnmatchedQty, UnmatchedCostOrProceed);
             MatchHistory.Add(
@@ -92,7 +92,7 @@ public class TradeTaxCalculation : ITradeTaxCalculation
                 });
             MatchQty(UnmatchedQty);
         }
-        else if (BuySell is TradeType.SELL)
+        else if (AcquisitionDisposal is TradeType.DISPOSAL)
         {
             if (ukSection104.Quantity == 0m) return;
             decimal matchQty = Math.Min(UnmatchedQty, ukSection104.Quantity);

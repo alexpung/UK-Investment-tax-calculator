@@ -18,7 +18,7 @@ public class UkTradeCalculatorTest4Trades
         Trade trade1 = new()
         {
             AssetName = "ABC",
-            BuySell = TradeType.BUY,
+            AcquisitionDisposal = TradeType.ACQUISITION,
             Date = DateTime.Parse("01-May-21 12:34:56", CultureInfo.InvariantCulture),
             Description = "ABC Example Stock",
             Quantity = 200,
@@ -32,7 +32,7 @@ public class UkTradeCalculatorTest4Trades
         Trade trade2 = new()
         {
             AssetName = "ABC",
-            BuySell = TradeType.BUY,
+            AcquisitionDisposal = TradeType.ACQUISITION,
             Date = DateTime.Parse("03-May-21 12:33:56", CultureInfo.InvariantCulture),
             Description = "ABC Example Stock",
             Quantity = 50,
@@ -46,7 +46,7 @@ public class UkTradeCalculatorTest4Trades
         Trade trade3 = new()
         {
             AssetName = "ABC",
-            BuySell = TradeType.SELL,
+            AcquisitionDisposal = TradeType.DISPOSAL,
             Date = DateTime.Parse("03-May-21 12:34:56", CultureInfo.InvariantCulture),
             Description = "ABC Example Stock",
             Quantity = 200,
@@ -60,7 +60,7 @@ public class UkTradeCalculatorTest4Trades
         Trade trade4 = new()
         {
             AssetName = "ABC",
-            BuySell = TradeType.BUY,
+            AcquisitionDisposal = TradeType.ACQUISITION,
             Date = DateTime.Parse("04-May-21 12:34:56", CultureInfo.InvariantCulture),
             Description = "ABC Example Stock",
             Quantity = 100,
@@ -101,7 +101,7 @@ public class UkTradeCalculatorTest4Trades
         Trade trade1 = new()
         {
             AssetName = "Lobster plc",
-            BuySell = TradeType.BUY,
+            AcquisitionDisposal = TradeType.ACQUISITION,
             Date = DateTime.Parse("01-Apr-14 12:33:56", CultureInfo.InvariantCulture),
             Description = "Lobster plc",
             Quantity = 1000,
@@ -112,7 +112,7 @@ public class UkTradeCalculatorTest4Trades
         Trade trade2 = new()
         {
             AssetName = "Lobster plc",
-            BuySell = TradeType.BUY,
+            AcquisitionDisposal = TradeType.ACQUISITION,
             Date = DateTime.Parse("01-Sep-17 12:33:56", CultureInfo.InvariantCulture),
             Description = "Lobster plc",
             Quantity = 500,
@@ -123,7 +123,7 @@ public class UkTradeCalculatorTest4Trades
         Trade trade3 = new()
         {
             AssetName = "Lobster plc",
-            BuySell = TradeType.SELL,
+            AcquisitionDisposal = TradeType.DISPOSAL,
             Date = DateTime.Parse("01-May-22 12:33:56", CultureInfo.InvariantCulture),
             Description = "Lobster plc",
             Quantity = 700,
@@ -134,7 +134,7 @@ public class UkTradeCalculatorTest4Trades
         Trade trade4 = new()
         {
             AssetName = "Lobster plc",
-            BuySell = TradeType.SELL,
+            AcquisitionDisposal = TradeType.DISPOSAL,
             Date = DateTime.Parse("01-Feb-23 12:33:56", CultureInfo.InvariantCulture),
             Description = "Lobster plc",
             Quantity = 400,

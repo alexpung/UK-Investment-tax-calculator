@@ -1,5 +1,5 @@
 ﻿@using Model
-@using VideModel
+@using ViewModel
 @using Model.TaxEvents
 @using Model.Interfaces
 @using Syncfusion.Blazor.Grids
@@ -24,15 +24,15 @@
                 <GridPageSettings PageSizes=@(new List<int>() {25, 50, 100}) PageSize="25"></GridPageSettings>
                 <GridEvents OnToolbarClick="ToolbarClickHandler" TValue="DividendViewModel?"></GridEvents>
                 <GridColumns>
-                    <GridColumn Field=@nameof(DividendViewModel.Date) HeaderText="Date" Format="d" Type="ColumnType.DateTime"></GridColumn>
-                    <GridColumn Field=@nameof(DividendViewModel.DividendType) HeaderText="Dividend/Withholding Tax" Type="ColumnType.String"></GridColumn>
-                    <GridColumn Field=@nameof(DividendViewModel.AssetName) HeaderText="Asset Name" Type="ColumnType.String"></GridColumn>
-                    <GridColumn Field=@nameof(DividendViewModel.CompanyLocaton) HeaderText="Company Location" Type="ColumnType.String"></GridColumn>
-                    <GridColumn Field=@nameof(DividendViewModel.SterlingAmount) HeaderText="Sterling Amount" Type="ColumnType.Decimal"></GridColumn>
-                    <GridColumn Field=@nameof(DividendViewModel.Currency) HeaderText="Currency" Type="ColumnType.String"></GridColumn>
-                    <GridColumn Field=@nameof(DividendViewModel.LocalCurrencyAmount) HeaderText="Local Currency Amount" Type="ColumnType.Decimal"></GridColumn>
-                    <GridColumn Field=@nameof(DividendViewModel.ExchangeRate) HeaderText="Exchange Rate" Type="ColumnType.Decimal"></GridColumn>
-                    <GridColumn Field=@nameof(DividendViewModel.Description) HeaderText="Description" Type="ColumnType.String"></GridColumn>
+                    <GridColumn Field=@nameof(DividendViewModel.Date) HeaderText="Date" Format="d"></GridColumn>
+                    <GridColumn Field=@nameof(DividendViewModel.DividendType) HeaderText="Dividend/Withholding Tax"></GridColumn>
+                    <GridColumn Field=@nameof(DividendViewModel.AssetName) HeaderText="Asset Name"></GridColumn>
+                    <GridColumn Field=@nameof(DividendViewModel.CompanyLocaton) HeaderText="Company Location"></GridColumn>
+                    <GridColumn Field=@nameof(DividendViewModel.SterlingAmount) HeaderText="Sterling Amount"></GridColumn>
+                    <GridColumn Field=@nameof(DividendViewModel.Currency) HeaderText="Currency"></GridColumn>
+                    <GridColumn Field=@nameof(DividendViewModel.LocalCurrencyAmount) HeaderText="Local Currency Amount"></GridColumn>
+                    <GridColumn Field=@nameof(DividendViewModel.ExchangeRate) HeaderText="Exchange Rate"></GridColumn>
+                    <GridColumn Field=@nameof(DividendViewModel.Description) HeaderText="Description"></GridColumn>
                 </GridColumns>
             </SfGrid>
         </div>
@@ -41,9 +41,9 @@
 
 
 @code {
-    public IEnumerable<DividendViewModel> DividendViewModels => dividendList.Dividends.Select(dividend => new DividendViewModel(dividend)).DefaultIfEmpty();
+    public IEnumerable<DividendViewModel?> DividendViewModels => _dividendList.Dividends.Select(dividend => new DividendViewModel(dividend)).DefaultIfEmpty();
 
-    private SfGrid<DividendViewModel> importedDividendGrid = new();
+    private SfGrid<DividendViewModel?> importedDividendGrid = new();
 
     public async Task ToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)
     {

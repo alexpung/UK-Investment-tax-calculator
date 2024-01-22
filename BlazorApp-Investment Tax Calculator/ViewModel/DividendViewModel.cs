@@ -2,7 +2,7 @@
 
 using Model.TaxEvents;
 
-namespace VideModel;
+namespace ViewModel;
 
 public record DividendViewModel(Dividend Dividend)
 {
