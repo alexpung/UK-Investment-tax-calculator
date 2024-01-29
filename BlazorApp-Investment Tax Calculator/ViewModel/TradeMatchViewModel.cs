@@ -4,17 +4,17 @@ using Model.UkTaxModel.Stocks;
 
 namespace ViewModel;
 
-public record TradeMatchViewModel(TradeMatch tradeMatch)
+public record TradeMatchViewModel(TradeMatch TradeMatch)
 {
-    public DateOnly DisposalDate { get; } = tradeMatch.Date;
-    public string? AssetType { get; } = tradeMatch.MatchedSellTrade?.AssetCatagoryType.GetDescription() ?? tradeMatch.MatchedBuyTrade?.AssetCatagoryType.GetDescription();
-    public string AssetName { get; } = tradeMatch.AssetName;
-    public string MatchType { get; } = tradeMatch.TradeMatchType.GetDescription();
-    public int? AcquistionTradeId { get; } = tradeMatch.MatchedBuyTrade?.Id;
-    public int? DisposalTradeId { get; } = tradeMatch.MatchedSellTrade?.Id;
-    public decimal MatchDisposalQty { get; } = tradeMatch.MatchDisposalQty;
-    public decimal DisposalProceed { get; } = tradeMatch.BaseCurrencyMatchDisposalProceed.Amount;
-    public decimal AllowableCost { get; } = tradeMatch.BaseCurrencyMatchAllowableCost.Amount;
-    public decimal Gain { get; } = tradeMatch.MatchGain.Amount;
+    public DateOnly DisposalDate { get; } = TradeMatch.Date;
+    public string? AssetType { get; } = TradeMatch.MatchedSellTrade?.AssetCatagoryType.GetDescription() ?? TradeMatch.MatchedBuyTrade?.AssetCatagoryType.GetDescription();
+    public string AssetName { get; } = TradeMatch.AssetName;
+    public string MatchType { get; } = TradeMatch.TradeMatchType.GetDescription();
+    public int? AcquistionTradeId { get; } = TradeMatch.MatchedBuyTrade?.Id;
+    public int? DisposalTradeId { get; } = TradeMatch.MatchedSellTrade?.Id;
+    public decimal MatchDisposalQty { get; } = TradeMatch.MatchDisposalQty;
+    public decimal DisposalProceed { get; } = TradeMatch.BaseCurrencyMatchDisposalProceed.Amount;
+    public decimal AllowableCost { get; } = TradeMatch.BaseCurrencyMatchAllowableCost.Amount;
+    public decimal Gain { get; } = TradeMatch.MatchGain.Amount;
 
 }
