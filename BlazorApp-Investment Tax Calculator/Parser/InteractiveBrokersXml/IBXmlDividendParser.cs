@@ -32,7 +32,7 @@ public static class IBXmlDividendParser
         catch (Exception ex)
         {
             string exceptionMessage = $"Exception occurred processing XElement: {element} - Original Exception: {ex.Message}";
-            throw new Exception(exceptionMessage, ex);
+            throw new ParseException(exceptionMessage, ex);
         }
     }
 
