@@ -20,7 +20,7 @@
     <div class="row mt-3 me-3">
         <div class="col">
             <SfGrid ID="ImportedDividendGrid" @ref="importedDividendGrid" DataSource="@DividendViewModels"
-                    AllowPaging="true" AllowSorting="true" AllowPdfExport="true" AllowExcelExport="true" AllowResizing="true" AllowFiltering=true
+                    AllowPaging="true" AllowSorting="true" AllowPdfExport="true" AllowExcelExport="true" AllowResizing="true" AllowFiltering=true AllowTextWrap="true"
                     Toolbar="@(new List<string>() { "PdfExport", "ExcelExport", "Print"})">
                 <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
                 <GridPageSettings PageSizes=@(new List<int>() {25, 50, 100}) PageSize="25"></GridPageSettings>

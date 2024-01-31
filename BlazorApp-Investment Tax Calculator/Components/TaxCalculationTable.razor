@@ -21,7 +21,7 @@
     <div class="row me-3">
         <div class="col">
             <SfGrid ID="DisposalCalculationGrid" @ref="disposalCalculationGrid" DataSource="@_trades"
-                    AllowPaging="true" AllowSorting="true" AllowPdfExport="true" AllowExcelExport="true" AllowResizing="true" AllowFiltering="true"
+                    AllowPaging="true" AllowSorting="true" AllowPdfExport="true" AllowExcelExport="true" AllowResizing="true" AllowFiltering="true" AllowTextWrap="true"
                     Toolbar="@(new List<string>() { "PdfExport", "ExcelExport", "Print" })">
                 <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
                 <GridPageSettings PageSizes=@(new List<int>() {25, 50, 100}) PageSize="25"></GridPageSettings>
@@ -38,15 +38,15 @@
                             <GridColumn Field=@nameof(TradeTaxCalculationViewModel.SameDayMatchQty) HeaderText="Same day"></GridColumn>
                             <GridColumn Field=@nameof(TradeTaxCalculationViewModel.BedAndBreakfastMatchQty) HeaderText="Bed and Breakfast"></GridColumn>
                             <GridColumn Field=@nameof(TradeTaxCalculationViewModel.Section104MatchQty) HeaderText="Section 104"></GridColumn>
-                            <GridColumn Field=@nameof(TradeTaxCalculationViewModel.CoveredShortMatchQty) HeaderText="Cover short sale"></GridColumn>
-                            <GridColumn Field=@nameof(TradeTaxCalculationViewModel.UnmatchedQty) HeaderText="Unmatched shares"></GridColumn>
+                            <GridColumn Field=@nameof(TradeTaxCalculationViewModel.CoveredShortMatchQty) HeaderText="Cover Short Sale"></GridColumn>
+                            <GridColumn Field=@nameof(TradeTaxCalculationViewModel.UnmatchedQty) HeaderText="Unmatched Shares"></GridColumn>
                         </GridColumns>
                     </GridColumn>
                     <GridColumn HeaderText="Calculation Result">
                         <GridColumns>
                             <GridColumn Field=@nameof(TradeTaxCalculationViewModel.TotalProceed) HeaderText="Total Proceeeds"></GridColumn>
                             <GridColumn Field=@nameof(TradeTaxCalculationViewModel.TotalAllowableCost) HeaderText="Allowable Cost"></GridColumn>
-                            <GridColumn Field=@nameof(TradeTaxCalculationViewModel.ContractValue) HeaderText="Contract value (Future only)"></GridColumn>
+                            <GridColumn Field=@nameof(TradeTaxCalculationViewModel.ContractValue) HeaderText="Contract Value (Future only)"></GridColumn>
                             <GridColumn Field=@nameof(TradeTaxCalculationViewModel.Gain) HeaderText="Gain (Loss)"></GridColumn>
                         </GridColumns>
                     </GridColumn>
