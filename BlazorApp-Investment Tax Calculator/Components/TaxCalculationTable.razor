@@ -7,8 +7,10 @@
 @using Model.UkTaxModel.Stocks
 @using Enumerations
 @using BlazorApp_Investment_Tax_Calculator.Components
+@using Services
 
 @inject TradeCalculationResult tradeCalculationResult
+@inject SfGridToolBarHandlingService _toolbarHandlingService
 
 <div class="bg-dark text-light">
     <div class="row my-4">
@@ -19,7 +21,7 @@
     <div class="row me-3">
         <div class="col">
             <SfGrid ID="DisposalCalculationGrid" @ref="disposalCalculationGrid" DataSource="@_trades"
-                    AllowPaging="true" AllowSorting="true" AllowPdfExport="true" AllowExcelExport="true" AllowResizing="true" AllowFiltering="true"
+                    AllowPaging="true" AllowSorting="true" AllowPdfExport="true" AllowExcelExport="true" AllowResizing="true" AllowFiltering="true" AllowTextWrap="true"
                     Toolbar="@(new List<string>() { "PdfExport", "ExcelExport", "Print" })">
                 <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
                 <GridPageSettings PageSizes=@(new List<int>() {25, 50, 100}) PageSize="25"></GridPageSettings>
@@ -36,15 +38,15 @@
                             <GridColumn Field=@nameof(TradeTaxCalculationViewModel.SameDayMatchQty) HeaderText="Same day"></GridColumn>
                             <GridColumn Field=@nameof(TradeTaxCalculationViewModel.BedAndBreakfastMatchQty) HeaderText="Bed and Breakfast"></GridColumn>
                             <GridColumn Field=@nameof(TradeTaxCalculationViewModel.Section104MatchQty) HeaderText="Section 104"></GridColumn>
-                            <GridColumn Field=@nameof(TradeTaxCalculationViewModel.CoveredShortMatchQty) HeaderText="Cover short sale"></GridColumn>
-                            <GridColumn Field=@nameof(TradeTaxCalculationViewModel.UnmatchedQty) HeaderText="Unmatched shares"></GridColumn>
+                            <GridColumn Field=@nameof(TradeTaxCalculationViewModel.CoveredShortMatchQty) HeaderText="Cover Short Sale"></GridColumn>
+                            <GridColumn Field=@nameof(TradeTaxCalculationViewModel.UnmatchedQty) HeaderText="Unmatched Shares"></GridColumn>
                         </GridColumns>
                     </GridColumn>
                     <GridColumn HeaderText="Calculation Result">
                         <GridColumns>
                             <GridColumn Field=@nameof(TradeTaxCalculationViewModel.TotalProceed) HeaderText="Total Proceeeds"></GridColumn>
                             <GridColumn Field=@nameof(TradeTaxCalculationViewModel.TotalAllowableCost) HeaderText="Allowable Cost"></GridColumn>
-                            <GridColumn Field=@nameof(TradeTaxCalculationViewModel.ContractValue) HeaderText="Contract value (Future only)"></GridColumn>
+                            <GridColumn Field=@nameof(TradeTaxCalculationViewModel.ContractValue) HeaderText="Contract Value (Future only)"></GridColumn>
                             <GridColumn Field=@nameof(TradeTaxCalculationViewModel.Gain) HeaderText="Gain (Loss)"></GridColumn>
                         </GridColumns>
                     </GridColumn>
@@ -62,21 +64,6 @@
 
     public async Task ToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)
     {
-        if (args.Item.Id == "DisposalCalculationGrid_pdfexport")  //Id is combination of Grid's ID and itemname
-        {
-            var pdfExportProperties = new PdfExportProperties()
-            {
-                PageOrientation = PageOrientation.Landscape,
-                PageSize = PdfPageSize.A4,
-                IncludeTemplateColumn = true
-            };
-            await disposalCalculationGrid.ExportToPdfAsync(pdfExportProperties);
-        }
-        if (args.Item.Id == "DisposalCalculationGrid_excelexport")  //Id is combination of Grid's ID and itemname
-        {
-            ExcelExportProperties exportProperties = new ExcelExportProperties();
-            exportProperties.IncludeTemplateColumn = true;
-            await disposalCalculationGrid.ExportToExcelAsync(exportProperties);
-        }
+        _toolbarHandlingService.ToolbarClickHandler(args, disposalCalculationGrid);
     }
 }
