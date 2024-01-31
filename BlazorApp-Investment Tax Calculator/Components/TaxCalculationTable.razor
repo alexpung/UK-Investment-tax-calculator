@@ -7,8 +7,10 @@
 @using Model.UkTaxModel.Stocks
 @using Enumerations
 @using BlazorApp_Investment_Tax_Calculator.Components
+@using Services
 
 @inject TradeCalculationResult tradeCalculationResult
+@inject SfGridToolBarHandlingService _toolbarHandlingService
 
 <div class="bg-dark text-light">
     <div class="row my-4">
@@ -62,21 +64,6 @@
 
     public async Task ToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)
     {
-        if (args.Item.Id == "DisposalCalculationGrid_pdfexport")  //Id is combination of Grid's ID and itemname
-        {
-            var pdfExportProperties = new PdfExportProperties()
-            {
-                PageOrientation = PageOrientation.Landscape,
-                PageSize = PdfPageSize.A4,
-                IncludeTemplateColumn = true
-            };
-            await disposalCalculationGrid.ExportToPdfAsync(pdfExportProperties);
-        }
-        if (args.Item.Id == "DisposalCalculationGrid_excelexport")  //Id is combination of Grid's ID and itemname
-        {
-            ExcelExportProperties exportProperties = new ExcelExportProperties();
-            exportProperties.IncludeTemplateColumn = true;
-            await disposalCalculationGrid.ExportToExcelAsync(exportProperties);
-        }
+        _toolbarHandlingService.ToolbarClickHandler(args, disposalCalculationGrid);
     }
 }

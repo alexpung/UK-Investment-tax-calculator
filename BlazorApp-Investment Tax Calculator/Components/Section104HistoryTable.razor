@@ -8,8 +8,10 @@
 @using Syncfusion.Blazor.SplitButtons
 @using Enumerations
 @using BlazorApp_Investment_Tax_Calculator.Components
+@using Services
 
 @inject UkSection104Pools section104Pools
+@inject SfGridToolBarHandlingService _toolbarHandlingService
 
 <div class="bg-dark text-light">
     <div class="row my-4">
@@ -52,22 +54,7 @@
 
     public async Task ToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)
     {
-        if (args.Item.Id == "Section104HistoryGrid_pdfexport")  //Id is combination of Grid's ID and itemname
-        {
-            var pdfExportProperties = new PdfExportProperties()
-                {
-                    PageOrientation = PageOrientation.Landscape,
-                    PageSize = PdfPageSize.A4,
-                    IncludeTemplateColumn = true
-                };
-            await section104HistoryGrid.ExportToPdfAsync(pdfExportProperties);
-        }
-        if (args.Item.Id == "Section104HistoryGrid_excelexport")  //Id is combination of Grid's ID and itemname
-        {
-            ExcelExportProperties exportProperties = new ExcelExportProperties();
-            exportProperties.IncludeTemplateColumn = true;
-            await section104HistoryGrid.ExportToExcelAsync(exportProperties);
-        }
+        _toolbarHandlingService.ToolbarClickHandler(args, section104HistoryGrid);
     }
 }
 

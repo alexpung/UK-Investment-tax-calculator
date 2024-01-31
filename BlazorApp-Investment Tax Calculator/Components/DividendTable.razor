@@ -5,8 +5,10 @@
 @using Syncfusion.Blazor.Grids
 @using Enumerations
 @using System.Globalization
+@using Services
 
 @inject IDividendLists _dividendList
+@inject SfGridToolBarHandlingService _toolbarHandlingService
 
 <div class="bg-dark text-light">
     <div class="row my-4">
@@ -47,22 +49,7 @@
 
     public async Task ToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)
     {
-        if (args.Item.Id == "ImportedDividendGrid_pdfexport")  //Id is combination of Grid's ID and itemname
-        {
-            var pdfExportProperties = new PdfExportProperties()
-            {
-                PageOrientation = PageOrientation.Landscape,
-                PageSize = PdfPageSize.A4,
-                IncludeTemplateColumn = true
-            };
-            await importedDividendGrid.ExportToPdfAsync(pdfExportProperties);
-        }
-        if (args.Item.Id == "ImportedDividendGrid_excelexport")  //Id is combination of Grid's ID and itemname
-        {
-            ExcelExportProperties exportProperties = new ExcelExportProperties();
-            exportProperties.IncludeTemplateColumn = true;
-            await importedDividendGrid.ExportToExcelAsync(exportProperties);
-        }
+        _toolbarHandlingService.ToolbarClickHandler(args, importedDividendGrid);
     }
 }
 
