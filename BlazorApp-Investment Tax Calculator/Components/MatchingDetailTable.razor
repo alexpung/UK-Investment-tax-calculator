@@ -9,8 +9,10 @@
 @using Syncfusion.Blazor.SplitButtons
 @using Enumerations
 @using BlazorApp_Investment_Tax_Calculator.Components
+@using Services
 
 @inject TradeCalculationResult tradeCalculationResult
+@inject SfGridToolBarHandlingService _toolbarHandlingService
 
 <div class="bg-dark text-light">
     <div class="row my-4">
@@ -21,7 +23,7 @@
     <div class="row me-3">
         <div class="col">
             <SfGrid ID="TradeMatchesGrid" @ref="tradeMatchesGrid" DataSource="@_tradeMatches"
-                    AllowPaging="true" AllowSorting="true" AllowPdfExport="true" AllowExcelExport="true" AllowResizing="true" AllowFiltering="true"
+                    AllowPaging="true" AllowSorting="true" AllowPdfExport="true" AllowExcelExport="true" AllowResizing="true" AllowFiltering="true" AllowTextWrap="true"
                     Toolbar="@(new List<string>() { "PdfExport", "ExcelExport", "Print" })">
                 <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
                 <GridPageSettings PageSizes=@(new List<int>() {25, 50, 100}) PageSize="25"></GridPageSettings>
@@ -33,10 +35,12 @@
                     <GridColumn Field=@nameof(TradeMatchViewModel.MatchType) HeaderText="Match Type"></GridColumn>
                     <GridColumn Field=@nameof(TradeMatchViewModel.AcquistionTradeId) HeaderText="Acquisition trade ID"></GridColumn>
                     <GridColumn Field=@nameof(TradeMatchViewModel.DisposalTradeId) HeaderText="Disposal trade ID"></GridColumn>
-                    <GridColumn Field=@nameof(TradeMatchViewModel.MatchDisposalQty) HeaderText="Matched disposal Quantity" Format="F2"></GridColumn>
+                    <GridColumn Field=@nameof(TradeMatchViewModel.MatchAcquisitionQty) HeaderText="Matched Acquisition Quantity"></GridColumn>
+                    <GridColumn Field=@nameof(TradeMatchViewModel.MatchDisposalQty) HeaderText="Matched Disposal Quantity"></GridColumn>
                     <GridColumn Field=@nameof(TradeMatchViewModel.DisposalProceed) HeaderText="Disposal Proceed"></GridColumn>
                     <GridColumn Field=@nameof(TradeMatchViewModel.AllowableCost) HeaderText="Allowable Cost"></GridColumn>
                     <GridColumn Field=@nameof(TradeMatchViewModel.Gain) HeaderText="Gain"></GridColumn>
+                    <GridColumn Field=@nameof(TradeMatchViewModel.AdditionalInformation) HeaderText="Additional Information"></GridColumn>
                 </GridColumns>
             </SfGrid>
         </div>
@@ -56,22 +60,7 @@
 
     public async Task ToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)
     {
-        if (args.Item.Id == "TradeMatchesGrid_pdfexport")  //Id is combination of Grid's ID and itemname
-        {
-            var pdfExportProperties = new PdfExportProperties()
-                {
-                    PageOrientation = PageOrientation.Landscape,
-                    PageSize = PdfPageSize.A4,
-                    IncludeTemplateColumn = true
-                };
-            await tradeMatchesGrid.ExportToPdfAsync(pdfExportProperties);
-        }
-        if (args.Item.Id == "TradeMatchesGrid_excelexport")  //Id is combination of Grid's ID and itemname
-        {
-            ExcelExportProperties exportProperties = new ExcelExportProperties();
-            exportProperties.IncludeTemplateColumn = true;
-            await tradeMatchesGrid.ExportToExcelAsync(exportProperties);
-        }
+        _toolbarHandlingService.ToolbarClickHandler(args, tradeMatchesGrid);
     }
 }
 

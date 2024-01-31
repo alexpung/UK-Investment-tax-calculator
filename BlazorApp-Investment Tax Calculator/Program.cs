@@ -19,10 +19,12 @@ using Syncfusion.Blazor;
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
+// app services
 builder.Services.AddSingleton<DividendExportService>();
 builder.Services.AddSingleton<FileParseController>();
 builder.Services.AddSingleton<YearOptions>();
 builder.Services.AddSingleton<ToastService>();
+builder.Services.AddSingleton<SfGridToolBarHandlingService>();
 
 // UK tax specific components - replace if you want to calculate some other countries.
 builder.Services.AddSingleton<UkCalculationResultExportService>();
