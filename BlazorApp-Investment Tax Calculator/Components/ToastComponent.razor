@@ -19,7 +19,7 @@
     {
         ToastService.ShowToastTrigger += (ToastOption options) =>
         {
-            InvokeAsync(() =>
+            InvokeAsync(async () => 
             {
                 this.Options.Title = options.Title;
                 this.Options.Content = options.Content;
@@ -32,8 +32,9 @@
                     _ => throw new NotImplementedException()
                 };
                 this.IsToastVisible = true;
+                await Task.Delay(100);
                 this.StateHasChanged();
-                this.Toast.ShowAsync();
+                await this.Toast.ShowAsync();
             });
         };
         base.OnInitialized();
