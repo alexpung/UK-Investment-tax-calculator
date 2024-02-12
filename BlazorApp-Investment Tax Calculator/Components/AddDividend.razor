@@ -1,0 +1,44 @@
+﻿@using Model
+@using Syncfusion.Blazor.Grids
+@using ViewModel
+@using Model.Interfaces
+@using Syncfusion.Blazor.Buttons
+@inject IJSRuntime JSRuntime
+@inject IDividendLists dividendList
+
+<h3>Add Dividend</h3>
+
+<div class="col-lg-12 control-section">
+    <div class="content-wrapper">
+        <div class="row">
+            <SfGrid DataSource="@GridData" Toolbar="@(new List<string>() { "Add", "Delete", "Update", "Cancel" })" AllowPaging="true">
+                <GridEditSettings AllowAdding="true" AllowDeleting="true" AllowEditing="true" Mode="EditMode.Batch"></GridEditSettings>
+                <GridColumns>
+                    <GridColumn Field=@nameof(DividendInputViewModel.AssetName) HeaderText="Asset Name"></GridColumn>
+                    <GridColumn Field=@nameof(DividendInputViewModel.Date) HeaderText="Date" EditType="EditType.DatePickerEdit" Format="d" Type="ColumnType.Date"></GridColumn>
+                    <GridColumn Field=@nameof(DividendInputViewModel.CompanyLocationString) HeaderText="Company Location"></GridColumn>
+                    <GridColumn Field=@nameof(DividendInputViewModel.CurrencyString) HeaderText="Currency"></GridColumn>
+                    <GridColumn Field=@nameof(DividendInputViewModel.GrossAmount) HeaderText="Gross Dividend Amount" EditType="EditType.NumericEdit"></GridColumn>
+                    <GridColumn Field=@nameof(DividendInputViewModel.GrossPaymentInLieuAmount) HeaderText="Gross Payment in Lieu Amount" EditType="EditType.NumericEdit"></GridColumn>
+                    <GridColumn Field=@nameof(DividendInputViewModel.WithHoldingAmount) HeaderText="Withholding Tax Amount" EditType="EditType.NumericEdit"></GridColumn>
+                    <GridColumn Field=@nameof(DividendInputViewModel.FxRate) HeaderText="Fx Rate" EditType="EditType.NumericEdit"></GridColumn>
+                    <GridColumn Field=@nameof(DividendInputViewModel.Description) HeaderText="Description"></GridColumn>
+                </GridColumns>
+            </SfGrid>
+            <SfButton OnClick="OnImportDividend">Import table data</SfButton>
+        </div>
+    </div>
+</div>
+@code {
+    public List<DividendInputViewModel> GridData { get; set; } = [];
+
+    public void OnImportDividend()
+    {
+        foreach (DividendInputViewModel dividendInputViewModel in GridData)
+        {
+            dividendList.Dividends.AddRange(dividendInputViewModel.Convert());
+        }
+        GridData.Clear();
+    }
+}
+
