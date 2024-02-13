@@ -1,0 +1,102 @@
+﻿@using Model
+@using Syncfusion.Blazor.DropDowns
+@using Syncfusion.Blazor.Grids
+@using ViewModel
+@using Model.Interfaces
+@using Syncfusion.Blazor.Buttons
+@using Services
+@using Enumerations
+
+@inject IJSRuntime JSRuntime
+@inject ITradeAndCorporateActionList tradeList
+@inject ToastService toastService
+
+<div class="bg-dark text-light p-4">
+        <div class="row mb-5">
+            <div class="col text-center">
+                <h1 class="display-4">Add Trade</h1>
+            </div>
+        </div>
+
+        <!-- Instructions and Descriptions -->
+        <!-- Add similar instructional content here as needed -->
+
+        <div class="control-section mt-4">
+            <div class="content-wrapper">
+                <div class="row">
+                    <SfGrid @ref="_addTradeGrid" DataSource="@GridData" Toolbar="@(new List<string> { "Add", "Delete", "Update", "Cancel" })" AllowPaging="true">
+                        <GridEditSettings AllowAdding="true" AllowDeleting="true" AllowEditing="true" Mode="EditMode.Dialog"></GridEditSettings>
+                        <GridEvents OnActionBegin="OnActionBegin" TValue="TradeInputViewModel"></GridEvents>
+                        <GridColumns>
+                            <GridColumn Field=@nameof(TradeInputViewModel.Id) HeaderText="Id" Visible=false IsPrimaryKey=true></GridColumn>
+                            <GridColumn Field=@nameof(TradeInputViewModel.AssetName) HeaderText="Asset Name"></GridColumn>
+                            <GridColumn Field=@nameof(TradeInputViewModel.Date) HeaderText="Date" EditType="EditType.DatePickerEdit" Format="d"></GridColumn>
+                            <GridColumn Field=@nameof(TradeInputViewModel.Quantity) HeaderText="Quantity" EditType="EditType.NumericEdit"></GridColumn>
+                            <GridColumn Field=@nameof(TradeInputViewModel.AcquisitionDisposal) HeaderText="Acquisition/Disposal" >
+                                <EditTemplate>
+                                    @{
+                                        <SfDropDownList @ref="_tradeTypeDropDownList" DataSource="@TradeTypeDropDownEnumValue"
+                                                        TValue="TradeType" TItem="EnumDescriptionPair<TradeType>" Placeholder="Trade type">
+                                            <DropDownListFieldSettings Value="EnumValue" Text="Description"></DropDownListFieldSettings>
+                                        </SfDropDownList>
+                                    }
+                                </EditTemplate>
+                            </GridColumn>
+                            <GridColumn Field=@nameof(TradeInputViewModel.AssetCatagoryType) HeaderText="Asset Category">
+                                <EditTemplate>
+                                @{
+                                        <SfDropDownList @ref="_assetCatagoryTypeDropDownList" DataSource="@AssetCatagoryDropDownEnumValue"
+                                                        TValue="AssetCatagoryType" TItem="EnumDescriptionPair<AssetCatagoryType>" Placeholder="Asset Category Type">
+                                            <DropDownListFieldSettings Value="EnumValue" Text="Description"></DropDownListFieldSettings>
+                                        </SfDropDownList>
+                                }
+                                </EditTemplate>
+                            </GridColumn>
+                            <GridColumn Field=@nameof(TradeInputViewModel.TransactionCurrency) HeaderText="Transaction Currency"></GridColumn>
+                            <GridColumn Field=@nameof(TradeInputViewModel.GrossProceed) HeaderText="Gross Proceed" EditType="EditType.NumericEdit"></GridColumn>
+                            <GridColumn Field=@nameof(TradeInputViewModel.CommissionCurrency) HeaderText="Commission Currency"></GridColumn>
+                            <GridColumn Field=@nameof(TradeInputViewModel.CommissionAmount) HeaderText="Commission Amount" EditType="EditType.NumericEdit"></GridColumn>
+                            <GridColumn Field=@nameof(TradeInputViewModel.TaxCurrency) HeaderText="Tax Currency"></GridColumn>
+                            <GridColumn Field=@nameof(TradeInputViewModel.TaxAmount) HeaderText="Tax Amount" EditType="EditType.NumericEdit"></GridColumn>
+                            <GridColumn Field=@nameof(TradeInputViewModel.ContractValueCurrency) HeaderText="Contract Value Currency"></GridColumn>
+                            <GridColumn Field=@nameof(TradeInputViewModel.ContractValueAmount) HeaderText="Contract Value Amount" EditType="EditType.NumericEdit"></GridColumn>
+                            <GridColumn Field=@nameof(TradeInputViewModel.Description) HeaderText="Description"></GridColumn>
+                        </GridColumns>
+                    </SfGrid>
+                    <div class="col-12 mt-3 d-flex justify-content-center">
+                        <SfButton OnClick="OnImportTrade">Import trade data</SfButton>
+                    </div>
+                </div>
+            </div>
+        </div>
+</div>
+
+@code {
+    public List<TradeInputViewModel> GridData { get; set; } = new();
+    private SfGrid<TradeInputViewModel> _addTradeGrid = new();
+    private SfDropDownList<TradeType, EnumDescriptionPair<TradeType>> _tradeTypeDropDownList = new();
+    private SfDropDownList<AssetCatagoryType, EnumDescriptionPair<AssetCatagoryType>> _assetCatagoryTypeDropDownList = new();
+    public List<EnumDescriptionPair<AssetCatagoryType>> AssetCatagoryDropDownEnumValue = [];
+    public List<EnumDescriptionPair<TradeType>> TradeTypeDropDownEnumValue = [];
+
+    protected override void OnInitialized()
+    {
+        TradeTypeDropDownEnumValue = EnumExtensions.GetEnumDescriptionPair<TradeType>(typeof(TradeType));
+        AssetCatagoryDropDownEnumValue = EnumExtensions.GetEnumDescriptionPair<AssetCatagoryType>(typeof(AssetCatagoryType));
+    }
+
+    public void OnImportTrade()
+    {
+        // Implementation for importing trade data to the system
+        // Similar to the OnImportDividend method in your dividend example
+    }
+
+    public void OnActionBegin(ActionEventArgs<TradeInputViewModel> Args)
+    {
+        if (Args.RequestType == Syncfusion.Blazor.Grids.Action.Save)
+        {
+            Args.Data.AcquisitionDisposal = _tradeTypeDropDownList.Value;
+            Args.Data.AssetCatagoryType = _assetCatagoryTypeDropDownList.Value;
+        }
+    }
+}
