@@ -9,6 +9,8 @@ namespace ViewModel;
 
 public class DividendInputViewModel
 {
+    private static int _nextId = 0;
+    public int Id { get; init; }
     [Required]
     public required string AssetName { get; set; }
     [Required]
@@ -28,6 +30,11 @@ public class DividendInputViewModel
     [Required]
     public decimal FxRate { get; set; } = 1;
     public string Description { get; set; } = "";
+
+    public DividendInputViewModel()
+    {
+        Id = Interlocked.Increment(ref _nextId);
+    }
 
     public List<Dividend> Convert()
     {
@@ -60,41 +67,5 @@ public class DividendInputViewModel
             Proceed = describedMoney,
             CompanyLocation = companyLocation
         };
-    }
-}
-
-public class CustomValidationCompanyLocationStringAttribute : ValidationAttribute
-{
-    protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
-    {
-        if (value == null) return new ValidationResult("2 letter ISO 3166 code required.");
-        string inputString = (string)value;
-        try
-        {
-            _ = new RegionInfo(inputString);
-            return ValidationResult.Success;
-        }
-        catch (ArgumentException)
-        {
-            return new ValidationResult("Incorrect ISO 3166 code. Please enter 2 letter ISO 3166 code e.g. US, GB, JP, HK");
-        }
-    }
-}
-
-public class CustomValidationCurrencyStringAttribute : ValidationAttribute
-{
-    protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
-    {
-        if (value == null) return new ValidationResult("3 letter ISO 4217 code required.");
-        string inputString = (string)value;
-        try
-        {
-            _ = new WrappedMoney(1, inputString);
-            return ValidationResult.Success;
-        }
-        catch (ArgumentException)
-        {
-            return new ValidationResult("Incorrect ISO 4217 code. Please enter 3 letter ISO 4217 code e.g. USD, JPY, GBP, HKD");
-        }
     }
 }
