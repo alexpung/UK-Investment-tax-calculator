@@ -10,6 +10,7 @@
 @inject IJSRuntime JSRuntime
 @inject ITradeAndCorporateActionList tradeList
 @inject ToastService toastService
+@inject InputGridDatas inputGridDatas
 
 <div class="bg-dark text-light p-4">
     <div class="container-fluid">
@@ -19,13 +20,33 @@
             </div>
         </div>
 
-        <!-- Instructions and Descriptions -->
-        <!-- Add similar instructional content here as needed -->
+        <!-- Instructions and Descriptions Section -->
+        <div class="alert alert-info" role="alert">
+            <p class="mb-0"><strong>Column Descriptions:</strong></p>
+            <ul>
+                <li><strong>Asset Name:</strong> The name or title of the asset involved in the trade. Use the ticker symbol if there is one. e.g. GOOG, AAPL</li>
+                <li><strong>Date:</strong> The date on which the trade was executed.</li>
+                <li><strong>Quantity:</strong> The number of units of the asset traded.</li>
+                <li><strong>Acquisition/Disposal:</strong> Indicates whether the trade was an acquisition (buy) or disposal (sell) of the asset.</li>
+                <li><strong>Asset Category:</strong> The classification of the asset, future contracts have different calculation rules.</li>
+                <li><strong>Gross Proceeds:</strong> This is the amount you paid (for an acquisition)  or received (for a disposal) excluding commission and tax.</li>
+                <li><strong>Commission:</strong> The fee charged by the broker or platform for executing the trade.</li>
+                <li><strong>Tax Amount:</strong> The total tax levied on the trade.</li>
+                <li><strong>Contract Value Amount:</strong> This is for a future contract only. This is the total value of the trade contract in the contract currency.</li>
+                <li><strong>Description:</strong> Additional details or notes about the trade.</li>
+            </ul>
+            <hr>
+            <ul>
+                <li><strong>Currency:</strong> The 3-letter ISO 4217 code for the currency for the corresponding items.</li>
+                <li><strong>Exchange rate:</strong> The exchange rate used to convert the local currency to Sterling for the corresponding items.</li>
+            </ul>
+        </div>
 
         <div class="control-section mt-4">
             <div class="content-wrapper">
                 <div class="row">
-                    <SfGrid @ref="_addTradeGrid" DataSource="@GridData" Toolbar="@(new List<string> { "Add", "Delete", "Update", "Cancel" })" AllowPaging="true">
+                    <SfGrid ID="AddTradeGrid" @ref="_addTradeGrid" DataSource="@inputGridDatas.TradeInputViewModels" Toolbar="@(new List<string> { "Add", "Delete", "Update", "Cancel" })"
+                            AllowPaging="true">
                         <GridEditSettings AllowAdding="true" AllowDeleting="true" AllowEditing="true" Mode="EditMode.Dialog"></GridEditSettings>
                         <GridEvents OnActionBegin="OnActionBegin" TValue="TradeInputViewModel"></GridEvents>
                         <GridColumns>
@@ -43,7 +64,7 @@
                                     }
                                 </EditTemplate>
                             </GridColumn>
-                            <GridColumn Field=@nameof(TradeInputViewModel.AssetCatagoryType) HeaderText="Asset Category">
+                            <GridColumn Field=@nameof(TradeInputViewModel.AssetType) HeaderText="Asset Category">
                                 <EditTemplate>
                                 @{
                                         <SfDropDownList @ref="_assetCatagoryTypeDropDownList" DataSource="@AssetCatagoryDropDownEnumValue"
@@ -53,13 +74,17 @@
                                 }
                                 </EditTemplate>
                             </GridColumn>
-                            <GridColumn Field=@nameof(TradeInputViewModel.TransactionCurrency) HeaderText="Transaction Currency"></GridColumn>
-                            <GridColumn Field=@nameof(TradeInputViewModel.GrossProceed) HeaderText="Gross Proceed" EditType="EditType.NumericEdit"></GridColumn>
+                            <GridColumn Field=@nameof(TradeInputViewModel.GrossProceedCurrency) HeaderText="Gross Proceeds Currency"></GridColumn>
+                            <GridColumn Field=@nameof(TradeInputViewModel.GrossProceedExchangeRate) HeaderText="Gross Proceeds Exchange Rate" EditType="EditType.NumericEdit"></GridColumn>
+                            <GridColumn Field=@nameof(TradeInputViewModel.GrossProceed) HeaderText="Gross Proceeds" EditType="EditType.NumericEdit"></GridColumn>
                             <GridColumn Field=@nameof(TradeInputViewModel.CommissionCurrency) HeaderText="Commission Currency"></GridColumn>
+                            <GridColumn Field=@nameof(TradeInputViewModel.CommissionExchangeRate) HeaderText="Commission Exchange Rate" EditType="EditType.NumericEdit"></GridColumn>
                             <GridColumn Field=@nameof(TradeInputViewModel.CommissionAmount) HeaderText="Commission Amount" EditType="EditType.NumericEdit"></GridColumn>
                             <GridColumn Field=@nameof(TradeInputViewModel.TaxCurrency) HeaderText="Tax Currency"></GridColumn>
+                            <GridColumn Field=@nameof(TradeInputViewModel.TaxExchangeRate) HeaderText="Tax Exchange Rate" EditType="EditType.NumericEdit"></GridColumn>
                             <GridColumn Field=@nameof(TradeInputViewModel.TaxAmount) HeaderText="Tax Amount" EditType="EditType.NumericEdit"></GridColumn>
                             <GridColumn Field=@nameof(TradeInputViewModel.ContractValueCurrency) HeaderText="Contract Value Currency"></GridColumn>
+                            <GridColumn Field=@nameof(TradeInputViewModel.ContractValueExchangeRate) HeaderText="Contract Value Exchange Rate" EditType="EditType.NumericEdit"></GridColumn>
                             <GridColumn Field=@nameof(TradeInputViewModel.ContractValueAmount) HeaderText="Contract Value Amount" EditType="EditType.NumericEdit"></GridColumn>
                             <GridColumn Field=@nameof(TradeInputViewModel.Description) HeaderText="Description"></GridColumn>
                         </GridColumns>
@@ -70,10 +95,10 @@
                 </div>
             </div>
         </div>
+    </div>
 </div>
 
 @code {
-    public List<TradeInputViewModel> GridData { get; set; } = new();
     private SfGrid<TradeInputViewModel> _addTradeGrid = new();
     private SfDropDownList<TradeType, EnumDescriptionPair<TradeType>> _tradeTypeDropDownList = new();
     private SfDropDownList<AssetCatagoryType, EnumDescriptionPair<AssetCatagoryType>> _assetCatagoryTypeDropDownList = new();
@@ -88,8 +113,22 @@
 
     public void OnImportTrade()
     {
-        // Implementation for importing trade data to the system
-        // Similar to the OnImportDividend method in your dividend example
+        int importCount = inputGridDatas.TradeInputViewModels.Count;
+        foreach (TradeInputViewModel tradeInputViewModel in inputGridDatas.TradeInputViewModels)
+        {
+            tradeList.Trades.Add(tradeInputViewModel.Convert());
+        }
+        inputGridDatas.TradeInputViewModels.Clear();
+        _addTradeGrid.Refresh();
+        int newTradeCount = tradeList.Trades.Count;
+        if (importCount >= 1)
+        {
+            toastService.ShowToast("Information", $"{importCount} trade data added to system. New trade count: {newTradeCount}", ToastOptionType.Info);
+        }
+        else
+        {
+            toastService.ShowToast("Error", $"No trade data added. Table is empty. Trade count: {newTradeCount}.", ToastOptionType.Error);
+        }
     }
 
     public void OnActionBegin(ActionEventArgs<TradeInputViewModel> Args)
@@ -97,7 +136,7 @@
         if (Args.RequestType == Syncfusion.Blazor.Grids.Action.Save)
         {
             Args.Data.AcquisitionDisposal = _tradeTypeDropDownList.Value;
-            Args.Data.AssetCatagoryType = _assetCatagoryTypeDropDownList.Value;
+            Args.Data.AssetType = _assetCatagoryTypeDropDownList.Value;
         }
     }
 }
