@@ -16,6 +16,8 @@ using Services;
 
 using Syncfusion.Blazor;
 
+using ViewModel;
+
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
@@ -46,6 +48,9 @@ builder.Services.AddSingleton<UkSection104Pools>();
 builder.Services.AddSingleton<TradeCalculationResult>();
 builder.Services.AddSingleton<DividendCalculationResult>();
 builder.Services.AddSingleton<ITaxYear, UKTaxYear>();
+
+//ViewModels
+builder.Services.AddSingleton<InputGridDatas>();
 
 builder.Services.AddSyncfusionBlazor();
 

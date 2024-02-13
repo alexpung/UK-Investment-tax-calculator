@@ -16,6 +16,8 @@ https://alexpung.github.io/UK-Investment-tax-calculator/
 ## Supported import format and brokers
 1. Interactive Brokers Flex queries only for the moment.
 
+User can also add trades manually using the "Add trades" page.
+
 An example is included (see below). For other brokers I suggest copying the xml example and modifying it manually if you only have small number of trades.
 Or if you can code new parsers are welcome.
 
@@ -36,11 +38,12 @@ https://github.com/alexpung/UK-Investment-tax-calculator/tree/master/BlazorApp-I
     3. Dividend in Lieu.
 3. Corporate actions
     1. Forward split only
-4. View trade calculations and dividend data in a table 
+4. View trade calculations and dividend data in a table
+5. Add dividends and trades from input of a form. (alpha: in development)
 
 #### Pending implementation
 More corporate actions  
-Add missing trade and export it.  
+Export trade data. 
 Tests and feedback are welcome, bugs are to be expected.  
 
 #### Output files
