@@ -46,8 +46,9 @@
             <div class="content-wrapper">
                 <div class="row">
                     <SfGrid @ref="_addDividendGrid" DataSource="@GridData" Toolbar="@(new List<string>() { "Add", "Delete", "Update", "Cancel" })" AllowPaging="true" AllowTextWrap="true">
-                        <GridEditSettings AllowAdding="true" AllowDeleting="true" AllowEditing="true" Mode="EditMode.Batch"></GridEditSettings>
+                        <GridEditSettings AllowAdding="true" AllowDeleting="true" AllowEditing="true" Mode="EditMode.Dialog"></GridEditSettings>
                         <GridColumns>
+                            <GridColumn Field=@nameof(DividendInputViewModel.Id) HeaderText="Id" Visible=false IsPrimaryKey=true></GridColumn>
                             <GridColumn Field=@nameof(DividendInputViewModel.AssetName) HeaderText="Asset Name"></GridColumn>
                             <GridColumn Field=@nameof(DividendInputViewModel.Date) HeaderText="Date" EditType="EditType.DatePickerEdit" Format="d" Type="ColumnType.Date" ></GridColumn>
                             <GridColumn Field=@nameof(DividendInputViewModel.CompanyLocationString) HeaderText="Company Location" ></GridColumn>
@@ -65,12 +66,12 @@
                 </div>
             </div>
         </div>
-    </div>
+</div>
 </div>
 
 @code {
     public List<DividendInputViewModel> GridData { get; set; } = [];
-    private SfGrid<DividendInputViewModel?> _addDividendGrid = new();
+    private SfGrid<DividendInputViewModel> _addDividendGrid = new();
 
     public void OnImportDividend()
     {
