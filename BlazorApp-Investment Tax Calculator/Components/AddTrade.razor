@@ -46,7 +46,7 @@
             <div class="content-wrapper">
                 <div class="row">
                     <SfGrid ID="AddTradeGrid" @ref="_addTradeGrid" DataSource="@inputGridDatas.TradeInputViewModels" Toolbar="@(new List<string> { "Add", "Delete", "Update", "Cancel" })"
-                            AllowPaging="true">
+                            AllowPaging="true" AllowTextWrap=true>
                         <GridEditSettings AllowAdding="true" AllowDeleting="true" AllowEditing="true" Mode="EditMode.Dialog"></GridEditSettings>
                         <GridEvents OnActionBegin="OnActionBegin" TValue="TradeInputViewModel"></GridEvents>
                         <GridColumns>
@@ -54,7 +54,7 @@
                             <GridColumn Field=@nameof(TradeInputViewModel.AssetName) HeaderText="Asset Name"></GridColumn>
                             <GridColumn Field=@nameof(TradeInputViewModel.Date) HeaderText="Date" EditType="EditType.DatePickerEdit" Format="d"></GridColumn>
                             <GridColumn Field=@nameof(TradeInputViewModel.Quantity) HeaderText="Quantity" EditType="EditType.NumericEdit"></GridColumn>
-                            <GridColumn Field=@nameof(TradeInputViewModel.AcquisitionDisposal) HeaderText="Acquisition/Disposal" >
+                            <GridColumn Field=@nameof(TradeInputViewModel.AcquisitionDisposal) HeaderText="Acquisition/Disposal">
                                 <EditTemplate>
                                     @{
                                         <SfDropDownList @ref="_tradeTypeDropDownList" DataSource="@TradeTypeDropDownEnumValue"
@@ -137,6 +137,21 @@
         {
             Args.Data.AcquisitionDisposal = _tradeTypeDropDownList.Value;
             Args.Data.AssetType = _assetCatagoryTypeDropDownList.Value;
+            var inputData = Args.Data;
+            foreach(var error in inputData.Validate())
+            {
+                if (error is not null)
+                {
+                    toastService.ShowToast("Error", error.ErrorMessage ?? "", ToastOptionType.Error);
+                    Args.Cancel = true;
+                }
+            }
+            if (inputData.CommissionAmount < 0) toastService.ShowToast("Warning", "Commission is negative and means a rebate, " +
+            "please check this is correct.", ToastOptionType.Warning);
+            if (inputData.TaxAmount < 0) toastService.ShowToast("Warning", "Tax is negative and means a refund, " +
+            "please check this is correct.", ToastOptionType.Warning);
+            if (inputData.ContractValueAmount <= 0 && inputData.AssetType == AssetCatagoryType.FUTURE) toastService.ShowToast("Warning", "Negative or zero price in future contract, " +
+            "please check this is correct.", ToastOptionType.Warning);
         }
     }
 }
