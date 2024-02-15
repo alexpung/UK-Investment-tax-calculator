@@ -57,8 +57,7 @@ public class DividendInputViewModel
     private Dividend Convert(DividendType dividendType, decimal amount)
     {
         RegionInfo companyLocation = new(CompanyLocationString);
-        WrappedMoney money = new(amount, CurrencyString);
-        DescribedMoney describedMoney = new() { Amount = money, Description = Description, FxRate = FxRate };
+        DescribedMoney describedMoney = new(amount, CurrencyString, FxRate, Description);
         return new Dividend()
         {
             AssetName = AssetName,
