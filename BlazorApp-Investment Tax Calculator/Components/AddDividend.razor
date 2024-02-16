@@ -86,11 +86,11 @@
         int newDividendCount = dividendList.Dividends.Count;
         if (importCount >= 1)
         {
-            toastService.ShowToast("Information", $"{importCount} dividend data added to system. New dividend count: {newDividendCount}", ToastOptionType.Info);
+            toastService.ShowInformation($"{importCount} dividend data added to system. New dividend count: {newDividendCount}");
         }
         else
         {
-            toastService.ShowToast("Error", $"No dividend data added. Table is empty. Dividend count: {newDividendCount}.", ToastOptionType.Error);
+            toastService.ShowError($"No dividend data added. Table is empty. Dividend count: {newDividendCount}.");
         }
     }
 }

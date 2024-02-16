@@ -102,15 +102,26 @@ public class TradeInputViewModel
         };
     }
 
-    public IEnumerable<ValidationResult?> Validate()
+    public List<string> ValidateError()
     {
+        List<string> errorList = [];
         if (AssetType == AssetCatagoryType.FUTURE && string.IsNullOrEmpty(ContractValueCurrency))
         {
-            yield return new ValidationResult("Contract Value Currency is required for a future contract");
-            if (AssetType == AssetCatagoryType.FUTURE && GrossProceed != 0)
-            {
-                yield return new ValidationResult("For a future contract gross proceeds should be set to 0. Profit and loss is calucated from contract values, taxes and commission");
-            }
-            yield return ValidationResult.Success;
+            errorList.Add("Contract Value Currency is required for a future contract");
         }
+        if (AssetType == AssetCatagoryType.FUTURE && GrossProceed != 0)
+        {
+            errorList.Add("For a future contract gross proceeds should be set to 0. Profit and loss is calucated from contract values, taxes and commission");
+        }
+        return errorList;
     }
+
+    public IEnumerable<string> ValidateWarning()
+    {
+        List<string> errorList = [];
+        if (CommissionAmount < 0) errorList.Add("Commission is negative and means a rebate, please check if this is correct.");
+        if (TaxAmount < 0) errorList.Add("Tax is negative and means a refund, please check if this is correct.");
+        if (ContractValueAmount <= 0 && AssetType == AssetCatagoryType.FUTURE) errorList.Add("Negative or zero price in future contract, please check if this is correct.");
+        return errorList;
+    }
+}
