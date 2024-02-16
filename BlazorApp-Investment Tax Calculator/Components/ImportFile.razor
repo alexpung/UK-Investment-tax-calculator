@@ -52,6 +52,6 @@
             taxEventLists.AddData(await fileParseController.ReadFile(file.File));
         }
         args.Files.Clear();
-        toastService.ShowToast("Information", "File loading completed.", ToastOptionType.Info);
+        toastService.ShowInformation("File loading completed.");
     }
 }

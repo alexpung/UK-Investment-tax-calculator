@@ -46,7 +46,7 @@
             <div class="content-wrapper">
                 <div class="row">
                     <SfGrid ID="AddTradeGrid" @ref="_addTradeGrid" DataSource="@inputGridDatas.TradeInputViewModels" Toolbar="@(new List<string> { "Add", "Delete", "Update", "Cancel" })"
-                            AllowPaging="true">
+                            AllowPaging="true" AllowTextWrap=true>
                         <GridEditSettings AllowAdding="true" AllowDeleting="true" AllowEditing="true" Mode="EditMode.Dialog"></GridEditSettings>
                         <GridEvents OnActionBegin="OnActionBegin" TValue="TradeInputViewModel"></GridEvents>
                         <GridColumns>
@@ -54,10 +54,10 @@
                             <GridColumn Field=@nameof(TradeInputViewModel.AssetName) HeaderText="Asset Name"></GridColumn>
                             <GridColumn Field=@nameof(TradeInputViewModel.Date) HeaderText="Date" EditType="EditType.DatePickerEdit" Format="d"></GridColumn>
                             <GridColumn Field=@nameof(TradeInputViewModel.Quantity) HeaderText="Quantity" EditType="EditType.NumericEdit"></GridColumn>
-                            <GridColumn Field=@nameof(TradeInputViewModel.AcquisitionDisposal) HeaderText="Acquisition/Disposal" >
+                            <GridColumn Field=@nameof(TradeInputViewModel.AcquisitionDisposal) HeaderText="Acquisition/Disposal">
                                 <EditTemplate>
                                     @{
-                                        <SfDropDownList @ref="_tradeTypeDropDownList" DataSource="@TradeTypeDropDownEnumValue"
+                                        <SfDropDownList DataSource="@TradeTypeDropDownEnumValue" @bind-Value="DropDownSelectedTradeType"
                                                         TValue="TradeType" TItem="EnumDescriptionPair<TradeType>" Placeholder="Trade type">
                                             <DropDownListFieldSettings Value="EnumValue" Text="Description"></DropDownListFieldSettings>
                                         </SfDropDownList>
@@ -67,7 +67,7 @@
                             <GridColumn Field=@nameof(TradeInputViewModel.AssetType) HeaderText="Asset Category">
                                 <EditTemplate>
                                 @{
-                                        <SfDropDownList @ref="_assetCatagoryTypeDropDownList" DataSource="@AssetCatagoryDropDownEnumValue"
+                                        <SfDropDownList DataSource="@AssetCatagoryDropDownEnumValue" @bind-Value="DropDownAssetCatagoryType"
                                                         TValue="AssetCatagoryType" TItem="EnumDescriptionPair<AssetCatagoryType>" Placeholder="Asset Category Type">
                                             <DropDownListFieldSettings Value="EnumValue" Text="Description"></DropDownListFieldSettings>
                                         </SfDropDownList>
@@ -100,8 +100,8 @@
 
 @code {
     private SfGrid<TradeInputViewModel> _addTradeGrid = new();
-    private SfDropDownList<TradeType, EnumDescriptionPair<TradeType>> _tradeTypeDropDownList = new();
-    private SfDropDownList<AssetCatagoryType, EnumDescriptionPair<AssetCatagoryType>> _assetCatagoryTypeDropDownList = new();
+    public TradeType DropDownSelectedTradeType { get; set; } = TradeType.ACQUISITION;
+    public AssetCatagoryType DropDownAssetCatagoryType { get; set; } = AssetCatagoryType.STOCK;
     public List<EnumDescriptionPair<AssetCatagoryType>> AssetCatagoryDropDownEnumValue = [];
     public List<EnumDescriptionPair<TradeType>> TradeTypeDropDownEnumValue = [];
 
@@ -123,11 +123,11 @@
         int newTradeCount = tradeList.Trades.Count;
         if (importCount >= 1)
         {
-            toastService.ShowToast("Information", $"{importCount} trade data added to system. New trade count: {newTradeCount}", ToastOptionType.Info);
+            toastService.ShowInformation($"{importCount} trade data added to system. New trade count: {newTradeCount}");
         }
         else
         {
-            toastService.ShowToast("Error", $"No trade data added. Table is empty. Trade count: {newTradeCount}.", ToastOptionType.Error);
+            toastService.ShowError($"No trade data added. Table is empty. Trade count: {newTradeCount}.");
         }
     }
 
@@ -135,8 +135,23 @@
     {
         if (Args.RequestType == Syncfusion.Blazor.Grids.Action.Save)
         {
-            Args.Data.AcquisitionDisposal = _tradeTypeDropDownList.Value;
-            Args.Data.AssetType = _assetCatagoryTypeDropDownList.Value;
+            Args.Data.AcquisitionDisposal = DropDownSelectedTradeType;
+            Args.Data.AssetType = DropDownAssetCatagoryType;
+            var inputData = Args.Data;
+            foreach(var error in inputData.ValidateError())
+            {
+                toastService.ShowError(error);
+                Args.Cancel = true; // Save is cancelled and the dialog remains open
+            }
+            foreach (var warning in inputData.ValidateWarning())
+            {
+                toastService.ShowWarning(warning);
+            }
+        }
+        if (Args.RequestType == Syncfusion.Blazor.Grids.Action.BeginEdit)
+        {
+            DropDownSelectedTradeType = Args.Data.AcquisitionDisposal;
+            DropDownAssetCatagoryType = Args.Data.AssetType;
         }
     }
 }

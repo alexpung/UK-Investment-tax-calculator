@@ -41,7 +41,7 @@
             dividendCalculationResult.SetResult(await Task.Run(dividendCalculator.CalculateTax));
             years.SetYears(GetSelectableYears());
             StateHasChanged();
-            toastService.ShowToast("Information", "Calculation completed.", ToastOptionType.Info);
+            toastService.ShowInformation("Calculation completed.");
         }
 
     private IEnumerable<int> GetSelectableYears()

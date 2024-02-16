@@ -27,7 +27,7 @@ public class IBParseController(AssetTypeToLoadSetting assetTypeToLoadSetting, To
         }
         catch (ParseException ex)
         {
-            toastService.ShowToast("Error", ex.Message, ToastOptionType.Error);
+            toastService.ShowError(ex.Message);
         }
         return result;
     }
