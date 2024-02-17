@@ -1,4 +1,4 @@
-﻿using Enum;
+﻿using Enumerations;
 
 using Model;
 using Model.TaxEvents;
@@ -36,20 +36,14 @@ public record FutureContractTrade : Trade
 
     public override string PrintToTextFile()
     {
-        string action = BuySell switch
+        string action = AcquisitionDisposal switch
         {
-            TradeType.BUY => "Bought",
-            TradeType.SELL => "Sold",
-            _ => throw new NotImplementedException()
-        };
-        string netExplanation = BuySell switch
-        {
-            TradeType.BUY => $"Total cost: {NetProceed}",
-            TradeType.SELL => $"Net proceed: {NetProceed}",
+            TradeType.ACQUISITION => "Bought",
+            TradeType.DISPOSAL => "Sold",
             _ => throw new NotImplementedException()
         };
         return $"{action} {Quantity} unit(s) of {AssetName} on {Date:dd-MMM-yyyy HH:mm} with contract value {ContractValue.Amount} " +
-            $"with total expense {Expenses.Sum(expenses => expenses.BaseCurrencyAmount)}, {netExplanation}"
+            $"with total expense {Expenses.Sum(expenses => expenses.BaseCurrencyAmount)}"
             + GetExpensesExplanation();
     }
 }

@@ -1,0 +1,96 @@
+﻿@using Model
+@using Syncfusion.Blazor.Grids
+@using ViewModel
+@using Model.Interfaces
+@using Syncfusion.Blazor.Buttons
+@using Services
+@inject IJSRuntime JSRuntime
+@inject IDividendLists dividendList
+@inject ToastService toastService
+@inject InputGridDatas inputGridDatas
+
+<div class="bg-dark text-light p-4">
+    <div class="container-fluid">
+        <!-- Page Title -->
+        <div class="row mb-5">
+            <div class="col text-center">
+                <h1 class="display-4">Add Dividend</h1>
+            </div>
+        </div>
+
+        <!-- User Instruction Section -->
+        <div class="alert alert-info" role="alert">
+            <h4 class="alert-heading">How to Use:</h4>
+            <ul>
+                <li><strong>Add an item:</strong> Click the 'Add' button on the toolbar to add a new row. Fill in the details and click 'Update' to save.</li>
+                <li><strong>Delete an item:</strong> Select the row to delete and click the 'Delete' button on the toolbar.</li>
+                <li><strong>Edit an item:</strong> Click on any cell in the row you wish to edit, make changes, and click 'Update' to save.</li>
+                <li><strong>Import Data:</strong> After adding or editing dividends (make sure you press "Update first"), check the data is corrrect and click the 'Import table data' button below the grid to save changes to the system.</li>
+            </ul>
+            <hr>
+            <p class="mb-0"><strong>Column Descriptions:</strong></p>
+            <ul>
+                <li><strong>Asset Name:</strong> The company name (ticker symbol) that pays the dividend.</li>
+                <li><strong>Date:</strong> The date when the dividend is officially paid out to shareholders.</li>
+                <li><strong>Company Location:</strong> The 2-letter ISO 3166 code representing the country where the company is based.</li>
+                <li><strong>Currency:</strong> The 3-letter ISO 4217 code for the currency in which the dividend is paid.</li>
+                <li><strong>Gross Dividend Amount:</strong> The amount of the dividend before any taxes are deducted, in the currency of payment.</li>
+                <li><strong>Gross Payment in Lieu Amount:</strong> Applicable when stocks are lent out by your broker; it's the amount paid by the broker instead of the traditional dividend payout.</li>
+                <li><strong>Withholding Tax Amount:</strong> The amount of tax withheld from the dividend payment, in the currency of payment.</li>
+                <li><strong>Fx Rate:</strong> The foreign exchange rate used to convert the dividend payment into another currency, typically your local currency.</li>
+                <li><strong>Description:</strong> A brief text description providing additional details about the dividend payment.</li>
+            </ul>
+        </div>
+
+        <!-- Grid and Button Section -->
+        <div class="control-section mt-4">
+            <div class="content-wrapper">
+                <div class="row">
+                    <SfGrid ID="AddDividendGrid" @ref="_addDividendGrid" DataSource="@inputGridDatas.DividendInputViewModels" Toolbar="@(new List<string>() { "Add", "Delete", "Update", "Cancel" })" 
+                        AllowPaging="true" AllowTextWrap="true">
+                        <GridEditSettings AllowAdding="true" AllowDeleting="true" AllowEditing="true" Mode="EditMode.Dialog"></GridEditSettings>
+                        <GridColumns>
+                            <GridColumn Field=@nameof(DividendInputViewModel.Id) HeaderText="Id" Visible=false IsPrimaryKey=true></GridColumn>
+                            <GridColumn Field=@nameof(DividendInputViewModel.AssetName) HeaderText="Asset Name"></GridColumn>
+                            <GridColumn Field=@nameof(DividendInputViewModel.Date) HeaderText="Date" EditType="EditType.DatePickerEdit" Format="d" Type="ColumnType.Date" ></GridColumn>
+                            <GridColumn Field=@nameof(DividendInputViewModel.CompanyLocationString) HeaderText="Company Location" ></GridColumn>
+                            <GridColumn Field=@nameof(DividendInputViewModel.CurrencyString) HeaderText="Currency" ></GridColumn>
+                            <GridColumn Field=@nameof(DividendInputViewModel.GrossAmount) HeaderText="Gross Dividend Amount" EditType="EditType.NumericEdit"></GridColumn>
+                            <GridColumn Field=@nameof(DividendInputViewModel.GrossPaymentInLieuAmount) HeaderText="Gross Payment in Lieu Amount" EditType="EditType.NumericEdit" ></GridColumn>
+                            <GridColumn Field=@nameof(DividendInputViewModel.WithHoldingAmount) HeaderText="Withholding Tax Amount" EditType="EditType.NumericEdit"></GridColumn>
+                            <GridColumn Field=@nameof(DividendInputViewModel.FxRate) HeaderText="Fx Rate" EditType="EditType.NumericEdit"></GridColumn>
+                            <GridColumn Field=@nameof(DividendInputViewModel.Description) HeaderText="Description"></GridColumn>
+                        </GridColumns>
+                    </SfGrid>
+                    <div class="col-12 mt-3 d-flex justify-content-center">
+                        <SfButton OnClick="OnImportDividend">Import table data</SfButton>
+                    </div>
+                </div>
+            </div>
+        </div>
+</div>
+</div>
+
+@code {
+    private SfGrid<DividendInputViewModel> _addDividendGrid = new();
+
+    public void OnImportDividend()
+    {
+        int importCount = inputGridDatas.DividendInputViewModels.Count;
+        foreach (DividendInputViewModel dividendInputViewModel in inputGridDatas.DividendInputViewModels)
+        {
+            dividendList.Dividends.AddRange(dividendInputViewModel.Convert());
+        }
+        inputGridDatas.DividendInputViewModels.Clear();
+        _addDividendGrid.Refresh();
+        int newDividendCount = dividendList.Dividends.Count;
+        if (importCount >= 1)
+        {
+            toastService.ShowInformation($"{importCount} dividend data added to system. New dividend count: {newDividendCount}");
+        }
+        else
+        {
+            toastService.ShowError($"No dividend data added. Table is empty. Dividend count: {newDividendCount}.");
+        }
+    }
+}

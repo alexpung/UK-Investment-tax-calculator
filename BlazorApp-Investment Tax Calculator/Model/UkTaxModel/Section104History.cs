@@ -51,11 +51,11 @@ public class Section104History : ITextFilePrintable
         contractValueString = (OldContractValue.Amount, ContractValueChange.Amount) switch
         {
             (0, 0) => "",
-            (0, not 0) => $"{ContractValueChange} ({ContractValueChange.ToSignedNumberString()})",
-            (not 0, not 0) => $"{OldContractValue + ContractValueChange} ({ContractValueChange.ToSignedNumberString()})",
+            (0, not 0) => $"{ContractValueChange:0.##} ({ContractValueChange.ToSignedNumberString():0.##})",
+            (not 0, _) => $"{OldContractValue + ContractValueChange:0.##} ({ContractValueChange.ToSignedNumberString():0.##})",
         };
-        output.AppendLine($"{Date.ToShortDateString()}\t{OldQuantity + QuantityChange} ({QuantityChange.ToSignedNumberString()})\t\t\t\t" +
-            $"{OldValue + ValueChange} ({ValueChange.ToSignedNumberString()})\t\t\t" +
+        output.AppendLine($"{Date.ToShortDateString()}\t{OldQuantity + QuantityChange:0.##} ({QuantityChange.ToSignedNumberString():0.##})\t\t\t\t" +
+            $"{OldValue + ValueChange:0.##} ({ValueChange.ToSignedNumberString()})\t\t\t" +
             contractValueString);
         if (Explanation != string.Empty)
         {

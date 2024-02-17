@@ -1,10 +1,14 @@
 ﻿namespace UnitTest.Test.Model;
 
-using Enum;
+using Enumerations;
+
 using global::Model;
 using global::Model.Interfaces;
+
 using Moq;
+
 using System.Collections.Generic;
+
 using Xunit;
 
 public class TradeCalculationResultTests
@@ -22,14 +26,14 @@ public class TradeCalculationResultTests
     {
         // Arrange
         Mock<ITradeTaxCalculation> mock1 = new();
-        mock1.Setup(i => i.Date).Returns(new DateTime(2021, 1, 1));
-        mock1.Setup(i => i.BuySell).Returns(TradeType.SELL);
+        mock1.Setup(i => i.Date).Returns(new DateTime(2021, 1, 1, 0, 0, 0, DateTimeKind.Local));
+        mock1.Setup(i => i.AcquisitionDisposal).Returns(TradeType.DISPOSAL);
         Mock<ITradeTaxCalculation> mock2 = new();
-        mock2.Setup(i => i.Date).Returns(new DateTime(2021, 2, 1));
-        mock2.Setup(i => i.BuySell).Returns(TradeType.BUY);
+        mock2.Setup(i => i.Date).Returns(new DateTime(2021, 2, 1, 0, 0, 0, DateTimeKind.Local));
+        mock2.Setup(i => i.AcquisitionDisposal).Returns(TradeType.ACQUISITION);
         Mock<ITradeTaxCalculation> mock3 = new();
-        mock3.Setup(i => i.Date).Returns(new DateTime(2022, 3, 1));
-        mock3.Setup(i => i.BuySell).Returns(TradeType.SELL);
+        mock3.Setup(i => i.Date).Returns(new DateTime(2022, 3, 1, 0, 0, 0, DateTimeKind.Local));
+        mock3.Setup(i => i.AcquisitionDisposal).Returns(TradeType.DISPOSAL);
         var taxYear = new MockTaxYear();
         var tradeTaxCalculations = new List<ITradeTaxCalculation> { mock1.Object, mock2.Object, mock3.Object };
         var result = new TradeCalculationResult(taxYear);
@@ -49,20 +53,20 @@ public class TradeCalculationResultTests
     {
         // Arrange
         Mock<ITradeTaxCalculation> mock1 = new();
-        mock1.Setup(i => i.Date).Returns(new DateTime(2021, 1, 1));
-        mock1.Setup(i => i.BuySell).Returns(TradeType.SELL);
+        mock1.Setup(i => i.Date).Returns(new DateTime(2021, 1, 1, 0, 0, 0, DateTimeKind.Local));
+        mock1.Setup(i => i.AcquisitionDisposal).Returns(TradeType.DISPOSAL);
         mock1.Setup(i => i.TotalProceeds).Returns(new WrappedMoney(100));
         Mock<ITradeTaxCalculation> mock2 = new();
-        mock2.Setup(i => i.Date).Returns(new DateTime(2021, 2, 1));
-        mock2.Setup(i => i.BuySell).Returns(TradeType.BUY);
+        mock2.Setup(i => i.Date).Returns(new DateTime(2021, 2, 1, 0, 0, 0, DateTimeKind.Local));
+        mock2.Setup(i => i.AcquisitionDisposal).Returns(TradeType.ACQUISITION);
         mock2.Setup(i => i.TotalProceeds).Returns(new WrappedMoney(200));
         Mock<ITradeTaxCalculation> mock3 = new();
-        mock3.Setup(i => i.Date).Returns(new DateTime(2022, 3, 1));
-        mock3.Setup(i => i.BuySell).Returns(TradeType.SELL);
+        mock3.Setup(i => i.Date).Returns(new DateTime(2022, 3, 1, 0, 0, 0, DateTimeKind.Local));
+        mock3.Setup(i => i.AcquisitionDisposal).Returns(TradeType.DISPOSAL);
         mock3.Setup(i => i.TotalProceeds).Returns(new WrappedMoney(300));
         Mock<ITradeTaxCalculation> mock4 = new();
-        mock4.Setup(i => i.Date).Returns(new DateTime(2023, 3, 1));
-        mock4.Setup(i => i.BuySell).Returns(TradeType.SELL);
+        mock4.Setup(i => i.Date).Returns(new DateTime(2023, 3, 1, 0, 0, 0, DateTimeKind.Local));
+        mock4.Setup(i => i.AcquisitionDisposal).Returns(TradeType.DISPOSAL);
         mock4.Setup(i => i.TotalProceeds).Returns(new WrappedMoney(400));
         var taxYear = new MockTaxYear();
         var tradeTaxCalculations = new List<ITradeTaxCalculation> { mock1.Object, mock2.Object, mock3.Object, mock4.Object };
@@ -83,20 +87,20 @@ public class TradeCalculationResultTests
     {
         // Arrange
         Mock<ITradeTaxCalculation> mock1 = new();
-        mock1.Setup(i => i.Date).Returns(new DateTime(2021, 1, 1));
-        mock1.Setup(i => i.BuySell).Returns(TradeType.SELL);
+        mock1.Setup(i => i.Date).Returns(new DateTime(2021, 1, 1, 0, 0, 0, DateTimeKind.Local));
+        mock1.Setup(i => i.AcquisitionDisposal).Returns(TradeType.DISPOSAL);
         mock1.Setup(i => i.TotalAllowableCost).Returns(new WrappedMoney(100));
         Mock<ITradeTaxCalculation> mock2 = new();
-        mock2.Setup(i => i.Date).Returns(new DateTime(2021, 2, 1));
-        mock2.Setup(i => i.BuySell).Returns(TradeType.BUY);
+        mock2.Setup(i => i.Date).Returns(new DateTime(2021, 2, 1, 0, 0, 0, DateTimeKind.Local));
+        mock2.Setup(i => i.AcquisitionDisposal).Returns(TradeType.ACQUISITION);
         mock2.Setup(i => i.TotalAllowableCost).Returns(new WrappedMoney(200));
         Mock<ITradeTaxCalculation> mock3 = new();
-        mock3.Setup(i => i.Date).Returns(new DateTime(2022, 3, 1));
-        mock3.Setup(i => i.BuySell).Returns(TradeType.BUY);
+        mock3.Setup(i => i.Date).Returns(new DateTime(2022, 3, 1, 0, 0, 0, DateTimeKind.Local));
+        mock3.Setup(i => i.AcquisitionDisposal).Returns(TradeType.ACQUISITION);
         mock3.Setup(i => i.TotalAllowableCost).Returns(new WrappedMoney(300));
         Mock<ITradeTaxCalculation> mock4 = new();
-        mock4.Setup(i => i.Date).Returns(new DateTime(2023, 3, 1));
-        mock4.Setup(i => i.BuySell).Returns(TradeType.SELL);
+        mock4.Setup(i => i.Date).Returns(new DateTime(2023, 3, 1, 0, 0, 0, DateTimeKind.Local));
+        mock4.Setup(i => i.AcquisitionDisposal).Returns(TradeType.DISPOSAL);
         mock4.Setup(i => i.TotalAllowableCost).Returns(new WrappedMoney(400));
         var taxYear = new MockTaxYear();
         var tradeTaxCalculations = new List<ITradeTaxCalculation> { mock1.Object, mock2.Object, mock3.Object, mock4.Object };
@@ -117,20 +121,20 @@ public class TradeCalculationResultTests
     {
         // Arrange
         Mock<ITradeTaxCalculation> mock1 = new();
-        mock1.Setup(i => i.Date).Returns(new DateTime(2021, 1, 1));
-        mock1.Setup(i => i.BuySell).Returns(TradeType.SELL);
+        mock1.Setup(i => i.Date).Returns(new DateTime(2021, 1, 1, 0, 0, 0, DateTimeKind.Local));
+        mock1.Setup(i => i.AcquisitionDisposal).Returns(TradeType.DISPOSAL);
         mock1.Setup(i => i.Gain).Returns(new WrappedMoney(100));
         Mock<ITradeTaxCalculation> mock2 = new();
-        mock2.Setup(i => i.Date).Returns(new DateTime(2021, 2, 1));
-        mock2.Setup(i => i.BuySell).Returns(TradeType.SELL);
+        mock2.Setup(i => i.Date).Returns(new DateTime(2021, 2, 1, 0, 0, 0, DateTimeKind.Local));
+        mock2.Setup(i => i.AcquisitionDisposal).Returns(TradeType.DISPOSAL);
         mock2.Setup(i => i.Gain).Returns(new WrappedMoney(-200));
         Mock<ITradeTaxCalculation> mock3 = new();
-        mock3.Setup(i => i.Date).Returns(new DateTime(2022, 3, 1));
-        mock3.Setup(i => i.BuySell).Returns(TradeType.SELL);
+        mock3.Setup(i => i.Date).Returns(new DateTime(2022, 3, 1, 0, 0, 0, DateTimeKind.Local));
+        mock3.Setup(i => i.AcquisitionDisposal).Returns(TradeType.DISPOSAL);
         mock3.Setup(i => i.Gain).Returns(new WrappedMoney(300));
         Mock<ITradeTaxCalculation> mock4 = new();
-        mock4.Setup(i => i.Date).Returns(new DateTime(2023, 3, 1));
-        mock4.Setup(i => i.BuySell).Returns(TradeType.SELL);
+        mock4.Setup(i => i.Date).Returns(new DateTime(2023, 3, 1, 0, 0, 0, DateTimeKind.Local));
+        mock4.Setup(i => i.AcquisitionDisposal).Returns(TradeType.DISPOSAL);
         mock4.Setup(i => i.Gain).Returns(new WrappedMoney(-400));
         var taxYear = new MockTaxYear();
         var tradeTaxCalculations = new List<ITradeTaxCalculation> { mock1.Object, mock2.Object, mock3.Object, mock4.Object };

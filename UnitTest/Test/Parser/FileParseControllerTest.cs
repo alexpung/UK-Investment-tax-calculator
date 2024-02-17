@@ -1,8 +1,14 @@
-﻿using Microsoft.AspNetCore.Components.Forms;
+﻿using Enumerations;
+
+using Microsoft.AspNetCore.Components.Forms;
+
 using Model;
 using Model.TaxEvents;
+
 using Moq;
+
 using Parser;
+
 using System.Text;
 
 namespace UnitTest.Test.Parser;
@@ -13,18 +19,18 @@ public class FileParseControllerTest
     {
         AssetName = "Test",
         Quantity = 100,
-        BuySell = Enum.TradeType.BUY,
-        Date = new DateTime(2022, 1, 1),
+        AcquisitionDisposal = TradeType.ACQUISITION,
+        Date = new DateTime(2022, 1, 1, 0, 0, 0, DateTimeKind.Local),
         GrossProceed = new DescribedMoney() { Amount = new WrappedMoney(100, "GBP") }
     };
     private readonly Dividend _mockDividendObject = new()
     {
         AssetName = "Test2",
-        Date = new DateTime(2022, 1, 1),
-        DividendType = Enum.DividendType.WITHHOLDING,
+        Date = new DateTime(2022, 1, 1, 0, 0, 0, DateTimeKind.Local),
+        DividendType = DividendType.WITHHOLDING,
         Proceed = new DescribedMoney() { Amount = new WrappedMoney(100, "GBP") }
     };
-    private readonly StockSplit _mockStockSplitObject = new() { AssetName = "Test3", Date = new DateTime(2022, 1, 1), NumberAfterSplit = 1, NumberBeforeSplit = 2 };
+    private readonly StockSplit _mockStockSplitObject = new() { AssetName = "Test3", Date = new DateTime(2022, 1, 1, 0, 0, 0, DateTimeKind.Local), NumberAfterSplit = 1, NumberBeforeSplit = 2 };
     private readonly TaxEventLists _mockResult = new();
     private readonly TaxEventLists _mockResult2 = new();
 

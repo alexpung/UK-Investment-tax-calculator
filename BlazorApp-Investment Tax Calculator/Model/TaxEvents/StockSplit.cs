@@ -1,4 +1,5 @@
-﻿using Enum;
+﻿using Enumerations;
+
 using Model.Interfaces;
 using Model.UkTaxModel;
 using Model.UkTaxModel.Stocks;
@@ -17,7 +18,7 @@ public record StockSplit : CorporateAction, IChangeSection104, IChangeTradeMatch
         ITradeTaxCalculation laterTrade = trade1.Date > trade2.Date ? trade1 : trade2;
         if ((earlierTrade.Date < Date) && (Date < laterTrade.Date))
         {
-            if (earlierTrade.BuySell == TradeType.BUY)
+            if (earlierTrade.AcquisitionDisposal == TradeType.ACQUISITION)
             {
                 tradeMatch.MatchAcquisitionQty = tradeMatch.MatchAcquisitionQty * NumberBeforeSplit / NumberAfterSplit;
                 tradeMatch.BaseCurrencyMatchAllowableCost = earlierTrade.GetProportionedCostOrProceed(tradeMatch.MatchAcquisitionQty);

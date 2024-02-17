@@ -1,0 +1,67 @@
+﻿@using Model
+@using ViewModel
+@using Model.Interfaces
+@using Syncfusion.Blazor.DropDowns
+@using Syncfusion.Blazor.Grids
+@using Model.TaxEvents
+@using Model.UkTaxModel
+@using Model.UkTaxModel.Stocks
+@using Syncfusion.Blazor.SplitButtons
+@using Enumerations
+@using BlazorApp_Investment_Tax_Calculator.Components
+@using Services
+
+@inject TradeCalculationResult tradeCalculationResult
+@inject SfGridToolBarHandlingService _toolbarHandlingService
+
+<div class="bg-dark text-light">
+    <div class="row my-4">
+        <div class="col">
+            <h3>Matching Details</h3>
+        </div>
+    </div>
+    <div class="row me-3">
+        <div class="col">
+            <SfGrid ID="TradeMatchesGrid" @ref="tradeMatchesGrid" DataSource="@_tradeMatches"
+                    AllowPaging="true" AllowSorting="true" AllowPdfExport="true" AllowExcelExport="true" AllowResizing="true" AllowFiltering="true" AllowTextWrap="true"
+                    Toolbar="@(new List<string>() { "PdfExport", "ExcelExport", "Print" })">
+                <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
+                <GridPageSettings PageSizes=@(new List<int>() {25, 50, 100}) PageSize="25"></GridPageSettings>
+                <GridEvents OnToolbarClick="ToolbarClickHandler" TValue="TradeMatchViewModel?"></GridEvents>
+                <GridColumns>
+                    <GridColumn Field=@nameof(TradeMatchViewModel.DisposalDate) HeaderText="Disposal Date"></GridColumn>
+                    <GridColumn Field=@nameof(TradeMatchViewModel.AssetType) HeaderText="Asset Type"></GridColumn>
+                    <GridColumn Field=@nameof(TradeMatchViewModel.AssetName) HeaderText="Asset Name"></GridColumn>
+                    <GridColumn Field=@nameof(TradeMatchViewModel.MatchType) HeaderText="Match Type"></GridColumn>
+                    <GridColumn Field=@nameof(TradeMatchViewModel.AcquistionTradeId) HeaderText="Acquisition trade ID"></GridColumn>
+                    <GridColumn Field=@nameof(TradeMatchViewModel.DisposalTradeId) HeaderText="Disposal trade ID"></GridColumn>
+                    <GridColumn Field=@nameof(TradeMatchViewModel.MatchAcquisitionQty) HeaderText="Matched Acquisition Quantity"></GridColumn>
+                    <GridColumn Field=@nameof(TradeMatchViewModel.MatchDisposalQty) HeaderText="Matched Disposal Quantity"></GridColumn>
+                    <GridColumn Field=@nameof(TradeMatchViewModel.DisposalProceed) HeaderText="Disposal Proceed"></GridColumn>
+                    <GridColumn Field=@nameof(TradeMatchViewModel.AllowableCost) HeaderText="Allowable Cost"></GridColumn>
+                    <GridColumn Field=@nameof(TradeMatchViewModel.Gain) HeaderText="Gain"></GridColumn>
+                    <GridColumn Field=@nameof(TradeMatchViewModel.AdditionalInformation) HeaderText="Additional Information"></GridColumn>
+                </GridColumns>
+            </SfGrid>
+        </div>
+    </div>
+</div>
+
+
+@code {
+    public AssetCatagoryType SelectedAssetCatagoryType { get; set; } = AssetCatagoryType.STOCK;
+    private SfGrid<TradeMatchViewModel?> tradeMatchesGrid = default!;
+    private IEnumerable<TradeMatchViewModel?> _tradeMatches => tradeCalculationResult.CalculatedTrade
+                                                                           .Where(trade => trade.AcquisitionDisposal == TradeType.DISPOSAL)
+                                                                           .SelectMany(trade => trade.MatchHistory)
+                                                                           .Select(tradeMatch => new TradeMatchViewModel(tradeMatch))
+                                                                           .DefaultIfEmpty();
+
+
+    public async Task ToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)
+    {
+        _toolbarHandlingService.ToolbarClickHandler(args, tradeMatchesGrid);
+    }
+}
+
+

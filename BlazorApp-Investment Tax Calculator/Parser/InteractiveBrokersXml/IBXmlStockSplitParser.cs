@@ -1,18 +1,20 @@
 ﻿using Model.TaxEvents;
+
+using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
 namespace Parser.InteractiveBrokersXml;
 
-public class IBXmlStockSplitParser
+public static class IBXmlStockSplitParser
 {
-    public IList<StockSplit> ParseXml(XElement document)
+    public static IList<StockSplit> ParseXml(XElement document)
     {
         IEnumerable<XElement> filteredElements = document.Descendants("CorporateAction").Where(row => row.GetAttribute("type") == "FS");
         return filteredElements.Select(StockSplitMaker).Where(dividend => dividend != null).ToList()!;
     }
 
-    private StockSplit StockSplitMaker(XElement element)
+    private static StockSplit StockSplitMaker(XElement element)
     {
         string matchExpression = @"SPLIT (\d*) FOR (\d*)";
         string description = element.GetAttribute("description");
@@ -21,7 +23,7 @@ public class IBXmlStockSplitParser
         return new StockSplit
         {
             AssetName = element.GetAttribute("symbol"),
-            Date = DateTime.Parse(element.GetAttribute("dateTime")),
+            Date = DateTime.Parse(element.GetAttribute("dateTime"), CultureInfo.InvariantCulture),
             NumberBeforeSplit = ushort.Parse(matchResult.Groups[2].Value),
             NumberAfterSplit = ushort.Parse(matchResult.Groups[1].Value),
         };

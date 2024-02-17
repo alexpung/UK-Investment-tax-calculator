@@ -1,4 +1,4 @@
-﻿using Enum;
+﻿using Enumerations;
 
 using Model;
 using Model.UkTaxModel;
@@ -32,7 +32,7 @@ public class UkSection104PoolsTests
         // Arrange
         var section104Pools = new UkSection104Pools();
         UkSection104 testSection104 = section104Pools.GetExistingOrInitialise("Asset1");
-        TradeTaxCalculation mockTrade = MockTrade.CreateTradeTaxCalculation("Asset1", new DateTime(2023, 1, 1), 100m, 2000, TradeType.BUY);
+        TradeTaxCalculation mockTrade = MockTrade.CreateTradeTaxCalculation("Asset1", new DateTime(2023, 1, 1, 0, 0, 0, DateTimeKind.Local), 100m, 2000, TradeType.ACQUISITION);
         mockTrade.MatchWithSection104(testSection104);
 
         // Act

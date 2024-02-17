@@ -1,21 +1,24 @@
 ﻿@inherits LayoutComponentBase
 @using BlazorApp_Investment_Tax_Calculator.Pages
+@using BlazorApp_Investment_Tax_Calculator.Components
 
 <div class="page">
     <div class="grid-container">
         <div class="sidebar">
             <NavMenu />
         </div>
-        <main class="content" >
+        <main class="content">
             @Body
+            <ToastComponent />
         </main>
     </div>
 </div>
 
+
 <style>
     .grid-container {
         display: grid;
-        grid-template-columns: 250px auto;
+        grid-template-columns: minmax(auto, 250px) auto;
         grid-template-areas: 'sidebar content';
     }
 
@@ -27,3 +30,4 @@
         grid-area: content;
     }
 </style>
+

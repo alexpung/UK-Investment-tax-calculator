@@ -1,4 +1,4 @@
-﻿using Enum;
+﻿using Enumerations;
 
 using Model;
 using Model.Interfaces;
@@ -14,11 +14,14 @@ namespace Model.UkTaxModel.Stocks;
 /// </summary>
 public class TradeTaxCalculation : ITradeTaxCalculation
 {
+    private static int _nextId = 0;
+
+    public int Id { get; init; }
     public List<Trade> TradeList { get; init; }
-    public List<TradeMatch> MatchHistory { get; init; } = new List<TradeMatch>();
+    public List<TradeMatch> MatchHistory { get; init; } = [];
     public WrappedMoney TotalAllowableCost => MatchHistory.Sum(tradeMatch => tradeMatch.BaseCurrencyMatchAllowableCost);
     public WrappedMoney TotalProceeds => MatchHistory.Sum(tradeMatch => tradeMatch.BaseCurrencyMatchDisposalProceed);
-    public WrappedMoney Gain => TotalProceeds - TotalAllowableCost;
+    public WrappedMoney Gain => AcquisitionDisposal == TradeType.DISPOSAL ? TotalProceeds - TotalAllowableCost : WrappedMoney.GetBaseCurrencyZero();
     /// <summary>
     /// For acquistion: Cost of buying + commission
     /// For disposal: Proceed you get - commission
@@ -28,9 +31,10 @@ public class TradeTaxCalculation : ITradeTaxCalculation
     public WrappedMoney GetProportionedCostOrProceed(decimal qty) => TotalCostOrProceed / TotalQty * qty;
     public decimal TotalQty { get; }
     public decimal UnmatchedQty { get; protected set; }
-    public virtual TradeType BuySell { get; init; }
+    public virtual TradeType AcquisitionDisposal { get; init; }
     public bool CalculationCompleted => UnmatchedQty == 0;
     public DateTime Date => TradeList[0].Date;
+    public AssetCatagoryType AssetCatagoryType => TradeList[0].AssetType;
     public string AssetName => TradeList[0].AssetName;
 
 
@@ -41,7 +45,7 @@ public class TradeTaxCalculation : ITradeTaxCalculation
     /// <param name="trades">Only accept trade from the same side</param>
     public TradeTaxCalculation(IEnumerable<Trade> trades)
     {
-        if (!trades.All(i => i.BuySell.Equals(trades.First().BuySell)))
+        if (!trades.All(i => i.AcquisitionDisposal.Equals(trades.First().AcquisitionDisposal)))
         {
             throw new ArgumentException("Not all trades that is put in TradeTaxCalculation is on the same BUY/SELL side");
         }
@@ -50,7 +54,8 @@ public class TradeTaxCalculation : ITradeTaxCalculation
         UnmatchedCostOrProceed = TotalCostOrProceed;
         TotalQty = trades.Sum(trade => trade.Quantity);
         UnmatchedQty = TotalQty;
-        BuySell = trades.First().BuySell;
+        AcquisitionDisposal = trades.First().AcquisitionDisposal;
+        Id = Interlocked.Increment(ref _nextId);
     }
 
     public virtual void MatchQty(decimal demandedQty)
@@ -68,18 +73,43 @@ public class TradeTaxCalculation : ITradeTaxCalculation
 
     public virtual void MatchWithSection104(UkSection104 ukSection104)
     {
-        if (BuySell is TradeType.BUY)
+        if (UnmatchedQty == 0m) return;
+        if (AcquisitionDisposal is TradeType.ACQUISITION)
         {
             Section104History section104History = ukSection104.AddAssets(this, UnmatchedQty, UnmatchedCostOrProceed);
-            MatchHistory.Add(TradeMatch.CreateSection104Match(UnmatchedQty, UnmatchedCostOrProceed, WrappedMoney.GetBaseCurrencyZero(), section104History));
+            MatchHistory.Add(
+                new TradeMatch()
+                {
+                    Date = DateOnly.FromDateTime(Date),
+                    AssetName = AssetName,
+                    TradeMatchType = TaxMatchType.SECTION_104,
+                    MatchedBuyTrade = this,
+                    MatchAcquisitionQty = UnmatchedQty,
+                    MatchDisposalQty = UnmatchedQty,
+                    BaseCurrencyMatchAllowableCost = UnmatchedCostOrProceed,
+                    BaseCurrencyMatchDisposalProceed = WrappedMoney.GetBaseCurrencyZero(),
+                    Section104HistorySnapshot = section104History
+                });
             MatchQty(UnmatchedQty);
         }
-        else if (BuySell is TradeType.SELL)
+        else if (AcquisitionDisposal is TradeType.DISPOSAL)
         {
             if (ukSection104.Quantity == 0m) return;
             decimal matchQty = Math.Min(UnmatchedQty, ukSection104.Quantity);
             Section104History section104History = ukSection104.RemoveAssets(this, matchQty);
-            MatchHistory.Add(TradeMatch.CreateSection104Match(matchQty, section104History.ValueChange * -1, GetProportionedCostOrProceed(matchQty), section104History));
+            MatchHistory.Add(
+                new TradeMatch()
+                {
+                    Date = DateOnly.FromDateTime(Date),
+                    AssetName = AssetName,
+                    TradeMatchType = TaxMatchType.SECTION_104,
+                    MatchedSellTrade = this,
+                    MatchAcquisitionQty = matchQty,
+                    MatchDisposalQty = matchQty,
+                    BaseCurrencyMatchAllowableCost = section104History.ValueChange * -1,
+                    BaseCurrencyMatchDisposalProceed = GetProportionedCostOrProceed(matchQty),
+                    Section104HistorySnapshot = section104History
+                });
             MatchQty(matchQty);
         }
     }
@@ -89,14 +119,14 @@ public class TradeTaxCalculation : ITradeTaxCalculation
         > 0 => $"{UnmatchedQty} units of disposals are not matched (short sale).",
         _ => throw new NotImplementedException()
     };
-    private static string GetSumFormula(IEnumerable<WrappedMoney> moneyNumbers)
+    protected static string GetSumFormula(IEnumerable<WrappedMoney> moneyNumbers)
     {
         WrappedMoney sum = moneyNumbers.Sum();
         string formula = string.Join(" ", moneyNumbers.Select(n => n.Amount >= 0 ? $"+ {n}" : $"- {-n}")).TrimStart('+', ' ') + " = " + sum;
         return formula;
     }
 
-    public string PrintToTextFile()
+    public virtual string PrintToTextFile()
     {
         StringBuilder output = new();
         output.Append($"Sold {TotalQty} units of {AssetName} on " +

@@ -1,0 +1,55 @@
+﻿@using Syncfusion.Blazor.Buttons
+@using System.Collections.ObjectModel
+@using Model.UkTaxModel
+@using Model
+@using Model.Interfaces
+@using Enumerations
+@using Components
+
+@using Services
+@inject UkSection104Pools section104Pools
+@inject IDividendCalculator dividendCalculator
+@inject DividendCalculationResult dividendCalculationResult
+@inject TradeCalculationResult tradeCalculationResult
+@inject IEnumerable<ITradeCalculator> tradeCalculators
+@inject YearOptions years
+@inject ITaxYear taxYear
+@inject ToastService toastService
+
+<div class="container mt-4 mb-4 bg-dark text-light p-3">
+    <h3 class="mb-3">Calculation</h3>
+    
+    <div class="mb-4">
+        <SfButton @onclick="OnStartCalculation" CssClass="btn btn-primary">Start Calculation</SfButton>
+    </div>
+
+    <div class="mb-4">
+        <CalculationSummary ShouldReRender="ShouldRender"></CalculationSummary>
+    </div>
+</div>
+
+
+@code{
+        public async Task OnStartCalculation()
+        {
+            section104Pools.Clear();
+            tradeCalculationResult.Clear();
+            foreach (ITradeCalculator tradeCalculator in tradeCalculators)
+            {
+                tradeCalculationResult.SetResult(await Task.Run(tradeCalculator.CalculateTax));
+            }
+            dividendCalculationResult.SetResult(await Task.Run(dividendCalculator.CalculateTax));
+            years.SetYears(GetSelectableYears());
+            StateHasChanged();
+            toastService.ShowInformation("Calculation completed.");
+        }
+
+    private IEnumerable<int> GetSelectableYears()
+    {
+        IEnumerable<int> taxYearsWithDisposal = tradeCalculationResult.CalculatedTrade.Where(trade => trade.AcquisitionDisposal == TradeType.DISPOSAL)
+                                                 .Select(trade => taxYear.ToTaxYear(trade.Date))
+                                                 .Distinct();
+        IEnumerable<int> taxYearsWithDividend = dividendCalculationResult.DividendSummary.Select(dividend => dividend.TaxYear).Distinct();
+        return taxYearsWithDisposal.Union(taxYearsWithDividend).OrderByDescending(i => i);
+    }
+}

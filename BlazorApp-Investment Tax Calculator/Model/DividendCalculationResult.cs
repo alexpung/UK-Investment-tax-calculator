@@ -2,7 +2,7 @@
 
 public class DividendCalculationResult
 {
-    public List<DividendSummary> DividendSummary { get; set; } = new();
+    public List<DividendSummary> DividendSummary { get; set; } = [];
 
     public void SetResult(List<DividendSummary> dividendSummaries)
     {

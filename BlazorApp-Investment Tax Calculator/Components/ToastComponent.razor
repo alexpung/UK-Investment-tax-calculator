@@ -1,0 +1,42 @@
+﻿@using Services
+@using Syncfusion.Blazor.Notifications
+@inject ToastService ToastService
+ 
+<SfToast @ref="Toast" Timeout=5000 ExtendedTimeout=20000 Title="@Options.Title" Content="@Options.Content" CssClass="@ToastCssClass" ShowCloseButton=true>
+    <ToastPosition X="Center" Y="Bottom"></ToastPosition>
+</SfToast>
+  
+@code{
+
+    public required SfToast Toast;
+
+    private bool IsToastVisible { get; set; } = false;
+    private string ToastCssClass = "";
+
+    private ToastOption Options = new ToastOption() { Title = "", Content = "", Type = ToastOptionType.Success };
+
+    protected override void OnInitialized()
+    {
+        ToastService.ShowToastTrigger += (ToastOption options) =>
+        {
+            InvokeAsync(async () => 
+            {
+                this.Options.Title = options.Title;
+                this.Options.Content = options.Content;
+                this.ToastCssClass = options.Type switch
+                {
+                    ToastOptionType.Warning => "e-toast-warning",
+                    ToastOptionType.Error => "e-toast-danger",
+                    ToastOptionType.Success => "e-toast-success",
+                    ToastOptionType.Info => "e-toast-info",
+                    _ => throw new NotImplementedException()
+                };
+                this.IsToastVisible = true;
+                await Task.Delay(100);
+                this.StateHasChanged();
+                await this.Toast.ShowAsync();
+            });
+        };
+        base.OnInitialized();
+    }
+}

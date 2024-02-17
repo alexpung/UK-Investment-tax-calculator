@@ -1,0 +1,62 @@
+﻿@using Model
+@using ViewModel
+@using Model.Interfaces
+@using Syncfusion.Blazor.DropDowns
+@using Syncfusion.Blazor.Grids
+@using Model.TaxEvents
+@using Model.UkTaxModel
+@using Syncfusion.Blazor.SplitButtons
+@using Enumerations
+@using BlazorApp_Investment_Tax_Calculator.Components
+@using Services
+
+@inject UkSection104Pools section104Pools
+@inject SfGridToolBarHandlingService _toolbarHandlingService
+
+<div class="bg-dark text-light">
+    <div class="row my-4">
+        <div class="col">
+            <h3>Section 104 history</h3>
+        </div>
+    </div>
+    <div class="row me-3">
+        <div class="col">
+            <SfGrid ID="Section104HistoryGrid" @ref="section104HistoryGrid" DataSource="@_section104HistoryViewModels"
+                    AllowPaging="true" AllowSorting="true" AllowPdfExport="true" AllowExcelExport="true" AllowResizing="true" AllowFiltering="true" AllowTextWrap="true"
+                    Toolbar="@(new List<string>() { "PdfExport", "ExcelExport", "Print" })">
+                <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
+                <GridPageSettings PageSizes=@(new List<int>() {25, 50, 100}) PageSize="25"></GridPageSettings>
+                <GridEvents OnToolbarClick="ToolbarClickHandler" TValue="Section104HistoryViewModel?"></GridEvents>
+                <GridColumns>
+                    <GridColumn Field=@nameof(Section104HistoryViewModel.AssetName) HeaderText="Asset Name"></GridColumn>
+                    <GridColumn Field=@nameof(Section104HistoryViewModel.TradeId) HeaderText="Trade ID"></GridColumn>
+                    <GridColumn Field=@nameof(Section104HistoryViewModel.Date) HeaderText="Date" Format="d"></GridColumn>
+                    <GridColumn Field=@nameof(Section104HistoryViewModel.OldQuantity) HeaderText="Old Quantity"></GridColumn>
+                    <GridColumn Field=@nameof(Section104HistoryViewModel.QuantityChange) HeaderText="Quantity Change"></GridColumn>
+                    <GridColumn Field=@nameof(Section104HistoryViewModel.NewQuantity) HeaderText="New Quantity"></GridColumn>
+                    <GridColumn Field=@nameof(Section104HistoryViewModel.OldValue) HeaderText="Old Value"></GridColumn>
+                    <GridColumn Field=@nameof(Section104HistoryViewModel.ValueChange) HeaderText="Value Change"></GridColumn>
+                    <GridColumn Field=@nameof(Section104HistoryViewModel.NewValue) HeaderText="New Value"></GridColumn>
+                    <GridColumn Field=@nameof(Section104HistoryViewModel.OldContractValue) HeaderText="Old Contract Value"></GridColumn>
+                    <GridColumn Field=@nameof(Section104HistoryViewModel.ContractValueChange) HeaderText="Contract Value Change"></GridColumn>
+                    <GridColumn Field=@nameof(Section104HistoryViewModel.NewContractValue) HeaderText="New Contract Value"></GridColumn>
+                    <GridColumn Field=@nameof(Section104HistoryViewModel.Explaination) HeaderText="Explaination"></GridColumn>
+                </GridColumns>
+            </SfGrid>
+        </div>
+    </div>
+</div>
+
+
+@code {
+    private SfGrid<Section104HistoryViewModel?> section104HistoryGrid = default!;
+    private IEnumerable<Section104HistoryViewModel?> _section104HistoryViewModels => Section104HistoryViewModel.GetSection104Data(section104Pools);
+
+    public async Task ToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)
+    {
+        _toolbarHandlingService.ToolbarClickHandler(args, section104HistoryGrid);
+    }
+}
+
+
+

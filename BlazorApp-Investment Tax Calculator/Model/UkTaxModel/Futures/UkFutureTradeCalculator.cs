@@ -1,8 +1,7 @@
-﻿using Enum;
+﻿using Enumerations;
 
 using Model.Interfaces;
 using Model.TaxEvents;
-using Model.UkTaxModel.Stocks;
 
 using Syncfusion.Blazor.Data;
 
@@ -10,23 +9,14 @@ using TaxEvents;
 
 namespace Model.UkTaxModel.Futures;
 
-public class UkFutureTradeCalculator : ITradeCalculator
+public class UkFutureTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorporateActionList tradeList) : ITradeCalculator
 {
-    private readonly ITradeAndCorporateActionList _tradeList;
-    private readonly UkSection104Pools _setion104Pools;
-
-    public UkFutureTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorporateActionList tradeList)
-    {
-        _setion104Pools = section104Pools;
-        _tradeList = tradeList;
-    }
-
     public List<ITradeTaxCalculation> CalculateTax()
     {
-        List<FutureTradeTaxCalculation> tradeTaxCalculations = GroupTrade(_tradeList.Trades);
+        List<FutureTradeTaxCalculation> tradeTaxCalculations = GroupTrade(tradeList.Trades);
         foreach (var trades in tradeTaxCalculations.GroupBy(trade => trade.AssetName))
         {
-            List<FutureTradeTaxCalculation> taxEventsInChronologicalOrder = trades.OrderBy(item => item.Date).ToList();
+            List<FutureTradeTaxCalculation> taxEventsInChronologicalOrder = [.. trades.OrderBy(item => item.Date)];
             ApplySameDayMatchingRule(taxEventsInChronologicalOrder);
             ApplyBedAndBreakfastMatchingRule(taxEventsInChronologicalOrder);
             ProcessTradeInChronologicalOrder(trades.Key, taxEventsInChronologicalOrder);
@@ -43,7 +33,7 @@ public class UkFutureTradeCalculator : ITradeCalculator
     /// <exception cref="NotImplementedException"></exception>
     private static List<FutureTradeTaxCalculation> GroupTrade(IEnumerable<Trade> trades)
     {
-        List<FutureTradeTaxCalculation> groupedTrade = new();
+        List<FutureTradeTaxCalculation> groupedTrade = [];
         foreach (var tradeGroup in GroupFutureContractTradeByAssetName(trades))
         {
             List<FutureContractTrade> taggedTrades = TagTradesWithOpenClose(tradeGroup);
@@ -62,7 +52,7 @@ public class UkFutureTradeCalculator : ITradeCalculator
     private static List<FutureContractTrade> TagTradesWithOpenClose(IEnumerable<FutureContractTrade> trades)
     {
         decimal currentPosition = 0m; // tracking current position to determine a trade is opening or closing
-        List<FutureContractTrade> resultList = new();
+        List<FutureContractTrade> resultList = [];
         foreach (var trade in trades.OrderBy(trade => trade.Date))
         {
             // run through trades chronologically and catagorise trades to one of the 4 catagories.
@@ -103,11 +93,11 @@ public class UkFutureTradeCalculator : ITradeCalculator
                     resultList.Add(closingTrade);
                     break;
             }
-            currentPosition += trade.BuySell switch
+            currentPosition += trade.AcquisitionDisposal switch
             {
-                TradeType.BUY => trade.Quantity,
-                TradeType.SELL => trade.Quantity * -1,
-                _ => throw new NotImplementedException($"Unexpected tradeType {trade.BuySell}")
+                TradeType.ACQUISITION => trade.Quantity,
+                TradeType.DISPOSAL => trade.Quantity * -1,
+                _ => throw new NotImplementedException($"Unexpected tradeType {trade.AcquisitionDisposal}")
             };
         }
         return resultList;
@@ -184,8 +174,21 @@ public class UkFutureTradeCalculator : ITradeCalculator
     private static void MatchTrade(FutureTradeTaxCalculation openTrade, FutureTradeTaxCalculation closeTrade, TaxMatchType taxMatchType)
     {
         decimal matchQty = Math.Min(openTrade.UnmatchedQty, closeTrade.UnmatchedQty);
-        WrappedMoney contractGain = closeTrade.GetProportionedContractValue(matchQty) - openTrade.GetProportionedContractValue(matchQty);
-        WrappedMoney contractGainInBaseCurrency = new WrappedMoney((contractGain * closeTrade.ContractFxRate).Amount);
+        if (matchQty == 0) return;
+        WrappedMoney buyContractValue = openTrade.PositionType switch
+        {
+            FuturePositionType.OPENLONG => openTrade.GetProportionedContractValue(matchQty),
+            FuturePositionType.OPENSHORT => closeTrade.GetProportionedContractValue(matchQty),
+            _ => throw new ArgumentException($"Unexpected future position type {openTrade.PositionType} for open position")
+        };
+        WrappedMoney sellContractValue = openTrade.PositionType switch
+        {
+            FuturePositionType.OPENLONG => closeTrade.GetProportionedContractValue(matchQty),
+            FuturePositionType.OPENSHORT => openTrade.GetProportionedContractValue(matchQty),
+            _ => throw new ArgumentException($"Unexpected future position type {openTrade.PositionType} for open position")
+        };
+        WrappedMoney contractGain = sellContractValue - buyContractValue;
+        WrappedMoney contractGainInBaseCurrency = new((contractGain * closeTrade.ContractFxRate).Amount);
         WrappedMoney allowableCost = openTrade.GetProportionedCostOrProceed(matchQty) + closeTrade.GetProportionedCostOrProceed(matchQty);
         WrappedMoney disposalProceed = WrappedMoney.GetBaseCurrencyZero();
         if (contractGainInBaseCurrency.Amount < 0)
@@ -196,7 +199,24 @@ public class UkFutureTradeCalculator : ITradeCalculator
         {
             disposalProceed += contractGainInBaseCurrency;
         }
-        TradeMatch match = TradeMatch.CreateTradeMatch(taxMatchType, matchQty, allowableCost, disposalProceed, closeTrade, openTrade);
+        FutureTradeMatch match = new()
+        {
+            Date = DateOnly.FromDateTime(closeTrade.Date),
+            AssetName = closeTrade.AssetName,
+            TradeMatchType = taxMatchType,
+            MatchAcquisitionQty = matchQty,
+            MatchDisposalQty = matchQty,
+            BaseCurrencyMatchAllowableCost = allowableCost,
+            BaseCurrencyMatchDisposalProceed = disposalProceed,
+            MatchedBuyTrade = openTrade,
+            MatchedSellTrade = closeTrade,
+            AdditionalInformation = "",
+            MatchBuyContractValue = buyContractValue,
+            MatchSellContractValue = sellContractValue,
+            BaseCurrencyAcqusitionDealingCost = openTrade.GetProportionedCostOrProceed(matchQty),
+            BaseCurrencyDisposalDealingCost = closeTrade.GetProportionedCostOrProceed(matchQty),
+            ClosingFxRate = closeTrade.ContractFxRate
+        };
         openTrade.MatchHistory.Add(match);
         closeTrade.MatchHistory.Add(match);
         openTrade.MatchQty(match.MatchAcquisitionQty);
@@ -211,8 +231,8 @@ public class UkFutureTradeCalculator : ITradeCalculator
     /// <exception cref="ArgumentException"></exception>
     private void ProcessTradeInChronologicalOrder(string assetName, IEnumerable<FutureTradeTaxCalculation> tradesInChronologicalOrder)
     {
-        UkSection104 longSection104Pool = _setion104Pools.GetExistingOrInitialise(assetName);
-        UkSection104 shortSection104Pool = _setion104Pools.GetExistingOrInitialise($"Short contract {assetName}");
+        UkSection104 longSection104Pool = section104Pools.GetExistingOrInitialise(assetName);
+        UkSection104 shortSection104Pool = section104Pools.GetExistingOrInitialise($"Short contract {assetName}");
 
         foreach (var trade in tradesInChronologicalOrder)
         {

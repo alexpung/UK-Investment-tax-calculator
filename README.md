@@ -16,6 +16,8 @@ https://alexpung.github.io/UK-Investment-tax-calculator/
 ## Supported import format and brokers
 1. Interactive Brokers Flex queries only for the moment.
 
+User can also add trades manually using the "Add trades" page.
+
 An example is included (see below). For other brokers I suggest copying the xml example and modifying it manually if you only have small number of trades.
 Or if you can code new parsers are welcome.
 
@@ -28,19 +30,20 @@ https://github.com/alexpung/UK-Investment-tax-calculator/tree/master/BlazorApp-I
 ### Parsed trade type:
 1. Trades:
     1. Stock orders
+    2. Future contracts (closed, not settled)
+    3. Capital gain from foreign currency
 2. Dividend income
     1. Dividend cash income
     2. Witholding tax paid
     3. Dividend in Lieu.
 3. Corporate actions
     1. Forward split only
-4. View trade calculations and dividend data in a table 
+4. View trade calculations and dividend data in a table
+5. Add dividends and trades from input of a form. (alpha: in development)
 
 #### Pending implementation
-FX, Futures (not sure if I want to handle delivery calculation.....)  
 More corporate actions  
-Viewing imported trade and flattened trade matching details in tables.
-Add missing trade and export it.  
+Export trade data. 
 Tests and feedback are welcome, bugs are to be expected.  
 
 #### Output files
@@ -51,10 +54,12 @@ Tests and feedback are welcome, bugs are to be expected.
 ## To use:
 File sample is [here](https://github.com/alexpung/UK-Investment-tax-calculator/blob/master/UnitTest/System%20Test/Interactive%20brokers/TaxExample.xml "here"), you can download it and put it in the web app to see how it works.
 1. You should configure the base currency of your IBKR account to GBP.
-2. Configure flex query from interactive brokers. Following report required. Date format dd-MMM-yy
-   1. Cash Transactions: Level of detail: Detail
-   2. Corporate actions
-   3. Trades: Level of detail: Orders
+2. Configure flex query from interactive brokers. Following report required. Date format dd-MMM-yy, the date and time separator should be set to a single space.
+   1. Cash Transactions: Level of detail: Detail (for dividends)
+   2. Corporate actions (for stocks)
+   3. Trades: Level of detail: Orders (for stocks)
+   4. Statement of Funds: Level of detail: Currency (for Fx transactions) 
+   5. Enable "Include exchange rates" at the bottom of the setting (for Fx transactions)"
 3. Download the flex query for each year in xml format using web browser.
 4. Open the web application.
 5. Go to the import sections and select the files, then press the "Upload" button.
@@ -150,3 +155,38 @@ Dividend Summary
     
     03/05/2021	200 (+100)			£0.00 (+£0.00)		
     Share adjustment on 03/05/2021 due to corporate action.
+
+### Future Contracts
+        Disposal 1: Close short position 2 units of NIYH4 on 05-Mar-2023.	Total gain (loss): -£28,011.90
+    Trade details:
+	    Bought 2 unit(s) of NIYH4 on 05-Mar-2023 12:35 with contract value ¥31,000,000 with total expense £6.30
+	    Expenses: Commission: ¥900 = £6.30 Fx rate = 0.007	
+    Trade matching:
+    Same day: Matched 2 units of the disposal. Acquisition contract value is ¥31,000,000 and disposal contract value is ¥27,000,000
+    Payment made to close the contract as loss is (¥27,000,000 - ¥31,000,000) * 0.007 = -£28,000.00, added to allowable cost
+    Total dealing cost is £11.90
+    Matched trade: Sold 2 unit(s) of NIYH4 on 05-Mar-2023 12:34 with contract value ¥27,000,000 with total expense £5.60
+	    Expenses: Commission: ¥700 = £5.60 Fx rate = 0.008	
+    Gain for this match is -£28,000.00 - £11.90  = -£28,011.90
+
+    *******************************************************************************
+    Disposal 2: Close long position 2 units of NIYH6 on 07-Mar-2023.	Total gain (loss): -£42,009.00
+    Trade details:
+	    Sold 2 unit(s) of NIYH6 on 07-Mar-2023 12:34 with contract value ¥20,000,000 with total expense £4.80
+	    Expenses: Commission: ¥800 = £4.80 Fx rate = 0.006	
+    Trade matching:
+    At time of disposal, section 104 contains 2 units with contract value ¥27,000,000
+    Section 104: Matched 2 units of the disposal. Acquisition contract value is ¥27,000,000 and disposal contract value ¥20,000,000, proportioned dealing cost is £4.20
+    Payment made to close the contract as loss is (¥20,000,000 - ¥27,000,000) * 0.006 = -£42,000.00, added to allowable cost
+    Total dealing cost is £9.00
+    Gain for this match is -£42,000.00 - £9.00  = -£42,009.00
+
+### FX
+        Disposal 1: Dispose 375 units of USD on 17-Dec-2019 for £285.59.	Total gain (loss): -£1.14
+    All units of the disposals are matched with acquisitions
+    Trade details:
+	    Dispose 375 unit(s) of USD on 17-Dec-2019 00:00 for $375.00 = £285.59 Fx rate = 0.76158. Description: Testing
+    Trade matching:
+    Bed and breakfast: 375 units of the acquisition trade against 375 units of the disposal trade. Acquisition cost is £286.74
+    Matched trade: Acquire 425 unit(s) of USD on 18-Dec-2019 00:00 for $425.00 = £324.97 Fx rate = 0.76463. Description: Testing 2
+    Gain for this match is £285.59 - £286.74 = -£1.14

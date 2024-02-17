@@ -1,30 +1,22 @@
-﻿using Enum;
+﻿using Enumerations;
 
 using Model.Interfaces;
 using Model.TaxEvents;
+using Model.UkTaxModel.Fx;
 
 using Syncfusion.Blazor.Data;
 
 namespace Model.UkTaxModel.Stocks;
 
-public class UkTradeCalculator : ITradeCalculator
+public class UkTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorporateActionList tradeList) : ITradeCalculator
 {
-    private readonly ITradeAndCorporateActionList _tradeList;
-    private readonly UkSection104Pools _setion104Pools;
-
-    public UkTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorporateActionList tradeList)
-    {
-        _setion104Pools = section104Pools;
-        _tradeList = tradeList;
-    }
-
     public List<ITradeTaxCalculation> CalculateTax()
     {
-        Dictionary<string, List<ITradeTaxCalculation>> tradeTaxCalculations = GroupTrade(_tradeList.Trades);
+        Dictionary<string, List<ITradeTaxCalculation>> tradeTaxCalculations = GroupTrade(tradeList.Trades);
         // This is a Dict grouped by asset name. For each asset name process all trades.
         foreach (KeyValuePair<string, List<ITradeTaxCalculation>> assetGroup in tradeTaxCalculations)
         {
-            IEnumerable<CorporateAction> corporateActions = _tradeList.CorporateActions.Where(i => i.AssetName == assetGroup.Key);
+            IEnumerable<CorporateAction> corporateActions = tradeList.CorporateActions.Where(i => i.AssetName == assetGroup.Key);
             List<IAssetDatedEvent> taxEventsInChronologicalOrder = assetGroup.Value.Select(a => new { Item = (IAssetDatedEvent)a, a.Date })
                               .Concat(corporateActions.Select(b => new { Item = (IAssetDatedEvent)b, b.Date }))
                               .OrderBy(item => item.Date).Select(item => item.Item).ToList();
@@ -39,9 +31,14 @@ public class UkTradeCalculator : ITradeCalculator
     {
         var groupedTrade = from trade in trades
                            where trade.AssetType == AssetCatagoryType.STOCK
-                           group trade by new { trade.AssetName, trade.Date.Date, trade.BuySell };
+                           group trade by new { trade.AssetName, trade.Date.Date, trade.AcquisitionDisposal };
+        var groupedFxTrade = from trade in trades
+                             where trade.AssetType == AssetCatagoryType.FX
+                             group trade by new { trade.AssetName, trade.Date.Date, trade.AcquisitionDisposal };
         IEnumerable<ITradeTaxCalculation> groupedTradeCalculations = groupedTrade.Select(group => new TradeTaxCalculation(group)).ToList();
-        return groupedTradeCalculations.GroupBy(TradeTaxCalculation => TradeTaxCalculation.TradeList.First().AssetName).ToDictionary(group => group.Key, group => group.ToList());
+        IEnumerable<ITradeTaxCalculation> groupedFxTradeCalculations = groupedFxTrade.Select(group => new FxTradeTaxCalculation(group)).ToList();
+        groupedTradeCalculations = groupedTradeCalculations.Concat(groupedFxTradeCalculations);
+        return groupedTradeCalculations.GroupBy(TradeTaxCalculation => TradeTaxCalculation.TradeList[0].AssetName).ToDictionary(group => group.Key, group => group.ToList());
     }
 
     /// <summary>
@@ -51,7 +48,7 @@ public class UkTradeCalculator : ITradeCalculator
     /// <param name="taxEventsInChronologicalOrder"></param>
     private static void ApplySameDayMatchingRule(List<IAssetDatedEvent> taxEventsInChronologicalOrder)
     {
-        List<CorporateAction> corporateActionsInBetween = new();
+        List<CorporateAction> corporateActionsInBetween = [];
         ITradeTaxCalculation? sameDayTrade = null;
         foreach (var taxEvent in taxEventsInChronologicalOrder)
         {
@@ -62,8 +59,8 @@ public class UkTradeCalculator : ITradeCalculator
                     {
                         // guard against unexpected matching
                         if (!(
-                          (sameDayTrade.BuySell == TradeType.BUY && trade.BuySell == TradeType.SELL) ||
-                          (sameDayTrade.BuySell == TradeType.SELL && trade.BuySell == TradeType.BUY)
+                          (sameDayTrade.AcquisitionDisposal == TradeType.ACQUISITION && trade.AcquisitionDisposal == TradeType.DISPOSAL) ||
+                          (sameDayTrade.AcquisitionDisposal == TradeType.DISPOSAL && trade.AcquisitionDisposal == TradeType.ACQUISITION)
                          ))
                         {
                             throw new ArgumentException("It is not one buy and one sell trade");
@@ -93,16 +90,16 @@ public class UkTradeCalculator : ITradeCalculator
     /// </summary>
     private static void ApplyBedAndBreakfastMatchingRule(List<IAssetDatedEvent> taxEventsInChronologicalOrder)
     {
-        List<CorporateAction> corporateActionsInBetween = new();
+        List<CorporateAction> corporateActionsInBetween = [];
         Queue<ITradeTaxCalculation> sellTradeQueue = new();
         foreach (var taxEvent in taxEventsInChronologicalOrder)
         {
             switch (taxEvent)
             {
-                case ITradeTaxCalculation sellTrade when sellTrade.BuySell == TradeType.SELL:
+                case ITradeTaxCalculation sellTrade when sellTrade.AcquisitionDisposal == TradeType.DISPOSAL:
                     sellTradeQueue.Enqueue(sellTrade);
                     break;
-                case ITradeTaxCalculation buyTrade when buyTrade.BuySell == TradeType.BUY:
+                case ITradeTaxCalculation buyTrade when buyTrade.AcquisitionDisposal == TradeType.ACQUISITION:
                     while (sellTradeQueue.Count > 0 && !buyTrade.CalculationCompleted)
                     {
                         var sellTradeToMatch = sellTradeQueue.Peek();
@@ -135,18 +132,28 @@ public class UkTradeCalculator : ITradeCalculator
     private static void MatchTrade(ITradeTaxCalculation trade1, ITradeTaxCalculation trade2, TaxMatchType taxMatchType, IEnumerable<CorporateAction>? corporateActionInBetween = null)
     {
         if (!(
-            (trade1.BuySell == TradeType.BUY && trade2.BuySell == TradeType.SELL) ||
-            (trade1.BuySell == TradeType.SELL && trade2.BuySell == TradeType.BUY)
+            (trade1.AcquisitionDisposal == TradeType.ACQUISITION && trade2.AcquisitionDisposal == TradeType.DISPOSAL) ||
+            (trade1.AcquisitionDisposal == TradeType.DISPOSAL && trade2.AcquisitionDisposal == TradeType.ACQUISITION)
             ))
         {
             throw new ArgumentException("The provided trades should consist of one buy and one sell trade.");
         }
         if (trade1.CalculationCompleted || trade2.CalculationCompleted) return;
-        ITradeTaxCalculation buyTrade = trade1.BuySell == TradeType.BUY ? trade1 : trade2;
-        ITradeTaxCalculation sellTrade = trade1.BuySell == TradeType.SELL ? trade1 : trade2;
+        ITradeTaxCalculation buyTrade = trade1.AcquisitionDisposal == TradeType.ACQUISITION ? trade1 : trade2;
+        ITradeTaxCalculation sellTrade = trade1.AcquisitionDisposal == TradeType.DISPOSAL ? trade1 : trade2;
         decimal proposedMatchQuantity = Math.Min(trade1.UnmatchedQty, trade2.UnmatchedQty);
-        TradeMatch proposedMatch = TradeMatch.CreateTradeMatch(taxMatchType, proposedMatchQuantity, buyTrade.GetProportionedCostOrProceed(proposedMatchQuantity), sellTrade.GetProportionedCostOrProceed(proposedMatchQuantity),
-            matchedBuyTrade: buyTrade, matchedSellTrade: sellTrade);
+        TradeMatch proposedMatch = new()
+        {
+            Date = DateOnly.FromDateTime(sellTrade.Date),
+            AssetName = sellTrade.AssetName,
+            TradeMatchType = taxMatchType,
+            MatchAcquisitionQty = proposedMatchQuantity,
+            MatchDisposalQty = proposedMatchQuantity,
+            BaseCurrencyMatchAllowableCost = buyTrade.GetProportionedCostOrProceed(proposedMatchQuantity),
+            BaseCurrencyMatchDisposalProceed = sellTrade.GetProportionedCostOrProceed(proposedMatchQuantity),
+            MatchedBuyTrade = buyTrade,
+            MatchedSellTrade = sellTrade
+        };
         // trades and the proposed match are handed to each CorporateAction to modify.
         if (corporateActionInBetween is not null)
         {
@@ -189,16 +196,16 @@ public class UkTradeCalculator : ITradeCalculator
     private void ProcessTradeInChronologicalOrder(string assetName, IEnumerable<IAssetDatedEvent> taxEventsInChronologicalOrder)
     {
         Queue<ITradeTaxCalculation> unmatchedDisposal = new();
-        UkSection104 section104 = _setion104Pools.GetExistingOrInitialise(assetName);
+        UkSection104 section104 = section104Pools.GetExistingOrInitialise(assetName);
         foreach (IAssetDatedEvent taxEvent in taxEventsInChronologicalOrder)
         {
             switch (taxEvent)
             {
                 case ITradeTaxCalculation tradeTaxCalculation:
                     if (tradeTaxCalculation.CalculationCompleted) continue;
-                    if (unmatchedDisposal.Any() && tradeTaxCalculation.BuySell == TradeType.BUY)
+                    if (unmatchedDisposal.Count != 0 && tradeTaxCalculation.AcquisitionDisposal == TradeType.ACQUISITION)
                     {
-                        while (unmatchedDisposal.Any() && !tradeTaxCalculation.CalculationCompleted)
+                        while (unmatchedDisposal.Count != 0 && !tradeTaxCalculation.CalculationCompleted)
                         {
                             var nextTradeToMatch = unmatchedDisposal.Peek();
                             MatchTrade(nextTradeToMatch, tradeTaxCalculation, TaxMatchType.SHORTCOVER);
@@ -206,7 +213,7 @@ public class UkTradeCalculator : ITradeCalculator
                         }
                     }
                     tradeTaxCalculation.MatchWithSection104(section104);
-                    if (!tradeTaxCalculation.CalculationCompleted && tradeTaxCalculation.BuySell == TradeType.SELL)
+                    if (!tradeTaxCalculation.CalculationCompleted && tradeTaxCalculation.AcquisitionDisposal == TradeType.DISPOSAL)
                     {
                         unmatchedDisposal.Enqueue(tradeTaxCalculation);
                     }

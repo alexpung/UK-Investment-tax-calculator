@@ -1,5 +1,6 @@
 using Model;
 using Model.TaxEvents;
+
 using Moq;
 
 namespace UnitTest.Test.Model;
@@ -12,19 +13,19 @@ public class TaxEventListsTests
         // Arrange
         var taxEventLists = new TaxEventLists
         {
-            Trades = new List<Trade>
-            {
+            Trades =
+            [
                 new Mock<Trade>().Object,
                 new Mock<Trade>().Object
-            },
-            CorporateActions = new List<CorporateAction>
-            {
+            ],
+            CorporateActions =
+            [
                 new Mock<StockSplit>().Object
-            },
-            Dividends = new List<Dividend>
-            {
+            ],
+            Dividends =
+            [
                 new Mock<Dividend>().Object
-            }
+            ]
         };
 
         // Act
@@ -40,21 +41,21 @@ public class TaxEventListsTests
         // Arrange
         var sourceTaxEventLists = new TaxEventLists
         {
-            Trades = new List<Trade>
-            {
+            Trades =
+            [
                 new Mock<Trade>().Object,
-            },
-            CorporateActions = new List<CorporateAction>
-            {
+            ],
+            CorporateActions =
+            [
                 new Mock<StockSplit>().Object,
                 new Mock<StockSplit>().Object
-            },
-            Dividends = new List<Dividend>
-            {
+            ],
+            Dividends =
+            [
                 new Mock<Dividend>().Object,
                 new Mock<Dividend>().Object,
                 new Mock<Dividend>().Object,
-            }
+            ]
         };
 
         var targetTaxEventLists = new TaxEventLists();

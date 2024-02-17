@@ -1,0 +1,10 @@
+﻿@using Syncfusion.Blazor.Buttons
+@using Model;
+@inject AssetTypeToLoadSetting AssetSettings
+
+<SfCheckBox Label="Load Stocks" @bind-Checked="@AssetSettings.LoadStocks"></SfCheckBox>
+<SfCheckBox Label="Load Options" @bind-Checked="@AssetSettings.LoadOptions" Disabled=true></SfCheckBox>
+<SfCheckBox Label="Load Futures" @bind-Checked="@AssetSettings.LoadFutures"></SfCheckBox>
+<SfCheckBox Label="Load FX" @bind-Checked="@AssetSettings.LoadFx"></SfCheckBox>
+<SfCheckBox Label="Load Dividends" @bind-Checked="@AssetSettings.LoadDividends"></SfCheckBox>
+

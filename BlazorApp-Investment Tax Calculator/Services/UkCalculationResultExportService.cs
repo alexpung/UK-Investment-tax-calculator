@@ -1,28 +1,23 @@
-﻿using Model;
+﻿using Enumerations;
+
+using Model;
 using Model.Interfaces;
+
 using System.Text;
 
 namespace Services;
 
-public class UkCalculationResultExportService : ITextFilePrintable
+public class UkCalculationResultExportService(ITaxYear taxYear, TradeCalculationResult tradeCalculationResult) : ITextFilePrintable
 {
-    private readonly ITaxYear _taxYear;
-    private readonly TradeCalculationResult _tradeCalculationResult;
-
-    public UkCalculationResultExportService(ITaxYear taxYear, TradeCalculationResult tradeCalculationResult)
-    {
-        _taxYear = taxYear;
-        _tradeCalculationResult = tradeCalculationResult;
-    }
-
     public string PrintToTextFile(IEnumerable<int> yearsToExport)
     {
         StringBuilder output = new();
         foreach (int year in yearsToExport.OrderByDescending(i => i))
         {
-            output.Append(WriteTaxYearSummary(year, _tradeCalculationResult));
-            IEnumerable<ITradeTaxCalculation> yearFilteredTradeCalculations = _tradeCalculationResult.CalculatedTrade.Where(i => _taxYear.ToTaxYear(i.Date) == year && i.BuySell == Enum.TradeType.SELL)
-                                                                                                 .OrderBy(i => i.Date);
+            output.Append(WriteTaxYearSummary(year, tradeCalculationResult));
+            IEnumerable<ITradeTaxCalculation> yearFilteredTradeCalculations = tradeCalculationResult
+                .CalculatedTrade.Where(i => taxYear.ToTaxYear(i.Date) == year && i.AcquisitionDisposal == TradeType.DISPOSAL)
+                .OrderBy(i => i.Date);
             output.AppendLine();
             output.Append(WriteDisposalDetails(yearFilteredTradeCalculations));
             output.AppendLine();
@@ -33,7 +28,7 @@ public class UkCalculationResultExportService : ITextFilePrintable
 
     public string PrintToTextFile()
     {
-        IEnumerable<int> taxYears = _tradeCalculationResult.CalculatedTrade.Select(calculation => _taxYear.ToTaxYear(calculation.Date)).Distinct().OrderByDescending(i => i);
+        IEnumerable<int> taxYears = tradeCalculationResult.CalculatedTrade.Select(calculation => taxYear.ToTaxYear(calculation.Date)).Distinct().OrderByDescending(i => i);
         return PrintToTextFile(taxYears);
     }
 

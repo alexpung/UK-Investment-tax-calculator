@@ -1,10 +1,10 @@
-﻿using Enum;
+﻿using Enumerations;
 
 using Model;
 using Model.Interfaces;
 using Model.TaxEvents;
 
-using System.Collections.Immutable;
+using System.Globalization;
 
 using TaxEvents;
 
@@ -20,11 +20,11 @@ public class UkTradeCalculatorTest3FutureTrade
         FutureContractTrade buyTrade = new()
         {
             AssetName = "GHI Future",
-            BuySell = TradeType.BUY,
-            Date = DateTime.Parse("02-Jun-22 10:00:00"),
+            AcquisitionDisposal = TradeType.ACQUISITION,
+            Date = DateTime.Parse("02-Jun-22 10:00:00", CultureInfo.InvariantCulture),
             Description = "Purchase of GHI Future",
             Quantity = 150,
-            Expenses = ImmutableList.Create(new DescribedMoney() { Description = "Commission", Amount = new WrappedMoney(100m, "JPY"), FxRate = 0.007m }),
+            Expenses = [new DescribedMoney() { Description = "Commission", Amount = new WrappedMoney(100m, "JPY"), FxRate = 0.007m }],
             GrossProceed = new() { Amount = WrappedMoney.GetBaseCurrencyZero() },
             ContractValue = new() { Amount = new WrappedMoney(1000000m, "JPY"), FxRate = 0.007m }
         };
@@ -33,11 +33,11 @@ public class UkTradeCalculatorTest3FutureTrade
         FutureContractTrade sellTradeSameDay = new()
         {
             AssetName = "GHI Future",
-            BuySell = TradeType.SELL,
-            Date = DateTime.Parse("02-Jun-22 15:00:00"),
+            AcquisitionDisposal = TradeType.DISPOSAL,
+            Date = DateTime.Parse("02-Jun-22 15:00:00", CultureInfo.InvariantCulture),
             Description = "Sale of GHI Future",
             Quantity = 100,
-            Expenses = ImmutableList.Create(new DescribedMoney() { Description = "Commission", Amount = new WrappedMoney(150m, "JPY"), FxRate = 0.0075m }),
+            Expenses = [new DescribedMoney() { Description = "Commission", Amount = new WrappedMoney(150m, "JPY"), FxRate = 0.0075m }],
             GrossProceed = new() { Amount = WrappedMoney.GetBaseCurrencyZero() },
             ContractValue = new() { Amount = new WrappedMoney(1050000m, "JPY"), FxRate = 0.0075m }
         };
@@ -46,11 +46,11 @@ public class UkTradeCalculatorTest3FutureTrade
         FutureContractTrade sellTradeDifferentDay = new()
         {
             AssetName = "GHI Future",
-            BuySell = TradeType.SELL,
-            Date = DateTime.Parse("03-Jun-22 11:00:00"),
+            AcquisitionDisposal = TradeType.DISPOSAL,
+            Date = DateTime.Parse("03-Jun-22 11:00:00", CultureInfo.InvariantCulture),
             Description = "Sale of GHI Future",
             Quantity = 50,
-            Expenses = ImmutableList.Create(new DescribedMoney() { Description = "Commission", Amount = new WrappedMoney(50m, "JPY"), FxRate = 0.008m }),
+            Expenses = [new DescribedMoney() { Description = "Commission", Amount = new WrappedMoney(50m, "JPY"), FxRate = 0.008m }],
             GrossProceed = new() { Amount = WrappedMoney.GetBaseCurrencyZero() },
             ContractValue = new() { Amount = new WrappedMoney(300000m, "JPY"), FxRate = 0.008m }
         };
@@ -72,11 +72,11 @@ public class UkTradeCalculatorTest3FutureTrade
         FutureContractTrade buyTradeDay1 = new()
         {
             AssetName = "JKL Future",
-            BuySell = TradeType.BUY,
-            Date = DateTime.Parse("01-Jun-22 10:00:00"),
+            AcquisitionDisposal = TradeType.ACQUISITION,
+            Date = DateTime.Parse("01-Jun-22 10:00:00", CultureInfo.InvariantCulture),
             Description = "Purchase of JKL Future",
             Quantity = 50,
-            Expenses = ImmutableList.Create(new DescribedMoney() { Description = "Commission", Amount = new WrappedMoney(100m, "JPY"), FxRate = 0.007m }),
+            Expenses = [new DescribedMoney() { Description = "Commission", Amount = new WrappedMoney(100m, "JPY"), FxRate = 0.007m }],
             GrossProceed = new() { Amount = WrappedMoney.GetBaseCurrencyZero() },
             ContractValue = new() { Amount = new WrappedMoney(500000m, "JPY"), FxRate = 0.007m }
         };
@@ -85,11 +85,11 @@ public class UkTradeCalculatorTest3FutureTrade
         FutureContractTrade sellTradeDay2 = new()
         {
             AssetName = "JKL Future",
-            BuySell = TradeType.SELL,
-            Date = DateTime.Parse("01-Jun-22 15:00:00"),
+            AcquisitionDisposal = TradeType.DISPOSAL,
+            Date = DateTime.Parse("01-Jun-22 15:00:00", CultureInfo.InvariantCulture),
             Description = "Sale of JKL Future",
             Quantity = 150,
-            Expenses = ImmutableList.Create(new DescribedMoney() { Description = "Commission", Amount = new WrappedMoney(150m, "JPY"), FxRate = 0.0075m }),
+            Expenses = [new DescribedMoney() { Description = "Commission", Amount = new WrappedMoney(150m, "JPY"), FxRate = 0.0075m }],
             GrossProceed = new() { Amount = WrappedMoney.GetBaseCurrencyZero() },
             ContractValue = new() { Amount = new WrappedMoney(1600000m, "JPY"), FxRate = 0.0075m }
         };
@@ -98,11 +98,11 @@ public class UkTradeCalculatorTest3FutureTrade
         FutureContractTrade buyTradeDay3 = new()
         {
             AssetName = "JKL Future",
-            BuySell = TradeType.BUY,
-            Date = DateTime.Parse("03-Jun-22 11:00:00"),
+            AcquisitionDisposal = TradeType.ACQUISITION,
+            Date = DateTime.Parse("03-Jun-22 11:00:00", CultureInfo.InvariantCulture),
             Description = "Purchase of JKL Future",
             Quantity = 100,
-            Expenses = ImmutableList.Create(new DescribedMoney() { Description = "Commission", Amount = new WrappedMoney(50m, "JPY"), FxRate = 0.008m }),
+            Expenses = [new DescribedMoney() { Description = "Commission", Amount = new WrappedMoney(50m, "JPY"), FxRate = 0.008m }],
             GrossProceed = new() { Amount = WrappedMoney.GetBaseCurrencyZero() },
             ContractValue = new() { Amount = new WrappedMoney(1000000m, "JPY"), FxRate = 0.008m }
         };
@@ -112,9 +112,9 @@ public class UkTradeCalculatorTest3FutureTrade
         result[2].TotalAllowableCost.Amount.ShouldBe(1.075m, 0.01m); // 150 * 0.0075 * (50/150) + 100 * 0.007 = 1.075
         result[2].TotalProceeds.Amount.ShouldBe(250m, 0.01m); // (1600000 * 50/150 - 500,000) * 0.0075 = 250
         result[2].MatchHistory[0].TradeMatchType.ShouldBe(TaxMatchType.SAME_DAY);
-        result[3].Gain.Amount.ShouldBe(-534.48m, 0.01m); // (1000000 - 100/150 * 1600000) * 0.008 - 50 * 0.008 - (100/150) * 150 * 0.0075
-        result[3].TotalAllowableCost.Amount.ShouldBe(534.48m, 0.01m); // Same as loss above
-        result[3].TotalProceeds.Amount.ShouldBe(0); // No proceeds from a loss-making future contract sale
+        result[3].Gain.Amount.ShouldBe(532.18m, 0.01m); // (100/150 * 1600000 - 1000000) * 0.008 - 50 * 0.008 - (100/150) * 150 * 0.0075
+        result[3].TotalAllowableCost.Amount.ShouldBe(1.15m, 0.01m); // 50 * 0.008 + (100/150) * 150 * 0.0075
+        result[3].TotalProceeds.Amount.ShouldBe(533.33m, 0.01m); // (100/150 * 1600000 - 1000000) * 0.008
         result[3].MatchHistory[0].TradeMatchType.ShouldBe(TaxMatchType.SECTION_104); // not bed and breakfast. An open short position is closed
     }
 }

@@ -1,20 +1,22 @@
-﻿using Enum;
+﻿using Enumerations;
+
 using Model.TaxEvents;
+
 using System.Globalization;
 using System.Xml.Linq;
 
 namespace Parser.InteractiveBrokersXml;
 
 
-public class IBXmlDividendParser
+public static class IBXmlDividendParser
 {
-    public IList<Dividend> ParseXml(XElement document)
+    public static IList<Dividend> ParseXml(XElement document)
     {
         IEnumerable<XElement> filteredElements = document.Descendants("CashTransaction").Where(row => GetDividendType(row) != DividendType.NOT_DIVIDEND && row.GetAttribute("levelOfDetail") == "DETAIL");
         return filteredElements.Select(DividendMaker).Where(dividend => dividend != null).ToList()!;
     }
 
-    private Dividend? DividendMaker(XElement element)
+    private static Dividend? DividendMaker(XElement element)
     {
         try
         {
@@ -22,12 +24,16 @@ public class IBXmlDividendParser
             {
                 DividendType = GetDividendType(element),
                 AssetName = element.GetAttribute("symbol"),
-                Date = DateTime.Parse(element.GetAttribute("settleDate")),
+                Date = DateTime.Parse(element.GetAttribute("settleDate"), CultureInfo.InvariantCulture),
                 CompanyLocation = GetCompanyLocation(element),
                 Proceed = element.BuildDescribedMoney("amount", "currency", "fxRateToBase", element.GetAttribute("description"))
             };
         }
-        catch { return null; } // TODO Implement suitable catch clause and logging */
+        catch (Exception ex)
+        {
+            string exceptionMessage = $"Exception occurred processing XElement: {element} - Original Exception: {ex.Message}";
+            throw new ParseException(exceptionMessage, ex);
+        }
     }
 
     private static RegionInfo GetCompanyLocation(XElement dividendElement)

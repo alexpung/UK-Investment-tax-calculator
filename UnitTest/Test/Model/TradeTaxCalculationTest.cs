@@ -1,5 +1,5 @@
 ﻿namespace UnitTest.Test.Model;
-using Enum;
+using Enumerations;
 
 using global::Model;
 using global::Model.TaxEvents;
@@ -10,8 +10,9 @@ using Moq;
 using System;
 using System.Collections.Generic;
 
-using Xunit;
+using UnitTest.Helper;
 
+using Xunit;
 
 public class TradeTaxCalculationTests
 {
@@ -22,33 +23,33 @@ public class TradeTaxCalculationTests
         Mock<Trade> trade1 = new();
         Mock<Trade> trade2 = new();
         Mock<Trade> trade3 = new();
-        trade1.Setup(i => i.BuySell).Returns(TradeType.BUY);
-        trade2.Setup(i => i.BuySell).Returns(TradeType.SELL);
-        trade3.Setup(i => i.BuySell).Returns(TradeType.BUY);
+        trade1.Setup(i => i.AcquisitionDisposal).Returns(TradeType.ACQUISITION);
+        trade2.Setup(i => i.AcquisitionDisposal).Returns(TradeType.DISPOSAL);
+        trade3.Setup(i => i.AcquisitionDisposal).Returns(TradeType.ACQUISITION);
         var trades = new List<Trade> { trade1.Object, trade2.Object, trade3.Object };
         // Act & Assert
         Should.Throw<ArgumentException>(() => new TradeTaxCalculation(trades));
     }
 
     [Theory]
-    [InlineData(TradeType.BUY)]
-    [InlineData(TradeType.SELL)]
+    [InlineData(TradeType.ACQUISITION)]
+    [InlineData(TradeType.DISPOSAL)]
     public void TradeTaxCalculation_SetCorrectBuySellSides(TradeType tradeType)
     {
         // Arrange
         Mock<Trade> trade1 = new();
         Mock<Trade> trade2 = new();
         Mock<Trade> trade3 = new();
-        trade1.Setup(i => i.BuySell).Returns(tradeType);
-        trade2.Setup(i => i.BuySell).Returns(tradeType);
-        trade3.Setup(i => i.BuySell).Returns(tradeType);
+        trade1.Setup(i => i.AcquisitionDisposal).Returns(tradeType);
+        trade2.Setup(i => i.AcquisitionDisposal).Returns(tradeType);
+        trade3.Setup(i => i.AcquisitionDisposal).Returns(tradeType);
         trade1.Setup(i => i.NetProceed).Returns(new WrappedMoney(100));
         trade2.Setup(i => i.NetProceed).Returns(new WrappedMoney(100));
         trade3.Setup(i => i.NetProceed).Returns(new WrappedMoney(100));
         var trades = new List<Trade> { trade1.Object, trade2.Object, trade3.Object };
         // Act & Assert
         TradeTaxCalculation calculation = new(trades);
-        calculation.BuySell.ShouldBe(tradeType);
+        calculation.AcquisitionDisposal.ShouldBe(tradeType);
     }
 
     [Fact]
@@ -56,10 +57,10 @@ public class TradeTaxCalculationTests
     {
         // Arrange
         Mock<Trade> trade1 = new();
-        trade1.Setup(i => i.BuySell).Returns(TradeType.SELL);
+        trade1.Setup(i => i.AcquisitionDisposal).Returns(TradeType.DISPOSAL);
         trade1.Setup(i => i.NetProceed).Returns(new WrappedMoney(100));
-        var matchHistory = new List<TradeMatch> { TradeMatch.CreateTradeMatch(TaxMatchType.SECTION_104, 100, new WrappedMoney(100), new WrappedMoney(150)),
-                                                  TradeMatch.CreateTradeMatch(TaxMatchType.SECTION_104, 100, new WrappedMoney(200), new WrappedMoney(250))
+        var matchHistory = new List<TradeMatch> { TradeCalculationHelper.CreateTradeMatch(TaxMatchType.SECTION_104, 100, new WrappedMoney(100), new WrappedMoney(150)),
+                                                  TradeCalculationHelper.CreateTradeMatch(TaxMatchType.SECTION_104, 100, new WrappedMoney(200), new WrappedMoney(250))
                                                 };
         var calculation = new TradeTaxCalculation(new List<Trade>() { trade1.Object })
         {
@@ -78,10 +79,10 @@ public class TradeTaxCalculationTests
     {
         // Arrange
         Mock<Trade> trade1 = new();
-        trade1.Setup(i => i.BuySell).Returns(TradeType.SELL);
+        trade1.Setup(i => i.AcquisitionDisposal).Returns(TradeType.DISPOSAL);
         trade1.Setup(i => i.NetProceed).Returns(new WrappedMoney(100));
-        var matchHistory = new List<TradeMatch> { TradeMatch.CreateTradeMatch(TaxMatchType.SECTION_104, 100, WrappedMoney.GetBaseCurrencyZero(), new WrappedMoney(100)),
-                                                  TradeMatch.CreateTradeMatch(TaxMatchType.SECTION_104, 100, WrappedMoney.GetBaseCurrencyZero(), new WrappedMoney(200))
+        var matchHistory = new List<TradeMatch> { TradeCalculationHelper.CreateTradeMatch(TaxMatchType.SECTION_104, 100, WrappedMoney.GetBaseCurrencyZero(), new WrappedMoney(100)),
+                                                  TradeCalculationHelper.CreateTradeMatch(TaxMatchType.SECTION_104, 100, WrappedMoney.GetBaseCurrencyZero(), new WrappedMoney(200))
                                                 };
         var calculation = new TradeTaxCalculation(new List<Trade>() { trade1.Object })
         {
@@ -100,10 +101,10 @@ public class TradeTaxCalculationTests
     {
         // Arrange
         Mock<Trade> trade1 = new();
-        trade1.Setup(i => i.BuySell).Returns(TradeType.SELL);
+        trade1.Setup(i => i.AcquisitionDisposal).Returns(TradeType.DISPOSAL);
         trade1.Setup(i => i.NetProceed).Returns(new WrappedMoney(100));
-        var matchHistory = new List<TradeMatch> { TradeMatch.CreateTradeMatch(TaxMatchType.SECTION_104, 100, new WrappedMoney(70), new WrappedMoney(100)),
-                                                  TradeMatch.CreateTradeMatch(TaxMatchType.SECTION_104, 100, new WrappedMoney(210), new WrappedMoney(200))
+        var matchHistory = new List<TradeMatch> { TradeCalculationHelper.CreateTradeMatch(TaxMatchType.SECTION_104, 100, new WrappedMoney(70), new WrappedMoney(100)),
+                                                  TradeCalculationHelper.CreateTradeMatch(TaxMatchType.SECTION_104, 100, new WrappedMoney(210), new WrappedMoney(200))
                                                 };
         var calculation = new TradeTaxCalculation(new List<Trade>() { trade1.Object })
         {
@@ -123,7 +124,7 @@ public class TradeTaxCalculationTests
         // Arrange
         Mock<Trade> trade1 = new();
         trade1.Setup(i => i.AssetName).Returns("IBM");
-        trade1.Setup(i => i.BuySell).Returns(TradeType.SELL);
+        trade1.Setup(i => i.AcquisitionDisposal).Returns(TradeType.DISPOSAL);
         trade1.Setup(i => i.NetProceed).Returns(new WrappedMoney(100));
         trade1.Setup(i => i.Quantity).Returns(10m);
         var calculation = new TradeTaxCalculation(new List<Trade>() { trade1.Object });
@@ -137,12 +138,12 @@ public class TradeTaxCalculationTests
     {
         // Arrange
         Mock<Trade> trade1 = new();
-        trade1.Setup(i => i.Date).Returns(new DateTime(2023, 1, 1, 12, 34, 56));
-        trade1.Setup(i => i.BuySell).Returns(TradeType.SELL);
+        trade1.Setup(i => i.Date).Returns(new DateTime(2023, 1, 1, 12, 34, 56, DateTimeKind.Local));
+        trade1.Setup(i => i.AcquisitionDisposal).Returns(TradeType.DISPOSAL);
         trade1.Setup(i => i.NetProceed).Returns(new WrappedMoney(100));
         var calculation = new TradeTaxCalculation(new List<Trade>() { trade1.Object });
         // Assert
-        calculation.Date.ShouldBe(new DateTime(2023, 1, 1, 12, 34, 56));
+        calculation.Date.ShouldBe(new DateTime(2023, 1, 1, 12, 34, 56, DateTimeKind.Local));
     }
 
     [Fact]

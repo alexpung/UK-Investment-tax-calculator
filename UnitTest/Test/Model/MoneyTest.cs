@@ -1,5 +1,7 @@
 ﻿using Model;
+
 using NMoneys;
+
 using System.Collections;
 
 namespace UnitTest.Test.Model;
@@ -47,39 +49,39 @@ public class MoneyTest
     [Fact]
     public void TestMoneySumEmptyEqualToBaseCurrencyZero()
     {
-        List<WrappedMoney> moneys = new();
+        List<WrappedMoney> moneys = [];
         moneys.Sum().ShouldBeEquivalentTo(WrappedMoney.GetBaseCurrencyZero());
     }
 
     [Fact]
     public void TestMoneySum()
     {
-        List<WrappedMoney> moneys = new() { new WrappedMoney(10m, "Gbp"), new WrappedMoney(20.1m, "Gbp"), new WrappedMoney(0.2m, "Gbp") };
+        List<WrappedMoney> moneys = [new WrappedMoney(10m, "Gbp"), new WrappedMoney(20.1m, "Gbp"), new WrappedMoney(0.2m, "Gbp")];
         moneys.Sum().ShouldBeEquivalentTo(new WrappedMoney(30.3m, "Gbp"));
     }
 
     [Fact]
     public void TestMoneySumDifferentCurrenciesThrowException()
     {
-        List<WrappedMoney> moneys = new() { new WrappedMoney(10m, "Gbp"), new WrappedMoney(20.1m, "Cad"), new WrappedMoney(0.2m, "Gbp") };
+        List<WrappedMoney> moneys = [new WrappedMoney(10m, "Gbp"), new WrappedMoney(20.1m, "Cad"), new WrappedMoney(0.2m, "Gbp")];
         Should.Throw(() => moneys.Sum(), typeof(DifferentCurrencyException));
     }
 
     [Fact]
     public void TestObjectWithCurrencySum()
     {
-        List<DescribedMoney> moneys = new()
-        { new DescribedMoney() { Amount= new WrappedMoney(10m, "Gbp") },
-          new DescribedMoney() { Amount= new WrappedMoney(20.1m, "Gbp") },
-          new DescribedMoney() { Amount= new WrappedMoney(0.2m, "Gbp") },
-        };
+        List<DescribedMoney> moneys =
+        [new DescribedMoney() { Amount = new WrappedMoney(10m, "Gbp") },
+            new DescribedMoney() { Amount = new WrappedMoney(20.1m, "Gbp") },
+            new DescribedMoney() { Amount = new WrappedMoney(0.2m, "Gbp") },
+        ];
         moneys.Sum(i => i.Amount).ShouldBeEquivalentTo(new WrappedMoney(30.3m, "Gbp"));
     }
 
     [Fact]
     public void TestEmptyBaseCurrencySum()
     {
-        List<DescribedMoney> moneys = new();
+        List<DescribedMoney> moneys = [];
         moneys.Sum(i => i.Amount).ShouldBeEquivalentTo(WrappedMoney.GetBaseCurrencyZero());
     }
 }

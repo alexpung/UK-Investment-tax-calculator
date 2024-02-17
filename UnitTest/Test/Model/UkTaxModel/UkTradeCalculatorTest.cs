@@ -1,5 +1,5 @@
 ﻿namespace UnitTest.Test.Model.UkTaxModel;
-using Enum;
+using Enumerations;
 
 using global::Model;
 using global::Model.Interfaces;
@@ -21,17 +21,17 @@ using Xunit;
 public class UkTradeCalculatorTests
 {
     [Theory]
-    [InlineData(TradeType.BUY, TradeType.BUY, 1, 2)]
-    [InlineData(TradeType.SELL, TradeType.SELL, 1, 2)]
-    [InlineData(TradeType.SELL, TradeType.BUY, 2, 1)]
+    [InlineData(TradeType.ACQUISITION, TradeType.ACQUISITION, 1, 2)]
+    [InlineData(TradeType.DISPOSAL, TradeType.DISPOSAL, 1, 2)]
+    [InlineData(TradeType.DISPOSAL, TradeType.ACQUISITION, 2, 1)]
     public void CalculateTax_GroupsTradeOnSameSideOnSameDay(TradeType tradeType1, TradeType tradeType2, int expectedITradeTaxCalculationCount, int expectedFirstTradeListCount)
     {
         // Arrange
-        Mock<Trade> trade1Mock = MockTrade.CreateMockTrade("Asset1", new DateTime(2023, 1, 1, 12, 34, 56), tradeType1, 100, 1000);
-        Mock<Trade> trade2Mock = MockTrade.CreateMockTrade("Asset1", new DateTime(2023, 1, 1, 13, 34, 56), tradeType2, 200, 2000);
+        Mock<Trade> trade1Mock = MockTrade.CreateMockTrade("Asset1", new DateTime(2023, 1, 1, 12, 34, 56, DateTimeKind.Local), tradeType1, 100, 1000);
+        Mock<Trade> trade2Mock = MockTrade.CreateMockTrade("Asset1", new DateTime(2023, 1, 1, 13, 34, 56, DateTimeKind.Local), tradeType2, 200, 2000);
         var tradeListMock = new Mock<ITradeAndCorporateActionList>();
-        tradeListMock.Setup(t => t.Trades).Returns(new List<Trade> { trade1Mock.Object, trade2Mock.Object });
-        tradeListMock.Setup(t => t.CorporateActions).Returns(new List<CorporateAction>());
+        tradeListMock.Setup(t => t.Trades).Returns([trade1Mock.Object, trade2Mock.Object]);
+        tradeListMock.Setup(t => t.CorporateActions).Returns([]);
 
         var section104PoolsMock = new Mock<UkSection104Pools>();
         section104PoolsMock.Setup(i => i.GetExistingOrInitialise(It.IsAny<string>())).Returns((string assetName) => new UkSection104(assetName));
@@ -52,12 +52,12 @@ public class UkTradeCalculatorTests
     public void ApplySameDayMatchingRule_MatchesSameDayTrades()
     {
         // Arrange
-        Mock<Trade> trade1Mock = MockTrade.CreateMockTrade("Asset1", new DateTime(2023, 1, 1, 12, 34, 56), TradeType.BUY, 100, 1000);
-        Mock<Trade> trade2Mock = MockTrade.CreateMockTrade("Asset1", new DateTime(2023, 1, 2, 13, 34, 56), TradeType.SELL, 80, 8000);
-        Mock<Trade> trade3Mock = MockTrade.CreateMockTrade("Asset1", new DateTime(2023, 1, 2, 14, 34, 56), TradeType.BUY, 50, 2000);
+        Mock<Trade> trade1Mock = MockTrade.CreateMockTrade("Asset1", new DateTime(2023, 1, 1, 12, 34, 56, DateTimeKind.Local), TradeType.ACQUISITION, 100, 1000);
+        Mock<Trade> trade2Mock = MockTrade.CreateMockTrade("Asset1", new DateTime(2023, 1, 2, 13, 34, 56, DateTimeKind.Local), TradeType.DISPOSAL, 80, 8000);
+        Mock<Trade> trade3Mock = MockTrade.CreateMockTrade("Asset1", new DateTime(2023, 1, 2, 14, 34, 56, DateTimeKind.Local), TradeType.ACQUISITION, 50, 2000);
         var tradeListMock = new Mock<ITradeAndCorporateActionList>();
-        tradeListMock.Setup(t => t.Trades).Returns(new List<Trade> { trade1Mock.Object, trade2Mock.Object, trade3Mock.Object });
-        tradeListMock.Setup(t => t.CorporateActions).Returns(new List<CorporateAction>());
+        tradeListMock.Setup(t => t.Trades).Returns([trade1Mock.Object, trade2Mock.Object, trade3Mock.Object]);
+        tradeListMock.Setup(t => t.CorporateActions).Returns([]);
 
         var section104PoolsMock = new Mock<UkSection104Pools>();
         UkSection104 section104 = new("Asset1");
@@ -80,14 +80,14 @@ public class UkTradeCalculatorTests
     public void ApplyBedAndBreakfastRulesMatchBuyTradeWithin30Days()
     {
         // Arrange
-        Mock<Trade> trade1Mock = MockTrade.CreateMockTrade("Asset1", new DateTime(2023, 1, 1, 12, 34, 56), TradeType.BUY, 100, 1000);
-        Mock<Trade> trade2Mock = MockTrade.CreateMockTrade("Asset1", new DateTime(2023, 1, 2, 06, 34, 56), TradeType.SELL, 80, 8000);
-        Mock<Trade> trade3Mock = MockTrade.CreateMockTrade("Asset1", new DateTime(2023, 2, 1, 12, 34, 56), TradeType.BUY, 50, 2500);
-        Mock<Trade> trade4Mock = MockTrade.CreateMockTrade("Asset1", new DateTime(2023, 2, 2, 02, 34, 56), TradeType.BUY, 20, 1500);
+        Mock<Trade> trade1Mock = MockTrade.CreateMockTrade("Asset1", new DateTime(2023, 1, 1, 12, 34, 56, DateTimeKind.Local), TradeType.ACQUISITION, 100, 1000);
+        Mock<Trade> trade2Mock = MockTrade.CreateMockTrade("Asset1", new DateTime(2023, 1, 2, 06, 34, 56, DateTimeKind.Local), TradeType.DISPOSAL, 80, 8000);
+        Mock<Trade> trade3Mock = MockTrade.CreateMockTrade("Asset1", new DateTime(2023, 2, 1, 12, 34, 56, DateTimeKind.Local), TradeType.ACQUISITION, 50, 2500);
+        Mock<Trade> trade4Mock = MockTrade.CreateMockTrade("Asset1", new DateTime(2023, 2, 2, 02, 34, 56, DateTimeKind.Local), TradeType.ACQUISITION, 20, 1500);
 
         var tradeListMock = new Mock<ITradeAndCorporateActionList>();
-        tradeListMock.Setup(t => t.Trades).Returns(new List<Trade> { trade1Mock.Object, trade2Mock.Object, trade3Mock.Object, trade4Mock.Object });
-        tradeListMock.Setup(t => t.CorporateActions).Returns(new List<CorporateAction>());
+        tradeListMock.Setup(t => t.Trades).Returns([trade1Mock.Object, trade2Mock.Object, trade3Mock.Object, trade4Mock.Object]);
+        tradeListMock.Setup(t => t.CorporateActions).Returns([]);
 
         var section104PoolsMock = new Mock<UkSection104Pools>();
         UkSection104 section104 = new("Asset1");
@@ -109,16 +109,16 @@ public class UkTradeCalculatorTests
     public void ShortSaleMatchWithMostRecentUnmatchedTrade()
     {
         // Arrange
-        Mock<Trade> trade1Mock = MockTrade.CreateMockTrade("Asset1", new DateTime(2023, 1, 2, 12, 34, 56), TradeType.SELL, 150, 1500);
-        Mock<Trade> trade2Mock = MockTrade.CreateMockTrade("Asset1", new DateTime(2023, 2, 1, 12, 34, 56), TradeType.BUY, 50, 2500); // Same day
-        Mock<Trade> trade3Mock = MockTrade.CreateMockTrade("Asset1", new DateTime(2023, 2, 1, 12, 34, 56), TradeType.SELL, 50, 1500); // Same day
-        Mock<Trade> trade4Mock = MockTrade.CreateMockTrade("Asset1", new DateTime(2023, 2, 2, 12, 34, 56), TradeType.SELL, 50, 2500); // bnb match
-        Mock<Trade> trade5Mock = MockTrade.CreateMockTrade("Asset1", new DateTime(2023, 2, 25, 12, 34, 56), TradeType.BUY, 50, 1000); // bnb match
-        Mock<Trade> trade6Mock = MockTrade.CreateMockTrade("Asset1", new DateTime(2023, 3, 3, 12, 34, 56), TradeType.BUY, 225, 7500); // should match this
+        Mock<Trade> trade1Mock = MockTrade.CreateMockTrade("Asset1", new DateTime(2023, 1, 2, 12, 34, 56, DateTimeKind.Local), TradeType.DISPOSAL, 150, 1500);
+        Mock<Trade> trade2Mock = MockTrade.CreateMockTrade("Asset1", new DateTime(2023, 2, 1, 12, 34, 56, DateTimeKind.Local), TradeType.ACQUISITION, 50, 2500); // Same day
+        Mock<Trade> trade3Mock = MockTrade.CreateMockTrade("Asset1", new DateTime(2023, 2, 1, 12, 34, 56, DateTimeKind.Local), TradeType.DISPOSAL, 50, 1500); // Same day
+        Mock<Trade> trade4Mock = MockTrade.CreateMockTrade("Asset1", new DateTime(2023, 2, 2, 12, 34, 56, DateTimeKind.Local), TradeType.DISPOSAL, 50, 2500); // bnb match
+        Mock<Trade> trade5Mock = MockTrade.CreateMockTrade("Asset1", new DateTime(2023, 2, 25, 12, 34, 56, DateTimeKind.Local), TradeType.ACQUISITION, 50, 1000); // bnb match
+        Mock<Trade> trade6Mock = MockTrade.CreateMockTrade("Asset1", new DateTime(2023, 3, 3, 12, 34, 56, DateTimeKind.Local), TradeType.ACQUISITION, 225, 7500); // should match this
 
         var tradeListMock = new Mock<ITradeAndCorporateActionList>();
-        tradeListMock.Setup(t => t.Trades).Returns(new List<Trade> { trade1Mock.Object, trade2Mock.Object, trade3Mock.Object, trade4Mock.Object, trade5Mock.Object, trade6Mock.Object });
-        tradeListMock.Setup(t => t.CorporateActions).Returns(new List<CorporateAction>());
+        tradeListMock.Setup(t => t.Trades).Returns([trade1Mock.Object, trade2Mock.Object, trade3Mock.Object, trade4Mock.Object, trade5Mock.Object, trade6Mock.Object]);
+        tradeListMock.Setup(t => t.CorporateActions).Returns([]);
 
         var section104PoolsMock = new Mock<UkSection104Pools>();
         UkSection104 section104 = new("Asset1");
@@ -140,16 +140,16 @@ public class UkTradeCalculatorTests
     public void MultipleShortSaleFirstShortSaleMatchFirst()
     {
         // Arrange
-        Mock<Trade> trade1Mock = MockTrade.CreateMockTrade("Asset1", new DateTime(2023, 1, 2, 12, 34, 56), TradeType.SELL, 100, 1000);
-        Mock<Trade> trade2Mock = MockTrade.CreateMockTrade("Asset1", new DateTime(2023, 1, 3, 12, 34, 56), TradeType.SELL, 50, 800);
-        Mock<Trade> trade3Mock = MockTrade.CreateMockTrade("Asset1", new DateTime(2023, 1, 4, 12, 34, 56), TradeType.SELL, 30, 500);
-        Mock<Trade> trade4Mock = MockTrade.CreateMockTrade("Asset1", new DateTime(2023, 3, 1, 12, 34, 56), TradeType.BUY, 120, 1000);
-        Mock<Trade> trade5Mock = MockTrade.CreateMockTrade("Asset1", new DateTime(2023, 3, 2, 12, 34, 56), TradeType.BUY, 40, 300);
-        Mock<Trade> trade6Mock = MockTrade.CreateMockTrade("Asset1", new DateTime(2023, 3, 3, 12, 34, 56), TradeType.BUY, 20, 100);
+        Mock<Trade> trade1Mock = MockTrade.CreateMockTrade("Asset1", new DateTime(2023, 1, 2, 12, 34, 56, DateTimeKind.Local), TradeType.DISPOSAL, 100, 1000);
+        Mock<Trade> trade2Mock = MockTrade.CreateMockTrade("Asset1", new DateTime(2023, 1, 3, 12, 34, 56, DateTimeKind.Local), TradeType.DISPOSAL, 50, 800);
+        Mock<Trade> trade3Mock = MockTrade.CreateMockTrade("Asset1", new DateTime(2023, 1, 4, 12, 34, 56, DateTimeKind.Local), TradeType.DISPOSAL, 30, 500);
+        Mock<Trade> trade4Mock = MockTrade.CreateMockTrade("Asset1", new DateTime(2023, 3, 1, 12, 34, 56, DateTimeKind.Local), TradeType.ACQUISITION, 120, 1000);
+        Mock<Trade> trade5Mock = MockTrade.CreateMockTrade("Asset1", new DateTime(2023, 3, 2, 12, 34, 56, DateTimeKind.Local), TradeType.ACQUISITION, 40, 300);
+        Mock<Trade> trade6Mock = MockTrade.CreateMockTrade("Asset1", new DateTime(2023, 3, 3, 12, 34, 56, DateTimeKind.Local), TradeType.ACQUISITION, 20, 100);
 
         var tradeListMock = new Mock<ITradeAndCorporateActionList>();
-        tradeListMock.Setup(t => t.Trades).Returns(new List<Trade> { trade1Mock.Object, trade2Mock.Object, trade3Mock.Object, trade4Mock.Object, trade5Mock.Object, trade6Mock.Object });
-        tradeListMock.Setup(t => t.CorporateActions).Returns(new List<CorporateAction>());
+        tradeListMock.Setup(t => t.Trades).Returns([trade1Mock.Object, trade2Mock.Object, trade3Mock.Object, trade4Mock.Object, trade5Mock.Object, trade6Mock.Object]);
+        tradeListMock.Setup(t => t.CorporateActions).Returns([]);
 
         var section104PoolsMock = new Mock<UkSection104Pools>();
         UkSection104 section104 = new("Asset1");

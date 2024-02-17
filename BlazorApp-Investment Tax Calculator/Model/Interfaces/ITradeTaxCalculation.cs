@@ -1,4 +1,4 @@
-﻿using Enum;
+﻿using Enumerations;
 
 using Model.TaxEvents;
 using Model.UkTaxModel;
@@ -7,7 +7,9 @@ using Model.UkTaxModel.Stocks;
 namespace Model.Interfaces;
 public interface ITradeTaxCalculation : ITextFilePrintable, IAssetDatedEvent
 {
-    TradeType BuySell { get; init; }
+    int Id { get; }
+    TradeType AcquisitionDisposal { get; init; }
+    AssetCatagoryType AssetCatagoryType { get; }
     bool CalculationCompleted { get; }
     List<TradeMatch> MatchHistory { get; init; }
     WrappedMoney TotalCostOrProceed { get; }

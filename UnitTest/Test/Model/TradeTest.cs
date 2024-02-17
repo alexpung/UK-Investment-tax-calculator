@@ -1,9 +1,7 @@
-using Enum;
+using Enumerations;
 
 using Model;
 using Model.TaxEvents;
-
-using System.Collections.Immutable;
 
 namespace UnitTest.Test.Model;
 
@@ -16,8 +14,8 @@ public class TradeTests
         var trade = new Trade
         {
             AssetName = "Test",
-            Date = new DateTime(2023, 1, 1),
-            BuySell = TradeType.BUY,
+            Date = new DateTime(2023, 1, 1, 0, 0, 0, DateTimeKind.Local),
+            AcquisitionDisposal = TradeType.ACQUISITION,
             Quantity = 10,
             GrossProceed = new DescribedMoney
             {
@@ -40,19 +38,19 @@ public class TradeTests
         var trade = new Trade
         {
             AssetName = "Test",
-            Date = new DateTime(2023, 1, 1),
-            BuySell = TradeType.SELL,
+            Date = new DateTime(2023, 1, 1, 0, 0, 0, DateTimeKind.Local),
+            AcquisitionDisposal = TradeType.DISPOSAL,
             Quantity = 5,
             GrossProceed = new DescribedMoney
             {
                 Amount = new WrappedMoney(100),
                 Description = "Trade gross proceed"
             },
-            Expenses = new List<DescribedMoney>
-            {
+            Expenses =
+            [
                 new DescribedMoney { Amount = new WrappedMoney(10), Description = "Expense 1" },
                 new DescribedMoney { Amount = new WrappedMoney(20), Description = "Expense 2" }
-            }.ToImmutableList(),
+            ],
         };
 
         // Act

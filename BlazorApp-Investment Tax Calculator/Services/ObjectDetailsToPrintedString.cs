@@ -8,7 +8,7 @@ public static class ObjectDetailsToPrintedString
     {
         string sign = string.Empty;
         if (decimalNumber >= 0) sign = "+";
-        return sign + decimalNumber.ToString();
+        return sign + decimalNumber.ToString("0.##");
     }
 
     public static string ToSignedNumberString(this WrappedMoney money)

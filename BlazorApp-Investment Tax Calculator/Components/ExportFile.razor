@@ -1,17 +1,33 @@
-﻿@using ViewModel;
-@using Syncfusion.Blazor.Buttons
+﻿@using Syncfusion.Blazor.Buttons
 @using Microsoft.JSInterop;
+@using Services
 
 @inject IJSRuntime JS
+@inject DividendExportService dividendExportService
+@inject YearOptions years
+@inject UkCalculationResultExportService calculationResultExportService
+@inject UkSection104ExportService ukSection104ExportService
 
+<div class="container bg-dark text-light mb-4">
+    <div class="row">
+        <div class="col">
+            <h3>Export Calculation Result to Files</h3>
+        </div>
+    </div>
 
-@inject ExportToFileViewModel exportToFileViewModel
+    <div class="row mt-3">
+        <div class="col-md-4 mb-2">
+            <SfButton @onclick="InvokeExportDividend" CssClass="btn btn-primary w-100">Export Dividends</SfButton>
+        </div>
+        <div class="col-md-4 mb-2">
+            <SfButton @onclick="InvokeExportTrades" CssClass="btn btn-primary w-100">Export Trades</SfButton>
+        </div>
+        <div class="col-md-4 mb-2">
+            <SfButton @onclick="InvokeExportSection104" CssClass="btn btn-primary w-100">Export Section104</SfButton>
+        </div>
+    </div>
+</div>
 
-<h3>Export calculation result to files</h3>
-
-<SfButton @onclick="InvokeExportDividend"> Export Dividends </SfButton>
-<SfButton @onclick="InvokeExportTrades"> Export Trades </SfButton>
-<SfButton @onclick="InvokeExportSection104"> Export Section104 </SfButton>
 
 @code {
     private IJSObjectReference? _downloadFileJsScript;
@@ -23,21 +39,24 @@
 
     private async Task InvokeExportDividend()
     {
-        byte[] file = exportToFileViewModel.ExportDividends();
+        string contents = dividendExportService.Export(years.SelectedOptions);
+        byte[] file = System.Text.Encoding.UTF8.GetBytes(contents);
         using var streamRef = new DotNetStreamReference(new MemoryStream(file));
         await _downloadFileJsScript!.InvokeVoidAsync("BlazorDownloadFile", "Dividends Summary.txt", streamRef);
     }
 
     private async Task InvokeExportTrades()
     {
-        byte[] file = exportToFileViewModel.ExportTrades();
+        string contents = calculationResultExportService.PrintToTextFile(years.SelectedOptions);
+        byte[] file = System.Text.Encoding.UTF8.GetBytes(contents);
         using var streamRef = new DotNetStreamReference(new MemoryStream(file));
         await _downloadFileJsScript!.InvokeVoidAsync("BlazorDownloadFile", "Trades Calculation.txt", streamRef);
     }
 
     private async Task InvokeExportSection104()
     {
-        byte[] file = exportToFileViewModel.ExportSection104();
+        string contents = ukSection104ExportService.PrintToTextFile(years.SelectedOptions);
+        byte[] file = System.Text.Encoding.UTF8.GetBytes(contents);
         using var streamRef = new DotNetStreamReference(new MemoryStream(file));
         await _downloadFileJsScript!.InvokeVoidAsync("BlazorDownloadFile", "Section104.txt", streamRef);
     }

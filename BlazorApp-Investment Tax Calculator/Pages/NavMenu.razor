@@ -3,37 +3,63 @@
 @using Syncfusion.Blazor.Inputs
 @using Syncfusion.Blazor.Lists
 @inject NavigationManager Navigation
-
-
-<SfSidebar Width="220px">
+<SfButton OnClick="ToggleMenu" class=open-menu-button>>></SfButton>
+<SfSidebar ref="NavBar" Width="220px" MediaQuery="(min-width:600px)" @bind-IsOpen="SidebarToggle" Type="SidebarType.Auto">
     <ChildContent>
-        <SfListView DataSource="@List" TValue="listData" CssClass="e-template-list" ShowIcon="true">
-            <ListViewFieldSettings TValue="listData" Id="Id" Text="Text" IconCss="IconCss"></ListViewFieldSettings>
+        <SfListView DataSource="@List" TValue="listData" CssClass="e-template-list">
+            <ListViewFieldSettings TValue="listData" Id="Id" Text="Text"></ListViewFieldSettings>
             <ListViewEvents TValue="listData" Clicked="OnSelect"></ListViewEvents>
         </SfListView>
+        <div class="sidebar-content mt-3">
+            <SfButton OnClick="ToggleMenu" class="close-menu-button">Close menu</SfButton>
+        </div>
     </ChildContent>
 </SfSidebar>
 
+<style>
+    .e-listview .e-list-item {
+        text-align: center;
+        font-size: 14px;
+        padding: 0;
+    }
+
+    .sidebar-content {
+        display: flex;
+        flex-direction: column; /* Stack children vertically */
+        justify-content: center; /* Center children vertically */
+        align-items: center; /* Center children horizontally */
+    }
+</style>
+
 @code {
+    public bool SidebarToggle = true;
     // Specify the value of ListView component DataSource property.
     public List<listData> List = new List<listData>
     {
-        new listData {Id="1", Text = "Home", IconCss = "sb-icons icon-grid e-sb-icon control-icon", PageAddress = ""},
-        new listData {Id="2",Text = "Import/Export", IconCss = "sb-icons icon-chart e-sb-icon control-icon", PageAddress = "MainCalculatorPage"},
-        new listData {Id="3",Text = "Disposal Summary", IconCss = "sb-icons icon-datepicker e-sb-icon control-icon", PageAddress = "CalculationViewPage"},
-        new listData {Id="4", Text = "Dividend Data", IconCss = "sb-icons icon-dialog e-sb-icon control-icon", PageAddress = "DividendDataPage"},
-        new listData {Id="5", Text = "Add missing trade", IconCss = "sb-icons icon-dropdownlist e-sb-icon control-icon", PageAddress = "MainCalculatorPage"}
+        new listData {Id="1", Text = "Home", PageAddress = ""},
+        new listData {Id="2",Text = "Import/Export", PageAddress = "MainCalculatorPage"},
+        new listData {Id="3",Text = "Disposal Summary", PageAddress = "CalculationViewPage"},
+        new listData {Id="4", Text = "Trade Matches", PageAddress = "TradeMatchPage"},
+        new listData {Id="5", Text = "Dividend Data", PageAddress = "DividendDataPage"},
+        new listData {Id="6", Text = "Section 104 Data", PageAddress = "Section104DataPage"},
+        new listData {Id="7", Text = "Add Trades", PageAddress = "AddTradePage"},
     };
+
     public class listData
     {
         public required string Id { get; set; }
         public required string Text { get; set; }
-        public required string IconCss { get; set; }
         public required string PageAddress { get; set; }
     }
+
     // Specifies the event handler for Clicked event in ListView component.
     public void OnSelect(Syncfusion.Blazor.Lists.ClickEventArgs<listData> args)
     {
         Navigation.NavigateTo(Navigation.BaseUri + args.ItemData.PageAddress);
+    }
+
+    public void ToggleMenu()
+    {
+        SidebarToggle = !SidebarToggle;
     }
 }

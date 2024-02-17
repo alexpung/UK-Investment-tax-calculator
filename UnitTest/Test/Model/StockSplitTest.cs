@@ -11,7 +11,7 @@ public class StockSplitTests
         var stockSplit = new StockSplit
         {
             AssetName = "Test",
-            Date = new DateTime(2023, 1, 1),
+            Date = new DateTime(2023, 1, 1, 0, 0, 0, DateTimeKind.Local),
             NumberBeforeSplit = 2,
             NumberAfterSplit = 3,
             Rounding = true

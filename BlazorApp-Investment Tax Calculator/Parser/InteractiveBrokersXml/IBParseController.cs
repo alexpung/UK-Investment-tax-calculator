@@ -1,35 +1,33 @@
 ﻿using Model;
+
+using Services;
+
 using System.Xml.Linq;
 
 namespace Parser.InteractiveBrokersXml;
 
-public class IBParseController : ITaxEventFileParser
+public class IBParseController(AssetTypeToLoadSetting assetTypeToLoadSetting, ToastService toastService) : ITaxEventFileParser
 {
-    private readonly AssetTypeToLoadSetting _assetTypeToLoadSetting;
-    private readonly IBXmlDividendParser _dividendParser;
-    private readonly IBXmlStockTradeParser _stockTradeParser;
-    private readonly IBXmlStockSplitParser _stockSplitParser;
-    private readonly IBXmlFutureTradeParser _futureTradeParser;
+    private readonly IBXmlFxParser _xmlFxParser = new();
 
-    public IBParseController(AssetTypeToLoadSetting assetTypeToLoadSetting, IBXmlDividendParser iBXmlDividendParser, IBXmlStockTradeParser iBXmlStockTradeParser,
-        IBXmlStockSplitParser iBXmlStockSplitParser, IBXmlFutureTradeParser iBXmlFutureTradeParser)
-    {
-        _assetTypeToLoadSetting = assetTypeToLoadSetting;
-        _dividendParser = iBXmlDividendParser;
-        _stockSplitParser = iBXmlStockSplitParser;
-        _stockTradeParser = iBXmlStockTradeParser;
-        _futureTradeParser = iBXmlFutureTradeParser;
-    }
     public TaxEventLists ParseFile(string data)
     {
         TaxEventLists result = new();
         XElement? xml = XDocument.Parse(data).Root;
-        if (xml is not null)
+        try
         {
-            if (_assetTypeToLoadSetting.LoadDividends) result.Dividends.AddRange(_dividendParser.ParseXml(xml));
-            if (_assetTypeToLoadSetting.LoadStocks) result.CorporateActions.AddRange(_stockSplitParser.ParseXml(xml));
-            if (_assetTypeToLoadSetting.LoadStocks) result.Trades.AddRange(_stockTradeParser.ParseXml(xml));
-            if (_assetTypeToLoadSetting.LoadFutures) result.Trades.AddRange(_futureTradeParser.ParseXml(xml));
+            if (xml is not null)
+            {
+                if (assetTypeToLoadSetting.LoadDividends) result.Dividends.AddRange(IBXmlDividendParser.ParseXml(xml));
+                if (assetTypeToLoadSetting.LoadStocks) result.CorporateActions.AddRange(IBXmlStockSplitParser.ParseXml(xml));
+                if (assetTypeToLoadSetting.LoadStocks) result.Trades.AddRange(IBXmlStockTradeParser.ParseXml(xml));
+                if (assetTypeToLoadSetting.LoadFutures) result.Trades.AddRange(IBXmlFutureTradeParser.ParseXml(xml));
+                if (assetTypeToLoadSetting.LoadFx) result.Trades.AddRange(_xmlFxParser.ParseXml(xml));
+            }
+        }
+        catch (ParseException ex)
+        {
+            toastService.ShowError(ex.Message);
         }
         return result;
     }

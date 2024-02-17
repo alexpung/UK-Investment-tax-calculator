@@ -1,4 +1,6 @@
-﻿using Model;
+﻿using Enumerations;
+
+using Model;
 using Model.Interfaces;
 using Model.TaxEvents;
 using Model.UkTaxModel;
@@ -18,5 +20,19 @@ public static class TradeCalculationHelper
         List<ITradeTaxCalculation> result = calculator.CalculateTax();
         result.AddRange(futureCalculator.CalculateTax());
         return result;
+    }
+
+    public static TradeMatch CreateTradeMatch(TaxMatchType taxMatchType, decimal qty, WrappedMoney allowableCost, WrappedMoney disposalProceed)
+    {
+        return new TradeMatch()
+        {
+            Date = DateOnly.MinValue,
+            AssetName = "",
+            MatchAcquisitionQty = qty,
+            MatchDisposalQty = qty,
+            TradeMatchType = taxMatchType,
+            BaseCurrencyMatchAllowableCost = allowableCost,
+            BaseCurrencyMatchDisposalProceed = disposalProceed
+        };
     }
 }

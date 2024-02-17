@@ -1,22 +1,24 @@
-﻿using Enum;
+﻿using Enumerations;
+
 using Model;
 using Model.TaxEvents;
+
+using Parser;
 using Parser.InteractiveBrokersXml;
+
+using System.Globalization;
 using System.Xml.Linq;
 
 namespace UnitTest.Test.Parser;
 
 public class IBXmlParseTest
 {
-    private readonly IBXmlDividendParser _xmlDividendParser = new();
-    private readonly IBXmlStockTradeParser _xmlTradeParser = new();
-    private readonly IBXmlStockSplitParser _xmlStockSplitParser = new();
     private readonly XElement _xmlDoc = XElement.Load(@".\Test\Resource\TaxExample.xml");
 
     [Fact]
     public void TestReadingIBXmlDividends()
     {
-        IList<Dividend> parsedData = _xmlDividendParser.ParseXml(_xmlDoc);
+        IList<Dividend> parsedData = IBXmlDividendParser.ParseXml(_xmlDoc);
         parsedData.Count.ShouldBe(47);
         IEnumerable<Dividend> witholdingTaxes = parsedData.Where(dataPoint => dataPoint.DividendType == DividendType.WITHHOLDING);
         witholdingTaxes.Count().ShouldBe(21);
@@ -32,9 +34,9 @@ public class IBXmlParseTest
     [Fact]
     public void TestReadingIBXmlTrades()
     {
-        IList<Trade> parsedData = _xmlTradeParser.ParseXml(_xmlDoc);
-        parsedData.Count(trade => trade.BuySell == TradeType.BUY).ShouldBe(27);
-        parsedData.Count(trade => trade.BuySell == TradeType.SELL).ShouldBe(31);
+        IList<Trade> parsedData = IBXmlStockTradeParser.ParseXml(_xmlDoc);
+        parsedData.Count(trade => trade.AcquisitionDisposal == TradeType.ACQUISITION).ShouldBe(27);
+        parsedData.Count(trade => trade.AcquisitionDisposal == TradeType.DISPOSAL).ShouldBe(31);
 
     }
 
@@ -46,16 +48,16 @@ public class IBXmlParseTest
             assetCategory=""STK"" conid=""81540299"" securityID=""JP3130230000"" securityIDType=""ISIN"" cusip="""" underlyingConid="""" underlyingSymbol="""" underlyingSecurityID="""" 
             underlyingListingExchange="""" issuer="""" multiplier=""1"" strike="""" expiry="""" putCall="""" principalAdjustFactor="""" dateTime=""23-Dec-21 20:20:00"" tradeID="""" 
             code="""" transactionID="""" reportDate=""23-Dec-21"" clientReference="""" levelOfDetail=""DETAIL"" serialNumber="""" deliveryType="""" commodityType="""" fineness=""0.0"" weight=""0.0 ()"" /></CashTransactions>");
-        Should.Throw<ArgumentException>(() => _xmlDividendParser.ParseXml(xmlDoc), @"The attribute ""type"" is not found in ""CashTransaction"", please include this attribute in your XML statement");
+        Should.Throw<ParseException>(() => IBXmlDividendParser.ParseXml(xmlDoc), @"The attribute ""type"" is not found in ""CashTransaction"", please include this attribute in your XML statement");
     }
 
     [Fact]
     public void TestReadingIBXmlCorporateActions()
     {
-        IList<StockSplit> parsedData = _xmlStockSplitParser.ParseXml(_xmlDoc);
+        IList<StockSplit> parsedData = IBXmlStockSplitParser.ParseXml(_xmlDoc);
         parsedData.Count.ShouldBe(2);
         parsedData[0].AssetName.ShouldBe("4369.T");
-        parsedData[0].Date.ShouldBe(DateTime.Parse("27-Jan-21 20:25:00"));
+        parsedData[0].Date.ShouldBe(DateTime.Parse("27-Jan-21 20:25:00", CultureInfo.InvariantCulture));
         parsedData[0].NumberBeforeSplit.ShouldBe(1);
         parsedData[0].NumberAfterSplit.ShouldBe(4);
     }

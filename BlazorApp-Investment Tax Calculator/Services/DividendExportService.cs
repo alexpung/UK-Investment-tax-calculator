@@ -1,20 +1,14 @@
 ﻿using Model;
+
 using System.Text;
 
 namespace Services;
 
-public class DividendExportService
+public class DividendExportService(DividendCalculationResult dividendCalculationResult)
 {
-    private readonly DividendCalculationResult _result;
-
-    public DividendExportService(DividendCalculationResult dividendCalculationResult)
-    {
-        _result = dividendCalculationResult;
-    }
-
     public string Export(IEnumerable<int> yearsToExport)
     {
-        IEnumerable<DividendSummary> dividendSummaries = _result.DividendSummary.Where(dividend => yearsToExport.Contains(dividend.TaxYear)).OrderByDescending(i => i.TaxYear);
+        IEnumerable<DividendSummary> dividendSummaries = dividendCalculationResult.DividendSummary.Where(dividend => yearsToExport.Contains(dividend.TaxYear)).OrderByDescending(i => i.TaxYear);
         StringBuilder output = new();
         foreach (DividendSummary dividendSummary in dividendSummaries)
         {

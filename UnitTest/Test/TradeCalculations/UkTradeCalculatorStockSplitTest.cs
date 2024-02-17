@@ -1,9 +1,12 @@
-﻿using Enum;
+﻿using Enumerations;
+
 using Model;
 using Model.Interfaces;
 using Model.TaxEvents;
 using Model.UkTaxModel;
 using Model.UkTaxModel.Stocks;
+
+using System.Globalization;
 
 namespace UnitTest.Test.TradeCalculations;
 public class UkTradeCalculatorStockSplitTest
@@ -15,8 +18,8 @@ public class UkTradeCalculatorStockSplitTest
         Trade initialPurchase = new()
         {
             AssetName = "XYZ",
-            BuySell = TradeType.BUY,
-            Date = DateTime.Parse("01-Jan-22 10:00:00"),
+            AcquisitionDisposal = TradeType.ACQUISITION,
+            Date = DateTime.Parse("01-Jan-22 10:00:00", CultureInfo.InvariantCulture),
             Description = "Purchase of 1000 shares",
             Quantity = 1000,
             GrossProceed = new() { Description = "", Amount = new(1000.0m, "USD"), FxRate = 1.0m },
@@ -26,7 +29,7 @@ public class UkTradeCalculatorStockSplitTest
         StockSplit stockSplit = new()
         {
             AssetName = "XYZ",
-            Date = DateTime.Parse("01-Feb-22 10:00:00"),
+            Date = DateTime.Parse("01-Feb-22 10:00:00", CultureInfo.InvariantCulture),
             NumberBeforeSplit = 1,
             NumberAfterSplit = 2
         };
@@ -35,8 +38,8 @@ public class UkTradeCalculatorStockSplitTest
         Trade postSplitSale = new()
         {
             AssetName = "XYZ",
-            BuySell = TradeType.SELL,
-            Date = DateTime.Parse("01-Mar-22 10:00:00"),
+            AcquisitionDisposal = TradeType.DISPOSAL,
+            Date = DateTime.Parse("01-Mar-22 10:00:00", CultureInfo.InvariantCulture),
             Description = "Sale of 1000 shares",
             Quantity = 1000,
             GrossProceed = new() { Description = "", Amount = new(1500.0m, "USD"), FxRate = 1.0m },
@@ -72,8 +75,8 @@ public class UkTradeCalculatorStockSplitTest
         Trade trade1 = new()
         {
             AssetName = "XYZ",
-            BuySell = TradeType.BUY,
-            Date = DateTime.Parse("01-Jan-22"),
+            AcquisitionDisposal = TradeType.ACQUISITION,
+            Date = DateTime.Parse("01-Jan-22", CultureInfo.InvariantCulture),
             Quantity = 500,
             GrossProceed = new() { Amount = new(5000m) },  // £10 per share
         };
@@ -82,7 +85,7 @@ public class UkTradeCalculatorStockSplitTest
         StockSplit stockSplit = new()
         {
             AssetName = "XYZ",
-            Date = DateTime.Parse("01-Feb-22"),
+            Date = DateTime.Parse("01-Feb-22", CultureInfo.InvariantCulture),
             NumberBeforeSplit = 1,
             NumberAfterSplit = 2
         };
@@ -91,8 +94,8 @@ public class UkTradeCalculatorStockSplitTest
         Trade trade2 = new()
         {
             AssetName = "XYZ",
-            BuySell = TradeType.BUY,
-            Date = DateTime.Parse("02-Feb-22"),
+            AcquisitionDisposal = TradeType.ACQUISITION,
+            Date = DateTime.Parse("02-Feb-22", CultureInfo.InvariantCulture),
             Quantity = 600,
             GrossProceed = new() { Amount = new(3600m) },  // £6 per share
         };
@@ -101,8 +104,8 @@ public class UkTradeCalculatorStockSplitTest
         Trade trade3 = new()
         {
             AssetName = "XYZ",
-            BuySell = TradeType.SELL,
-            Date = DateTime.Parse("03-Feb-22"),
+            AcquisitionDisposal = TradeType.DISPOSAL,
+            Date = DateTime.Parse("03-Feb-22", CultureInfo.InvariantCulture),
             Quantity = 700,
             GrossProceed = new() { Amount = new(4900m) },  // £7 per share
         };
@@ -132,8 +135,8 @@ public class UkTradeCalculatorStockSplitTest
         Trade trade1 = new()
         {
             AssetName = "ABC",
-            BuySell = TradeType.BUY,
-            Date = DateTime.Parse("01-Apr-21"),
+            AcquisitionDisposal = TradeType.ACQUISITION,
+            Date = DateTime.Parse("01-Apr-21", CultureInfo.InvariantCulture),
             Quantity = 100,
             GrossProceed = new() { Amount = new(2000m) } // £20 per share
         };
@@ -142,7 +145,7 @@ public class UkTradeCalculatorStockSplitTest
         StockSplit stockSplit = new()
         {
             AssetName = "ABC",
-            Date = DateTime.Parse("01-May-21"),
+            Date = DateTime.Parse("01-May-21", CultureInfo.InvariantCulture),
             NumberAfterSplit = 2,
             NumberBeforeSplit = 1
         };
@@ -151,8 +154,8 @@ public class UkTradeCalculatorStockSplitTest
         Trade trade2 = new()
         {
             AssetName = "ABC",
-            BuySell = TradeType.SELL,
-            Date = DateTime.Parse("02-May-21"),
+            AcquisitionDisposal = TradeType.DISPOSAL,
+            Date = DateTime.Parse("02-May-21", CultureInfo.InvariantCulture),
             Quantity = 100,
             GrossProceed = new() { Amount = new(2500m) } // £25 per share post-split
         };
@@ -161,8 +164,8 @@ public class UkTradeCalculatorStockSplitTest
         Trade trade3 = new()
         {
             AssetName = "ABC",
-            BuySell = TradeType.BUY,
-            Date = DateTime.Parse("03-May-21"),
+            AcquisitionDisposal = TradeType.ACQUISITION,
+            Date = DateTime.Parse("03-May-21", CultureInfo.InvariantCulture),
             Quantity = 50,
             GrossProceed = new() { Amount = new(1300m) } // £26 per share post-split
         };

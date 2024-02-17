@@ -1,6 +1,8 @@
-﻿using Enum;
+﻿using Enumerations;
 
 using Model.UkTaxModel.Stocks;
+
+using System.Text;
 
 using TaxEvents;
 
@@ -8,7 +10,7 @@ namespace Model.UkTaxModel.Futures;
 
 public class FutureTradeTaxCalculation : TradeTaxCalculation
 {
-    public override TradeType BuySell => PositionType is FuturePositionType.OPENLONG or FuturePositionType.OPENSHORT ? TradeType.BUY : TradeType.SELL;
+    public override TradeType AcquisitionDisposal => PositionType is FuturePositionType.OPENLONG or FuturePositionType.OPENSHORT ? TradeType.ACQUISITION : TradeType.DISPOSAL;
     public FuturePositionType PositionType => ((FutureContractTrade)TradeList[0]).FuturePositionType;
     public WrappedMoney TotalContractValue { get; private set; }
     public decimal ContractFxRate { get; private init; }
@@ -38,18 +40,50 @@ public class FutureTradeTaxCalculation : TradeTaxCalculation
 
     public override void MatchWithSection104(UkSection104 ukSection104)
     {
-        if (BuySell is TradeType.BUY)
+        if (CalculationCompleted) return;
+        if (AcquisitionDisposal is TradeType.ACQUISITION)
         {
             Section104History section104History = ukSection104.AddAssets(this, UnmatchedQty, UnmatchedCostOrProceed, UnmatchedContractValue);
-            MatchHistory.Add(TradeMatch.CreateSection104Match(UnmatchedQty, UnmatchedCostOrProceed, WrappedMoney.GetBaseCurrencyZero(), section104History));
+            FutureTradeMatch tradeMatch = new()
+            {
+                Date = DateOnly.FromDateTime(Date),
+                AssetName = AssetName,
+                TradeMatchType = TaxMatchType.SECTION_104,
+                MatchAcquisitionQty = UnmatchedQty,
+                MatchDisposalQty = 0,
+                BaseCurrencyMatchAllowableCost = UnmatchedCostOrProceed,
+                BaseCurrencyMatchDisposalProceed = WrappedMoney.GetBaseCurrencyZero(),
+                MatchedBuyTrade = this,
+                MatchedSellTrade = null,
+                AdditionalInformation = "",
+                MatchBuyContractValue = UnmatchedContractValue,
+                BaseCurrencyAcqusitionDealingCost = UnmatchedCostOrProceed,
+                BaseCurrencyDisposalDealingCost = WrappedMoney.GetBaseCurrencyZero(),
+                ClosingFxRate = 0,
+                Section104HistorySnapshot = section104History,
+            };
+            MatchHistory.Add(tradeMatch);
             MatchQty(UnmatchedQty);
         }
-        else if (BuySell is TradeType.SELL)
+        else if (AcquisitionDisposal is TradeType.DISPOSAL)
         {
             if (ukSection104.Quantity == 0m) return;
             decimal matchQty = Math.Min(UnmatchedQty, ukSection104.Quantity);
             Section104History section104History = ukSection104.RemoveAssets(this, UnmatchedQty);
-            WrappedMoney contractGain = GetProportionedContractValue(matchQty) + section104History.ContractValueChange;
+
+            WrappedMoney buyContractValue = PositionType switch
+            {
+                FuturePositionType.CLOSELONG => section104History.ContractValueChange * -1,
+                FuturePositionType.CLOSESHORT => GetProportionedContractValue(matchQty),
+                _ => throw new ArgumentException($"Unexpected future position type {PositionType} for close position")
+            };
+            WrappedMoney sellContractValue = PositionType switch
+            {
+                FuturePositionType.CLOSELONG => GetProportionedContractValue(matchQty),
+                FuturePositionType.CLOSESHORT => section104History.ContractValueChange * -1,
+                _ => throw new ArgumentException($"Unexpected future position type {PositionType} for close position")
+            };
+            WrappedMoney contractGain = sellContractValue - buyContractValue;
             WrappedMoney contractGainInBaseCurrency = new((contractGain * ContractFxRate).Amount);
             WrappedMoney acquisitionValue = (section104History.ValueChange * -1) + GetProportionedCostOrProceed(matchQty);
             WrappedMoney disposalValue = WrappedMoney.GetBaseCurrencyZero();
@@ -61,8 +95,51 @@ public class FutureTradeTaxCalculation : TradeTaxCalculation
             {
                 acquisitionValue += contractGainInBaseCurrency * -1;
             }
-            MatchHistory.Add(TradeMatch.CreateSection104Match(matchQty, acquisitionValue, disposalValue, section104History));
+            FutureTradeMatch tradeMatch = new()
+            {
+                Date = DateOnly.FromDateTime(Date),
+                AssetName = AssetName,
+                TradeMatchType = TaxMatchType.SECTION_104,
+                MatchAcquisitionQty = matchQty,
+                MatchDisposalQty = matchQty,
+                BaseCurrencyMatchAllowableCost = acquisitionValue,
+                BaseCurrencyMatchDisposalProceed = disposalValue,
+                MatchedBuyTrade = null,
+                MatchedSellTrade = this,
+                AdditionalInformation = "",
+                MatchBuyContractValue = buyContractValue,
+                MatchSellContractValue = sellContractValue,
+                BaseCurrencyAcqusitionDealingCost = section104History.ValueChange * -1,
+                BaseCurrencyDisposalDealingCost = GetProportionedCostOrProceed(matchQty),
+                ClosingFxRate = ContractFxRate,
+                Section104HistorySnapshot = section104History,
+            };
+            MatchHistory.Add(tradeMatch);
             MatchQty(matchQty);
         }
+    }
+
+    public override string PrintToTextFile()
+    {
+        StringBuilder output = new();
+        output.Append($"{PositionType.GetDescription()} {TotalQty} units of {AssetName} on " +
+            $"{Date.Date.ToString("dd-MMM-yyyy")}.\t");
+        output.AppendLine($"Total gain (loss): {Gain}");
+        output.AppendLine($"Trade details:");
+        foreach (var trade in TradeList)
+        {
+            output.AppendLine($"\t{trade.PrintToTextFile()}");
+        }
+        output.AppendLine($"Trade matching:");
+        foreach (var matching in MatchHistory)
+        {
+            output.AppendLine(matching.PrintToTextFile());
+        }
+        if (MatchHistory.Count > 2)
+        {
+            output.AppendLine($"Resulting overall gain for this disposal: {GetSumFormula(MatchHistory.Select(match => match.MatchGain))}");
+        }
+        output.AppendLine();
+        return output.ToString();
     }
 }
