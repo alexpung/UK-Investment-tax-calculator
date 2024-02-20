@@ -27,6 +27,7 @@ builder.Services.AddSingleton<FileParseController>();
 builder.Services.AddSingleton<YearOptions>();
 builder.Services.AddSingleton<ToastService>();
 builder.Services.AddSingleton<SfGridToolBarHandlingService>();
+builder.Services.AddSingleton<ExportTaxEventService>();
 
 // UK tax specific components - replace if you want to calculate some other countries.
 builder.Services.AddSingleton<UkCalculationResultExportService>();
@@ -37,6 +38,7 @@ builder.Services.AddSingleton<ITradeCalculator, UkFutureTradeCalculator>();
 
 // Register any new broker parsers here in order of priority
 builder.Services.AddSingleton<ITaxEventFileParser, IBParseController>();
+builder.Services.AddSingleton<ITaxEventFileParser, JsonParseController>();
 
 // Models
 TaxEventLists taxEventLists = new();

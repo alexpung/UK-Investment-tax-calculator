@@ -1,5 +1,7 @@
 ﻿using NMoneys;
 
+using System.Text.Json.Serialization;
+
 namespace Model;
 
 [System.Diagnostics.DebuggerDisplay("{ToString()}")]
@@ -20,6 +22,7 @@ public record WrappedMoney : IComparable<WrappedMoney>, IEquatable<WrappedMoney>
         _nMoney = new Money(amount, BaseCurrency);
     }
 
+    [JsonConstructor]
     public WrappedMoney(decimal amount, string currency)
     {
         _nMoney = new Money(amount, currency);
