@@ -1,6 +1,7 @@
 ﻿using Model;
 
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Parser.InteractiveBrokersXml;
 
@@ -11,7 +12,7 @@ public class JsonParseController(AssetTypeToLoadSetting assetTypeToLoadSetting) 
         TaxEventLists? result = null;
         try
         {
-            result = JsonSerializer.Deserialize<TaxEventLists>(data);
+            result = JsonSerializer.Deserialize(data, MyJsonContext.Default.TaxEventLists);
         }
         catch (Exception ex)
         {
@@ -32,3 +33,10 @@ public class JsonParseController(AssetTypeToLoadSetting assetTypeToLoadSetting) 
         return contentType == "application/json";
     }
 }
+
+
+/// <summary>
+/// Workaround due to trimmer problem https://github.com/dotnet/runtime/issues/62242
+/// </summary>
+[JsonSerializable(typeof(TaxEventLists))]
+internal partial class MyJsonContext : JsonSerializerContext { }
