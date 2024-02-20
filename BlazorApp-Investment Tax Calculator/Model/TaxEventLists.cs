@@ -2,6 +2,7 @@
 using Model.TaxEvents;
 
 namespace Model;
+
 public record TaxEventLists : IDividendLists, ITradeAndCorporateActionList
 {
     public List<Trade> Trades { get; set; } = [];

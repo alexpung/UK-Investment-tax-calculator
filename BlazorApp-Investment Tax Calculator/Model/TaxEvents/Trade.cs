@@ -4,9 +4,14 @@ using Model.Interfaces;
 
 using System.Collections.Immutable;
 using System.Text;
+using System.Text.Json.Serialization;
+
+using TaxEvents;
 
 namespace Model.TaxEvents;
-
+[JsonDerivedType(typeof(Trade), "trade")]
+[JsonDerivedType(typeof(FxTrade), "fxTrade")]
+[JsonDerivedType(typeof(FutureContractTrade), "futureContractTrade")]
 public record Trade : TaxEvent, ITextFilePrintable
 {
     public virtual AssetCatagoryType AssetType { get; set; } = AssetCatagoryType.STOCK;

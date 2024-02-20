@@ -116,7 +116,7 @@ public class TradeInputViewModel
         return errorList;
     }
 
-    public IEnumerable<string> ValidateWarning()
+    public List<string> ValidateWarning()
     {
         List<string> errorList = [];
         if (CommissionAmount < 0) errorList.Add("Commission is negative and means a rebate, please check if this is correct.");
