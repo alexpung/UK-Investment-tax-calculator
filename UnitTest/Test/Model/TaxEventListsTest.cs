@@ -1,7 +1,7 @@
 using Model;
 using Model.TaxEvents;
 
-using Moq;
+using NSubstitute;
 
 namespace UnitTest.Test.Model;
 
@@ -15,16 +15,16 @@ public class TaxEventListsTests
         {
             Trades =
             [
-                new Mock<Trade>().Object,
-                new Mock<Trade>().Object
+                Substitute.For<Trade>(),
+                Substitute.For<Trade>()
             ],
             CorporateActions =
             [
-                new Mock<StockSplit>().Object
+                Substitute.For<StockSplit>()
             ],
             Dividends =
             [
-                new Mock<Dividend>().Object
+                Substitute.For<Dividend>()
             ]
         };
 
@@ -43,18 +43,18 @@ public class TaxEventListsTests
         {
             Trades =
             [
-                new Mock<Trade>().Object,
+                Substitute.For<Trade>(),
             ],
             CorporateActions =
             [
-                new Mock<StockSplit>().Object,
-                new Mock<StockSplit>().Object
+                Substitute.For<StockSplit>(),
+                Substitute.For<StockSplit>()
             ],
             Dividends =
             [
-                new Mock<Dividend>().Object,
-                new Mock<Dividend>().Object,
-                new Mock<Dividend>().Object,
+                Substitute.For<Dividend>(),
+                Substitute.For<Dividend>(),
+                Substitute.For<Dividend>(),
             ]
         };
 
@@ -75,12 +75,12 @@ public class TaxEventListsTests
         // Arrange
         var taxEvents = new List<TaxEvent>
         {
-            new Mock<Trade>().Object,
-            new Mock<StockSplit>().Object,
-            new Mock<StockSplit>().Object,
-            new Mock<Dividend>().Object,
-            new Mock<Dividend>().Object,
-            new Mock<Dividend>().Object,
+            Substitute.For<Trade>(),
+            Substitute.For<StockSplit>(),
+            Substitute.For<StockSplit>(),
+            Substitute.For<Dividend>(),
+            Substitute.For<Dividend>(),
+            Substitute.For<Dividend>(),
         };
 
         var taxEventLists = new TaxEventLists();

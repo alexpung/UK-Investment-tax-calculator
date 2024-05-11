@@ -5,7 +5,7 @@ using Model.Interfaces;
 using Model.TaxEvents;
 using Model.UkTaxModel;
 
-using Moq;
+using NSubstitute;
 
 using System.Globalization;
 
@@ -15,9 +15,9 @@ public class UkDividendCalculatorTest
 {
     private static UkDividendCalculator SetUpCalculator(List<Dividend> Dividend)
     {
-        Mock<IDividendLists> mockIDividendLists = new();
-        mockIDividendLists.Setup(f => f.Dividends).Returns(Dividend);
-        return new UkDividendCalculator(mockIDividendLists.Object, new UKTaxYear());
+        IDividendLists mockIDividendLists = Substitute.For<IDividendLists>();
+        mockIDividendLists.Dividends.Returns(Dividend);
+        return new UkDividendCalculator(mockIDividendLists, new UKTaxYear());
     }
 
     [Fact]
