@@ -15,7 +15,6 @@ public static class MockTrade
     {
         ITradeTaxCalculation mockTrade = Substitute.For<ITradeTaxCalculation>();
         mockTrade.AcquisitionDisposal.Returns(tradeType);
-        mockTrade.AcquisitionDisposal.Returns(tradeType);
         mockTrade.MatchHistory.Returns([]);
         mockTrade.UnmatchedQty.Returns(quantity);
         mockTrade.UnmatchedCostOrProceed.Returns(new WrappedMoney(value));
