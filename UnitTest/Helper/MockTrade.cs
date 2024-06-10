@@ -36,6 +36,6 @@ public static class MockTrade
     public static TradeTaxCalculation CreateTradeTaxCalculation(string assetName, DateTime dateTime, decimal quantity, decimal value, TradeType tradeType)
     {
         Trade trade = CreateMockTrade(assetName, dateTime, tradeType, quantity, value);
-        return new TradeTaxCalculation(new List<Trade> { trade });
+        return new TradeTaxCalculation([trade]);
     }
 }

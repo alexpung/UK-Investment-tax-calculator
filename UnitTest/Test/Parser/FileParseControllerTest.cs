@@ -36,8 +36,8 @@ public class FileParseControllerTest
 
     public FileParseControllerTest()
     {
-        _mockResult.AddData(new List<TaxEvent> { _mockTradeObject, _mockDividendObject });
-        _mockResult2.AddData(new List<TaxEvent> { _mockTradeObject, _mockDividendObject, _mockStockSplitObject });
+        _mockResult.AddData([_mockTradeObject, _mockDividendObject]);
+        _mockResult2.AddData([_mockTradeObject, _mockDividendObject, _mockStockSplitObject]);
     }
 
     private static IBrowserFile MockIBrowserFile(string textToMock)
@@ -53,7 +53,7 @@ public class FileParseControllerTest
         ITaxEventFileParser mockFileParser = Substitute.For<ITaxEventFileParser>();
         mockFileParser.ParseFile(Arg.Any<string>()).Returns(_mockResult);
         mockFileParser.CheckFileValidity(Arg.Any<string>(), Arg.Any<string>()).Returns(false);
-        FileParseController fileParseController = new(new List<ITaxEventFileParser>() { mockFileParser });
+        FileParseController fileParseController = new([mockFileParser]);
         TaxEventLists result = await fileParseController.ReadFile(MockIBrowserFile("Invalid text"));
         result.CorporateActions.Count.ShouldBe(0);
         result.Dividends.Count.ShouldBe(0);
@@ -66,7 +66,7 @@ public class FileParseControllerTest
         ITaxEventFileParser mock = Substitute.For<ITaxEventFileParser>();
         mock.ParseFile(Arg.Any<string>()).Returns(_mockResult);
         mock.CheckFileValidity(Arg.Any<string>(), Arg.Any<string>()).Returns(true);
-        FileParseController fileParseController = new(new List<ITaxEventFileParser>() { mock });
+        FileParseController fileParseController = new([mock]);
         TaxEventLists result = await fileParseController.ReadFile(MockIBrowserFile("Valid text"));
         result.CorporateActions.Count.ShouldBe(0);
         result.Dividends.Count.ShouldBe(1);
@@ -88,7 +88,7 @@ public class FileParseControllerTest
         mock2.ParseFile(Arg.Any<string>()).Returns(_mockResult2);
         mock2.CheckFileValidity(Arg.Any<string>(), Arg.Any<string>()).Returns(mock2Call1, mock2Call2);
 
-        FileParseController fileParseController = new(new List<ITaxEventFileParser>() { mock, mock2 });
+        FileParseController fileParseController = new([mock, mock2]);
         TaxEventLists result = await fileParseController.ReadFile(MockIBrowserFile("Valid text"));
         result.AddData(await fileParseController.ReadFile(MockIBrowserFile("Valid text2")));
         int actualCount = result.CorporateActions.Count + result.Dividends.Count + result.Trades.Count;

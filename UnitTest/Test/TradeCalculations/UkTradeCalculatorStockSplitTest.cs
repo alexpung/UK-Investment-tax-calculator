@@ -47,7 +47,7 @@ public class UkTradeCalculatorStockSplitTest
 
         UkSection104Pools section104Pools = new();
         TaxEventLists taxEventLists = new();
-        taxEventLists.AddData(new List<TaxEvent>() { initialPurchase, stockSplit, postSplitSale });
+        taxEventLists.AddData([initialPurchase, stockSplit, postSplitSale]);
 
         UkTradeCalculator calculator = new(section104Pools, taxEventLists);
         List<ITradeTaxCalculation> result = calculator.CalculateTax();
@@ -113,7 +113,7 @@ public class UkTradeCalculatorStockSplitTest
         // Section 104 pool
         UkSection104Pools section104Pools = new();
         TaxEventLists taxEventLists = new();
-        taxEventLists.AddData(new List<TaxEvent>() { trade1, stockSplit, trade2, trade3 });
+        taxEventLists.AddData([trade1, stockSplit, trade2, trade3]);
 
         UkTradeCalculator calculator = new(section104Pools, taxEventLists);
         List<ITradeTaxCalculation> result = calculator.CalculateTax();
@@ -172,7 +172,7 @@ public class UkTradeCalculatorStockSplitTest
 
         UkSection104Pools section104Pools = new();
         TaxEventLists taxEventLists = new();
-        taxEventLists.AddData(new List<TaxEvent>() { trade1, stockSplit, trade2, trade3 });
+        taxEventLists.AddData([trade1, stockSplit, trade2, trade3]);
         UkTradeCalculator calculator = new(section104Pools, taxEventLists);
         List<ITradeTaxCalculation> result = calculator.CalculateTax();
 

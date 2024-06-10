@@ -23,7 +23,7 @@ public class UkSection104PoolsTests
 
         // Assert
         result.Count.ShouldBe(3);
-        result.Select(i => i.AssetName).ShouldBe(new List<string>() { "Test1", "Test2", "Test3" }, ignoreOrder: true);
+        result.Select(i => i.AssetName).ShouldBe(["Test1", "Test2", "Test3"], ignoreOrder: true);
     }
 
     [Fact]
