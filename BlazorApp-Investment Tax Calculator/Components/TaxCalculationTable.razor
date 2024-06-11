@@ -64,6 +64,6 @@
 
     public async Task ToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)
     {
-        _toolbarHandlingService.ToolbarClickHandler(args, disposalCalculationGrid);
+        await _toolbarHandlingService.ToolbarClickHandler(args, disposalCalculationGrid);
     }
 }
