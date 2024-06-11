@@ -60,7 +60,7 @@
 
     public async Task ToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)
     {
-        _toolbarHandlingService.ToolbarClickHandler(args, tradeMatchesGrid);
+        await _toolbarHandlingService.ToolbarClickHandler(args, tradeMatchesGrid);
     }
 }
 
