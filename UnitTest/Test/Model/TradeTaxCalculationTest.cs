@@ -62,7 +62,7 @@ public class TradeTaxCalculationTests
         var matchHistory = new List<TradeMatch> { TradeCalculationHelper.CreateTradeMatch(TaxMatchType.SECTION_104, 100, new WrappedMoney(100), new WrappedMoney(150)),
                                                   TradeCalculationHelper.CreateTradeMatch(TaxMatchType.SECTION_104, 100, new WrappedMoney(200), new WrappedMoney(250))
                                                 };
-        var calculation = new TradeTaxCalculation(new List<Trade>() { trade1 })
+        var calculation = new TradeTaxCalculation([trade1])
         {
             MatchHistory = matchHistory
         };
@@ -84,7 +84,7 @@ public class TradeTaxCalculationTests
         var matchHistory = new List<TradeMatch> { TradeCalculationHelper.CreateTradeMatch(TaxMatchType.SECTION_104, 100, WrappedMoney.GetBaseCurrencyZero(), new WrappedMoney(100)),
                                                   TradeCalculationHelper.CreateTradeMatch(TaxMatchType.SECTION_104, 100, WrappedMoney.GetBaseCurrencyZero(), new WrappedMoney(200))
                                                 };
-        var calculation = new TradeTaxCalculation(new List<Trade>() { trade1 })
+        var calculation = new TradeTaxCalculation([trade1])
         {
             MatchHistory = matchHistory
         };
@@ -106,7 +106,7 @@ public class TradeTaxCalculationTests
         var matchHistory = new List<TradeMatch> { TradeCalculationHelper.CreateTradeMatch(TaxMatchType.SECTION_104, 100, new WrappedMoney(70), new WrappedMoney(100)),
                                                   TradeCalculationHelper.CreateTradeMatch(TaxMatchType.SECTION_104, 100, new WrappedMoney(210), new WrappedMoney(200))
                                                 };
-        var calculation = new TradeTaxCalculation(new List<Trade>() { trade1 })
+        var calculation = new TradeTaxCalculation([trade1])
         {
             MatchHistory = matchHistory
         };
@@ -127,7 +127,7 @@ public class TradeTaxCalculationTests
         trade1.AcquisitionDisposal.Returns(TradeType.DISPOSAL);
         trade1.NetProceed.Returns(new WrappedMoney(100));
         trade1.Quantity.Returns(10m);
-        var calculation = new TradeTaxCalculation(new List<Trade>() { trade1 });
+        var calculation = new TradeTaxCalculation([trade1]);
         // Assert
         calculation.AssetName.ShouldBe("IBM");
         calculation.CalculationCompleted.ShouldBeFalse();
@@ -141,7 +141,7 @@ public class TradeTaxCalculationTests
         trade1.Date.Returns(new DateTime(2023, 1, 1, 12, 34, 56, DateTimeKind.Local));
         trade1.AcquisitionDisposal.Returns(TradeType.DISPOSAL);
         trade1.NetProceed.Returns(new WrappedMoney(100));
-        var calculation = new TradeTaxCalculation(new List<Trade>() { trade1 });
+        var calculation = new TradeTaxCalculation([trade1]);
         // Assert
         calculation.Date.ShouldBe(new DateTime(2023, 1, 1, 12, 34, 56, DateTimeKind.Local));
     }
