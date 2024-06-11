@@ -28,6 +28,7 @@ builder.Services.AddSingleton<YearOptions>();
 builder.Services.AddSingleton<ToastService>();
 builder.Services.AddSingleton<SfGridToolBarHandlingService>();
 builder.Services.AddSingleton<ExportTaxEventService>();
+builder.Services.AddSingleton<TaxYearReportService>();
 
 // UK tax specific components - replace if you want to calculate some other countries.
 builder.Services.AddSingleton<UkCalculationResultExportService>();
