@@ -28,7 +28,7 @@ jobs:
        env: 
          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
      - name: Publish .NET Core Project
-       run: dotnet publish "BlazorApp-Investment Tax Calculator/BlazorApp-Investment Tax Calculator.csproj" -c:Release -p:GHPages=true -o dist/Web --nologo
+       run: dotnet publish "BlazorApp-Investment Tax Calculator/InvestmentTaxCalculator.csproj" -c:Release -p:GHPages=true -o dist/Web --nologo
      - name: Deploy
        uses: peaceiris/actions-gh-pages@v3
        with:
