@@ -1,4 +1,4 @@
-using BlazorApp_Investment_Tax_Calculator;
+using InvestmentTaxCalculator;
 
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -29,6 +29,7 @@ builder.Services.AddSingleton<ToastService>();
 builder.Services.AddSingleton<SfGridToolBarHandlingService>();
 builder.Services.AddSingleton<ExportTaxEventService>();
 builder.Services.AddSingleton<TaxYearReportService>();
+builder.Services.AddSingleton<TaxYearCgtByTypeReportService>();
 
 // UK tax specific components - replace if you want to calculate some other countries.
 builder.Services.AddSingleton<UkCalculationResultExportService>();
