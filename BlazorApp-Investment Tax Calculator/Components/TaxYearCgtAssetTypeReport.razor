@@ -1,0 +1,59 @@
+﻿@using Model
+@using Syncfusion.Blazor.Grids
+@using Services
+
+@inject TaxYearCgtByTypeReportService _taxYearCgtByTypeReportService
+@inject SfGridToolBarHandlingService _toolbarHandlingService
+
+<div class="bg-dark text-light">
+    <div class="row my-4">
+        <div class="col">
+            <h3>Tax Year CGT by Type Report</h3>
+        </div>
+    </div>
+
+    <div class="row mt-3 me-3">
+        <div class="col">
+            <SfGrid ID="TaxYearCgtByTypeReportGrid" @ref="taxYearCgtByTypeReportGrid" DataSource="@TaxYearCgtByTypeReports"
+                    AllowPaging="true" AllowSorting="true" AllowPdfExport="true" AllowExcelExport="true" AllowResizing="true" AllowFiltering=true AllowTextWrap="true"
+                    Toolbar="@(new List<string>() { "PdfExport", "ExcelExport", "Print"})">
+                <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
+                <GridPageSettings PageSizes=@(new List<int>() {25, 50, 100}) PageSize="25"></GridPageSettings>
+                <GridEvents OnToolbarClick="ToolbarClickHandler" TValue="TaxYearCgtByTypeReport"></GridEvents>
+                <GridColumns>
+                    <GridColumn Field=@nameof(TaxYearCgtByTypeReport.TaxYear) HeaderText="Tax Year" TextAlign="TextAlign.Right"></GridColumn>
+                    <GridColumn HeaderText="Listed Shares">
+                        <GridColumns>
+                            <GridColumn Field=@nameof(TaxYearCgtByTypeReport.ListedSecurityNumberOfDisposals) HeaderText="Number of Disposals" TextAlign="TextAlign.Right"></GridColumn>
+                            <GridColumn Field=@nameof(TaxYearCgtByTypeReport.ListedSecurityDisposalProceeds) HeaderText="Disposal Proceeds" Format="C2" TextAlign="TextAlign.Right"></GridColumn>
+                            <GridColumn Field=@nameof(TaxYearCgtByTypeReport.ListedSecurityAllowableCosts) HeaderText="Allowable Costs" Format="C2" TextAlign="TextAlign.Right"></GridColumn>
+                            <GridColumn Field=@nameof(TaxYearCgtByTypeReport.ListedSecurityGainExcludeLoss) HeaderText="Gain Excluding Loss" Format="C2" TextAlign="TextAlign.Right"></GridColumn>
+                            <GridColumn Field=@nameof(TaxYearCgtByTypeReport.ListedSecurityLoss) HeaderText="Loss" Format="C2" TextAlign="TextAlign.Right"></GridColumn>
+                        </GridColumns>
+                    </GridColumn>
+                    <GridColumn HeaderText="Other Assets">
+                        <GridColumns>
+                            <GridColumn Field=@nameof(TaxYearCgtByTypeReport.OtherAssetsNumberOfDisposals) HeaderText="Number of Disposals" TextAlign="TextAlign.Right"></GridColumn>
+                            <GridColumn Field=@nameof(TaxYearCgtByTypeReport.OtherAssetsDisposalProceeds) HeaderText="Disposal Proceeds" Format="C2" TextAlign="TextAlign.Right"></GridColumn>
+                            <GridColumn Field=@nameof(TaxYearCgtByTypeReport.OtherAssetsAllowableCosts) HeaderText="Allowable Costs" Format="C2" TextAlign="TextAlign.Right"></GridColumn>
+                            <GridColumn Field=@nameof(TaxYearCgtByTypeReport.OtherAssetsGainExcludeLoss) HeaderText="Gain Excluding Loss" Format="C2" TextAlign="TextAlign.Right"></GridColumn>
+                            <GridColumn Field=@nameof(TaxYearCgtByTypeReport.OtherAssetsLoss) HeaderText="Loss" Format="C2" TextAlign="TextAlign.Right"></GridColumn>
+                        </GridColumns>
+                    </GridColumn>
+                </GridColumns>
+            </SfGrid>
+        </div>
+    </div>
+</div>
+
+@code {
+    public IEnumerable<TaxYearCgtByTypeReport> TaxYearCgtByTypeReports => _taxYearCgtByTypeReportService.GetTaxYearCgtByTypeReports().DefaultIfEmpty()!;
+
+    private SfGrid<TaxYearCgtByTypeReport> taxYearCgtByTypeReportGrid = new();
+
+    public async Task ToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)
+    {
+        await _toolbarHandlingService.ToolbarClickHandler(args, taxYearCgtByTypeReportGrid);
+    }
+
+}
