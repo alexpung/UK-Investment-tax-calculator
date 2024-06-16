@@ -25,7 +25,7 @@
                     Toolbar="@(new List<string>() { "PdfExport", "ExcelExport", "Print" })">
                 <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
                 <GridPageSettings PageSizes=@(new List<int>() {25, 50, 100}) PageSize="25"></GridPageSettings>
-                <GridEvents OnToolbarClick="ToolbarClickHandler" TValue="TradeTaxCalculationViewModel?"></GridEvents>
+                <GridEvents OnToolbarClick="ToolbarClickHandler" TValue="TradeTaxCalculationViewModel"></GridEvents>
                 <GridColumns>
                     <GridColumn Field=@nameof(TradeTaxCalculationViewModel.TradeId) HeaderText="Trade Id"></GridColumn>
                     <GridColumn Field=@nameof(TradeTaxCalculationViewModel.Date) HeaderText="Date" Format="d"></GridColumn>
@@ -57,10 +57,10 @@
 </div>
 
 @code {
-    private SfGrid<TradeTaxCalculationViewModel?> disposalCalculationGrid = new();
-    private IEnumerable<TradeTaxCalculationViewModel?> _trades => tradeCalculationResult.CalculatedTrade
+    private SfGrid<TradeTaxCalculationViewModel> disposalCalculationGrid = new();
+    private IEnumerable<TradeTaxCalculationViewModel> _trades => tradeCalculationResult.CalculatedTrade
                                                                 .Select(trade => new TradeTaxCalculationViewModel(trade))
-                                                                .DefaultIfEmpty();
+                                                                .DefaultIfEmpty()!;
 
     public async Task ToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)
     {
