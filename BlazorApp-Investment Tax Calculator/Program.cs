@@ -1,4 +1,4 @@
-using BlazorApp_Investment_Tax_Calculator;
+using InvestmentTaxCalculator;
 
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
