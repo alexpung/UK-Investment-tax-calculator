@@ -1,0 +1,58 @@
+﻿@using Model
+@using System.Globalization
+@using Syncfusion.Blazor.Grids
+@using Services
+
+@inject DividendCalculationResult _dividendCalculationResult
+@inject SfGridToolBarHandlingService _toolbarHandlingService
+
+<div class="bg-dark text-light">
+    <div class="row my-4">
+        <div class="col">
+            <h3>Dividend Summary Report</h3>
+        </div>
+    </div>
+
+    <div class="row mt-3 me-3">
+        <div class="col">
+            <SfGrid ID="DividendSummaryGrid" @ref="dividendSummaryGrid" AllowGrouping="true" DataSource="@DividendSummaries"
+                    AllowPaging="true" AllowSorting="true" AllowPdfExport="true" AllowExcelExport="true" AllowResizing="true" AllowFiltering=true AllowTextWrap="true"
+                    Toolbar="@(new List<string>() { "PdfExport", "ExcelExport", "Print"})">
+                <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
+                <GridGroupSettings Columns="@InitialGrouping"></GridGroupSettings>
+                <GridPageSettings PageSizes=@(new List<int>() {25, 50, 100}) PageSize="25"></GridPageSettings>
+                <GridEvents OnToolbarClick="ToolbarClickHandler" TValue="DividendSummary"></GridEvents>
+                <GridColumns>
+                    <GridColumn Field=@nameof(DividendSummary.TaxYear) HeaderText="Tax Year" TextAlign="TextAlign.Right"></GridColumn>
+                    <GridColumn Field=@(nameof(DividendSummary.CountryOfOrigin) + "." + nameof(RegionInfo.EnglishName)) HeaderText="Country of Origin"></GridColumn>
+                    <GridColumn Field=@(nameof(DividendSummary.TotalTaxableDividend) + "." + nameof(WrappedMoney.Amount)) 
+                    HeaderText="Total Taxable Dividend" Format="C2" TextAlign="TextAlign.Right"></GridColumn>
+                    <GridColumn Field=@(nameof(DividendSummary.TotalForeignTaxPaid) + "." + nameof(WrappedMoney.Amount)) 
+                    HeaderText="Total Foreign Tax Paid" Format="C2" TextAlign="TextAlign.Right"></GridColumn>
+                </GridColumns>
+                <GridAggregates>
+                    <GridAggregate>
+                        <GridAggregateColumns>
+                            <GridAggregateColumn Field=@(nameof(DividendSummary.TotalTaxableDividend) + "." + nameof(WrappedMoney.Amount))
+                            Type=AggregateType.Sum Format="C2"></GridAggregateColumn>
+                            <GridAggregateColumn Field=@(nameof(DividendSummary.TotalForeignTaxPaid) + "." + nameof(WrappedMoney.Amount))
+                            Type=AggregateType.Sum Format="C2"></GridAggregateColumn>
+                        </GridAggregateColumns>
+                    </GridAggregate>
+                </GridAggregates>
+            </SfGrid>
+        </div>
+    </div>
+</div>
+
+@code {
+    public IEnumerable<DividendSummary> DividendSummaries => _dividendCalculationResult.DividendSummary;
+
+    private SfGrid<DividendSummary> dividendSummaryGrid = new();
+    public string[] InitialGrouping = ["TaxYear"];
+
+    public async Task ToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)
+    {
+        await _toolbarHandlingService.ToolbarClickHandler(args, dividendSummaryGrid);
+    }
+}

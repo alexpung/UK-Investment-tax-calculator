@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="Components\DividendYearlySummary.razor" />
     <Content Remove="Pages\ExportFile.razor" />
   </ItemGroup>
 
