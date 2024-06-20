@@ -24,7 +24,7 @@
                     Toolbar="@(new List<string>() { "PdfExport", "ExcelExport", "Print"})">
                 <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
                 <GridPageSettings PageSizes=@(new List<int>() {25, 50, 100}) PageSize="25"></GridPageSettings>
-                <GridEvents OnToolbarClick="ToolbarClickHandler" TValue="DividendViewModel?"></GridEvents>
+                <GridEvents OnToolbarClick="ToolbarClickHandler" TValue="DividendViewModel"></GridEvents>
                 <GridColumns>
                     <GridColumn Field=@nameof(DividendViewModel.Date) HeaderText="Date" Format="d"></GridColumn>
                     <GridColumn Field=@nameof(DividendViewModel.DividendType) HeaderText="Dividend/Withholding Tax"></GridColumn>
@@ -43,9 +43,9 @@
 
 
 @code {
-    public IEnumerable<DividendViewModel?> DividendViewModels => _dividendList.Dividends.Select(dividend => new DividendViewModel(dividend)).DefaultIfEmpty();
+    public IEnumerable<DividendViewModel> DividendViewModels => _dividendList.Dividends.Select(dividend => new DividendViewModel(dividend)).DefaultIfEmpty();
 
-    private SfGrid<DividendViewModel?> importedDividendGrid = new();
+    private SfGrid<DividendViewModel> importedDividendGrid = new();
 
     public async Task ToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)
     {
