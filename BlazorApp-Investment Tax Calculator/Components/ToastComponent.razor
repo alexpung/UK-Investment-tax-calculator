@@ -6,7 +6,7 @@
     <ToastPosition X="Center" Y="Bottom"></ToastPosition>
 </SfToast>
   
-@code{
+@code {
 
     public required SfToast Toast;
 
@@ -15,26 +15,37 @@
 
     private ToastOption Options = new ToastOption() { Title = "", Content = "", Type = ToastOptionType.Success };
 
+    // Define a SemaphoreSlim to be used for synchronization
+    private readonly SemaphoreSlim _toastSemaphore = new SemaphoreSlim(1, 1);
+
     protected override void OnInitialized()
     {
         ToastService.ShowToastTrigger += (ToastOption options) =>
         {
-            InvokeAsync(async () => 
+            InvokeAsync(async () =>
             {
-                this.Options.Title = options.Title;
-                this.Options.Content = options.Content;
-                this.ToastCssClass = options.Type switch
+                await _toastSemaphore.WaitAsync();
+                try
                 {
-                    ToastOptionType.Warning => "e-toast-warning",
-                    ToastOptionType.Error => "e-toast-danger",
-                    ToastOptionType.Success => "e-toast-success",
-                    ToastOptionType.Info => "e-toast-info",
-                    _ => throw new NotImplementedException()
-                };
-                this.IsToastVisible = true;
-                await Task.Delay(100);
-                this.StateHasChanged();
-                await this.Toast.ShowAsync();
+                    this.Options.Title = options.Title;
+                    this.Options.Content = options.Content;
+                    this.ToastCssClass = options.Type switch
+                    {
+                        ToastOptionType.Warning => "e-toast-warning",
+                        ToastOptionType.Error => "e-toast-danger",
+                        ToastOptionType.Success => "e-toast-success",
+                        ToastOptionType.Info => "e-toast-info",
+                        _ => throw new NotImplementedException()
+                    };
+                    this.IsToastVisible = true;
+                    await Task.Delay(100);
+                    this.StateHasChanged();
+                    await this.Toast.ShowAsync();
+                }
+                finally
+                {
+                    _toastSemaphore.Release();
+                }
             });
         };
         base.OnInitialized();
