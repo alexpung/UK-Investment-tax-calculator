@@ -79,13 +79,13 @@ public class IBXmlFxParser
             decimal result = _exchangeRateCache[exchangeRateKey];
             if (result == -1)
             {
-                throw new ArgumentException($"fx rate is -1 for {currency} against {baseCurrency} on {date}, this is an error rate");
+                throw new ParseException($"fx rate is -1 for {currency} against {baseCurrency} on {date}, this is an error rate");
             }
             return result;
         }
         catch (KeyNotFoundException)
         {
-            throw new ArgumentException($"No fx rate found for {currency} against {baseCurrency} on {date}");
+            throw new ParseException($"No fx rate found for {currency} against {baseCurrency} on {date}");
         }
     }
 }
