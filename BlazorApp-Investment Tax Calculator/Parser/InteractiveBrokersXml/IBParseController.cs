@@ -30,6 +30,10 @@ public class IBParseController(AssetTypeToLoadSetting assetTypeToLoadSetting, To
         {
             toastService.ShowError(ex.Message);
         }
+        catch (Exception ex)
+        {
+            toastService.ShowError($"An unexpected error have occurred.\n {ex.Message}");
+        }
         return result;
     }
 
