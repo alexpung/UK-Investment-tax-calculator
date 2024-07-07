@@ -23,6 +23,7 @@ public class IBParseController(AssetTypeToLoadSetting assetTypeToLoadSetting, To
                 if (assetTypeToLoadSetting.LoadStocks) result.Trades.AddRange(IBXmlStockTradeParser.ParseXml(xml));
                 if (assetTypeToLoadSetting.LoadFutures) result.Trades.AddRange(IBXmlFutureTradeParser.ParseXml(xml));
                 if (assetTypeToLoadSetting.LoadFx) result.Trades.AddRange(_xmlFxParser.ParseXml(xml));
+                if (assetTypeToLoadSetting.LoadOptions) result.Trades.AddRange(IBXmlOptionTradeParser.ParseXml(xml));
             }
         }
         catch (ParseException ex)
