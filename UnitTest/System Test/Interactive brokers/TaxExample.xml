@@ -25,6 +25,11 @@
 				<Order currency="JPY" fxRateToBase="0.009" assetCategory="FUT" symbol="NIYH5" description="NIY 14MAR23" dateTime="09-Mar-23 12:34:56" quantity="2" proceeds="-25000000" taxes="0" ibCommission="-800" ibCommissionCurrency="JPY" buySell="BUY" levelOfDetail="ORDER"/>
 				<Order currency="JPY" fxRateToBase="0.006" assetCategory="FUT" symbol="NIYH6" description="NIY 15MAR23" dateTime="05-Mar-23 12:34:56" quantity="2" proceeds="-27000000" taxes="0" ibCommission="-700" ibCommissionCurrency="JPY" buySell="BUY" levelOfDetail="ORDER"/>
 				<Order currency="JPY" fxRateToBase="0.006" assetCategory="FUT" symbol="NIYH6" description="NIY 15MAR23" dateTime="07-Mar-23 12:34:56" quantity="-2" proceeds="20000000" taxes="0" ibCommission="-800" ibCommissionCurrency="JPY" buySell="SELL" levelOfDetail="ORDER"/>
+				
+				<!-- Option execise -->
+				<Order currency="USD" fxRateToBase="0.72153" assetCategory="STK" symbol="GOOG" description="ALPHABET INC-CL C" dateTime="19-Jan-18 16:20:00" quantity="100" proceeds="-80000" taxes="0" ibCommission="0" ibCommissionCurrency="USD" buySell="BUY" levelOfDetail="ORDER"/>
+				<Order currency="USD" fxRateToBase="0.72153" assetCategory="OPT" symbol="GOOG  180119C00800000" description="GOOG 19JAN18 800.0 C" underlyingSymbol="GOOG" multiplier="100" strike="800" expiry="19-Jan-18" putCall="C" 
+				dateTime="19-Jan-18 16:20:00" quantity="-1" tradePrice="0" tradeMoney="0" proceeds="0" taxes="0" ibCommission="0" ibCommissionCurrency="USD" openCloseIndicator="C" notes="C;Ex" buySell="SELL" levelOfDetail="ORDER" />
 			</Trades>
 			<CorporateActions>
 				<CorporateAction symbol="ABC" description="ABC SPLIT 2 FOR 1" dateTime="03-May-21 20:25:00" type="FS"/>
