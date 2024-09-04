@@ -1,7 +1,5 @@
 ﻿using InvestmentTaxCalculator.Model;
 
-using Parser;
-
 using System.Xml.Linq;
 
 namespace InvestmentTaxCalculator.Parser;
