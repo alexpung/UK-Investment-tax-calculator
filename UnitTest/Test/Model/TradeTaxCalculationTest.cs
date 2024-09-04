@@ -1,9 +1,8 @@
 ﻿namespace UnitTest.Test.Model;
-using Enumerations;
-
-using global::Model;
-using global::Model.TaxEvents;
-using global::Model.UkTaxModel.Stocks;
+using InvestmentTaxCalculator.Enumerations;
+using InvestmentTaxCalculator.Model;
+using InvestmentTaxCalculator.Model.TaxEvents;
+using InvestmentTaxCalculator.Model.UkTaxModel.Stocks;
 
 using NSubstitute;
 

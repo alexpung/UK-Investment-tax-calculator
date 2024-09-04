@@ -1,14 +1,16 @@
-﻿using Enumerations;
+﻿using InvestmentTaxCalculator.Enumerations;
+using InvestmentTaxCalculator.Model.TaxEvents;
+using InvestmentTaxCalculator.Model.UkTaxModel;
+using InvestmentTaxCalculator.Model.UkTaxModel.Stocks;
 
-using Model.TaxEvents;
-using Model.UkTaxModel;
-using Model.UkTaxModel.Stocks;
+namespace InvestmentTaxCalculator.Model.Interfaces;
 
-namespace Model.Interfaces;
-public interface ITradeTaxCalculation : ITextFilePrintable, IAssetDatedEvent
+/// <summary>
+/// A ITradeTaxCalculation contains a list of trades that are grouped together and matched for tax calculation
+/// </summary>
+public interface ITradeTaxCalculation : ITextFilePrintable, ITaxMatchable
 {
     int Id { get; }
-    TradeType AcquisitionDisposal { get; init; }
     AssetCatagoryType AssetCatagoryType { get; }
     bool CalculationCompleted { get; }
     List<TradeMatch> MatchHistory { get; init; }

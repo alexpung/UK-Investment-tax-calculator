@@ -1,6 +1,6 @@
-﻿using Model.UkTaxModel;
+﻿using InvestmentTaxCalculator.Model.UkTaxModel;
 
-namespace ViewModel;
+namespace InvestmentTaxCalculator.ViewModel;
 
 public class Section104HistoryViewModel(Section104History section104History, string assetName)
 {

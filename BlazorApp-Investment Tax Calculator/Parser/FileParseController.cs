@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Components.Forms;
+﻿using InvestmentTaxCalculator.Model;
 
-using Model;
+using Microsoft.AspNetCore.Components.Forms;
 
-namespace Parser;
+namespace InvestmentTaxCalculator.Parser;
 
 public class FileParseController(IEnumerable<ITaxEventFileParser> taxEventFileParsers)
 {

@@ -1,10 +1,9 @@
-﻿using Model;
-
-using Services;
+﻿using InvestmentTaxCalculator.Model;
+using InvestmentTaxCalculator.Services;
 
 using System.Xml.Linq;
 
-namespace Parser.InteractiveBrokersXml;
+namespace InvestmentTaxCalculator.Parser.InteractiveBrokersXml;
 
 public class IBParseController(AssetTypeToLoadSetting assetTypeToLoadSetting, ToastService toastService) : ITaxEventFileParser
 {

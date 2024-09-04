@@ -1,4 +1,4 @@
-﻿namespace Model.Interfaces;
+﻿namespace InvestmentTaxCalculator.Model.Interfaces;
 
 /// <summary>
 /// Class can be presented in text file as human friendly formatted text

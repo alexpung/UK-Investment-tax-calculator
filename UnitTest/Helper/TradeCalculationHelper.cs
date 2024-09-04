@@ -1,11 +1,10 @@
-﻿using Enumerations;
-
-using Model;
-using Model.Interfaces;
-using Model.TaxEvents;
-using Model.UkTaxModel;
-using Model.UkTaxModel.Futures;
-using Model.UkTaxModel.Stocks;
+﻿using InvestmentTaxCalculator.Enumerations;
+using InvestmentTaxCalculator.Model;
+using InvestmentTaxCalculator.Model.Interfaces;
+using InvestmentTaxCalculator.Model.TaxEvents;
+using InvestmentTaxCalculator.Model.UkTaxModel;
+using InvestmentTaxCalculator.Model.UkTaxModel.Futures;
+using InvestmentTaxCalculator.Model.UkTaxModel.Stocks;
 
 namespace UnitTest.Helper;
 public static class TradeCalculationHelper

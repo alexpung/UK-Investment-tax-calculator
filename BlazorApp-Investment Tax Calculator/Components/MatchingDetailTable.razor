@@ -1,15 +1,15 @@
-﻿@using Model
-@using ViewModel
-@using Model.Interfaces
+﻿@using InvestmentTaxCalculator.Model
+@using InvestmentTaxCalculator.ViewModel
+@using InvestmentTaxCalculator.Model.Interfaces
 @using Syncfusion.Blazor.DropDowns
 @using Syncfusion.Blazor.Grids
-@using Model.TaxEvents
-@using Model.UkTaxModel
-@using Model.UkTaxModel.Stocks
+@using InvestmentTaxCalculator.Model.TaxEvents
+@using InvestmentTaxCalculator.Model.UkTaxModel
+@using InvestmentTaxCalculator.Model.UkTaxModel.Stocks
 @using Syncfusion.Blazor.SplitButtons
-@using Enumerations
+@using InvestmentTaxCalculator.Enumerations
 @using InvestmentTaxCalculator.Components
-@using Services
+@using InvestmentTaxCalculator.Services
 
 @inject TradeCalculationResult tradeCalculationResult
 @inject SfGridToolBarHandlingService _toolbarHandlingService
@@ -27,7 +27,7 @@
                     Toolbar="@(new List<string>() { "PdfExport", "ExcelExport", "Print" })">
                 <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
                 <GridPageSettings PageSizes=@(new List<int>() {25, 50, 100}) PageSize="25"></GridPageSettings>
-                <GridEvents OnToolbarClick="ToolbarClickHandler" TValue="TradeMatchViewModel?"></GridEvents>
+                <GridEvents OnToolbarClick="ToolbarClickHandler" TValue="TradeMatchViewModel"></GridEvents>
                 <GridColumns>
                     <GridColumn Field=@nameof(TradeMatchViewModel.DisposalDate) HeaderText="Disposal Date"></GridColumn>
                     <GridColumn Field=@nameof(TradeMatchViewModel.AssetType) HeaderText="Asset Type"></GridColumn>
@@ -50,8 +50,8 @@
 
 @code {
     public AssetCatagoryType SelectedAssetCatagoryType { get; set; } = AssetCatagoryType.STOCK;
-    private SfGrid<TradeMatchViewModel?> tradeMatchesGrid = default!;
-    private IEnumerable<TradeMatchViewModel?> _tradeMatches => tradeCalculationResult.CalculatedTrade
+    private SfGrid<TradeMatchViewModel> tradeMatchesGrid = default!;
+    private IEnumerable<TradeMatchViewModel> _tradeMatches => tradeCalculationResult.CalculatedTrade
                                                                            .Where(trade => trade.AcquisitionDisposal == TradeType.DISPOSAL)
                                                                            .SelectMany(trade => trade.MatchHistory)
                                                                            .Select(tradeMatch => new TradeMatchViewModel(tradeMatch))

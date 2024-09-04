@@ -1,4 +1,4 @@
-﻿namespace ViewModel;
+﻿namespace InvestmentTaxCalculator.ViewModel;
 
 public class InputGridDatas
 {

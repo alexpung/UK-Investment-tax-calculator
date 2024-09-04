@@ -1,11 +1,10 @@
-﻿using Enumerations;
-
-using Model;
-using Model.Interfaces;
+﻿using InvestmentTaxCalculator.Enumerations;
+using InvestmentTaxCalculator.Model;
+using InvestmentTaxCalculator.Model.Interfaces;
 
 using System.Text;
 
-namespace Services;
+namespace InvestmentTaxCalculator.Services;
 
 public class UkCalculationResultExportService(ITaxYear taxYear, TradeCalculationResult tradeCalculationResult) : ITextFilePrintable
 {
@@ -35,7 +34,7 @@ public class UkCalculationResultExportService(ITaxYear taxYear, TradeCalculation
     private static string WriteTaxYearSummary(int year, TradeCalculationResult calculationResult)
     {
         StringBuilder output = new();
-        IEnumerable<int> filter = new[] { year };
+        IEnumerable<int> filter = [year];
         output.AppendLine($"Summary for tax year {year}:");
         output.AppendLine($"Number of disposals: {calculationResult.NumberOfDisposals(filter)}");
         output.AppendLine($"Total disposal proceeds: {calculationResult.DisposalProceeds(filter)}");

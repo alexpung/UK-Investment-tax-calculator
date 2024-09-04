@@ -1,8 +1,7 @@
-﻿using Enumerations;
+﻿using InvestmentTaxCalculator.Enumerations;
+using InvestmentTaxCalculator.Model.UkTaxModel.Stocks;
 
-using Model.UkTaxModel.Stocks;
-
-namespace ViewModel;
+namespace InvestmentTaxCalculator.ViewModel;
 
 public record TradeMatchViewModel(TradeMatch TradeMatch)
 {

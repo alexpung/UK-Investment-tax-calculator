@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace Enumerations;
+namespace InvestmentTaxCalculator.Enumerations;
 
 /// <summary>
 /// Should not add additional type

@@ -1,13 +1,11 @@
-﻿using Enumerations;
+﻿using InvestmentTaxCalculator.Enumerations;
+using InvestmentTaxCalculator.Model;
+using InvestmentTaxCalculator.Model.TaxEvents;
+using InvestmentTaxCalculator.Parser;
 
 using Microsoft.AspNetCore.Components.Forms;
 
-using Model;
-using Model.TaxEvents;
-
 using NSubstitute;
-
-using Parser;
 
 using System.Text;
 
@@ -30,7 +28,7 @@ public class FileParseControllerTest
         DividendType = DividendType.WITHHOLDING,
         Proceed = new DescribedMoney() { Amount = new WrappedMoney(100, "GBP") }
     };
-    private readonly StockSplit _mockStockSplitObject = new() { AssetName = "Test3", Date = new DateTime(2022, 1, 1, 0, 0, 0, DateTimeKind.Local), NumberAfterSplit = 1, NumberBeforeSplit = 2 };
+    private readonly StockSplit _mockStockSplitObject = new() { AssetName = "Test3", Date = new DateTime(2022, 1, 1, 0, 0, 0, DateTimeKind.Local), SplitTo = 1, SplitFrom = 2 };
     private readonly TaxEventLists _mockResult = new();
     private readonly TaxEventLists _mockResult2 = new();
 

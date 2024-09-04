@@ -1,6 +1,6 @@
-﻿using Model;
+﻿using InvestmentTaxCalculator.Model;
 
-namespace Parser;
+namespace InvestmentTaxCalculator.Parser;
 
 public interface ITaxEventFileParser
 {

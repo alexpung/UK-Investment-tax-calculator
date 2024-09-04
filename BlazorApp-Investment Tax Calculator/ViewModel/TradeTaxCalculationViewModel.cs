@@ -1,11 +1,10 @@
-﻿using Enumerations;
+﻿using InvestmentTaxCalculator.Enumerations;
+using InvestmentTaxCalculator.Model;
+using InvestmentTaxCalculator.Model.Interfaces;
+using InvestmentTaxCalculator.Model.UkTaxModel.Futures;
+using InvestmentTaxCalculator.Model.UkTaxModel.Stocks;
 
-using Model;
-using Model.Interfaces;
-using Model.UkTaxModel.Futures;
-using Model.UkTaxModel.Stocks;
-
-namespace ViewModel;
+namespace InvestmentTaxCalculator.ViewModel;
 
 public class TradeTaxCalculationViewModel(ITradeTaxCalculation TradeTaxCalculation)
 {

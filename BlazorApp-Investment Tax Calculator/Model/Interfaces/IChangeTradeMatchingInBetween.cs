@@ -1,6 +1,6 @@
-﻿using Model.UkTaxModel.Stocks;
+﻿using InvestmentTaxCalculator.Model.UkTaxModel.Stocks;
 
-namespace Model.Interfaces;
+namespace InvestmentTaxCalculator.Model.Interfaces;
 
 public interface IChangeTradeMatchingInBetween
 {

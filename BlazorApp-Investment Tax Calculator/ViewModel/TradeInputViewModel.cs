@@ -1,13 +1,10 @@
-﻿using Enumerations;
-
-using Model;
-using Model.TaxEvents;
+﻿using InvestmentTaxCalculator.Enumerations;
+using InvestmentTaxCalculator.Model;
+using InvestmentTaxCalculator.Model.TaxEvents;
 
 using System.ComponentModel.DataAnnotations;
 
-using TaxEvents;
-
-namespace ViewModel;
+namespace InvestmentTaxCalculator.ViewModel;
 
 public class TradeInputViewModel
 {

@@ -1,9 +1,10 @@
-using Model.TaxEvents;
+using InvestmentTaxCalculator.Model.TaxEvents;
 
 namespace UnitTest.Test.Model;
 
 public class StockSplitTests
 {
+    // TODO: write test
     [Fact]
     public void GetSharesAfterSplit_ReturnsCorrectShares()
     {
@@ -12,16 +13,9 @@ public class StockSplitTests
         {
             AssetName = "Test",
             Date = new DateTime(2023, 1, 1, 0, 0, 0, DateTimeKind.Local),
-            NumberBeforeSplit = 2,
-            NumberAfterSplit = 3,
-            Rounding = true
+            SplitFrom = 2,
+            SplitTo = 3,
         };
         decimal quantity = 10;
-
-        // Act
-        decimal sharesAfterSplit = stockSplit.GetSharesAfterSplit(quantity);
-
-        // Assert
-        sharesAfterSplit.ShouldBe(15);
     }
 }

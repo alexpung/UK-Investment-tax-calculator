@@ -1,4 +1,4 @@
-﻿namespace Model.Interfaces;
+﻿namespace InvestmentTaxCalculator.Model.Interfaces;
 
 public interface IAssetDatedEvent
 {

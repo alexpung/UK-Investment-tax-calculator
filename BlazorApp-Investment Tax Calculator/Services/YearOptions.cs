@@ -1,4 +1,4 @@
-﻿namespace Services;
+﻿namespace InvestmentTaxCalculator.Services;
 
 public class YearOptions
 {

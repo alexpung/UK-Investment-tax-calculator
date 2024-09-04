@@ -1,4 +1,4 @@
-﻿using Model;
+﻿using InvestmentTaxCalculator.Model;
 
 using NMoneys;
 

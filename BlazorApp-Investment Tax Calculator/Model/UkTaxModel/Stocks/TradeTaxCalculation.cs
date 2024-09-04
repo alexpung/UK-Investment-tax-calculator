@@ -1,12 +1,12 @@
-﻿using Enumerations;
-
-using Model;
-using Model.Interfaces;
-using Model.TaxEvents;
+﻿using InvestmentTaxCalculator.Enumerations;
+using InvestmentTaxCalculator.Model;
+using InvestmentTaxCalculator.Model.Interfaces;
+using InvestmentTaxCalculator.Model.TaxEvents;
+using InvestmentTaxCalculator.Model.UkTaxModel;
 
 using System.Text;
 
-namespace Model.UkTaxModel.Stocks;
+namespace InvestmentTaxCalculator.Model.UkTaxModel.Stocks;
 
 /// <summary>
 /// Contain trades that considered the same group in tax matching caluclation.
@@ -86,7 +86,7 @@ public class TradeTaxCalculation : ITradeTaxCalculation
                     MatchedBuyTrade = this,
                     MatchAcquisitionQty = UnmatchedQty,
                     MatchDisposalQty = UnmatchedQty,
-                    BaseCurrencyMatchAllowableCost = UnmatchedCostOrProceed,
+                    BaseCurrencyMatchAllowableCost = WrappedMoney.GetBaseCurrencyZero(),
                     BaseCurrencyMatchDisposalProceed = WrappedMoney.GetBaseCurrencyZero(),
                     Section104HistorySnapshot = section104History
                 });

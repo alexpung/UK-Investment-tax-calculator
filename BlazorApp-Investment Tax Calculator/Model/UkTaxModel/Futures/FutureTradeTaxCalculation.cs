@@ -1,12 +1,12 @@
-﻿using Enumerations;
-
-using Model.UkTaxModel.Stocks;
+﻿using InvestmentTaxCalculator.Enumerations;
+using InvestmentTaxCalculator.Model;
+using InvestmentTaxCalculator.Model.TaxEvents;
+using InvestmentTaxCalculator.Model.UkTaxModel;
+using InvestmentTaxCalculator.Model.UkTaxModel.Stocks;
 
 using System.Text;
 
-using TaxEvents;
-
-namespace Model.UkTaxModel.Futures;
+namespace InvestmentTaxCalculator.Model.UkTaxModel.Futures;
 
 public class FutureTradeTaxCalculation : TradeTaxCalculation
 {
@@ -85,7 +85,7 @@ public class FutureTradeTaxCalculation : TradeTaxCalculation
             };
             WrappedMoney contractGain = sellContractValue - buyContractValue;
             WrappedMoney contractGainInBaseCurrency = new((contractGain * ContractFxRate).Amount);
-            WrappedMoney acquisitionValue = (section104History.ValueChange * -1) + GetProportionedCostOrProceed(matchQty);
+            WrappedMoney acquisitionValue = section104History.ValueChange * -1 + GetProportionedCostOrProceed(matchQty);
             WrappedMoney disposalValue = WrappedMoney.GetBaseCurrencyZero();
             if (contractGainInBaseCurrency.Amount > 0)
             {

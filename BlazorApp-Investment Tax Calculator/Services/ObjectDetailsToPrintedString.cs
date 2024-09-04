@@ -1,6 +1,6 @@
-﻿using Model;
+﻿using InvestmentTaxCalculator.Model;
 
-namespace Services;
+namespace InvestmentTaxCalculator.Services;
 
 public static class ObjectDetailsToPrintedString
 {
