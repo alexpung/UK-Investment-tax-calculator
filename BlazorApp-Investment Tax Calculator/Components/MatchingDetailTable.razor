@@ -54,8 +54,7 @@
     private IEnumerable<TradeMatchViewModel> _tradeMatches => tradeCalculationResult.CalculatedTrade
                                                                            .Where(trade => trade.AcquisitionDisposal == TradeType.DISPOSAL)
                                                                            .SelectMany(trade => trade.MatchHistory)
-                                                                           .Select(tradeMatch => new TradeMatchViewModel(tradeMatch))
-                                                                           .DefaultIfEmpty();
+                                                                           .Select(tradeMatch => new TradeMatchViewModel(tradeMatch));
 
 
     public async Task ToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)
