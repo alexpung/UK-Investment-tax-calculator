@@ -21,11 +21,14 @@ public static class UkMatchingRules
             foreach (var dayTrades in groupedTradesByDate)
             {
                 if (dayTrades.Count() == 1) continue;
-                ArgumentException matchError = new("Incorrect grouping of trade. Exactly one acqusition and one disposal for ITaxMatchable is expected" +
-                    "Each ITaxMatchable should contain all trades on the same side on the same day.");
-                if (dayTrades.Count() != 2) throw matchError;
-                if (dayTrades.ElementAt(0).AcquisitionDisposal == dayTrades.ElementAt(1).AcquisitionDisposal) throw matchError;
-                yield return Tuple.Create(dayTrades.ElementAt(0), dayTrades.ElementAt(1));
+                var acquisitions = dayTrades.Where(t => t.AcquisitionDisposal == TradeType.ACQUISITION).ToList();
+                var disposals = dayTrades.Where(t => t.AcquisitionDisposal == TradeType.DISPOSAL).ToList();
+                if (acquisitions.Count != 1 && disposals.Count != 1)
+                {
+                    throw new ArgumentException($"Invalid input for same day matching rule. Expected exactly 1 acquisitions and disposals for asset" +
+                        $" on {dayTrades.Key}, but found {acquisitions.Count} acquisitions and {disposals.Count} disposals.");
+                }
+                yield return Tuple.Create(acquisitions[0], disposals[0]);
             }
         }
     }
@@ -57,32 +60,26 @@ public static class UkMatchingRules
         }
     }
 
+    /// <summary>
+    /// Apply section 104 rules and short sale rules
+    /// </summary>
     public static IEnumerable<Tuple<T, T>> ProcessTradeInChronologicalOrder<T>(UkSection104Pools section104Pools, GroupedTradeContainer<T> tradesToBeMatched) where T : ITradeTaxCalculation
     {
         foreach (ImmutableList<IAssetDatedEvent> group in tradesToBeMatched.GetAllTaxEventsGroupedAndSorted())
         {
             string assetName = group[0].AssetName;
             UkSection104 section104 = section104Pools.GetExistingOrInitialise(assetName);
-            Queue<T> unmatchedDisposal = new();
+            Dictionary<DateTime, T> unmatchedDisposals = new();
+
             foreach (IAssetDatedEvent taxEvent in group)
             {
                 switch (taxEvent)
                 {
                     case T tradeTaxCalculation:
-                        if (tradeTaxCalculation.CalculationCompleted) continue;
-                        if (unmatchedDisposal.Count != 0 && tradeTaxCalculation.AcquisitionDisposal == TradeType.ACQUISITION)
+                        foreach (var match in ProcessTradeTaxCalculation(tradeTaxCalculation, section104, unmatchedDisposals))
                         {
-                            while (unmatchedDisposal.Count != 0 && !tradeTaxCalculation.CalculationCompleted)
-                            {
-                                var nextTradeToMatch = unmatchedDisposal.Peek();
-                                yield return Tuple.Create(nextTradeToMatch, tradeTaxCalculation);
-                                if (nextTradeToMatch.CalculationCompleted) unmatchedDisposal.Dequeue();
-                            }
-                        }
-                        tradeTaxCalculation.MatchWithSection104(section104);
-                        if (!tradeTaxCalculation.CalculationCompleted && tradeTaxCalculation.AcquisitionDisposal == TradeType.DISPOSAL)
-                        {
-                            unmatchedDisposal.Enqueue(tradeTaxCalculation);
+                            // This produce short sale matching which is iterated by the caller
+                            yield return match;
                         }
                         break;
                     case IChangeSection104 action:
@@ -95,6 +92,28 @@ public static class UkMatchingRules
                         throw new ArgumentException($"Failed to process tax event for asset '{assetName}'. Expected events of type 'ITradeTaxCalculation' or 'IChangeSection104', but received an event of type '{taxEvent.GetType().Name}'.");
                 }
             }
+        }
+    }
+
+    private static IEnumerable<Tuple<T, T>> ProcessTradeTaxCalculation<T>(T tradeTaxCalculation, UkSection104 section104, Dictionary<DateTime, T> unmatchedDisposals) where T : ITradeTaxCalculation
+    {
+        if (tradeTaxCalculation.CalculationCompleted) yield break;
+
+        if (tradeTaxCalculation.AcquisitionDisposal == TradeType.ACQUISITION)
+        {
+            foreach (var disposal in unmatchedDisposals.Values)
+            {
+                yield return Tuple.Create(disposal, tradeTaxCalculation);
+                if (disposal.CalculationCompleted) unmatchedDisposals.Remove(disposal.Date);
+                if (tradeTaxCalculation.CalculationCompleted) break;
+            }
+        }
+
+        tradeTaxCalculation.MatchWithSection104(section104);
+
+        if (!tradeTaxCalculation.CalculationCompleted && tradeTaxCalculation.AcquisitionDisposal == TradeType.DISPOSAL)
+        {
+            unmatchedDisposals[tradeTaxCalculation.Date] = tradeTaxCalculation;
         }
     }
 }
