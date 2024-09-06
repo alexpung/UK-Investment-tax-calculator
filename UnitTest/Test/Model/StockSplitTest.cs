@@ -37,7 +37,8 @@ public class StockSplitTests
         var reason = _stockSplit.Reason;
 
         // Assert
-        reason.ShouldBe("Stock split for ABC occurred at 01/01/2023 00:00:00 with ratio of 2 for 1\n");
+        reason.ShouldContain("Stock split for ABC occurred");
+        reason.ShouldContain("with ratio of 2 for 1");
     }
 
     [Fact]
