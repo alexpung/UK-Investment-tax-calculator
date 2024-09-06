@@ -1,6 +1,6 @@
-﻿using Model.TaxEvents;
+﻿using InvestmentTaxCalculator.Model.TaxEvents;
 
-namespace Model.Interfaces;
+namespace InvestmentTaxCalculator.Model.Interfaces;
 public interface IDividendLists
 {
     List<Dividend> Dividends { get; set; }

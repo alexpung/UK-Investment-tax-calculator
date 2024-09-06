@@ -1,8 +1,8 @@
-﻿using Model.Interfaces;
+﻿using InvestmentTaxCalculator.Model.Interfaces;
 
 using System.Diagnostics.CodeAnalysis;
 
-namespace Model;
+namespace InvestmentTaxCalculator.Model;
 
 public record DescribedMoney : ITextFilePrintable
 {

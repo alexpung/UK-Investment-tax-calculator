@@ -1,9 +1,8 @@
-﻿using Enumerations;
-
-using Model.Interfaces;
+﻿using InvestmentTaxCalculator.Enumerations;
+using InvestmentTaxCalculator.Model.Interfaces;
 
 using System.Collections.Concurrent;
-namespace Model;
+namespace InvestmentTaxCalculator.Model;
 
 
 public class TradeCalculationResult(ITaxYear taxYear)
@@ -29,7 +28,7 @@ public class TradeCalculationResult(ITaxYear taxYear)
         return selectedYears.Contains(taxYear.ToTaxYear(taxCalculation.Date));
     }
 
-    private bool FilterAssetType(ITradeTaxCalculation trade, AssetGroupType assetGroupType) => assetGroupType switch
+    private static bool FilterAssetType(ITradeTaxCalculation trade, AssetGroupType assetGroupType) => assetGroupType switch
     {
         AssetGroupType.ALL => true,
         AssetGroupType.LISTEDSHARES => trade.AssetCatagoryType is AssetCatagoryType.STOCK,

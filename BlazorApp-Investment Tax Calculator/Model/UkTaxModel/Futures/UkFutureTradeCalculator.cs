@@ -1,13 +1,12 @@
-﻿using Enumerations;
-
-using Model.Interfaces;
-using Model.TaxEvents;
+﻿using InvestmentTaxCalculator.Enumerations;
+using InvestmentTaxCalculator.Model;
+using InvestmentTaxCalculator.Model.Interfaces;
+using InvestmentTaxCalculator.Model.TaxEvents;
+using InvestmentTaxCalculator.Model.UkTaxModel;
 
 using Syncfusion.Blazor.Data;
 
-using TaxEvents;
-
-namespace Model.UkTaxModel.Futures;
+namespace InvestmentTaxCalculator.Model.UkTaxModel.Futures;
 
 public class UkFutureTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorporateActionList tradeList) : ITradeCalculator
 {

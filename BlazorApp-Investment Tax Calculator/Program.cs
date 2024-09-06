@@ -1,22 +1,20 @@
 using InvestmentTaxCalculator;
+using InvestmentTaxCalculator.Model;
+using InvestmentTaxCalculator.Model.Interfaces;
+using InvestmentTaxCalculator.Model.UkTaxModel;
+using InvestmentTaxCalculator.Model.UkTaxModel.Futures;
+using InvestmentTaxCalculator.Model.UkTaxModel.Stocks;
+using InvestmentTaxCalculator.Parser;
+using InvestmentTaxCalculator.Parser.InteractiveBrokersXml;
+using InvestmentTaxCalculator.Services;
+using InvestmentTaxCalculator.ViewModel;
 
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
-using Model;
-using Model.Interfaces;
-using Model.UkTaxModel;
-using Model.UkTaxModel.Futures;
-using Model.UkTaxModel.Stocks;
-
-using Parser;
 using Parser.InteractiveBrokersXml;
 
-using Services;
-
 using Syncfusion.Blazor;
-
-using ViewModel;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");

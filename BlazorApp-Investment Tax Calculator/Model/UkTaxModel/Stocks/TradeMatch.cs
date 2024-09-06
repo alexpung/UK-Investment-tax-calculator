@@ -1,10 +1,9 @@
-﻿using Enumerations;
-
-using Model.Interfaces;
+﻿using InvestmentTaxCalculator.Enumerations;
+using InvestmentTaxCalculator.Model.Interfaces;
 
 using System.Text;
 
-namespace Model.UkTaxModel.Stocks;
+namespace InvestmentTaxCalculator.Model.UkTaxModel.Stocks;
 
 /// <summary>
 /// Data class to provide sufficient information to describe a matching of a trade pair and calculate taxable gain/loss

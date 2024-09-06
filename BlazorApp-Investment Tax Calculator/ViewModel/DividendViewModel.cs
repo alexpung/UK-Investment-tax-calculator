@@ -1,8 +1,7 @@
-﻿using Enumerations;
+﻿using InvestmentTaxCalculator.Enumerations;
+using InvestmentTaxCalculator.Model.TaxEvents;
 
-using Model.TaxEvents;
-
-namespace ViewModel;
+namespace InvestmentTaxCalculator.ViewModel;
 
 public record DividendViewModel(Dividend Dividend)
 {

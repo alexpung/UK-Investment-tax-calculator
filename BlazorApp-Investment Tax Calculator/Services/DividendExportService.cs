@@ -1,8 +1,8 @@
-﻿using Model;
+﻿using InvestmentTaxCalculator.Model;
 
 using System.Text;
 
-namespace Services;
+namespace InvestmentTaxCalculator.Services;
 
 public class DividendExportService(DividendCalculationResult dividendCalculationResult)
 {

@@ -1,6 +1,6 @@
 ﻿using Syncfusion.Blazor.Grids;
 
-namespace Services;
+namespace InvestmentTaxCalculator.Services;
 
 public class SfGridToolBarHandlingService
 {

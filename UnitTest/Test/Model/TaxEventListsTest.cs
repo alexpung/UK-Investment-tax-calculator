@@ -1,5 +1,6 @@
-using Model;
-using Model.TaxEvents;
+using InvestmentTaxCalculator.Model.TaxEvents;
+
+using InvestmentTaxCalculator.Model;
 
 using NSubstitute;
 

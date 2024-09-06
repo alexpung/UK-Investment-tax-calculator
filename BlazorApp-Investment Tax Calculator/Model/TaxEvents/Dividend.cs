@@ -1,11 +1,10 @@
-﻿using Enumerations;
-
-using Model.Interfaces;
+﻿using InvestmentTaxCalculator.Enumerations;
+using InvestmentTaxCalculator.Model.Interfaces;
 
 using System.Globalization;
 using System.Text.Json.Serialization;
 
-namespace Model.TaxEvents;
+namespace InvestmentTaxCalculator.Model.TaxEvents;
 
 public record Dividend : TaxEvent, ITextFilePrintable
 {

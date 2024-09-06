@@ -1,10 +1,10 @@
-﻿using Enumerations;
-
-using Model.UkTaxModel.Stocks;
+﻿using InvestmentTaxCalculator.Enumerations;
+using InvestmentTaxCalculator.Model;
+using InvestmentTaxCalculator.Model.UkTaxModel.Stocks;
 
 using System.Text;
 
-namespace Model.UkTaxModel.Futures;
+namespace InvestmentTaxCalculator.Model.UkTaxModel.Futures;
 
 public record FutureTradeMatch : TradeMatch
 {

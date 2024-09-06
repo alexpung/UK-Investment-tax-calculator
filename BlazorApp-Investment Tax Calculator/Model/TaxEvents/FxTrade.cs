@@ -1,6 +1,6 @@
-﻿using Enumerations;
+﻿using InvestmentTaxCalculator.Enumerations;
 
-namespace Model.TaxEvents;
+namespace InvestmentTaxCalculator.Model.TaxEvents;
 
 public record FxTrade : Trade
 {

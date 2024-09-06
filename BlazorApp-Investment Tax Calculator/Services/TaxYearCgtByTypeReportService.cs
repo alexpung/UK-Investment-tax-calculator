@@ -1,7 +1,7 @@
-﻿using Model;
-using Model.Interfaces;
+﻿using InvestmentTaxCalculator.Model;
+using InvestmentTaxCalculator.Model.Interfaces;
 
-namespace Services;
+namespace InvestmentTaxCalculator.Services;
 
 public class TaxYearCgtByTypeReportService(TradeCalculationResult tradeCalculationResult, ITaxYear taxYearConverter)
 {

@@ -1,6 +1,6 @@
-﻿using Model.Interfaces;
+﻿using InvestmentTaxCalculator.Model.Interfaces;
 
-namespace Model.TaxEvents;
+namespace InvestmentTaxCalculator.Model.TaxEvents;
 
 public abstract record TaxEvent : IAssetDatedEvent
 {

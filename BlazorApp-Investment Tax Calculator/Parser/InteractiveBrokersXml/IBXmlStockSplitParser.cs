@@ -1,10 +1,11 @@
-﻿using Model.TaxEvents;
+﻿using InvestmentTaxCalculator.Model.TaxEvents;
+using InvestmentTaxCalculator.Parser;
 
 using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
-namespace Parser.InteractiveBrokersXml;
+namespace InvestmentTaxCalculator.Parser.InteractiveBrokersXml;
 
 public static class IBXmlStockSplitParser
 {
@@ -24,8 +25,8 @@ public static class IBXmlStockSplitParser
         {
             AssetName = element.GetAttribute("symbol"),
             Date = DateTime.Parse(element.GetAttribute("dateTime"), CultureInfo.InvariantCulture),
-            NumberBeforeSplit = ushort.Parse(matchResult.Groups[2].Value),
-            NumberAfterSplit = ushort.Parse(matchResult.Groups[1].Value),
+            SplitFrom = ushort.Parse(matchResult.Groups[2].Value),
+            SplitTo = ushort.Parse(matchResult.Groups[1].Value),
         };
 
     }

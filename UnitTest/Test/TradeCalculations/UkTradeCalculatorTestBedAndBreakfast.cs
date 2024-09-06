@@ -1,12 +1,9 @@
-﻿using Enumerations;
-
-using Model;
-using Model.Interfaces;
-using Model.TaxEvents;
+﻿using InvestmentTaxCalculator.Enumerations;
+using InvestmentTaxCalculator.Model;
+using InvestmentTaxCalculator.Model.Interfaces;
+using InvestmentTaxCalculator.Model.TaxEvents;
 
 using System.Globalization;
-
-using TaxEvents;
 
 using UnitTest.Helper;
 

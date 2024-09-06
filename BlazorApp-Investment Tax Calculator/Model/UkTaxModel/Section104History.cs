@@ -1,10 +1,9 @@
-﻿using Model.Interfaces;
-
-using Services;
+﻿using InvestmentTaxCalculator.Model.Interfaces;
+using InvestmentTaxCalculator.Services;
 
 using System.Text;
 
-namespace Model.UkTaxModel;
+namespace InvestmentTaxCalculator.Model.UkTaxModel;
 public class Section104History : ITextFilePrintable
 {
     public ITradeTaxCalculation? TradeTaxCalculation { get; set; }

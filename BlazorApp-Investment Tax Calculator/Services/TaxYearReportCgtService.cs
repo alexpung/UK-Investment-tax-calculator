@@ -1,8 +1,8 @@
-﻿namespace Services;
-using Model;
-using Model.Interfaces;
+﻿namespace InvestmentTaxCalculator.Services;
 
-using UkTaxModel;
+using InvestmentTaxCalculator.Model;
+using InvestmentTaxCalculator.Model.Interfaces;
+using InvestmentTaxCalculator.Model.UkTaxModel;
 
 public class TaxYearReportService(TradeCalculationResult tradeCalculationResult, ITaxYear taxYearConverter)
 {

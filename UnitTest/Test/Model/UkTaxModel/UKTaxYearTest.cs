@@ -1,4 +1,4 @@
-﻿using Model.UkTaxModel;
+﻿using InvestmentTaxCalculator.Model.UkTaxModel;
 
 using System.Globalization;
 

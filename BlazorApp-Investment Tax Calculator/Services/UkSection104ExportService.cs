@@ -1,9 +1,9 @@
-﻿using Model.Interfaces;
-using Model.UkTaxModel;
+﻿using InvestmentTaxCalculator.Model.Interfaces;
+using InvestmentTaxCalculator.Model.UkTaxModel;
 
 using System.Text;
 
-namespace Services;
+namespace InvestmentTaxCalculator.Services;
 
 public class UkSection104ExportService(ITaxYear taxYear, UkSection104Pools ukSection104Pools) : ITextFilePrintable
 {

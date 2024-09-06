@@ -1,6 +1,6 @@
-﻿using Model.Interfaces;
+﻿using InvestmentTaxCalculator.Model.Interfaces;
 
-namespace Model.UkTaxModel;
+namespace InvestmentTaxCalculator.Model.UkTaxModel;
 
 public record UkSection104
 {

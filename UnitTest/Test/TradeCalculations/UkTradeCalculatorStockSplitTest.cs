@@ -1,10 +1,9 @@
-﻿using Enumerations;
-
-using Model;
-using Model.Interfaces;
-using Model.TaxEvents;
-using Model.UkTaxModel;
-using Model.UkTaxModel.Stocks;
+﻿using InvestmentTaxCalculator.Enumerations;
+using InvestmentTaxCalculator.Model;
+using InvestmentTaxCalculator.Model.Interfaces;
+using InvestmentTaxCalculator.Model.TaxEvents;
+using InvestmentTaxCalculator.Model.UkTaxModel;
+using InvestmentTaxCalculator.Model.UkTaxModel.Stocks;
 
 using System.Globalization;
 
@@ -30,8 +29,8 @@ public class UkTradeCalculatorStockSplitTest
         {
             AssetName = "XYZ",
             Date = DateTime.Parse("01-Feb-22 10:00:00", CultureInfo.InvariantCulture),
-            NumberBeforeSplit = 1,
-            NumberAfterSplit = 2
+            SplitFrom = 1,
+            SplitTo = 2
         };
 
         // Second trade: Selling shares after the split
@@ -86,8 +85,8 @@ public class UkTradeCalculatorStockSplitTest
         {
             AssetName = "XYZ",
             Date = DateTime.Parse("01-Feb-22", CultureInfo.InvariantCulture),
-            NumberBeforeSplit = 1,
-            NumberAfterSplit = 2
+            SplitFrom = 1,
+            SplitTo = 2
         };
 
         // Trade2: Buying 600 shares post-split
@@ -146,8 +145,8 @@ public class UkTradeCalculatorStockSplitTest
         {
             AssetName = "ABC",
             Date = DateTime.Parse("01-May-21", CultureInfo.InvariantCulture),
-            NumberAfterSplit = 2,
-            NumberBeforeSplit = 1
+            SplitTo = 2,
+            SplitFrom = 1
         };
 
         // Sale of 100 shares (post-split, effectively 50 pre-split shares)

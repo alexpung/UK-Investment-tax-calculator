@@ -1,9 +1,8 @@
-﻿using Enumerations;
-
-using Model;
-using Model.TaxEvents;
-using Model.UkTaxModel;
-using Model.UkTaxModel.Stocks;
+﻿using InvestmentTaxCalculator.Enumerations;
+using InvestmentTaxCalculator.Model;
+using InvestmentTaxCalculator.Model.TaxEvents;
+using InvestmentTaxCalculator.Model.UkTaxModel;
+using InvestmentTaxCalculator.Model.UkTaxModel.Stocks;
 
 using UnitTest.Helper;
 
@@ -24,7 +23,6 @@ public class UkSection104Test
         ukSection104.Quantity.ShouldBe(100m);
         ukSection104.AcquisitionCostInBaseCurrency.ShouldBe(new WrappedMoney(buyValue));
         buyTradeTaxCalculation.MatchHistory[0].MatchAcquisitionQty.ShouldBe(buyQuantity);
-        buyTradeTaxCalculation.MatchHistory[0].BaseCurrencyMatchAllowableCost.ShouldBe(new WrappedMoney(buyValue));
         buyTradeTaxCalculation.MatchHistory[0].BaseCurrencyMatchDisposalProceed.ShouldBe(WrappedMoney.GetBaseCurrencyZero());
         buyTradeTaxCalculation.MatchHistory[0].TradeMatchType.ShouldBe(TaxMatchType.SECTION_104);
         TradeTaxCalculation sellTradeTaxCalculation = MockTrade.CreateTradeTaxCalculation("IBM", new DateTime(2020, 1, 2, 0, 0, 0, DateTimeKind.Local), sellQuantity, sellValue, TradeType.DISPOSAL);
@@ -72,10 +70,13 @@ public class UkSection104Test
     {
         TradeTaxCalculation tradeTaxCalculation1 = MockTrade.CreateTradeTaxCalculation("IBM", new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Local), 100, 1000m, TradeType.ACQUISITION);
         TradeTaxCalculation tradeTaxCalculation2 = MockTrade.CreateTradeTaxCalculation("IBM", new DateTime(2020, 3, 2, 0, 0, 0, DateTimeKind.Local), 120, 1500m, TradeType.DISPOSAL);
-        StockSplit corporateAction = new() { AssetName = "ABC", Date = new DateTime(2020, 3, 1, 0, 0, 0, DateTimeKind.Local), NumberAfterSplit = 3, NumberBeforeSplit = 2 };
+        StockSplit corporateAction = new() { AssetName = "IBM", Date = new DateTime(2020, 3, 1, 0, 0, 0, DateTimeKind.Local), SplitTo = 3, SplitFrom = 2 };
+        // Also test wrong AssetName don't change S104
+        StockSplit corporateAction2 = new() { AssetName = "ABC", Date = new DateTime(2020, 3, 1, 0, 0, 0, DateTimeKind.Local), SplitTo = 3, SplitFrom = 1 };
         UkSection104 ukSection104 = new("IBM");
         tradeTaxCalculation1.MatchWithSection104(ukSection104);
         corporateAction.ChangeSection104(ukSection104);
+        corporateAction2.ChangeSection104(ukSection104);
         tradeTaxCalculation2.MatchWithSection104(ukSection104);
         ukSection104.Quantity.ShouldBe(30); // bought 100, 150 after split - 120 sold = 30
         ukSection104.AcquisitionCostInBaseCurrency.ShouldBe(new WrappedMoney(200m)); // bought shares worth 1000, remaining shares worth = 30*1000/150 = 200

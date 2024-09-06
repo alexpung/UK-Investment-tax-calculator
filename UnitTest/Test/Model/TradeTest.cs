@@ -1,7 +1,7 @@
-using Enumerations;
+using InvestmentTaxCalculator.Enumerations;
 
-using Model;
-using Model.TaxEvents;
+using InvestmentTaxCalculator.Model;
+using InvestmentTaxCalculator.Model.TaxEvents;
 
 namespace UnitTest.Test.Model;
 

@@ -1,9 +1,8 @@
-﻿using Enumerations;
-
-using Model;
-using Model.Interfaces;
-using Model.TaxEvents;
-using Model.UkTaxModel;
+﻿using InvestmentTaxCalculator.Enumerations;
+using InvestmentTaxCalculator.Model;
+using InvestmentTaxCalculator.Model.Interfaces;
+using InvestmentTaxCalculator.Model.TaxEvents;
+using InvestmentTaxCalculator.Model.UkTaxModel;
 
 using System.Globalization;
 

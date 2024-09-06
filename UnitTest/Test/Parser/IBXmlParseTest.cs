@@ -1,10 +1,9 @@
-﻿using Enumerations;
+﻿using InvestmentTaxCalculator.Enumerations;
+using InvestmentTaxCalculator.Model.TaxEvents;
+using InvestmentTaxCalculator.Parser;
+using InvestmentTaxCalculator.Parser.InteractiveBrokersXml;
 
-using Model;
-using Model.TaxEvents;
-
-using Parser;
-using Parser.InteractiveBrokersXml;
+using InvestmentTaxCalculator.Model;
 
 using System.Globalization;
 using System.Xml.Linq;
@@ -58,7 +57,7 @@ public class IBXmlParseTest
         parsedData.Count.ShouldBe(2);
         parsedData[0].AssetName.ShouldBe("4369.T");
         parsedData[0].Date.ShouldBe(DateTime.Parse("27-Jan-21 20:25:00", CultureInfo.InvariantCulture));
-        parsedData[0].NumberBeforeSplit.ShouldBe(1);
-        parsedData[0].NumberAfterSplit.ShouldBe(4);
+        parsedData[0].SplitFrom.ShouldBe(1);
+        parsedData[0].SplitTo.ShouldBe(4);
     }
 }

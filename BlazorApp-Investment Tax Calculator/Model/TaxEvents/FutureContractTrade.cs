@@ -1,11 +1,9 @@
-﻿using Enumerations;
-
-using Model;
-using Model.TaxEvents;
+﻿using InvestmentTaxCalculator.Enumerations;
+using InvestmentTaxCalculator.Model;
 
 using System.Collections.Immutable;
 
-namespace TaxEvents;
+namespace InvestmentTaxCalculator.Model.TaxEvents;
 
 public record FutureContractTrade : Trade
 {

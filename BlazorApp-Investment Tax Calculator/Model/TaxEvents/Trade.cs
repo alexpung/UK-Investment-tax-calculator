@@ -1,14 +1,11 @@
-﻿using Enumerations;
-
-using Model.Interfaces;
+﻿using InvestmentTaxCalculator.Enumerations;
+using InvestmentTaxCalculator.Model.Interfaces;
 
 using System.Collections.Immutable;
 using System.Text;
 using System.Text.Json.Serialization;
 
-using TaxEvents;
-
-namespace Model.TaxEvents;
+namespace InvestmentTaxCalculator.Model.TaxEvents;
 [JsonDerivedType(typeof(Trade), "trade")]
 [JsonDerivedType(typeof(FxTrade), "fxTrade")]
 [JsonDerivedType(typeof(FutureContractTrade), "futureContractTrade")]

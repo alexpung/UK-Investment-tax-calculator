@@ -1,11 +1,10 @@
 ﻿namespace UnitTest.Test.Model.UkTaxModel;
-using Enumerations;
-
-using global::Model;
-using global::Model.Interfaces;
-using global::Model.TaxEvents;
-using global::Model.UkTaxModel;
-using global::Model.UkTaxModel.Stocks;
+using InvestmentTaxCalculator.Enumerations;
+using InvestmentTaxCalculator.Model;
+using InvestmentTaxCalculator.Model.Interfaces;
+using InvestmentTaxCalculator.Model.TaxEvents;
+using InvestmentTaxCalculator.Model.UkTaxModel;
+using InvestmentTaxCalculator.Model.UkTaxModel.Stocks;
 
 using NSubstitute;
 

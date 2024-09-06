@@ -2,7 +2,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Model;
+namespace InvestmentTaxCalculator.Model;
 
 [System.Diagnostics.DebuggerDisplay("{ToString()}")]
 public record WrappedMoney : IComparable<WrappedMoney>, IEquatable<WrappedMoney>
