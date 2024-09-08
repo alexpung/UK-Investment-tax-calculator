@@ -22,6 +22,9 @@ public class UkSection104Test
         ukSection104.AssetName.ShouldBe("IBM");
         ukSection104.Quantity.ShouldBe(100m);
         ukSection104.AcquisitionCostInBaseCurrency.ShouldBe(new WrappedMoney(buyValue));
+        buyTradeTaxCalculation.MatchHistory[0].MatchAcquisitionQty.ShouldBe(buyQuantity);
+        buyTradeTaxCalculation.MatchHistory[0].BaseCurrencyMatchDisposalProceed.ShouldBe(WrappedMoney.GetBaseCurrencyZero());
+        buyTradeTaxCalculation.MatchHistory[0].TradeMatchType.ShouldBe(TaxMatchType.SECTION_104);
         TradeTaxCalculation sellTradeTaxCalculation = MockTrade.CreateTradeTaxCalculation("IBM", new DateTime(2020, 1, 2, 0, 0, 0, DateTimeKind.Local), sellQuantity, sellValue, TradeType.DISPOSAL);
         sellTradeTaxCalculation.MatchWithSection104(ukSection104);
         ukSection104.Quantity.ShouldBe(decimal.Max(buyQuantity - sellQuantity, 0));

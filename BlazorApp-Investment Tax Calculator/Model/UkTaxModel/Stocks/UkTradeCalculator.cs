@@ -67,8 +67,14 @@ public class UkTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorpo
             MatchedSellTrade = tradePairSorter.DisposalTrade,
             AdditionalInformation = matchAdjustment.CorporateActions.ToString() ?? ""
         };
+        TradeMatch AcqusitionTradeMatch = disposalTradeMatch with
+        {
+            BaseCurrencyMatchAllowableCost = WrappedMoney.GetBaseCurrencyZero(),
+            BaseCurrencyMatchDisposalProceed = WrappedMoney.GetBaseCurrencyZero(),
+        };
         tradePairSorter.AcquisitionTrade.MatchQty(tradePairSorter.AcquisitionMatchQuantity);
         tradePairSorter.DisposalTrade.MatchQty(tradePairSorter.DisposalMatchQuantity);
+        tradePairSorter.AcquisitionTrade.MatchHistory.Add(AcqusitionTradeMatch);
         tradePairSorter.DisposalTrade.MatchHistory.Add(disposalTradeMatch);
     }
 }
