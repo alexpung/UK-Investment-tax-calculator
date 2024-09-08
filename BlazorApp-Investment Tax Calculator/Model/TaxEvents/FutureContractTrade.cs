@@ -1,15 +1,15 @@
 ﻿using InvestmentTaxCalculator.Enumerations;
-using InvestmentTaxCalculator.Model;
+using InvestmentTaxCalculator.Model.Interfaces;
 
 using System.Collections.Immutable;
 
 namespace InvestmentTaxCalculator.Model.TaxEvents;
 
-public record FutureContractTrade : Trade
+public record FutureContractTrade : Trade, ISplittableToLongAndShort<FutureContractTrade>
 {
     public required DescribedMoney ContractValue { get; set; }
     public override AssetCatagoryType AssetType { get; set; } = AssetCatagoryType.FUTURE;
-    public PositionType FuturePositionType { get; set; }
+    public PositionType PositionType { get; set; }
 
     /// <summary>
     /// Create a copy of the trade with quantity that is part of the whole trade

@@ -49,7 +49,7 @@ public class UkTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorpo
 
     public void MatchTrade(ITradeTaxCalculation trade1, ITradeTaxCalculation trade2, TaxMatchType taxMatchType)
     {
-        TradePairSorter tradePairSorter = new(trade1, trade2);
+        TradePairSorter<ITradeTaxCalculation> tradePairSorter = new(trade1, trade2);
         if (trade1.CalculationCompleted || trade2.CalculationCompleted) return;
         MatchAdjustment matchAdjustment = tradeList.CorporateActions
             .Aggregate(new MatchAdjustment(), (matchAdjustment, corporateAction) => corporateAction.TradeMatching(trade1, trade2, matchAdjustment));
