@@ -2,7 +2,6 @@
 using InvestmentTaxCalculator.Model;
 using InvestmentTaxCalculator.Model.Interfaces;
 using InvestmentTaxCalculator.Model.TaxEvents;
-using InvestmentTaxCalculator.Model.UkTaxModel;
 
 using System.Text;
 
@@ -76,20 +75,7 @@ public class TradeTaxCalculation : ITradeTaxCalculation
         if (UnmatchedQty == 0m) return;
         if (AcquisitionDisposal is TradeType.ACQUISITION)
         {
-            Section104History section104History = ukSection104.AddAssets(this, UnmatchedQty, UnmatchedCostOrProceed);
-            MatchHistory.Add(
-                new TradeMatch()
-                {
-                    Date = DateOnly.FromDateTime(Date),
-                    AssetName = AssetName,
-                    TradeMatchType = TaxMatchType.SECTION_104,
-                    MatchedBuyTrade = this,
-                    MatchAcquisitionQty = UnmatchedQty,
-                    MatchDisposalQty = UnmatchedQty,
-                    BaseCurrencyMatchAllowableCost = WrappedMoney.GetBaseCurrencyZero(),
-                    BaseCurrencyMatchDisposalProceed = WrappedMoney.GetBaseCurrencyZero(),
-                    Section104HistorySnapshot = section104History
-                });
+            ukSection104.AddAssets(this, UnmatchedQty, UnmatchedCostOrProceed);
             MatchQty(UnmatchedQty);
         }
         else if (AcquisitionDisposal is TradeType.DISPOSAL)

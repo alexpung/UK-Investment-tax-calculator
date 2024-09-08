@@ -43,26 +43,7 @@ public class FutureTradeTaxCalculation : TradeTaxCalculation
         if (CalculationCompleted) return;
         if (AcquisitionDisposal is TradeType.ACQUISITION)
         {
-            Section104History section104History = ukSection104.AddAssets(this, UnmatchedQty, UnmatchedCostOrProceed, UnmatchedContractValue);
-            FutureTradeMatch tradeMatch = new()
-            {
-                Date = DateOnly.FromDateTime(Date),
-                AssetName = AssetName,
-                TradeMatchType = TaxMatchType.SECTION_104,
-                MatchAcquisitionQty = UnmatchedQty,
-                MatchDisposalQty = 0,
-                BaseCurrencyMatchAllowableCost = UnmatchedCostOrProceed,
-                BaseCurrencyMatchDisposalProceed = WrappedMoney.GetBaseCurrencyZero(),
-                MatchedBuyTrade = this,
-                MatchedSellTrade = null,
-                AdditionalInformation = "",
-                MatchBuyContractValue = UnmatchedContractValue,
-                BaseCurrencyAcqusitionDealingCost = UnmatchedCostOrProceed,
-                BaseCurrencyDisposalDealingCost = WrappedMoney.GetBaseCurrencyZero(),
-                ClosingFxRate = 0,
-                Section104HistorySnapshot = section104History,
-            };
-            MatchHistory.Add(tradeMatch);
+            ukSection104.AddAssets(this, UnmatchedQty, UnmatchedCostOrProceed, UnmatchedContractValue);
             MatchQty(UnmatchedQty);
         }
         else if (AcquisitionDisposal is TradeType.DISPOSAL)
