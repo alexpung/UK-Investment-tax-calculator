@@ -53,24 +53,22 @@ public class UkTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorpo
         if (trade1.CalculationCompleted || trade2.CalculationCompleted) return;
         MatchAdjustment matchAdjustment = tradeList.CorporateActions
             .Aggregate(new MatchAdjustment(), (matchAdjustment, corporateAction) => corporateAction.TradeMatching(trade1, trade2, matchAdjustment));
-        decimal proposedMatchQuantity = Math.Min(tradePairSorter.EarlierTrade.UnmatchedQty, tradePairSorter.LatterTrade.UnmatchedQty / matchAdjustment.MatchAdjustmentFactor);
-        decimal acqusitionMatchQuantity = tradePairSorter.EarlierTrade.AcquisitionDisposal == TradeType.ACQUISITION ? proposedMatchQuantity : proposedMatchQuantity * matchAdjustment.MatchAdjustmentFactor;
-        decimal disposalMatchQuantity = tradePairSorter.EarlierTrade.AcquisitionDisposal == TradeType.DISPOSAL ? proposedMatchQuantity : proposedMatchQuantity * matchAdjustment.MatchAdjustmentFactor;
+        tradePairSorter.SetQuantityAdjustmentFactor(matchAdjustment.MatchAdjustmentFactor);
         TradeMatch disposalTradeMatch = new()
         {
             Date = DateOnly.FromDateTime(tradePairSorter.DisposalTrade.Date),
             AssetName = tradePairSorter.DisposalTrade.AssetName,
             TradeMatchType = taxMatchType,
-            MatchAcquisitionQty = acqusitionMatchQuantity,
-            MatchDisposalQty = disposalMatchQuantity,
-            BaseCurrencyMatchAllowableCost = tradePairSorter.AcqusitionTrade.GetProportionedCostOrProceed(acqusitionMatchQuantity),
-            BaseCurrencyMatchDisposalProceed = tradePairSorter.DisposalTrade.GetProportionedCostOrProceed(disposalMatchQuantity),
-            MatchedBuyTrade = tradePairSorter.AcqusitionTrade,
+            MatchAcquisitionQty = tradePairSorter.AcquisitionMatchQuantity,
+            MatchDisposalQty = tradePairSorter.DisposalMatchQuantity,
+            BaseCurrencyMatchAllowableCost = tradePairSorter.AcquisitionTrade.GetProportionedCostOrProceed(tradePairSorter.AcquisitionMatchQuantity),
+            BaseCurrencyMatchDisposalProceed = tradePairSorter.DisposalTrade.GetProportionedCostOrProceed(tradePairSorter.DisposalMatchQuantity),
+            MatchedBuyTrade = tradePairSorter.AcquisitionTrade,
             MatchedSellTrade = tradePairSorter.DisposalTrade,
             AdditionalInformation = matchAdjustment.CorporateActions.ToString() ?? ""
         };
-        tradePairSorter.AcqusitionTrade.MatchQty(acqusitionMatchQuantity);
-        tradePairSorter.DisposalTrade.MatchQty(disposalMatchQuantity);
+        tradePairSorter.AcquisitionTrade.MatchQty(tradePairSorter.AcquisitionMatchQuantity);
+        tradePairSorter.DisposalTrade.MatchQty(tradePairSorter.DisposalMatchQuantity);
         tradePairSorter.DisposalTrade.MatchHistory.Add(disposalTradeMatch);
     }
 }

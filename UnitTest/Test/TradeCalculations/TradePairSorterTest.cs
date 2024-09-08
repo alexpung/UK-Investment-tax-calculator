@@ -31,7 +31,7 @@ public class TradePairSorterTests
         _trade2.AcquisitionDisposal.Returns(TradeType.DISPOSAL);
         _trade2.Date.Returns(DateTime.Parse("02-Jun-21 10:00:00", CultureInfo.InvariantCulture));
         var sorter = new TradePairSorter<ITradeTaxCalculation>(_trade1, _trade2);
-        sorter.AcqusitionTrade.ShouldBe(_trade1);
+        sorter.AcquisitionTrade.ShouldBe(_trade1);
         sorter.DisposalTrade.ShouldBe(_trade2);
         sorter.EarlierTrade.ShouldBe(_trade2);
         sorter.LatterTrade.ShouldBe(_trade1);
@@ -53,7 +53,7 @@ public class TradePairSorterTests
         _trade2.AcquisitionDisposal.Returns(TradeType.ACQUISITION);
         _trade2.Date.Returns(DateTime.Parse("03-Jun-22 10:00:00", CultureInfo.InvariantCulture));
         var sorter = new TradePairSorter<ITradeTaxCalculation>(_trade1, _trade2);
-        sorter.AcqusitionTrade.ShouldBe(_trade2);
+        sorter.AcquisitionTrade.ShouldBe(_trade2);
         sorter.DisposalTrade.ShouldBe(_trade1);
         sorter.EarlierTrade.ShouldBe(_trade1);
         sorter.LatterTrade.ShouldBe(_trade2);

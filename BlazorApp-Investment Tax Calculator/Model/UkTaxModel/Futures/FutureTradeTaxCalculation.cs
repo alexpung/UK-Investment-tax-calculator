@@ -88,7 +88,7 @@ public class FutureTradeTaxCalculation : TradeTaxCalculation
                 AdditionalInformation = "",
                 MatchBuyContractValue = buyContractValue,
                 MatchSellContractValue = sellContractValue,
-                BaseCurrencyAcqusitionDealingCost = section104History.ValueChange * -1,
+                BaseCurrencyAcquisitionDealingCost = section104History.ValueChange * -1,
                 BaseCurrencyDisposalDealingCost = GetProportionedCostOrProceed(matchQty),
                 ClosingFxRate = ContractFxRate,
                 Section104HistorySnapshot = section104History,
