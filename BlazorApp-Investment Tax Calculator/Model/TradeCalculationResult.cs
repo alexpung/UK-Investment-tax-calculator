@@ -5,6 +5,12 @@ using System.Collections.Concurrent;
 namespace InvestmentTaxCalculator.Model;
 
 
+/// <summary>
+/// Calculate tax results per year. Tax numbers are only rounded per year to the benefit of the tax payer to the nearest pound.
+/// Calculations are not rounded.
+/// https://www.gov.uk/hmrc-internal-manuals/self-assessment-manual/sam121370
+/// </summary>
+/// <param name="taxYear"></param>
 public class TradeCalculationResult(ITaxYear taxYear)
 {
     public ConcurrentBag<ITradeTaxCalculation> CalculatedTrade { get; set; } = [];
@@ -36,7 +42,6 @@ public class TradeCalculationResult(ITaxYear taxYear)
         _ => throw new NotImplementedException()
     };
 
-    // Rounding to tax payer benefit https://www.gov.uk/hmrc-internal-manuals/self-assessment-manual/sam121370
     public int NumberOfDisposals(IEnumerable<int> taxYearsFilter, AssetGroupType assetGroupType = AssetGroupType.ALL)
     {
         return CalculatedTrade.Where(trade => IsTradeInSelectedTaxYear(taxYearsFilter, trade) && FilterAssetType(trade, assetGroupType))
@@ -46,17 +51,17 @@ public class TradeCalculationResult(ITaxYear taxYear)
     public WrappedMoney DisposalProceeds(IEnumerable<int> taxYearsFilter, AssetGroupType assetGroupType = AssetGroupType.ALL)
     {
         return CalculatedTrade.Where(trade => IsTradeInSelectedTaxYear(taxYearsFilter, trade) && FilterAssetType(trade, assetGroupType))
-                              .Where(trade => trade.AcquisitionDisposal == TradeType.DISPOSAL)
-                              .Sum(trade => trade.TotalProceeds)
-                              .Floor();
+                          .Where(trade => trade.AcquisitionDisposal == TradeType.DISPOSAL)
+                          .GroupBy(trade => taxYear.ToTaxYear(trade.Date))
+                          .Sum(group => group.Sum(trade => trade.TotalProceeds).Floor());
     }
 
     public WrappedMoney AllowableCosts(IEnumerable<int> taxYearsFilter, AssetGroupType assetGroupType = AssetGroupType.ALL)
     {
         return CalculatedTrade.Where(trade => IsTradeInSelectedTaxYear(taxYearsFilter, trade) && FilterAssetType(trade, assetGroupType))
                               .Where(trade => trade.AcquisitionDisposal == TradeType.DISPOSAL)
-                              .Sum(trade => trade.TotalAllowableCost)
-                              .Ceiling();
+                              .GroupBy(trade => taxYear.ToTaxYear(trade.Date))
+                              .Sum(group => group.Sum(trade => trade.TotalAllowableCost).Ceiling());
     }
 
     public WrappedMoney TotalGain(IEnumerable<int> taxYearsFilter, AssetGroupType assetGroupType = AssetGroupType.ALL)
@@ -64,8 +69,8 @@ public class TradeCalculationResult(ITaxYear taxYear)
         return CalculatedTrade.Where(trade => IsTradeInSelectedTaxYear(taxYearsFilter, trade) && FilterAssetType(trade, assetGroupType))
                               .Where(trade => trade.AcquisitionDisposal == TradeType.DISPOSAL)
                               .Where(trade => trade.Gain.Amount > 0)
-                              .Sum(trade => trade.Gain)
-                              .Floor();
+                              .GroupBy(trade => taxYear.ToTaxYear(trade.Date))
+                              .Sum(group => group.Sum(trade => trade.Gain).Floor());
     }
 
     public WrappedMoney TotalLoss(IEnumerable<int> taxYearsFilter, AssetGroupType assetGroupType = AssetGroupType.ALL)
@@ -73,8 +78,8 @@ public class TradeCalculationResult(ITaxYear taxYear)
         return CalculatedTrade.Where(trade => IsTradeInSelectedTaxYear(taxYearsFilter, trade) && FilterAssetType(trade, assetGroupType))
                               .Where(trade => trade.AcquisitionDisposal == TradeType.DISPOSAL)
                               .Where(trade => trade.Gain.Amount < 0)
-                              .Sum(trade => trade.Gain)
-                              .Ceiling();
+                              .GroupBy(trade => taxYear.ToTaxYear(trade.Date))
+                              .Sum(group => group.Sum(trade => trade.Gain).Floor());
     }
 }
 

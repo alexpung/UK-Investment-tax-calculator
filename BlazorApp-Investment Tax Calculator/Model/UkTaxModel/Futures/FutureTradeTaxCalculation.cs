@@ -1,7 +1,5 @@
 ﻿using InvestmentTaxCalculator.Enumerations;
-using InvestmentTaxCalculator.Model;
 using InvestmentTaxCalculator.Model.TaxEvents;
-using InvestmentTaxCalculator.Model.UkTaxModel;
 using InvestmentTaxCalculator.Model.UkTaxModel.Stocks;
 
 using System.Text;
@@ -10,8 +8,8 @@ namespace InvestmentTaxCalculator.Model.UkTaxModel.Futures;
 
 public class FutureTradeTaxCalculation : TradeTaxCalculation
 {
-    public override TradeType AcquisitionDisposal => PositionType is FuturePositionType.OPENLONG or FuturePositionType.OPENSHORT ? TradeType.ACQUISITION : TradeType.DISPOSAL;
-    public FuturePositionType PositionType => ((FutureContractTrade)TradeList[0]).FuturePositionType;
+    public override TradeType AcquisitionDisposal => PositionType is PositionType.OPENLONG or PositionType.OPENSHORT ? TradeType.ACQUISITION : TradeType.DISPOSAL;
+    public PositionType PositionType => ((FutureContractTrade)TradeList[0]).PositionType;
     public WrappedMoney TotalContractValue { get; private set; }
     public decimal ContractFxRate { get; private init; }
     public WrappedMoney UnmatchedContractValue { get; private set; }
@@ -25,7 +23,7 @@ public class FutureTradeTaxCalculation : TradeTaxCalculation
         // normally commission are deducted from money received in a sell trade
         // In case of open short is a buy trade and TotalCostOrProceed is cost of getting the contract commissions are added instead
         // The opposite is true for CLOSELONG
-        if (PositionType is FuturePositionType.OPENSHORT or FuturePositionType.CLOSELONG)
+        if (PositionType is PositionType.OPENSHORT or PositionType.CLOSELONG)
         {
             TotalCostOrProceed *= -1;
             UnmatchedCostOrProceed *= -1;
@@ -57,7 +55,7 @@ public class FutureTradeTaxCalculation : TradeTaxCalculation
                 MatchedSellTrade = null,
                 AdditionalInformation = "",
                 MatchBuyContractValue = UnmatchedContractValue,
-                BaseCurrencyAcqusitionDealingCost = UnmatchedCostOrProceed,
+                BaseCurrencyAcquisitionDealingCost = UnmatchedCostOrProceed,
                 BaseCurrencyDisposalDealingCost = WrappedMoney.GetBaseCurrencyZero(),
                 ClosingFxRate = 0,
                 Section104HistorySnapshot = section104History,
@@ -73,19 +71,19 @@ public class FutureTradeTaxCalculation : TradeTaxCalculation
 
             WrappedMoney buyContractValue = PositionType switch
             {
-                FuturePositionType.CLOSELONG => section104History.ContractValueChange * -1,
-                FuturePositionType.CLOSESHORT => GetProportionedContractValue(matchQty),
+                PositionType.CLOSELONG => section104History.ContractValueChange * -1,
+                PositionType.CLOSESHORT => GetProportionedContractValue(matchQty),
                 _ => throw new ArgumentException($"Unexpected future position type {PositionType} for close position")
             };
             WrappedMoney sellContractValue = PositionType switch
             {
-                FuturePositionType.CLOSELONG => GetProportionedContractValue(matchQty),
-                FuturePositionType.CLOSESHORT => section104History.ContractValueChange * -1,
+                PositionType.CLOSELONG => GetProportionedContractValue(matchQty),
+                PositionType.CLOSESHORT => section104History.ContractValueChange * -1,
                 _ => throw new ArgumentException($"Unexpected future position type {PositionType} for close position")
             };
             WrappedMoney contractGain = sellContractValue - buyContractValue;
             WrappedMoney contractGainInBaseCurrency = new((contractGain * ContractFxRate).Amount);
-            WrappedMoney acquisitionValue = section104History.ValueChange * -1 + GetProportionedCostOrProceed(matchQty);
+            WrappedMoney acquisitionValue = (section104History.ValueChange * -1) + GetProportionedCostOrProceed(matchQty);
             WrappedMoney disposalValue = WrappedMoney.GetBaseCurrencyZero();
             if (contractGainInBaseCurrency.Amount > 0)
             {
@@ -109,7 +107,7 @@ public class FutureTradeTaxCalculation : TradeTaxCalculation
                 AdditionalInformation = "",
                 MatchBuyContractValue = buyContractValue,
                 MatchSellContractValue = sellContractValue,
-                BaseCurrencyAcqusitionDealingCost = section104History.ValueChange * -1,
+                BaseCurrencyAcquisitionDealingCost = section104History.ValueChange * -1,
                 BaseCurrencyDisposalDealingCost = GetProportionedCostOrProceed(matchQty),
                 ClosingFxRate = ContractFxRate,
                 Section104HistorySnapshot = section104History,

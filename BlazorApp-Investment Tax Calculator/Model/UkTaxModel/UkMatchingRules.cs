@@ -69,7 +69,7 @@ public static class UkMatchingRules
         {
             string assetName = group[0].AssetName;
             UkSection104 section104 = section104Pools.GetExistingOrInitialise(assetName);
-            Dictionary<DateTime, T> unmatchedDisposals = new();
+            Dictionary<DateTime, T> unmatchedDisposals = [];
 
             foreach (IAssetDatedEvent taxEvent in group)
             {
@@ -95,6 +95,9 @@ public static class UkMatchingRules
         }
     }
 
+    /// <summary>
+    /// Process section 104 matching and shorting sale match rules
+    /// </summary>
     private static IEnumerable<Tuple<T, T>> ProcessTradeTaxCalculation<T>(T tradeTaxCalculation, UkSection104 section104, Dictionary<DateTime, T> unmatchedDisposals) where T : ITradeTaxCalculation
     {
         if (tradeTaxCalculation.CalculationCompleted) yield break;
@@ -115,5 +118,67 @@ public static class UkMatchingRules
         {
             unmatchedDisposals[tradeTaxCalculation.Date] = tradeTaxCalculation;
         }
+    }
+
+    /// <summary>
+    /// reclassify shorting trades to an acquisition of short position for asset class that are considered so by HMRC 
+    /// </summary>
+    /// <exception cref="NotImplementedException"></exception>
+    public static List<T> TagTradesWithOpenClose<T>(IEnumerable<T> trades) where T : Trade, ISplittableToLongAndShort<T>
+    {
+        decimal currentPosition = 0m; // tracking current position to determine a trade is opening or closing
+        List<T> resultList = [];
+        foreach (var trade in trades.OrderBy(trade => trade.Date))
+        {
+            // run through trades chronologically and catagorise trades to one of the 4 catagories.
+            switch (currentPosition, trade.RawQuantity)
+            {
+                case ( >= 0, >= 0): // increase long position
+                    trade.PositionType = PositionType.OPENLONG;
+                    resultList.Add(trade);
+                    break;
+                case var (position, rawQuantity) when position >= 0 && Math.Abs(rawQuantity) <= position: // closing only part or all of a long position.
+                    trade.PositionType = PositionType.CLOSELONG;
+                    resultList.Add(trade);
+                    break;
+                case ( <= 0, <= 0): // increase short position
+                    trade.PositionType = PositionType.OPENSHORT;
+                    trade.AssetName = "Short " + trade.AssetName;
+                    resultList.Add(trade);
+                    break;
+                case var (position, rawQuantity) when position <= 0 && rawQuantity <= Math.Abs(position): // closing only part or all of a short position.
+                    trade.PositionType = PositionType.CLOSESHORT;
+                    trade.AssetName = "Short " + trade.AssetName;
+                    resultList.Add(trade);
+                    break;
+                case var (position, rawQuantity) when position > 0 && rawQuantity < 0 && Math.Abs(rawQuantity) > position:
+                    // closing a long position and reopen as a short
+                    T closingTrade = trade.SplitTrade(position);
+                    closingTrade.PositionType = PositionType.CLOSELONG;
+                    T reopeningTrade = trade.SplitTrade(Math.Abs(rawQuantity) - Math.Abs(currentPosition));
+                    reopeningTrade.PositionType = PositionType.OPENSHORT;
+                    reopeningTrade.AssetName = "Short " + trade.AssetName;
+                    resultList.Add(reopeningTrade);
+                    resultList.Add(closingTrade);
+                    break;
+                case var (position, rawQuantity) when position <= 0 && rawQuantity > 0 && rawQuantity > Math.Abs(currentPosition):
+                    // closing a short position and reopen as a long
+                    closingTrade = trade.SplitTrade(Math.Abs(currentPosition));
+                    closingTrade.PositionType = PositionType.CLOSESHORT;
+                    closingTrade.AssetName = "Short " + trade.AssetName;
+                    reopeningTrade = trade.SplitTrade(Math.Abs(rawQuantity) - Math.Abs(currentPosition));
+                    reopeningTrade.PositionType = PositionType.OPENLONG;
+                    resultList.Add(reopeningTrade);
+                    resultList.Add(closingTrade);
+                    break;
+            }
+            currentPosition += trade.AcquisitionDisposal switch
+            {
+                TradeType.ACQUISITION => trade.Quantity,
+                TradeType.DISPOSAL => trade.Quantity * -1,
+                _ => throw new NotImplementedException($"Unexpected tradeType {trade.AcquisitionDisposal}")
+            };
+        }
+        return resultList;
     }
 }

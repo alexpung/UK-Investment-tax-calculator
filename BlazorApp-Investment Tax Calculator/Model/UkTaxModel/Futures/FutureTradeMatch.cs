@@ -1,5 +1,4 @@
 ﻿using InvestmentTaxCalculator.Enumerations;
-using InvestmentTaxCalculator.Model;
 using InvestmentTaxCalculator.Model.UkTaxModel.Stocks;
 
 using System.Text;
@@ -11,8 +10,8 @@ public record FutureTradeMatch : TradeMatch
     public WrappedMoney MatchSellContractValue { get; set; } = WrappedMoney.GetBaseCurrencyZero();
     public required WrappedMoney MatchBuyContractValue { get; set; }
     public required WrappedMoney BaseCurrencyDisposalDealingCost { get; set; }
-    public required WrappedMoney BaseCurrencyAcqusitionDealingCost { get; set; }
-    public WrappedMoney BaseCurrencyTotalDealingExpense => BaseCurrencyAcqusitionDealingCost + BaseCurrencyDisposalDealingCost;
+    public required WrappedMoney BaseCurrencyAcquisitionDealingCost { get; set; }
+    public WrappedMoney BaseCurrencyTotalDealingExpense => BaseCurrencyAcquisitionDealingCost + BaseCurrencyDisposalDealingCost;
     public required decimal ClosingFxRate { get; set; }
     public virtual WrappedMoney BaseCurrencyContractValueGain => new((MatchSellContractValue.Amount - MatchBuyContractValue.Amount) * ClosingFxRate);
 
@@ -31,7 +30,7 @@ public record FutureTradeMatch : TradeMatch
         {
             output.AppendLine($"At time of disposal, section 104 contains {Section104HistorySnapshot!.OldQuantity} units with contract value {Section104HistorySnapshot.OldContractValue}");
             output.AppendLine($"Section 104: Matched {MatchDisposalQty} units of the disposal. Acquisition contract value is {MatchBuyContractValue} " +
-                $"and disposal contract value {MatchSellContractValue}, proportioned dealing cost is {BaseCurrencyAcqusitionDealingCost}");
+                $"and disposal contract value {MatchSellContractValue}, proportioned dealing cost is {BaseCurrencyAcquisitionDealingCost}");
             output.AppendLine(paymentForContractGainOrLoss);
             output.AppendLine($"Total dealing cost is {BaseCurrencyTotalDealingExpense}");
             output.AppendLine($"Gain for this match is {gainCalculationFormula} = {BaseCurrencyContractValueGain - BaseCurrencyTotalDealingExpense}");

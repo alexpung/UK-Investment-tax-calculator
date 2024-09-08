@@ -12,7 +12,7 @@ namespace UnitTest.Test.TradeCalculations;
 public class UkTradeCalculatorTest2FutureTrade
 {
     [Fact]
-    public void TestShortFutureContractIsAcqusition()
+    public void TestShortFutureContractIsAcquisition()
     {
         // Open short position
         FutureContractTrade trade1 = new()
