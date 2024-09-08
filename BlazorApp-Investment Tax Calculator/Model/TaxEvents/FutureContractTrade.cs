@@ -9,7 +9,7 @@ public record FutureContractTrade : Trade
 {
     public required DescribedMoney ContractValue { get; set; }
     public override AssetCatagoryType AssetType { get; set; } = AssetCatagoryType.FUTURE;
-    public FuturePositionType FuturePositionType { get; set; }
+    public PositionType FuturePositionType { get; set; }
 
     /// <summary>
     /// Create a copy of the trade with quantity that is part of the whole trade

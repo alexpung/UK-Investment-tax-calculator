@@ -10,8 +10,8 @@ namespace InvestmentTaxCalculator.Model.UkTaxModel.Futures;
 
 public class FutureTradeTaxCalculation : TradeTaxCalculation
 {
-    public override TradeType AcquisitionDisposal => PositionType is FuturePositionType.OPENLONG or FuturePositionType.OPENSHORT ? TradeType.ACQUISITION : TradeType.DISPOSAL;
-    public FuturePositionType PositionType => ((FutureContractTrade)TradeList[0]).FuturePositionType;
+    public override TradeType AcquisitionDisposal => PositionType is PositionType.OPENLONG or PositionType.OPENSHORT ? TradeType.ACQUISITION : TradeType.DISPOSAL;
+    public PositionType PositionType => ((FutureContractTrade)TradeList[0]).FuturePositionType;
     public WrappedMoney TotalContractValue { get; private set; }
     public decimal ContractFxRate { get; private init; }
     public WrappedMoney UnmatchedContractValue { get; private set; }
@@ -25,7 +25,7 @@ public class FutureTradeTaxCalculation : TradeTaxCalculation
         // normally commission are deducted from money received in a sell trade
         // In case of open short is a buy trade and TotalCostOrProceed is cost of getting the contract commissions are added instead
         // The opposite is true for CLOSELONG
-        if (PositionType is FuturePositionType.OPENSHORT or FuturePositionType.CLOSELONG)
+        if (PositionType is PositionType.OPENSHORT or PositionType.CLOSELONG)
         {
             TotalCostOrProceed *= -1;
             UnmatchedCostOrProceed *= -1;
