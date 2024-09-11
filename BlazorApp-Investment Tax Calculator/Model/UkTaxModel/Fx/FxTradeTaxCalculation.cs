@@ -1,9 +1,9 @@
-﻿using Model.TaxEvents;
-using Model.UkTaxModel.Stocks;
+﻿using InvestmentTaxCalculator.Model.TaxEvents;
+using InvestmentTaxCalculator.Model.UkTaxModel.Stocks;
 
 using System.Text;
 
-namespace Model.UkTaxModel.Fx;
+namespace InvestmentTaxCalculator.Model.UkTaxModel.Fx;
 
 public class FxTradeTaxCalculation(IEnumerable<Trade> trades) : TradeTaxCalculation(trades)
 {

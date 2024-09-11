@@ -1,4 +1,4 @@
-﻿namespace UkTaxModel;
+﻿namespace InvestmentTaxCalculator.Model.UkTaxModel;
 
 public class UkCapitalGainAllowance
 {

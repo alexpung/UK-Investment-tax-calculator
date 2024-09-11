@@ -1,4 +1,6 @@
-﻿using Model;
+﻿using InvestmentTaxCalculator.Enumerations;
+using InvestmentTaxCalculator.Model;
+using InvestmentTaxCalculator.Parser;
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -22,9 +24,9 @@ public class JsonParseController(AssetTypeToLoadSetting assetTypeToLoadSetting) 
         if (result == null) return resultFiltered;
         if (assetTypeToLoadSetting.LoadDividends) resultFiltered.Dividends.AddRange(result.Dividends);
         if (assetTypeToLoadSetting.LoadStocks) resultFiltered.CorporateActions.AddRange(result.CorporateActions);
-        if (assetTypeToLoadSetting.LoadStocks) resultFiltered.Trades.AddRange(result.Trades.Where(trade => trade.AssetType == Enumerations.AssetCatagoryType.STOCK));
-        if (assetTypeToLoadSetting.LoadFutures) resultFiltered.Trades.AddRange(result.Trades.Where(trade => trade.AssetType == Enumerations.AssetCatagoryType.FUTURE));
-        if (assetTypeToLoadSetting.LoadFx) resultFiltered.Trades.AddRange(result.Trades.Where(trade => trade.AssetType == Enumerations.AssetCatagoryType.FX));
+        if (assetTypeToLoadSetting.LoadStocks) resultFiltered.Trades.AddRange(result.Trades.Where(trade => trade.AssetType == AssetCatagoryType.STOCK));
+        if (assetTypeToLoadSetting.LoadFutures) resultFiltered.Trades.AddRange(result.Trades.Where(trade => trade.AssetType == AssetCatagoryType.FUTURE));
+        if (assetTypeToLoadSetting.LoadFx) resultFiltered.Trades.AddRange(result.Trades.Where(trade => trade.AssetType == AssetCatagoryType.FX));
         return resultFiltered;
     }
 

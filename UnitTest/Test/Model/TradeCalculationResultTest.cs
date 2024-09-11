@@ -1,9 +1,8 @@
 ﻿namespace UnitTest.Test.Model;
 
-using Enumerations;
-
-using global::Model;
-using global::Model.Interfaces;
+using InvestmentTaxCalculator.Enumerations;
+using InvestmentTaxCalculator.Model;
+using InvestmentTaxCalculator.Model.Interfaces;
 
 using NSubstitute;
 

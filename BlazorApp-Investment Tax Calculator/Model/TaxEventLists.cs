@@ -1,7 +1,7 @@
-﻿using Model.Interfaces;
-using Model.TaxEvents;
+﻿using InvestmentTaxCalculator.Model.Interfaces;
+using InvestmentTaxCalculator.Model.TaxEvents;
 
-namespace Model;
+namespace InvestmentTaxCalculator.Model;
 
 public record TaxEventLists : IDividendLists, ITradeAndCorporateActionList
 {

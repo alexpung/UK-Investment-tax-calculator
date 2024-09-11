@@ -1,11 +1,13 @@
-﻿using Enumerations;
+﻿using InvestmentTaxCalculator.Enumerations;
+using InvestmentTaxCalculator.Model.TaxEvents;
+using InvestmentTaxCalculator.Parser;
 
-using Model.TaxEvents;
+using Parser;
 
 using System.Globalization;
 using System.Xml.Linq;
 
-namespace Parser.InteractiveBrokersXml;
+namespace InvestmentTaxCalculator.Parser.InteractiveBrokersXml;
 
 
 public static class IBXmlDividendParser

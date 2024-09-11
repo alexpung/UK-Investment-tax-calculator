@@ -1,48 +1,38 @@
-﻿using Enumerations;
+﻿using InvestmentTaxCalculator.Model.Interfaces;
+using InvestmentTaxCalculator.Model.UkTaxModel;
 
-using Model.Interfaces;
-using Model.UkTaxModel;
-using Model.UkTaxModel.Stocks;
+namespace InvestmentTaxCalculator.Model.TaxEvents;
 
-namespace Model.TaxEvents;
-
-public record StockSplit : CorporateAction, IChangeSection104, IChangeTradeMatchingInBetween
+public record StockSplit : CorporateAction, IChangeSection104
 {
-    public required int NumberBeforeSplit { get; set; }
-    public required int NumberAfterSplit { get; set; }
-    public bool Rounding { get; set; } = true;
+    /// <summary>
+    /// The number of shares after the split that are being given for the original number of shares.
+    /// For example, in a 2:1 stock split, where 2 shares are given for every 1 share, this is 2.
+    /// </summary>
+    public required int SplitTo { get; init; }
+    /// <summary>
+    /// The number of shares prior to the split. 
+    /// For example, in a 2:1 stock split, where 2 shares are given for every 1 share, this is 1.
+    /// </summary>
+    public required int SplitFrom { get; init; }
+    public string Reason => $"Stock split for {AssetName} occurred at {Date.Date} with ratio of {SplitTo} for {SplitFrom}\n";
 
-    public void ChangeTradeMatching(ITradeTaxCalculation trade1, ITradeTaxCalculation trade2, TradeMatch tradeMatch)
+    public override MatchAdjustment TradeMatching(ITradeTaxCalculation trade1, ITradeTaxCalculation trade2, MatchAdjustment matchAdjustment)
     {
         ITradeTaxCalculation earlierTrade = trade1.Date <= trade2.Date ? trade1 : trade2;
         ITradeTaxCalculation laterTrade = trade1.Date > trade2.Date ? trade1 : trade2;
-        if ((earlierTrade.Date < Date) && (Date < laterTrade.Date))
-        {
-            if (earlierTrade.AcquisitionDisposal == TradeType.ACQUISITION)
-            {
-                tradeMatch.MatchAcquisitionQty = tradeMatch.MatchAcquisitionQty * NumberBeforeSplit / NumberAfterSplit;
-                tradeMatch.BaseCurrencyMatchAllowableCost = earlierTrade.GetProportionedCostOrProceed(tradeMatch.MatchAcquisitionQty);
-            }
-            else
-            {
-                tradeMatch.MatchDisposalQty = tradeMatch.MatchDisposalQty * NumberBeforeSplit / NumberAfterSplit;
-                tradeMatch.BaseCurrencyMatchDisposalProceed = earlierTrade.GetProportionedCostOrProceed(tradeMatch.MatchDisposalQty);
-            }
-            tradeMatch.AdditionalInformation += $"Stock split occurred at {Date.Date} with ratio of {NumberAfterSplit} for {NumberBeforeSplit}\n";
-        }
+        if (AssetName != trade1.AssetName || AssetName != trade2.AssetName) return matchAdjustment;
+        if (earlierTrade.Date > Date || Date > laterTrade.Date) return matchAdjustment;
+        matchAdjustment.MatchAdjustmentFactor *= (decimal)SplitTo / SplitFrom;
+        matchAdjustment.CorporateActions.Add(this);
+        return matchAdjustment;
     }
 
-    public void ChangeSection104(UkSection104 section104)
+    public override void ChangeSection104(UkSection104 section104)
     {
-        decimal oldQuantity = section104.Quantity;
-        decimal newQuantity = GetSharesAfterSplit(oldQuantity);
-        section104.Section104HistoryList.Add(Section104History.ShareAdjustment(Date, oldQuantity, newQuantity));
+        if (AssetName != section104.AssetName) return;
+        decimal newQuantity = section104.Quantity * SplitTo / SplitFrom;
+        section104.Section104HistoryList.Add(Section104History.ShareAdjustment(Date, section104.Quantity, newQuantity));
         section104.Quantity = newQuantity;
-    }
-
-    public decimal GetSharesAfterSplit(decimal quantity)
-    {
-        decimal result = quantity * NumberAfterSplit / NumberBeforeSplit;
-        return Rounding ? Math.Round(result, MidpointRounding.ToZero) : result;
     }
 }

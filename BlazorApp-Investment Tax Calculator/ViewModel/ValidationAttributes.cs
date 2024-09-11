@@ -1,9 +1,9 @@
-﻿using Model;
+﻿using InvestmentTaxCalculator.Model;
 
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 
-namespace ViewModel;
+namespace InvestmentTaxCalculator.ViewModel;
 
 /// <summary>
 /// Check if country string is ISO 3166 code. Does not check if entry is blank/null.

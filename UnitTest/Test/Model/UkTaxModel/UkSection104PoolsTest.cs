@@ -1,8 +1,8 @@
-﻿using Enumerations;
+﻿using InvestmentTaxCalculator.Enumerations;
+using InvestmentTaxCalculator.Model.UkTaxModel;
+using InvestmentTaxCalculator.Model.UkTaxModel.Stocks;
 
-using Model;
-using Model.UkTaxModel;
-using Model.UkTaxModel.Stocks;
+using InvestmentTaxCalculator.Model;
 
 using UnitTest.Helper;
 

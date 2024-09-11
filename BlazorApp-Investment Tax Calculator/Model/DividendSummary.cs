@@ -1,10 +1,9 @@
-﻿using Enumerations;
-
-using Model.TaxEvents;
+﻿using InvestmentTaxCalculator.Enumerations;
+using InvestmentTaxCalculator.Model.TaxEvents;
 
 using System.Globalization;
 
-namespace Model;
+namespace InvestmentTaxCalculator.Model;
 
 public record DividendSummary
 {

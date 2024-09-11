@@ -1,6 +1,6 @@
-﻿using Model.UkTaxModel;
+﻿using InvestmentTaxCalculator.Model.UkTaxModel;
 
-namespace Model.Interfaces;
+namespace InvestmentTaxCalculator.Model.Interfaces;
 
 public interface IChangeSection104
 {

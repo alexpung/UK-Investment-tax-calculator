@@ -1,4 +1,4 @@
-﻿namespace Model;
+﻿namespace InvestmentTaxCalculator.Model;
 public class AssetTypeToLoadSetting
 {
     public bool LoadStocks { get; set; } = true;

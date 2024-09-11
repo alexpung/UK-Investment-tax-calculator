@@ -1,4 +1,4 @@
-﻿namespace Model.UkTaxModel;
+﻿namespace InvestmentTaxCalculator.Model.UkTaxModel;
 public class UkSection104Pools
 {
     private readonly Dictionary<string, UkSection104> _section104Pools = [];

@@ -1,12 +1,12 @@
-﻿using Enumerations;
-
-using Model;
-using Model.TaxEvents;
+﻿using InvestmentTaxCalculator.Enumerations;
+using InvestmentTaxCalculator.Model;
+using InvestmentTaxCalculator.Model.TaxEvents;
+using InvestmentTaxCalculator.Parser;
 
 using System.Globalization;
 using System.Xml.Linq;
 
-namespace Parser.InteractiveBrokersXml;
+namespace InvestmentTaxCalculator.Parser.InteractiveBrokersXml;
 
 public class IBXmlFxParser
 {

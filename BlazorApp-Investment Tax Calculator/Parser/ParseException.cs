@@ -1,4 +1,4 @@
-﻿namespace Parser;
+﻿namespace InvestmentTaxCalculator.Parser;
 public class ParseException : Exception
 {
     public ParseException()

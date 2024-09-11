@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel;
 
-namespace Enumerations;
+namespace InvestmentTaxCalculator.Enumerations;
 
-public enum FuturePositionType
+public enum PositionType
 {
     [Description("Open long position")]
     OPENLONG,

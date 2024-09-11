@@ -1,8 +1,8 @@
-﻿using Model;
+﻿using InvestmentTaxCalculator.Model;
 
 using System.Xml.Linq;
 
-namespace Parser;
+namespace InvestmentTaxCalculator.Parser;
 
 public static class XmlParserHelper
 {

@@ -1,9 +1,8 @@
-﻿using Enumerations;
-
-using Model;
-using Model.Interfaces;
-using Model.TaxEvents;
-using Model.UkTaxModel;
+﻿using InvestmentTaxCalculator.Enumerations;
+using InvestmentTaxCalculator.Model;
+using InvestmentTaxCalculator.Model.Interfaces;
+using InvestmentTaxCalculator.Model.TaxEvents;
+using InvestmentTaxCalculator.Model.UkTaxModel;
 
 using System.Globalization;
 
@@ -71,7 +70,7 @@ public class UkTradeCalculatorTest4Trades
             ],
             GrossProceed = new() { Description = "", Amount = new(600m, "USD"), FxRate = 0.86m },
         };
-        StockSplit stockSplit = new() { AssetName = "ABC", Date = DateTime.Parse("03-May-21 20:25:00", CultureInfo.InvariantCulture), NumberAfterSplit = 2, NumberBeforeSplit = 1 };
+        StockSplit stockSplit = new() { AssetName = "ABC", Date = DateTime.Parse("03-May-21 20:25:00", CultureInfo.InvariantCulture), SplitTo = 2, SplitFrom = 1 };
         List<ITradeTaxCalculation> result = TradeCalculationHelper.CalculateTrades([trade1, trade2, trade3, trade4, stockSplit], out UkSection104Pools section104Pools);
         result[2].TotalProceeds.ShouldBe(new WrappedMoney(1834.725m));
         result[2].Gain.ShouldBe(new WrappedMoney(5.56m));

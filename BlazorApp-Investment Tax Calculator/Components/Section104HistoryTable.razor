@@ -1,14 +1,14 @@
-﻿@using Model
-@using ViewModel
-@using Model.Interfaces
+﻿@using InvestmentTaxCalculator.Model
+@using InvestmentTaxCalculator.ViewModel
+@using InvestmentTaxCalculator.Model.Interfaces
 @using Syncfusion.Blazor.DropDowns
 @using Syncfusion.Blazor.Grids
-@using Model.TaxEvents
-@using Model.UkTaxModel
+@using InvestmentTaxCalculator.Model.TaxEvents
+@using InvestmentTaxCalculator.Model.UkTaxModel
 @using Syncfusion.Blazor.SplitButtons
-@using Enumerations
+@using InvestmentTaxCalculator.Enumerations
 @using InvestmentTaxCalculator.Components
-@using Services
+@using InvestmentTaxCalculator.Services
 
 @inject UkSection104Pools section104Pools
 @inject SfGridToolBarHandlingService _toolbarHandlingService
@@ -26,7 +26,7 @@
                     Toolbar="@(new List<string>() { "PdfExport", "ExcelExport", "Print" })">
                 <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
                 <GridPageSettings PageSizes=@(new List<int>() {25, 50, 100}) PageSize="25"></GridPageSettings>
-                <GridEvents OnToolbarClick="ToolbarClickHandler" TValue="Section104HistoryViewModel?"></GridEvents>
+                <GridEvents OnToolbarClick="ToolbarClickHandler" TValue="Section104HistoryViewModel"></GridEvents>
                 <GridColumns>
                     <GridColumn Field=@nameof(Section104HistoryViewModel.AssetName) HeaderText="Asset Name"></GridColumn>
                     <GridColumn Field=@nameof(Section104HistoryViewModel.TradeId) HeaderText="Trade ID"></GridColumn>
@@ -49,8 +49,8 @@
 
 
 @code {
-    private SfGrid<Section104HistoryViewModel?> section104HistoryGrid = default!;
-    private IEnumerable<Section104HistoryViewModel?> _section104HistoryViewModels => Section104HistoryViewModel.GetSection104Data(section104Pools);
+    private SfGrid<Section104HistoryViewModel> section104HistoryGrid = default!;
+    private IEnumerable<Section104HistoryViewModel> _section104HistoryViewModels => Section104HistoryViewModel.GetSection104Data(section104Pools);
 
     public async Task ToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)
     {

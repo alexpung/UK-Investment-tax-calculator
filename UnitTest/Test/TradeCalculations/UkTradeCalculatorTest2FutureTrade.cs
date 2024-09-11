@@ -1,13 +1,10 @@
-﻿using Enumerations;
-
-using Model;
-using Model.Interfaces;
-using Model.TaxEvents;
-using Model.UkTaxModel;
+﻿using InvestmentTaxCalculator.Enumerations;
+using InvestmentTaxCalculator.Model;
+using InvestmentTaxCalculator.Model.Interfaces;
+using InvestmentTaxCalculator.Model.TaxEvents;
+using InvestmentTaxCalculator.Model.UkTaxModel;
 
 using System.Globalization;
-
-using TaxEvents;
 
 using UnitTest.Helper;
 
@@ -15,7 +12,7 @@ namespace UnitTest.Test.TradeCalculations;
 public class UkTradeCalculatorTest2FutureTrade
 {
     [Fact]
-    public void TestShortFutureContractIsAcqusition()
+    public void TestShortFutureContractIsAcquisition()
     {
         // Open short position
         FutureContractTrade trade1 = new()

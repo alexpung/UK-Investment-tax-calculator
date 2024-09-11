@@ -1,11 +1,10 @@
-﻿using Enumerations;
-
-using Model;
-using Model.TaxEvents;
+﻿using InvestmentTaxCalculator.Enumerations;
+using InvestmentTaxCalculator.Model;
+using InvestmentTaxCalculator.Model.TaxEvents;
 
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
-namespace ViewModel;
+namespace InvestmentTaxCalculator.ViewModel;
 
 public class DividendInputViewModel
 {

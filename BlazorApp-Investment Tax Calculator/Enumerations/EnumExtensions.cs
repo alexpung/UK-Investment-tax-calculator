@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Reflection;
-namespace Enumerations;
+namespace InvestmentTaxCalculator.Enumerations;
 public static class EnumExtensions
 {
     /// <summary>

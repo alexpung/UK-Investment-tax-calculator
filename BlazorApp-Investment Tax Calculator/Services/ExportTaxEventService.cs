@@ -1,8 +1,8 @@
-﻿using Model;
+﻿using InvestmentTaxCalculator.Model;
 
 using System.Text.Json;
 
-namespace Services;
+namespace InvestmentTaxCalculator.Services;
 
 public class ExportTaxEventService(TaxEventLists taxEventLists)
 {
