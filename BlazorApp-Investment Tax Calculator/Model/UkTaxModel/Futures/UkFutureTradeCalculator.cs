@@ -10,7 +10,7 @@ public class UkFutureTradeCalculator(UkSection104Pools section104Pools, ITradeAn
 {
     public List<ITradeTaxCalculation> CalculateTax()
     {
-        List<FutureTradeTaxCalculation> tradeTaxCalculations = [.. GroupTrade(tradeList.Trades)];
+        List<FutureTradeTaxCalculation> tradeTaxCalculations = [.. GroupTrade(tradeList.FutureContractTrades)];
         GroupedTradeContainer<FutureTradeTaxCalculation> _tradeContainer = new(tradeTaxCalculations, tradeList.CorporateActions);
         foreach (var match in UkMatchingRules.ApplySameDayMatchingRule(_tradeContainer))
         {
@@ -34,7 +34,7 @@ public class UkFutureTradeCalculator(UkSection104Pools section104Pools, ITradeAn
     /// <param name="trades"></param>
     /// <returns></returns>
     /// <exception cref="NotImplementedException"></exception>
-    private static List<FutureTradeTaxCalculation> GroupTrade(IEnumerable<Trade> trades)
+    private static List<FutureTradeTaxCalculation> GroupTrade(IEnumerable<FutureContractTrade> trades)
     {
         List<FutureTradeTaxCalculation> groupedTrade = [];
         foreach (var tradeGroup in GroupFutureContractTradeByAssetName(trades))
@@ -46,11 +46,10 @@ public class UkFutureTradeCalculator(UkSection104Pools section104Pools, ITradeAn
         return groupedTrade;
     }
 
-    private static IEnumerable<IGrouping<string, FutureContractTrade>> GroupFutureContractTradeByAssetName(IEnumerable<Trade> trades)
+    private static IEnumerable<IGrouping<string, FutureContractTrade>> GroupFutureContractTradeByAssetName(IEnumerable<FutureContractTrade> trades)
     {
         return from trade in trades
-               where trade is FutureContractTrade
-               group trade as FutureContractTrade by trade.AssetName;
+               group trade by trade.AssetName;
     }
 
     private void MatchTrade(FutureTradeTaxCalculation trade1, FutureTradeTaxCalculation trade2, TaxMatchType taxMatchType)
