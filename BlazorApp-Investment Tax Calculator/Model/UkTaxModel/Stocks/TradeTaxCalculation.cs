@@ -2,7 +2,6 @@
 using InvestmentTaxCalculator.Model;
 using InvestmentTaxCalculator.Model.Interfaces;
 using InvestmentTaxCalculator.Model.TaxEvents;
-using InvestmentTaxCalculator.Model.UkTaxModel;
 
 using System.Text;
 
@@ -20,7 +19,7 @@ public class TradeTaxCalculation : ITradeTaxCalculation
     public List<Trade> TradeList { get; init; }
     public List<TradeMatch> MatchHistory { get; init; } = [];
     public WrappedMoney TotalAllowableCost => MatchHistory.Sum(tradeMatch => tradeMatch.BaseCurrencyMatchAllowableCost);
-    public WrappedMoney TotalProceeds => MatchHistory.Sum(tradeMatch => tradeMatch.BaseCurrencyMatchDisposalProceed);
+    public virtual WrappedMoney TotalProceeds => MatchHistory.Sum(tradeMatch => tradeMatch.BaseCurrencyMatchDisposalProceed);
     public WrappedMoney Gain => AcquisitionDisposal == TradeType.DISPOSAL ? TotalProceeds - TotalAllowableCost : WrappedMoney.GetBaseCurrencyZero();
     /// <summary>
     /// For acquistion: Cost of buying + commission
@@ -60,9 +59,13 @@ public class TradeTaxCalculation : ITradeTaxCalculation
 
     public virtual void MatchQty(decimal demandedQty)
     {
-        if (demandedQty > UnmatchedQty)
+        if (demandedQty - UnmatchedQty > 0.00000000000000000000000001m)
         {
             throw new ArgumentException($"Unexpected {nameof(demandedQty)} in MatchQty {demandedQty} larger than {nameof(UnmatchedQty)} {UnmatchedQty}");
+        }
+        else if (demandedQty - UnmatchedQty < 0.00000000000000000000000001m && demandedQty - UnmatchedQty < 0)
+        {
+            UnmatchedQty = 0m;
         }
         else
         {

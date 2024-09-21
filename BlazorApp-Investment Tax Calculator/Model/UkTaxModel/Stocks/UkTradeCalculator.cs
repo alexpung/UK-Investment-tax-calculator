@@ -5,6 +5,8 @@ using InvestmentTaxCalculator.Model.UkTaxModel.Fx;
 
 using Syncfusion.Blazor.Data;
 
+using System.Text;
+
 namespace InvestmentTaxCalculator.Model.UkTaxModel.Stocks;
 
 /// <summary>
@@ -65,7 +67,7 @@ public class UkTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorpo
             BaseCurrencyMatchDisposalProceed = tradePairSorter.DisposalTrade.GetProportionedCostOrProceed(tradePairSorter.DisposalMatchQuantity),
             MatchedBuyTrade = tradePairSorter.AcquisitionTrade,
             MatchedSellTrade = tradePairSorter.DisposalTrade,
-            AdditionalInformation = matchAdjustment.CorporateActions.ToString() ?? ""
+            AdditionalInformation = BuildInfoString(matchAdjustment.CorporateActions)
         };
         TradeMatch AcqusitionTradeMatch = disposalTradeMatch with
         {
@@ -76,5 +78,15 @@ public class UkTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorpo
         tradePairSorter.DisposalTrade.MatchQty(tradePairSorter.DisposalMatchQuantity);
         tradePairSorter.AcquisitionTrade.MatchHistory.Add(AcqusitionTradeMatch);
         tradePairSorter.DisposalTrade.MatchHistory.Add(disposalTradeMatch);
+    }
+
+    private static string BuildInfoString(List<CorporateAction> corporateActions)
+    {
+        StringBuilder sb = new();
+        foreach (var action in corporateActions)
+        {
+            sb.AppendLine(action.Reason.ToString());
+        }
+        return sb.ToString();
     }
 }

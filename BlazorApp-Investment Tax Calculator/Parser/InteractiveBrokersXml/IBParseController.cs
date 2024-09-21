@@ -22,11 +22,16 @@ public class IBParseController(AssetTypeToLoadSetting assetTypeToLoadSetting, To
                 if (assetTypeToLoadSetting.LoadStocks) result.Trades.AddRange(IBXmlStockTradeParser.ParseXml(xml));
                 if (assetTypeToLoadSetting.LoadFutures) result.Trades.AddRange(IBXmlFutureTradeParser.ParseXml(xml));
                 if (assetTypeToLoadSetting.LoadFx) result.Trades.AddRange(_xmlFxParser.ParseXml(xml));
+                if (assetTypeToLoadSetting.LoadOptions) result.OptionTrades.AddRange(IBXmlOptionTradeParser.ParseXml(xml));
             }
         }
         catch (ParseException ex)
         {
             toastService.ShowError(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError($"An unexpected error have occurred.\n {ex.Message}");
         }
         return result;
     }

@@ -9,5 +9,7 @@ public enum AssetCatagoryType
     [Description("Future contract")]
     FUTURE,
     [Description("Foreign currency")]
-    FX
+    FX,
+    [Description("Option")]
+    OPTION
 }

@@ -42,7 +42,7 @@ public class TradePairSorterTests
     {
         _trade1.AcquisitionDisposal.Returns(TradeType.ACQUISITION);
         _trade2.AcquisitionDisposal.Returns(TradeType.ACQUISITION);
-        var ex = Should.Throw<ArgumentException>(() => new TradePairSorter<ITradeTaxCalculation>(_trade1, _trade2));
+        Should.Throw<ArgumentException>(() => new TradePairSorter<ITradeTaxCalculation>(_trade1, _trade2));
     }
 
     [Fact]

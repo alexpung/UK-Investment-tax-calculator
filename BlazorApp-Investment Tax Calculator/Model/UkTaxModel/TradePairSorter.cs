@@ -19,7 +19,7 @@ public record TradePairSorter<T> where T : ITradeTaxCalculation
     /// </summary>
     public T SellTrade { get; init; }
     private decimal _matchQuantityAdjustmentFactor = 1;
-    private decimal _matchQuantity;
+    private decimal _matchQuantity => Math.Min(EarlierTrade.UnmatchedQty, LatterTrade.UnmatchedQty) / _matchQuantityAdjustmentFactor;
     public decimal AcquisitionMatchQuantity => EarlierTrade.AcquisitionDisposal == TradeType.ACQUISITION ? _matchQuantity : _matchQuantity * _matchQuantityAdjustmentFactor;
     public decimal DisposalMatchQuantity => EarlierTrade.AcquisitionDisposal == TradeType.DISPOSAL ? _matchQuantity : _matchQuantity * _matchQuantityAdjustmentFactor;
     public decimal BuyMatchQuantity => EarlierTrade.AcquisitionDisposal == BuyTrade.AcquisitionDisposal ? _matchQuantity : _matchQuantity * _matchQuantityAdjustmentFactor;
@@ -47,12 +47,11 @@ public record TradePairSorter<T> where T : ITradeTaxCalculation
             BuyTrade = AcquisitionTrade;
             SellTrade = DisposalTrade;
         }
-        _matchQuantity = Math.Min(EarlierTrade.UnmatchedQty, LatterTrade.UnmatchedQty);
     }
 
     public void SetQuantityAdjustmentFactor(decimal factor)
     {
-        _matchQuantity = Math.Min(EarlierTrade.UnmatchedQty, LatterTrade.UnmatchedQty / factor);
+        if (factor == 0) throw new ArgumentException("Adjustment factor cannot be zero");
         _matchQuantityAdjustmentFactor = factor;
     }
 }
