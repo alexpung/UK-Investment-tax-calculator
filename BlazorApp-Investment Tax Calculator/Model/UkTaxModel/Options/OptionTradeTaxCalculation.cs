@@ -22,7 +22,7 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
     public PUTCALL PUTCALL { get; init; }
     public decimal ExpiredQty { get; set; }
     public decimal AssignedQty { get; set; }
-    public decimal OwnerExecisedQty { get; set; }
+    public decimal OwnerExercisedQty { get; set; }
     /// <summary>
     /// When short an option, the option get "disappear" and the taxable proceed is reduced when the option is assigned. The premium get rolled to the assigned trade instead.
     /// This number indicate the amount to subtract from the full 
@@ -37,7 +37,7 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
     {
         ExpiredQty = TradeList.Where(trade => ((OptionTrade)trade).TradeReason == TradeReason.Expired).Sum(trade => trade.Quantity);
         AssignedQty = TradeList.Where(trade => ((OptionTrade)trade).TradeReason == TradeReason.OptionAssigned).Sum(trade => trade.Quantity);
-        OwnerExecisedQty = TradeList.Where(trade => ((OptionTrade)trade).TradeReason == TradeReason.OwnerExeciseOption).Sum(trade => trade.Quantity);
+        OwnerExercisedQty = TradeList.Where(trade => ((OptionTrade)trade).TradeReason == TradeReason.OwnerExeciseOption).Sum(trade => trade.Quantity);
         PUTCALL = trades.Any() ? trades.First().PUTCALL : throw new ArgumentException("trades is null when providing trade list");
     }
 
@@ -75,13 +75,13 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
                 additionalInformation += $"{ExpiredQty} option expired";
                 ExpiredQty = 0;
             }
-            if (OwnerExecisedQty > 0)
+            if (OwnerExercisedQty > 0)
             {
                 Trade exerciseTrade = TradeList.First(trade => trade.TradeReason == TradeReason.OwnerExeciseOption);
-                allowableCost = allowableCost * (1 - (OwnerExecisedQty / matchQty));
-                additionalInformation += $"{OwnerExecisedQty} option execised.";
-                matchDisposalProceedQty -= OwnerExecisedQty;
-                OwnerExecisedQty = 0;
+                allowableCost = allowableCost * (1 - (OwnerExercisedQty / matchQty));
+                additionalInformation += $"{OwnerExercisedQty} option execised.";
+                matchDisposalProceedQty -= OwnerExercisedQty;
+                OwnerExercisedQty = 0;
                 exerciseTrade.AttachOptionTrade(allowableCost, $"Trade is created by option exercise of option on {Date.Date}");
             }
             TradeMatch tradeMatch = new()

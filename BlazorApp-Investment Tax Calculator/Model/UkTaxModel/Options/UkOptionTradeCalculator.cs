@@ -71,7 +71,7 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
         }
         decimal assignmentQty = tradePairSorter.LatterTrade.AssignedQty * matchRatio;
         decimal expiredQty = tradePairSorter.LatterTrade.ExpiredQty * matchRatio;
-        decimal exercisedQty = tradePairSorter.LatterTrade.OwnerExecisedQty * matchRatio;
+        decimal exercisedQty = tradePairSorter.LatterTrade.OwnerExercisedQty * matchRatio;
         if (assignmentQty > 0 && expiredQty > 0) throw new ParseException($"{tradePairSorter.LatterTrade} has both assignment and exercise which is impossible");
         if (expiredQty > 0) MatchExpiredOption(tradePairSorter, taxMatchType, expiredQty);
         if (exercisedQty > 0) MatchExercisedOption(tradePairSorter, taxMatchType, exercisedQty);
@@ -130,7 +130,7 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
     private static void MatchExercisedOption(TradePairSorter<OptionTradeTaxCalculation> tradePairSorter, TaxMatchType taxMatchType, decimal exercisedQty)
     {
         WrappedMoney premiumCost = tradePairSorter.EarlierTrade.GetProportionedCostOrProceed(exercisedQty);
-        tradePairSorter.LatterTrade.OwnerExecisedQty -= exercisedQty;
+        tradePairSorter.LatterTrade.OwnerExercisedQty -= exercisedQty;
         // If you exercise a put option the Acquisition cost is subtracted by the premium
         if (tradePairSorter.EarlierTrade.PUTCALL == PUTCALL.PUT) premiumCost *= -1;
         // If there is mutiple exercise trades it doesn't matter which trade to roll up, as all trades are the same ticker and same day are treated as a sigle trade.
