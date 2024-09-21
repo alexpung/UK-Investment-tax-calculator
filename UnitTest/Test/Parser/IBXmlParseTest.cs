@@ -1,13 +1,11 @@
 ﻿using InvestmentTaxCalculator.Enumerations;
+using InvestmentTaxCalculator.Model;
 using InvestmentTaxCalculator.Model.TaxEvents;
 using InvestmentTaxCalculator.Parser;
 using InvestmentTaxCalculator.Parser.InteractiveBrokersXml;
 
-using InvestmentTaxCalculator.Model;
-
 using System.Globalization;
 using System.Xml.Linq;
-
 namespace UnitTest.Test.Parser;
 
 public class IBXmlParseTest

@@ -3,6 +3,7 @@ using InvestmentTaxCalculator.Model;
 using InvestmentTaxCalculator.Model.Interfaces;
 using InvestmentTaxCalculator.Model.UkTaxModel;
 using InvestmentTaxCalculator.Model.UkTaxModel.Futures;
+using InvestmentTaxCalculator.Model.UkTaxModel.Options;
 using InvestmentTaxCalculator.Model.UkTaxModel.Stocks;
 using InvestmentTaxCalculator.Parser;
 using InvestmentTaxCalculator.Parser.InteractiveBrokersXml;
@@ -32,7 +33,9 @@ builder.Services.AddSingleton<TaxYearCgtByTypeReportService>();
 // UK tax specific components - replace if you want to calculate some other countries.
 builder.Services.AddSingleton<UkCalculationResultExportService>();
 builder.Services.AddSingleton<UkSection104ExportService>();
+// Order is important. Option trades need to calculate before its derivatives.
 builder.Services.AddSingleton<IDividendCalculator, UkDividendCalculator>();
+builder.Services.AddSingleton<ITradeCalculator, UkOptionTradeCalculator>();
 builder.Services.AddSingleton<ITradeCalculator, UkTradeCalculator>();
 builder.Services.AddSingleton<ITradeCalculator, UkFutureTradeCalculator>();
 

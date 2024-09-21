@@ -1,11 +1,10 @@
-﻿using Enumerations;
-
-using Model;
+﻿using InvestmentTaxCalculator.Enumerations;
+using InvestmentTaxCalculator.Model;
 
 using System.Collections.Immutable;
 using System.Xml.Linq;
 
-namespace Parser.InteractiveBrokersXml;
+namespace InvestmentTaxCalculator.Parser.InteractiveBrokersXml;
 
 public static class IBXmlAttributeGetHelper
 {

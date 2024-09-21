@@ -1,6 +1,6 @@
-﻿using Model;
-
-using Parser.InteractiveBrokersXml;
+﻿using InvestmentTaxCalculator.Model;
+using InvestmentTaxCalculator.Parser.InteractiveBrokersXml;
+using InvestmentTaxCalculator.Services;
 
 namespace UnitTest.Test.Parser;
 
@@ -12,21 +12,21 @@ public class IBXmlParseControllerTest
     [Fact]
     public void TestCheckingInvalidIBXml()
     {
-        IBParseController iBParseController = new(new AssetTypeToLoadSetting(), new Services.ToastService());
+        IBParseController iBParseController = new(new AssetTypeToLoadSetting(), new ToastService());
         iBParseController.CheckFileValidity(_invalidFileXml, "text/xml").ShouldBeFalse();
     }
 
     [Fact]
     public void TestCheckingValidIBXml()
     {
-        IBParseController iBParseController = new(new AssetTypeToLoadSetting(), new Services.ToastService());
+        IBParseController iBParseController = new(new AssetTypeToLoadSetting(), new ToastService());
         iBParseController.CheckFileValidity(_taxExampleXml, "text/xml").ShouldBeTrue();
     }
 
     [Fact]
     public void TestRejectingInvalidFileType()
     {
-        IBParseController iBParseController = new(new AssetTypeToLoadSetting(), new Services.ToastService());
+        IBParseController iBParseController = new(new AssetTypeToLoadSetting(), new ToastService());
         iBParseController.CheckFileValidity(_taxExampleXml, "text").ShouldBeFalse();
     }
 
@@ -35,7 +35,7 @@ public class IBXmlParseControllerTest
     {
         // TODO: Write expected result
         AssetTypeToLoadSetting assetTypeToLoadSetting = new();
-        IBParseController iBParseController = new(assetTypeToLoadSetting, new Services.ToastService());
+        IBParseController iBParseController = new(assetTypeToLoadSetting, new ToastService());
         TaxEventLists results = iBParseController.ParseFile(_taxExampleXml);
 
     }

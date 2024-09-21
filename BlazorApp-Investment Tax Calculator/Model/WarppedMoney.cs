@@ -81,6 +81,11 @@ public record WrappedMoney : IComparable<WrappedMoney>, IEquatable<WrappedMoney>
         return new WrappedMoney(_nMoney.Ceiling());
     }
 
+    public WrappedMoney Convert(decimal fxRate, string currency)
+    {
+        return new WrappedMoney(fxRate * Amount, currency);
+    }
+
     public int CompareTo(WrappedMoney? other)
     {
         if (other == null) return 0;

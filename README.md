@@ -38,8 +38,11 @@ https://github.com/alexpung/UK-Investment-tax-calculator/tree/master/BlazorApp-I
     3. Dividend in Lieu.
 3. Corporate actions
     1. Forward split only
-4. View trade calculations and dividend data in a table
-5. Add dividends and trades from input of a form. (alpha: in development)
+4. Options (experimental, use with verification)
+    1. Stock option execise/expiration/assignment.
+    2. Financial option open/close (cash settlement not supported)
+5. View trade calculations and dividend data in a table
+6. Add dividends and trades from input of a form. (alpha: in development)
 
 #### Pending implementation
 More corporate actions  

@@ -51,15 +51,19 @@
 @code {
     public AssetCatagoryType SelectedAssetCatagoryType { get; set; } = AssetCatagoryType.STOCK;
     private SfGrid<TradeMatchViewModel> tradeMatchesGrid = default!;
-    private IEnumerable<TradeMatchViewModel> _tradeMatches => tradeCalculationResult.CalculatedTrade
-                                                                           .Where(trade => trade.AcquisitionDisposal == TradeType.DISPOSAL)
-                                                                           .SelectMany(trade => trade.MatchHistory)
-                                                                           .Select(tradeMatch => new TradeMatchViewModel(tradeMatch));
+    private IEnumerable<TradeMatchViewModel> _tradeMatches => GetTradeMatches();
 
 
     public async Task ToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)
     {
         await _toolbarHandlingService.ToolbarClickHandler(args, tradeMatchesGrid);
+    }
+
+    public IEnumerable<TradeMatchViewModel> GetTradeMatches()
+    {
+        return tradeCalculationResult.CalculatedTrade.Where(trade => trade.AcquisitionDisposal == TradeType.DISPOSAL)
+                                                                           .SelectMany(trade => trade.MatchHistory)
+                                                                           .Select(tradeMatch => new TradeMatchViewModel(tradeMatch)).ToList();
     }
 }
 

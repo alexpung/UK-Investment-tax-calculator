@@ -17,6 +17,23 @@ public record Trade : TaxEvent, ITextFilePrintable
     public virtual required DescribedMoney GrossProceed { get; set; }
     public string Description { get; set; } = string.Empty;
     public ImmutableList<DescribedMoney> Expenses { get; init; } = [];
+    public TradeReason TradeReason { get; set; } = TradeReason.OrderedTrade;
+    /// <summary>
+    /// indicate if the cost of the option is added to this trade already or not.
+    /// </summary>
+    public bool OptionAttached { get; set; } = false;
+    public void AttachOptionTrade(WrappedMoney cost, string description)
+    {
+        if (!OptionAttached)
+        {
+            GrossProceed = GrossProceed with
+            {
+                Amount = GrossProceed.Amount + cost.Convert(1 / GrossProceed.FxRate, GrossProceed.Amount.Currency),
+                Description = description
+            };
+            OptionAttached = true;
+        }
+    }
     public virtual WrappedMoney NetProceed
     {
         get

@@ -1,9 +1,6 @@
 ﻿using InvestmentTaxCalculator.Enumerations;
-using InvestmentTaxCalculator.Model;
 using InvestmentTaxCalculator.Model.TaxEvents;
-using InvestmentTaxCalculator.Parser;
 
-using System.Collections.Immutable;
 using System.Globalization;
 using System.Xml.Linq;
 
@@ -29,6 +26,13 @@ public static class IBXmlStockTradeParser
             Quantity = element.GetQuantity(),
             GrossProceed = element.GetGrossProceed(),
             Expenses = element.BuildExpenses(),
+            TradeReason = element.GetAttribute("notes") switch
+            {
+                string s when s.Split(";").Contains("Ex") => TradeReason.OwnerExeciseOption,
+                string s when s.Split(";").Contains("A") => TradeReason.OptionAssigned,
+                string s when s.Split(";").Contains("Ep") => TradeReason.Expired,
+                _ => TradeReason.OrderedTrade
+            }
         };
     }
 }
