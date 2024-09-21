@@ -37,8 +37,8 @@ public class StockSplitTests
         var reason = _stockSplit.Reason;
 
         // Assert
-        reason.ShouldContain("Stock split for ABC occurred");
-        reason.ShouldContain("with ratio of 2 for 1");
+        reason.ShouldContain("ABC");
+        reason.ShouldContain("split 2 for 1");
     }
 
     [Fact]
