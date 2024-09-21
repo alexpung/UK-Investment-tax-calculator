@@ -72,7 +72,7 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
         decimal assignmentQty = tradePairSorter.LatterTrade.AssignedQty * matchRatio;
         decimal expiredQty = tradePairSorter.LatterTrade.ExpiredQty * matchRatio;
         decimal exercisedQty = tradePairSorter.LatterTrade.OwnerExercisedQty * matchRatio;
-        if (assignmentQty > 0 && expiredQty > 0) throw new ParseException($"{tradePairSorter.LatterTrade} has both assignment and exercise which is impossible");
+        if (assignmentQty > 0 && exercisedQty > 0) throw new ParseException($"{tradePairSorter.LatterTrade} has both assignment and exercise which is impossible");
         if (expiredQty > 0) MatchExpiredOption(tradePairSorter, taxMatchType, expiredQty);
         if (exercisedQty > 0) MatchExercisedOption(tradePairSorter, taxMatchType, exercisedQty);
         if (assignmentQty > 0) MatchAssignedOption(tradePairSorter, taxMatchType, assignmentQty);
