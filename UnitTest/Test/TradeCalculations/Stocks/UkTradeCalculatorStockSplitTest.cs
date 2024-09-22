@@ -7,7 +7,7 @@ using InvestmentTaxCalculator.Model.UkTaxModel.Stocks;
 
 using System.Globalization;
 
-namespace UnitTest.Test.TradeCalculations;
+namespace UnitTest.Test.TradeCalculations.Stocks;
 public class UkTradeCalculatorStockSplitTest
 {
     [Fact]

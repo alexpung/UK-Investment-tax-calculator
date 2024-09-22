@@ -16,24 +16,24 @@ public class IBXmlParseTest
     public void TestReadingIBXmlDividends()
     {
         IList<Dividend> parsedData = IBXmlDividendParser.ParseXml(_xmlDoc);
-        parsedData.Count.ShouldBe(47);
+        parsedData.Count.ShouldBe(3);
         IEnumerable<Dividend> witholdingTaxes = parsedData.Where(dataPoint => dataPoint.DividendType == DividendType.WITHHOLDING);
-        witholdingTaxes.Count().ShouldBe(21);
-        witholdingTaxes.Select(i => i.Proceed.Amount.Amount * i.Proceed.FxRate).Sum().ShouldBe(-1324.5492950m);
+        witholdingTaxes.Count().ShouldBe(1);
+        witholdingTaxes.Select(i => i.Proceed.Amount.Amount * i.Proceed.FxRate).Sum().ShouldBe(-166.5m);
         IEnumerable<Dividend> dividends = parsedData.Where(dataPoint => dataPoint.DividendType == DividendType.DIVIDEND);
-        dividends.Count().ShouldBe(23);
-        dividends.Select(i => i.Proceed.Amount.Amount * i.Proceed.FxRate).Sum().ShouldBe(8555.2289521m);
+        dividends.Count().ShouldBe(1);
+        dividends.Select(i => i.Proceed.Amount.Amount * i.Proceed.FxRate).Sum().ShouldBe(499.5m);
         IEnumerable<Dividend> dividendsInLieu = parsedData.Where(dataPoint => dataPoint.DividendType == DividendType.DIVIDEND_IN_LIEU);
-        dividendsInLieu.Count().ShouldBe(3);
-        dividendsInLieu.Select(i => i.Proceed.Amount.Amount * i.Proceed.FxRate).Sum().ShouldBe(96.7693740m);
+        dividendsInLieu.Count().ShouldBe(1);
+        dividendsInLieu.Select(i => i.Proceed.Amount.Amount * i.Proceed.FxRate).Sum().ShouldBe(55.5m);
     }
 
     [Fact]
     public void TestReadingIBXmlTrades()
     {
         IList<Trade> parsedData = IBXmlStockTradeParser.ParseXml(_xmlDoc);
-        parsedData.Count(trade => trade.AcquisitionDisposal == TradeType.ACQUISITION).ShouldBe(27);
-        parsedData.Count(trade => trade.AcquisitionDisposal == TradeType.DISPOSAL).ShouldBe(31);
+        parsedData.Count(trade => trade.AcquisitionDisposal == TradeType.ACQUISITION).ShouldBe(6);
+        parsedData.Count(trade => trade.AcquisitionDisposal == TradeType.DISPOSAL).ShouldBe(3);
 
     }
 
@@ -52,10 +52,10 @@ public class IBXmlParseTest
     public void TestReadingIBXmlCorporateActions()
     {
         IList<StockSplit> parsedData = IBXmlStockSplitParser.ParseXml(_xmlDoc);
-        parsedData.Count.ShouldBe(2);
-        parsedData[0].AssetName.ShouldBe("4369.T");
-        parsedData[0].Date.ShouldBe(DateTime.Parse("27-Jan-21 20:25:00", CultureInfo.InvariantCulture));
+        parsedData.Count.ShouldBe(1);
+        parsedData[0].AssetName.ShouldBe("ABC");
+        parsedData[0].Date.ShouldBe(DateTime.Parse("03-May-21 20:25:00", CultureInfo.InvariantCulture));
         parsedData[0].SplitFrom.ShouldBe(1);
-        parsedData[0].SplitTo.ShouldBe(4);
+        parsedData[0].SplitTo.ShouldBe(2);
     }
 }

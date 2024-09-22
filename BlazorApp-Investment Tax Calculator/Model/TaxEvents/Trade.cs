@@ -13,9 +13,19 @@ public record Trade : TaxEvent, ITextFilePrintable
 {
     public virtual AssetCatagoryType AssetType { get; set; } = AssetCatagoryType.STOCK;
     public virtual required TradeType AcquisitionDisposal { get; set; }
+    /// <summary>
+    /// Greater than 0 regardless of acquisition or disposal
+    /// </summary>
     public virtual required decimal Quantity { get; set; }
+    /// <summary>
+    /// Greater than 0 regardless of acquisition or disposal
+    /// </summary>
     public virtual required DescribedMoney GrossProceed { get; set; }
     public string Description { get; set; } = string.Empty;
+    /// <summary>
+    /// <para> positive = charge: take money from you. </para>
+    /// <para> negative = rebate: give you money </para>
+    /// </summary>
     public ImmutableList<DescribedMoney> Expenses { get; init; } = [];
     public TradeReason TradeReason { get; set; } = TradeReason.OrderedTrade;
     /// <summary>

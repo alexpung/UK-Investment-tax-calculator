@@ -5,10 +5,9 @@ using InvestmentTaxCalculator.Model.TaxEvents;
 using InvestmentTaxCalculator.Model.UkTaxModel;
 
 using System.Globalization;
-
 using UnitTest.Helper;
 
-namespace UnitTest.Test.TradeCalculations;
+namespace UnitTest.Test.TradeCalculations.Stocks;
 public class UkTradeCalculatorTest4Trades
 {
     [Fact]

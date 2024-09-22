@@ -19,7 +19,7 @@ public record TradePairSorter<T> where T : ITradeTaxCalculation
     /// </summary>
     public T SellTrade { get; init; }
     private decimal _matchQuantityAdjustmentFactor = 1;
-    private decimal _matchQuantity => Math.Min(EarlierTrade.UnmatchedQty, LatterTrade.UnmatchedQty) / _matchQuantityAdjustmentFactor;
+    private decimal _matchQuantity;
     public decimal AcquisitionMatchQuantity => EarlierTrade.AcquisitionDisposal == TradeType.ACQUISITION ? _matchQuantity : _matchQuantity * _matchQuantityAdjustmentFactor;
     public decimal DisposalMatchQuantity => EarlierTrade.AcquisitionDisposal == TradeType.DISPOSAL ? _matchQuantity : _matchQuantity * _matchQuantityAdjustmentFactor;
     public decimal BuyMatchQuantity => EarlierTrade.AcquisitionDisposal == BuyTrade.AcquisitionDisposal ? _matchQuantity : _matchQuantity * _matchQuantityAdjustmentFactor;
@@ -47,11 +47,22 @@ public record TradePairSorter<T> where T : ITradeTaxCalculation
             BuyTrade = AcquisitionTrade;
             SellTrade = DisposalTrade;
         }
+        _matchQuantity = Math.Min(EarlierTrade.UnmatchedQty, LatterTrade.UnmatchedQty) / _matchQuantityAdjustmentFactor;
+    }
+
+    /// <summary>
+    /// AcquisitionMatchQuantity and DisposalMatchQuantity will not be adjusted once initialised.
+    /// Use this when you need to recalculate how many units to match
+    /// </summary>
+    public void UpdateQuantity()
+    {
+        _matchQuantity = Math.Min(EarlierTrade.UnmatchedQty, LatterTrade.UnmatchedQty) / _matchQuantityAdjustmentFactor;
     }
 
     public void SetQuantityAdjustmentFactor(decimal factor)
     {
         if (factor == 0) throw new ArgumentException("Adjustment factor cannot be zero");
         _matchQuantityAdjustmentFactor = factor;
+        _matchQuantity = Math.Min(EarlierTrade.UnmatchedQty, LatterTrade.UnmatchedQty) / _matchQuantityAdjustmentFactor;
     }
 }

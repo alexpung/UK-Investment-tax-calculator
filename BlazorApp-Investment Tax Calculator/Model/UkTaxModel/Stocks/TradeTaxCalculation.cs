@@ -63,7 +63,7 @@ public class TradeTaxCalculation : ITradeTaxCalculation
         {
             throw new ArgumentException($"Unexpected {nameof(demandedQty)} in MatchQty {demandedQty} larger than {nameof(UnmatchedQty)} {UnmatchedQty}");
         }
-        else if (demandedQty - UnmatchedQty < 0.00000000000000000000000001m && demandedQty - UnmatchedQty < 0)
+        else if (demandedQty - UnmatchedQty > -0.00000000000000000000000001m && demandedQty - UnmatchedQty < 0)
         {
             UnmatchedQty = 0m;
         }

@@ -7,7 +7,7 @@ using System.Globalization;
 
 using UnitTest.Helper;
 
-namespace UnitTest.Test.TradeCalculations;
+namespace UnitTest.Test.TradeCalculations.Futures;
 public class UkTradeCalculatorTestBedAndBreakfast
 {
     [Fact]

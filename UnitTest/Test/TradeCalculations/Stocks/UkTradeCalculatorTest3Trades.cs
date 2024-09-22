@@ -1,15 +1,14 @@
 ﻿using InvestmentTaxCalculator.Enumerations;
+using InvestmentTaxCalculator.Model;
 using InvestmentTaxCalculator.Model.Interfaces;
 using InvestmentTaxCalculator.Model.TaxEvents;
 using InvestmentTaxCalculator.Model.UkTaxModel;
-
-using InvestmentTaxCalculator.Model;
 
 using System.Globalization;
 
 using UnitTest.Helper;
 
-namespace UnitTest.Test.TradeCalculations;
+namespace UnitTest.Test.TradeCalculations.Stocks;
 public class UkTradeCalculatorTest3Trades
 {
     /// <summary>

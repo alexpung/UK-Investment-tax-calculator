@@ -198,5 +198,6 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
         tradePairSorter.AcquisitionTrade.MatchHistory.Add(acquisitionTradeMatch);
         tradePairSorter.DisposalTrade.MatchQty(quantity);
         tradePairSorter.DisposalTrade.MatchHistory.Add(disposalTradeMatch);
+        tradePairSorter.UpdateQuantity();
     }
 }
