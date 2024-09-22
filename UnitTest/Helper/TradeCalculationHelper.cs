@@ -4,7 +4,9 @@ using InvestmentTaxCalculator.Model.Interfaces;
 using InvestmentTaxCalculator.Model.TaxEvents;
 using InvestmentTaxCalculator.Model.UkTaxModel;
 using InvestmentTaxCalculator.Model.UkTaxModel.Futures;
+using InvestmentTaxCalculator.Model.UkTaxModel.Options;
 using InvestmentTaxCalculator.Model.UkTaxModel.Stocks;
+using InvestmentTaxCalculator.Services;
 
 namespace UnitTest.Helper;
 public static class TradeCalculationHelper
@@ -14,9 +16,12 @@ public static class TradeCalculationHelper
         section104Pools = new UkSection104Pools();
         TaxEventLists taxEventLists = new();
         taxEventLists.AddData(taxEvents);
+        UkOptionTradeCalculator optionTradeCalculator = new(section104Pools, taxEventLists, new UKTaxYear(), new ToastService());
         UkTradeCalculator calculator = new(section104Pools, taxEventLists);
         UkFutureTradeCalculator futureCalculator = new(section104Pools, taxEventLists);
-        List<ITradeTaxCalculation> result = calculator.CalculateTax();
+
+        List<ITradeTaxCalculation> result = optionTradeCalculator.CalculateTax();
+        result.AddRange(calculator.CalculateTax());
         result.AddRange(futureCalculator.CalculateTax());
         return result;
     }
