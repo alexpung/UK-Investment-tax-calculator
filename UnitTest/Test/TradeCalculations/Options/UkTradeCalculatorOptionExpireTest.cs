@@ -9,7 +9,7 @@ using System.Globalization;
 using UnitTest.Helper;
 
 namespace UnitTest.Test.TradeCalculations.Options;
-public class UkTradeCalculatorTestOptionExpire
+public class UkTradeCalculatorOptionExpireTest
 {
     [Fact]
     public void LongOptionExpireAllowFullCost()
