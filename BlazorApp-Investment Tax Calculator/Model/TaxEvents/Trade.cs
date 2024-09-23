@@ -13,14 +13,32 @@ public record Trade : TaxEvent, ITextFilePrintable
 {
     public virtual AssetCatagoryType AssetType { get; set; } = AssetCatagoryType.STOCK;
     public virtual required TradeType AcquisitionDisposal { get; set; }
+    private decimal _quantity;
     /// <summary>
     /// Greater than 0 regardless of acquisition or disposal
     /// </summary>
-    public virtual required decimal Quantity { get; set; }
+    public virtual required decimal Quantity
+    {
+        get { return _quantity; }
+        set
+        {
+            if (value < 0) throw new ArgumentException("Quantity must be greater than 0");
+            _quantity = value;
+        }
+    }
+    private DescribedMoney _grossProceed;
     /// <summary>
     /// Greater than 0 regardless of acquisition or disposal
     /// </summary>
-    public virtual required DescribedMoney GrossProceed { get; set; }
+    public virtual required DescribedMoney GrossProceed
+    {
+        get { return _grossProceed; }
+        set
+        {
+            if (value.Amount.Amount < 0) throw new ArgumentException("Gross Proceed must be greater than 0");
+            _grossProceed = value;
+        }
+    }
     public string Description { get; set; } = string.Empty;
     /// <summary>
     /// <para> positive = charge: take money from you. </para>
