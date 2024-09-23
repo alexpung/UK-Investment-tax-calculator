@@ -24,7 +24,7 @@ public record TaxEventLists : IDividendLists, ITradeAndCorporateActionList
     {
         foreach (TaxEvent taxEvent in taxEvents)
         {
-            if (taxEvent is Trade trade) Trades.Add(trade);
+            if (taxEvent is Trade and not OptionTrade and not FutureContractTrade) Trades.Add((Trade)taxEvent);
             if (taxEvent is CorporateAction corporateAction) CorporateActions.Add(corporateAction);
             if (taxEvent is Dividend dividend) Dividends.Add(dividend);
             if (taxEvent is OptionTrade optionTrade) OptionTrades.Add(optionTrade);
