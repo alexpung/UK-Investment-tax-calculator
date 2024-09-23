@@ -8,11 +8,11 @@ using System.Globalization;
 
 using UnitTest.Helper;
 
-namespace UnitTest.Test.TradeCalculations.Stocks;
-public class UkTradeCalculatorTestOptionExpire
+namespace UnitTest.Test.TradeCalculations.Options;
+public class UkTradeCalculatorOptionExpireTest
 {
     [Fact]
-    public void CallOptionExpireAllowFullCost()
+    public void LongOptionExpireAllowFullCost()
     {
         var buyOptionTrade = new OptionTrade
         {

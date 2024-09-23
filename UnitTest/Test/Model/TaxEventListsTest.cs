@@ -1,6 +1,5 @@
-using InvestmentTaxCalculator.Model.TaxEvents;
-
 using InvestmentTaxCalculator.Model;
+using InvestmentTaxCalculator.Model.TaxEvents;
 
 using NSubstitute;
 
@@ -82,6 +81,8 @@ public class TaxEventListsTests
             Substitute.For<Dividend>(),
             Substitute.For<Dividend>(),
             Substitute.For<Dividend>(),
+            Substitute.For<FutureContractTrade>(),
+            Substitute.For<OptionTrade>(),
         };
 
         var taxEventLists = new TaxEventLists();
@@ -90,9 +91,11 @@ public class TaxEventListsTests
         taxEventLists.AddData(taxEvents);
 
         // Assert
-        taxEventLists.Trades.ShouldBe(taxEvents.OfType<Trade>());
+        taxEventLists.Trades.Count.ShouldBe(1);
         taxEventLists.CorporateActions.ShouldBe(taxEvents.OfType<CorporateAction>());
         taxEventLists.Dividends.ShouldBe(taxEvents.OfType<Dividend>());
+        taxEventLists.OptionTrades.ShouldBe(taxEvents.OfType<OptionTrade>());
+        taxEventLists.FutureContractTrades.ShouldBe(taxEvents.OfType<FutureContractTrade>());
     }
 }
 

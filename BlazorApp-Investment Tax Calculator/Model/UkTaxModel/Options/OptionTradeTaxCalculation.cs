@@ -77,12 +77,15 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
             }
             if (OwnerExercisedQty > 0)
             {
-                Trade exerciseTrade = TradeList.First(trade => trade.TradeReason == TradeReason.OwnerExeciseOption);
-                allowableCost = allowableCost * (1 - (OwnerExercisedQty / matchQty));
+                OptionTrade exerciseTrade = (OptionTrade)TradeList.First(trade => ((OptionTrade)trade).ExeciseOrExecisedTrade!.TradeReason == TradeReason.OwnerExeciseOption);
+
+                WrappedMoney exerciseAllowableCost = allowableCost * OwnerExercisedQty / matchQty;
+                allowableCost -= exerciseAllowableCost;
                 additionalInformation += $"{OwnerExercisedQty} option execised.";
                 matchDisposalProceedQty -= OwnerExercisedQty;
                 OwnerExercisedQty = 0;
-                exerciseTrade.AttachOptionTrade(allowableCost, $"Trade is created by option exercise of option on {Date.Date}");
+                if (PUTCALL == PUTCALL.PUT) exerciseAllowableCost = exerciseAllowableCost * -1; // Execising a put option subtract option premium from disposal proceed.
+                exerciseTrade.ExeciseOrExecisedTrade!.AttachOptionTrade(exerciseAllowableCost, $"Trade is created by option exercise of option on {Date.ToString("dd/MM/yyyy")}");
             }
             TradeMatch tradeMatch = new()
             {

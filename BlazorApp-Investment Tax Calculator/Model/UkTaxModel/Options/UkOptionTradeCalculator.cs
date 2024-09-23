@@ -135,7 +135,7 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
         if (tradePairSorter.EarlierTrade.PUTCALL == PUTCALL.PUT) premiumCost *= -1;
         // If there is mutiple exercise trades it doesn't matter which trade to roll up, as all trades are the same ticker and same day are treated as a sigle trade.
         Trade exerciseTrade = tradePairSorter.LatterTrade.TradeList.First(trade => trade.TradeReason == TradeReason.OwnerExeciseOption);
-        exerciseTrade.AttachOptionTrade(premiumCost, $"Trade is created by option exercise of option on {tradePairSorter.LatterTrade.Date.Date}");
+        exerciseTrade.AttachOptionTrade(premiumCost, $"Trade is created by option exercise of option with premium {premiumCost} added(subtracted) on {tradePairSorter.LatterTrade.Date.Date}");
         TradeMatch tradeMatch = CreateTradeMatch(tradePairSorter, exercisedQty, WrappedMoney.GetBaseCurrencyZero(), WrappedMoney.GetBaseCurrencyZero(),
             $"{exercisedQty} option exercised.", taxMatchType);
         AssignTradeMatch(tradePairSorter, exercisedQty, tradeMatch, tradeMatch);
