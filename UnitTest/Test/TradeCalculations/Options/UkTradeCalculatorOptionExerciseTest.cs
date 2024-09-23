@@ -10,7 +10,7 @@ using System.Globalization;
 using UnitTest.Helper;
 
 namespace UnitTest.Test.TradeCalculations.Options;
-public class UkTradeCalculatorOptionExeciseTest
+public class UkTradeCalculatorOptionExerciseTest
 {
     [Fact]
     public void LongPutOptionBoughtAndExercised()
