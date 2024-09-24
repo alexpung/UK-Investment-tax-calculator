@@ -2,7 +2,7 @@
 
 public enum TradeReason
 {
-    OwnerExeciseOption,
+    OwnerExerciseOption,
     OptionAssigned,
     Expired,
     OrderedTrade

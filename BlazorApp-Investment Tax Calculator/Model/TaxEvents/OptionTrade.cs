@@ -12,7 +12,7 @@ public record OptionTrade : Trade
     public required DateTime ExpiryDate { get; set; }
     public required PUTCALL PUTCALL { get; set; }
     public required decimal Multiplier { get; set; }
-    public Trade? ExeciseOrExecisedTrade { get; set; }
+    public Trade? ExerciseOrExercisedTrade { get; set; }
 
     public override string PrintToTextFile()
     {
@@ -26,10 +26,10 @@ public record OptionTrade : Trade
         output.AppendLine($"\tTrade Reason: {TradeReason}");
 
         // Add details about the exercise or assigned trade, if available
-        if (ExeciseOrExecisedTrade != null)
+        if (ExerciseOrExercisedTrade != null)
         {
             output.AppendLine($"\tAssociated Trade:");
-            output.AppendLine($"\t\tExecuted Trade: {ExeciseOrExecisedTrade.PrintToTextFile()}");
+            output.AppendLine($"\t\tExecuted Trade: {ExerciseOrExercisedTrade.PrintToTextFile()}");
         }
 
         return output.ToString();
