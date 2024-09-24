@@ -77,7 +77,7 @@ public class UkTradeCalculatorOptionMixedTest
             ExpiryDate = DateTime.Parse("20-Jan-23 16:00:00", CultureInfo.InvariantCulture),
             PUTCALL = PUTCALL.CALL,
             Multiplier = 100,
-            TradeReason = TradeReason.OwnerExeciseOption,
+            TradeReason = TradeReason.OwnerExerciseOption,
             Quantity = 2,
             GrossProceed = new DescribedMoney(0, "USD", 1),
             Expenses = [],
@@ -85,11 +85,11 @@ public class UkTradeCalculatorOptionMixedTest
             Description = "AAPL 125 Call Option exercised",
         };
 
-        var execiseUnderlyingBuyTrade = new Trade
+        var exerciseUnderlyingBuyTrade = new Trade
         {
             AssetName = "AAPL",
             Date = DateTime.Parse("20-Jan-23 16:00:00", CultureInfo.InvariantCulture),
-            TradeReason = TradeReason.OwnerExeciseOption,
+            TradeReason = TradeReason.OwnerExerciseOption,
             Quantity = 200,
             GrossProceed = new DescribedMoney(20000, "USD", 1),
             Expenses = [],
@@ -127,7 +127,7 @@ public class UkTradeCalculatorOptionMixedTest
         };
 
         List<ITradeTaxCalculation> result = TradeCalculationHelper.CalculateTrades(
-            [buyOptionTrade, buyOptionTrade2, sellOptionTrade, exercisedOptionTrade, expireOptionTrade, execiseUnderlyingBuyTrade, sellUnderlyingTrade],
+            [buyOptionTrade, buyOptionTrade2, sellOptionTrade, exercisedOptionTrade, expireOptionTrade, exerciseUnderlyingBuyTrade, sellUnderlyingTrade],
             out UkSection104Pools section104Pools);
         var disposeOptionTradeResult = result.Find(trade => trade is OptionTradeTaxCalculation { AcquisitionDisposal: TradeType.DISPOSAL, TotalQty: 6 });
         disposeOptionTradeResult!.TotalAllowableCost.Amount.ShouldBe(1374.87m, 0.01m); //  ( 1005 * 0.78 + 1504 * 0.85 ) * 4 / 6

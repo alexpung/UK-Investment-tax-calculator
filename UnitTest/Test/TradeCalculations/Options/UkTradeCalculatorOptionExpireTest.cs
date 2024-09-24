@@ -94,7 +94,7 @@ public class UkTradeCalculatorOptionExpireTest
             Expenses = [],
             AcquisitionDisposal = TradeType.ACQUISITION,
             Description = "AAPL 125 Call Option Expired",
-            ExeciseOrExecisedTrade = shortOptionTrade
+            ExerciseOrExercisedTrade = shortOptionTrade
         };
         List<ITradeTaxCalculation> result = TradeCalculationHelper.CalculateTrades(new List<Trade>() { shortOptionTrade, expireOptionTrade }, out UkSection104Pools section104Pools);
         result[0].TotalAllowableCost.ShouldBe(WrappedMoney.GetBaseCurrencyZero());

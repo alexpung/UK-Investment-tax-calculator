@@ -32,7 +32,7 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
     private void MatchExeciseAndAssignmentOptionTrade()
     {
         List<OptionTrade> filteredTrades = tradeList.OptionTrades.Where(trade => trade is OptionTrade
-        { TradeReason: TradeReason.OwnerExeciseOption or TradeReason.OptionAssigned }).ToList();
+        { TradeReason: TradeReason.OwnerExerciseOption or TradeReason.OptionAssigned }).ToList();
         foreach (var optionTrade in filteredTrades)
         {
             var underlyingTrade = tradeList.Trades.Find(trade =>
@@ -45,7 +45,7 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
                 toastService.ShowError($"No corresponding {optionTrade.TradeReason} trade found for option (Underlying: {optionTrade.Underlying}, " +
                 $"Quantity: {optionTrade.Quantity * optionTrade.Multiplier}, date: {optionTrade.Date.Date}, there is likely an omission of trade(s) in the input)");
             }
-            optionTrade.ExeciseOrExecisedTrade = underlyingTrade;
+            optionTrade.ExerciseOrExercisedTrade = underlyingTrade;
         }
     }
 
@@ -134,7 +134,7 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
         // If there is mutiple exercise trades it doesn't matter which trade to roll up, as all trades are the same ticker and same day are treated as a sigle trade.
         tradePairSorter.LatterTrade.AttachTradeToUnderlying(premiumCost,
             $"Trade is created by option exercise of option with premium {premiumCost} added(subtracted) on {tradePairSorter.LatterTrade.Date.Date}",
-            TradeReason.OwnerExeciseOption);
+            TradeReason.OwnerExerciseOption);
         TradeMatch tradeMatch = CreateTradeMatch(tradePairSorter, exercisedQty, WrappedMoney.GetBaseCurrencyZero(), WrappedMoney.GetBaseCurrencyZero(),
             $"{exercisedQty} option exercised.", taxMatchType);
         AssignTradeMatch(tradePairSorter, exercisedQty, tradeMatch, tradeMatch);

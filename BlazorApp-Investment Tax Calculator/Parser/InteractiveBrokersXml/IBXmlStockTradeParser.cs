@@ -28,7 +28,7 @@ public static class IBXmlStockTradeParser
             Expenses = element.BuildExpenses(),
             TradeReason = element.GetAttribute("notes") switch
             {
-                string s when s.Split(";").Contains("Ex") => TradeReason.OwnerExeciseOption,
+                string s when s.Split(";").Contains("Ex") => TradeReason.OwnerExerciseOption,
                 string s when s.Split(";").Contains("A") => TradeReason.OptionAssigned,
                 string s when s.Split(";").Contains("Ep") => TradeReason.Expired,
                 _ => TradeReason.OrderedTrade

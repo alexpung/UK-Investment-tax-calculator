@@ -55,7 +55,7 @@ public class UkTradeCalculatorOptionExerciseTest
             ExpiryDate = DateTime.Parse("25-Jan-23 16:00:00", CultureInfo.InvariantCulture),
             PUTCALL = PUTCALL.PUT,
             Multiplier = 100,
-            TradeReason = TradeReason.OwnerExeciseOption,
+            TradeReason = TradeReason.OwnerExerciseOption,
             Quantity = 1,
             GrossProceed = new DescribedMoney(0, "USD", 1),
             Expenses = [],
@@ -71,8 +71,8 @@ public class UkTradeCalculatorOptionExerciseTest
             GrossProceed = new DescribedMoney(14000, "USD", 1),
             Expenses = [],
             AcquisitionDisposal = TradeType.DISPOSAL,
-            Description = "Execise put to sell 100 shares of AAPL",
-            TradeReason = TradeReason.OwnerExeciseOption
+            Description = "Exercise put to sell 100 shares of AAPL",
+            TradeReason = TradeReason.OwnerExerciseOption
         };
         List<ITradeTaxCalculation> result = TradeCalculationHelper.CalculateTrades(
             [buyStockTrade, buyPutOptionTrade, exercisePutOptionTrade, sellStockTrade],
@@ -120,7 +120,7 @@ public class UkTradeCalculatorOptionExerciseTest
             ExpiryDate = DateTime.Parse("25-Feb-23 16:00:00", CultureInfo.InvariantCulture),
             PUTCALL = PUTCALL.CALL,
             Multiplier = 100,
-            TradeReason = TradeReason.OwnerExeciseOption,
+            TradeReason = TradeReason.OwnerExerciseOption,
             Quantity = 1,
             GrossProceed = new DescribedMoney(0, "USD", 1),
             Expenses = [],
@@ -128,7 +128,7 @@ public class UkTradeCalculatorOptionExerciseTest
             Description = "AAPL Call Option Exercised",
         };
 
-        var execiseStockTrade = new Trade
+        var exerciseStockTrade = new Trade
         {
             AssetName = "AAPL",
             Date = DateTime.Parse("25-Feb-23 16:00:00", CultureInfo.InvariantCulture),
@@ -136,8 +136,8 @@ public class UkTradeCalculatorOptionExerciseTest
             GrossProceed = new DescribedMoney(16000, "USD", 1),
             Expenses = [],
             AcquisitionDisposal = TradeType.ACQUISITION,
-            Description = "Execise call to buy 100 shares at $160",
-            TradeReason = TradeReason.OwnerExeciseOption
+            Description = "Exercise call to buy 100 shares at $160",
+            TradeReason = TradeReason.OwnerExerciseOption
         };
 
         var sellStockTrade = new Trade
@@ -153,7 +153,7 @@ public class UkTradeCalculatorOptionExerciseTest
         };
 
         List<ITradeTaxCalculation> result = TradeCalculationHelper.CalculateTrades(
-            [buyCallOptionTrade, exerciseCallOptionTrade, execiseStockTrade, sellStockTrade],
+            [buyCallOptionTrade, exerciseCallOptionTrade, exerciseStockTrade, sellStockTrade],
             out _
         );
 

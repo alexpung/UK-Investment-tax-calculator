@@ -36,7 +36,7 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
     {
         ExpiredQty = TradeList.Where(trade => ((OptionTrade)trade).TradeReason == TradeReason.Expired).Sum(trade => trade.Quantity);
         AssignedQty = TradeList.Where(trade => ((OptionTrade)trade).TradeReason == TradeReason.OptionAssigned).Sum(trade => trade.Quantity);
-        OwnerExercisedQty = TradeList.Where(trade => ((OptionTrade)trade).TradeReason == TradeReason.OwnerExeciseOption).Sum(trade => trade.Quantity);
+        OwnerExercisedQty = TradeList.Where(trade => ((OptionTrade)trade).TradeReason == TradeReason.OwnerExerciseOption).Sum(trade => trade.Quantity);
         PUTCALL = trades.Any() ? trades.First().PUTCALL : throw new ArgumentException("trades is null when providing trade list");
     }
 
@@ -81,7 +81,7 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
                 additionalInformation += $"{OwnerExercisedQty} option execised. ";
                 matchDisposalProceedQty -= OwnerExercisedQty;
                 OwnerExercisedQty = 0;
-                AttachTradeToUnderlying(exerciseAllowableCost, $"Trade is created by option exercise of option on {Date.ToString("dd/MM/yyyy")}", TradeReason.OwnerExeciseOption);
+                AttachTradeToUnderlying(exerciseAllowableCost, $"Trade is created by option exercise of option on {Date.ToString("dd/MM/yyyy")}", TradeReason.OwnerExerciseOption);
             }
             TradeMatch tradeMatch = new()
             {
@@ -104,8 +104,8 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
     public void AttachTradeToUnderlying(WrappedMoney attachedPremium, string comment, TradeReason tradeReason)
     {
         if (PUTCALL == PUTCALL.PUT) attachedPremium = attachedPremium * -1;
-        OptionTrade exerciseTrade = (OptionTrade)TradeList.First(trade => ((OptionTrade)trade).ExeciseOrExecisedTrade?.TradeReason == tradeReason);
-        exerciseTrade.ExeciseOrExecisedTrade!.AttachOptionTrade(attachedPremium, comment);
+        OptionTrade exerciseTrade = (OptionTrade)TradeList.First(trade => ((OptionTrade)trade).ExerciseOrExercisedTrade?.TradeReason == tradeReason);
+        exerciseTrade.ExerciseOrExercisedTrade!.AttachOptionTrade(attachedPremium, comment);
     }
 
     public override string PrintToTextFile()

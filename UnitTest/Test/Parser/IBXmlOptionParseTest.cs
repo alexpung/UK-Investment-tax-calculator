@@ -42,6 +42,6 @@ public class IBXmlOptionTradeParserTests
         trade.StrikePrice.ShouldBe(new WrappedMoney(800, "usd"));
         trade.ExpiryDate.ShouldBe(new DateTime(2018, 1, 19, 0, 0, 0, DateTimeKind.Local));
         trade.PUTCALL.ShouldBe(PUTCALL.CALL);
-        trade.TradeReason.ShouldBe(TradeReason.OwnerExeciseOption);
+        trade.TradeReason.ShouldBe(TradeReason.OwnerExerciseOption);
     }
 }
