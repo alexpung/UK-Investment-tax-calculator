@@ -104,7 +104,7 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
     public void AttachTradeToUnderlying(WrappedMoney attachedPremium, string comment, TradeReason tradeReason)
     {
         if (PUTCALL == PUTCALL.PUT) attachedPremium = attachedPremium * -1;
-        OptionTrade exerciseTrade = (OptionTrade)TradeList.First(trade => ((OptionTrade)trade).ExeciseOrExecisedTrade!.TradeReason == tradeReason);
+        OptionTrade exerciseTrade = (OptionTrade)TradeList.First(trade => ((OptionTrade)trade).ExeciseOrExecisedTrade?.TradeReason == tradeReason);
         exerciseTrade.ExeciseOrExecisedTrade!.AttachOptionTrade(attachedPremium, comment);
     }
 
