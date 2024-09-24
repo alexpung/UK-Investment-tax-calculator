@@ -71,14 +71,14 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
             WrappedMoney allowableCost = section104History.ValueChange * -1;
             if (ExpiredQty > 0)
             {
-                additionalInformation += $"{ExpiredQty} option expired";
+                additionalInformation += $"{ExpiredQty} option expired. ";
                 ExpiredQty = 0;
             }
             if (OwnerExercisedQty > 0)
             {
                 WrappedMoney exerciseAllowableCost = allowableCost * OwnerExercisedQty / matchQty;
                 allowableCost -= exerciseAllowableCost;
-                additionalInformation += $"{OwnerExercisedQty} option execised.";
+                additionalInformation += $"{OwnerExercisedQty} option execised. ";
                 matchDisposalProceedQty -= OwnerExercisedQty;
                 OwnerExercisedQty = 0;
                 AttachTradeToUnderlying(exerciseAllowableCost, $"Trade is created by option exercise of option on {Date.ToString("dd/MM/yyyy")}", TradeReason.OwnerExeciseOption);
