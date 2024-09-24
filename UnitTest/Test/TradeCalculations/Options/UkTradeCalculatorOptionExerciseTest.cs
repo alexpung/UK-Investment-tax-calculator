@@ -12,8 +12,11 @@ using UnitTest.Helper;
 namespace UnitTest.Test.TradeCalculations.Options;
 public class UkTradeCalculatorOptionExerciseTest
 {
-    [Fact]
-    public void LongPutOptionBoughtAndExercised()
+    [Theory]
+    [InlineData("05-Dec-22 09:30:00")]
+    [InlineData("05-Jan-23 09:30:00")]
+    [InlineData("25-Jan-23 09:30:00")]
+    public void LongPutOptionBoughtAndExercised(string optionDate)
     {
         var buyStockTrade = new Trade
         {
@@ -29,7 +32,7 @@ public class UkTradeCalculatorOptionExerciseTest
         var buyPutOptionTrade = new OptionTrade
         {
             AssetName = "AAPL230125P00140000",
-            Date = DateTime.Parse("05-Jan-23 09:30:00", CultureInfo.InvariantCulture),
+            Date = DateTime.Parse(optionDate, CultureInfo.InvariantCulture),
             Underlying = "AAPL",
             StrikePrice = new WrappedMoney(140),
             ExpiryDate = DateTime.Parse("25-Jan-23 16:00:00", CultureInfo.InvariantCulture),
@@ -85,13 +88,16 @@ public class UkTradeCalculatorOptionExerciseTest
         stockDisposalTrade.Gain.ShouldBe(new WrappedMoney(-1515));
     }
 
-    [Fact]
-    public void LongCallOptionBoughtExercisedAndStockDisposed()
+    [Theory]
+    [InlineData("05-Dec-22 09:30:00")]
+    [InlineData("05-Jan-23 09:30:00")]
+    [InlineData("25-Jan-23 09:30:00")]
+    public void LongCallOptionBoughtExercisedAndStockDisposed(string optionDate)
     {
         var buyCallOptionTrade = new OptionTrade
         {
             AssetName = "AAPL230225C00160000",  // OCC Option Symbol for Call
-            Date = DateTime.Parse("05-Jan-23 09:30:00", CultureInfo.InvariantCulture),
+            Date = DateTime.Parse(optionDate, CultureInfo.InvariantCulture),
             Underlying = "AAPL",
             StrikePrice = new WrappedMoney(160),
             ExpiryDate = DateTime.Parse("25-Feb-23 16:00:00", CultureInfo.InvariantCulture),

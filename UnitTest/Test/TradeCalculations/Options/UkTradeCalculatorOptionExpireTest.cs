@@ -11,13 +11,16 @@ using UnitTest.Helper;
 namespace UnitTest.Test.TradeCalculations.Options;
 public class UkTradeCalculatorOptionExpireTest
 {
-    [Fact]
-    public void LongOptionExpireAllowFullCost()
+    [Theory]
+    [InlineData("05-Dec-22 09:30:00")]
+    [InlineData("05-Jan-23 09:30:00")]
+    [InlineData("25-Jan-23 09:30:00")]
+    public void LongOptionExpireAllowFullCost(string optionDate)
     {
         var buyOptionTrade = new OptionTrade
         {
             AssetName = "AAPL",
-            Date = DateTime.Parse("10-Jan-23 09:30:00", CultureInfo.InvariantCulture),
+            Date = DateTime.Parse(optionDate, CultureInfo.InvariantCulture),
             Underlying = "AAPL",
             StrikePrice = new WrappedMoney(100),
             ExpiryDate = DateTime.Parse("20-Jan-23 16:00:00", CultureInfo.InvariantCulture),
@@ -54,13 +57,16 @@ public class UkTradeCalculatorOptionExpireTest
         result[1].Gain.ShouldBe(new WrappedMoney(-400.08m));
     }
 
-    [Fact]
-    public void ShortOptionExpireNoCostAllowed()
+    [Theory]
+    [InlineData("05-Dec-22 09:30:00")]
+    [InlineData("05-Jan-23 09:30:00")]
+    [InlineData("25-Jan-23 09:30:00")]
+    public void ShortOptionExpireNoCostAllowed(string optionDate)
     {
         var shortOptionTrade = new OptionTrade
         {
             AssetName = "AAPL",
-            Date = DateTime.Parse("10-Jan-23 09:30:00", CultureInfo.InvariantCulture),
+            Date = DateTime.Parse(optionDate, CultureInfo.InvariantCulture),
             Underlying = "AAPL",
             StrikePrice = new WrappedMoney(100),
             ExpiryDate = DateTime.Parse("20-Jan-23 16:00:00", CultureInfo.InvariantCulture),

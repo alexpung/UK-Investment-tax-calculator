@@ -124,18 +124,17 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
     /// <summary>
     /// You bought an option and you exercise it.
     /// The option trade get rolled up to the exercised acquisition and disposal of the underlying and the option trade have no tax effect.
-    /// Call option: Premium cost added to the underlying acquisition.
-    /// Put option: Premium cost is subtracted from the Proceed for disposing the underlying.
+    /// Call option: allowable cost = allowable cost for buying the underlying + premium paid
+    /// Put option: sale proceed = sale proceed for the underlying - premium paid
     /// </summary>
     private static void MatchExercisedOption(TradePairSorter<OptionTradeTaxCalculation> tradePairSorter, TaxMatchType taxMatchType, decimal exercisedQty)
     {
         WrappedMoney premiumCost = tradePairSorter.EarlierTrade.GetProportionedCostOrProceed(exercisedQty);
         tradePairSorter.LatterTrade.OwnerExercisedQty -= exercisedQty;
-        // If you exercise a put option the Acquisition cost is subtracted by the premium
-        if (tradePairSorter.EarlierTrade.PUTCALL == PUTCALL.PUT) premiumCost *= -1;
         // If there is mutiple exercise trades it doesn't matter which trade to roll up, as all trades are the same ticker and same day are treated as a sigle trade.
-        Trade exerciseTrade = tradePairSorter.LatterTrade.TradeList.First(trade => trade.TradeReason == TradeReason.OwnerExeciseOption);
-        exerciseTrade.AttachOptionTrade(premiumCost, $"Trade is created by option exercise of option with premium {premiumCost} added(subtracted) on {tradePairSorter.LatterTrade.Date.Date}");
+        tradePairSorter.LatterTrade.AttachTradeToUnderlying(premiumCost,
+            $"Trade is created by option exercise of option with premium {premiumCost} added(subtracted) on {tradePairSorter.LatterTrade.Date.Date}",
+            TradeReason.OwnerExeciseOption);
         TradeMatch tradeMatch = CreateTradeMatch(tradePairSorter, exercisedQty, WrappedMoney.GetBaseCurrencyZero(), WrappedMoney.GetBaseCurrencyZero(),
             $"{exercisedQty} option exercised.", taxMatchType);
         AssignTradeMatch(tradePairSorter, exercisedQty, tradeMatch, tradeMatch);
@@ -144,22 +143,16 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
     /// <summary>
     /// You sold an option and get an assignment.
     /// The option trade get rolled up to the assignment acquisition and disposal of the underlying and the option trade have no tax effect.
-    /// Call option: Premium cost is subtracted from the underlying acquisition cost.
-    /// Put option: Premium cost added to the Proceed for disposing the underlying.
+    /// Call option: sale proceed = sale proceed for the underlying + premium already received
+    /// Put option: allowable cost = allowable cost for buying the underlying - premium already received
     /// </summary>
     private void MatchAssignedOption(TradePairSorter<OptionTradeTaxCalculation> tradePairSorter, TaxMatchType taxMatchType, decimal assignmentQty)
     {
         WrappedMoney premiumCost = tradePairSorter.EarlierTrade.GetProportionedCostOrProceed(assignmentQty);
         tradePairSorter.LatterTrade.AssignedQty -= assignmentQty;
-        // If you get assigned a CALL option the Acquisition cost is subtracted by the premium
-        if (tradePairSorter.EarlierTrade.PUTCALL == PUTCALL.CALL) premiumCost *= -1;
         // If there is mutiple exercise trades it doesn't matter which trade to roll up, as all trades are the same ticker and same day are treated as a sigle trade.
-        Trade? exerciseTrade = tradePairSorter.LatterTrade.TradeList.Select(trade => ((OptionTrade)trade).ExeciseOrExecisedTrade).FirstOrDefault(trade => trade?.TradeReason == TradeReason.OptionAssigned);
-        if (exerciseTrade != null)
-        {
-            exerciseTrade.AttachOptionTrade(premiumCost, $"Trade is created by option assignment of option on {tradePairSorter.LatterTrade.Date.Date}. \n" +
-                                  $"{premiumCost} is added(subtracted) to the trade amount.");
-        }
+        tradePairSorter.LatterTrade.AttachTradeToUnderlying(premiumCost, $"Trade is created by option assignment of option on {tradePairSorter.LatterTrade.Date.Date}. \n" +
+                                  $"{premiumCost} is added(subtracted) to the trade amount.", TradeReason.OptionAssigned);
         if (taxYear.ToTaxYear(tradePairSorter.EarlierTrade.Date) == taxYear.ToTaxYear(tradePairSorter.LatterTrade.Date))
         {
             tradePairSorter.EarlierTrade.RefundDisposalQty(assignmentQty);

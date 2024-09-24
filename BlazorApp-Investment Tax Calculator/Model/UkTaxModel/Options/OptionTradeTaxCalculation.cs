@@ -8,7 +8,6 @@ namespace InvestmentTaxCalculator.Model.UkTaxModel.Options;
 
 public class OptionTradeTaxCalculation : TradeTaxCalculation
 {
-
     /// <summary>
     /// Disposal is always taxed full premium regardless if the trade is matched
     /// </summary>
@@ -77,15 +76,12 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
             }
             if (OwnerExercisedQty > 0)
             {
-                OptionTrade exerciseTrade = (OptionTrade)TradeList.First(trade => ((OptionTrade)trade).ExeciseOrExecisedTrade!.TradeReason == TradeReason.OwnerExeciseOption);
-
                 WrappedMoney exerciseAllowableCost = allowableCost * OwnerExercisedQty / matchQty;
                 allowableCost -= exerciseAllowableCost;
                 additionalInformation += $"{OwnerExercisedQty} option execised.";
                 matchDisposalProceedQty -= OwnerExercisedQty;
                 OwnerExercisedQty = 0;
-                if (PUTCALL == PUTCALL.PUT) exerciseAllowableCost = exerciseAllowableCost * -1; // Execising a put option subtract option premium from disposal proceed.
-                exerciseTrade.ExeciseOrExecisedTrade!.AttachOptionTrade(exerciseAllowableCost, $"Trade is created by option exercise of option on {Date.ToString("dd/MM/yyyy")}");
+                AttachTradeToUnderlying(exerciseAllowableCost, $"Trade is created by option exercise of option on {Date.ToString("dd/MM/yyyy")}", TradeReason.OwnerExeciseOption);
             }
             TradeMatch tradeMatch = new()
             {
@@ -103,6 +99,13 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
             MatchHistory.Add(tradeMatch);
             MatchQty(matchQty);
         }
+    }
+
+    public void AttachTradeToUnderlying(WrappedMoney attachedPremium, string comment, TradeReason tradeReason)
+    {
+        if (PUTCALL == PUTCALL.PUT) attachedPremium = attachedPremium * -1;
+        OptionTrade exerciseTrade = (OptionTrade)TradeList.First(trade => ((OptionTrade)trade).ExeciseOrExecisedTrade!.TradeReason == tradeReason);
+        exerciseTrade.ExeciseOrExecisedTrade!.AttachOptionTrade(attachedPremium, comment);
     }
 
     public override string PrintToTextFile()
@@ -128,7 +131,7 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
         }
 
         // Include any tax repayments if present
-        if (TaxRepayList.Any())
+        if (TaxRepayList.Count != 0)
         {
             output.AppendLine("Tax repayments:");
             foreach (var taxRepay in TaxRepayList)
@@ -146,8 +149,6 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
         output.AppendLine();
         return output.ToString();
     }
-
-
 }
 
 public record TaxRepay(int TaxYear, WrappedMoney RefundAmount, string Reason);
