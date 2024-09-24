@@ -75,7 +75,7 @@ public class UkTradeCalculatorOptionExerciseTest
             TradeReason = TradeReason.OwnerExeciseOption
         };
         List<ITradeTaxCalculation> result = TradeCalculationHelper.CalculateTrades(
-            new List<Trade>() { buyStockTrade, buyPutOptionTrade, exercisePutOptionTrade, sellStockTrade },
+            [buyStockTrade, buyPutOptionTrade, exercisePutOptionTrade, sellStockTrade],
             out _
         );
         var optionDisposalTrade = result.Find(trade => trade is OptionTradeTaxCalculation { AcquisitionDisposal: TradeType.DISPOSAL });
@@ -153,7 +153,7 @@ public class UkTradeCalculatorOptionExerciseTest
         };
 
         List<ITradeTaxCalculation> result = TradeCalculationHelper.CalculateTrades(
-            new List<Trade>() { buyCallOptionTrade, exerciseCallOptionTrade, execiseStockTrade, sellStockTrade },
+            [buyCallOptionTrade, exerciseCallOptionTrade, execiseStockTrade, sellStockTrade],
             out _
         );
 

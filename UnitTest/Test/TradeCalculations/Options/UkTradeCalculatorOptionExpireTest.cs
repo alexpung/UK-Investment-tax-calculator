@@ -19,7 +19,7 @@ public class UkTradeCalculatorOptionExpireTest
     {
         var buyOptionTrade = new OptionTrade
         {
-            AssetName = "AAPL",
+            AssetName = "AAPL 200123C00100000",
             Date = DateTime.Parse(optionDate, CultureInfo.InvariantCulture),
             Underlying = "AAPL",
             StrikePrice = new WrappedMoney(100),
@@ -36,7 +36,7 @@ public class UkTradeCalculatorOptionExpireTest
 
         var expireOptionTrade = new OptionTrade
         {
-            AssetName = "AAPL",
+            AssetName = "AAPL 200123C00100000",
             Date = DateTime.Parse("20-Jan-23 16:00:00", CultureInfo.InvariantCulture),
             Underlying = "AAPL",
             StrikePrice = new WrappedMoney(100),
@@ -49,9 +49,8 @@ public class UkTradeCalculatorOptionExpireTest
             Expenses = [],
             AcquisitionDisposal = TradeType.DISPOSAL,
             Description = "AAPL 125 Call Option Expired",
-            ExeciseOrExecisedTrade = buyOptionTrade
         };
-        List<ITradeTaxCalculation> result = TradeCalculationHelper.CalculateTrades(new List<Trade>() { buyOptionTrade, expireOptionTrade }, out UkSection104Pools section104Pools);
+        List<ITradeTaxCalculation> result = TradeCalculationHelper.CalculateTrades([buyOptionTrade, expireOptionTrade], out UkSection104Pools section104Pools);
         result[1].TotalAllowableCost.ShouldBe(new WrappedMoney(400.08m));
         result[1].TotalProceeds.ShouldBe(WrappedMoney.GetBaseCurrencyZero());
         result[1].Gain.ShouldBe(new WrappedMoney(-400.08m));
@@ -65,7 +64,7 @@ public class UkTradeCalculatorOptionExpireTest
     {
         var shortOptionTrade = new OptionTrade
         {
-            AssetName = "AAPL",
+            AssetName = "AAPL 200123C00100000",
             Date = DateTime.Parse(optionDate, CultureInfo.InvariantCulture),
             Underlying = "AAPL",
             StrikePrice = new WrappedMoney(100),
@@ -82,7 +81,7 @@ public class UkTradeCalculatorOptionExpireTest
 
         var expireOptionTrade = new OptionTrade
         {
-            AssetName = "AAPL",
+            AssetName = "AAPL 200123C00100000",
             Date = DateTime.Parse("20-Jan-23 16:00:00", CultureInfo.InvariantCulture),
             Underlying = "AAPL",
             StrikePrice = new WrappedMoney(100),
