@@ -29,7 +29,7 @@ public class TradeTaxCalculation : ITradeTaxCalculation
     public WrappedMoney UnmatchedCostOrProceed { get; protected set; }
     public WrappedMoney GetProportionedCostOrProceed(decimal qty) => TotalCostOrProceed / TotalQty * qty;
     /// <summary>
-    /// Guanteed by the constructor to be positive non zero decimal.
+    /// Guaranteed by the constructor to be positive non zero decimal.
     /// </summary>
     public decimal TotalQty { get; }
     public decimal UnmatchedQty { get; protected set; }
