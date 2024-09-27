@@ -97,7 +97,7 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
                 allowableCost -= exerciseAllowableCost;
                 additionalInformation += $"{OwnerExercisedQty} option execised. ";
                 matchDisposalProceedQty -= OwnerExercisedQty;
-                AttachTradeToUnderlying(exerciseAllowableCost, $"Trade is created by option exercise of option on {Date.ToString("dd/MM/yyyy")}", TradeReason.OwnerExerciseOption);
+                AttachTradeToUnderlying(exerciseAllowableCost, $"Trade is created by option exercise of option on {Date:d}", TradeReason.OwnerExerciseOption);
             }
             TradeMatch tradeMatch = new()
             {
@@ -127,7 +127,7 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
     public override string PrintToTextFile()
     {
         StringBuilder output = new();
-        output.Append($"Option trade of {TotalQty} units of {AssetName} on {Date.Date.ToString("dd-MMM-yyyy")}.\n");
+        output.Append($"Option trade of {TotalQty} units of {AssetName} on {Date:d}.\n");
         output.AppendLine($"Total proceeds: {TotalProceeds}.");
         output.AppendLine($"Total gain (loss): {Gain}.");
         output.AppendLine(UnmatchedDescription());

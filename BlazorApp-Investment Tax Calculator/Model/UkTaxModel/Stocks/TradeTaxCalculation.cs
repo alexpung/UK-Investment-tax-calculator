@@ -133,7 +133,7 @@ public class TradeTaxCalculation : ITradeTaxCalculation
     {
         StringBuilder output = new();
         output.Append($"Sold {TotalQty} units of {AssetName} on " +
-            $"{Date.Date.ToString("dd-MMM-yyyy")} for {TotalCostOrProceed}.\t");
+            $"{Date:d} for {TotalCostOrProceed}.\t");
         output.AppendLine($"Total gain (loss): {Gain}");
         output.AppendLine(UnmatchedDescription());
         output.AppendLine($"Trade details:");

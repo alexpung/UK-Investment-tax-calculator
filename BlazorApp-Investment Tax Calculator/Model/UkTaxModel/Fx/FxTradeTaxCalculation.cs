@@ -11,7 +11,7 @@ public class FxTradeTaxCalculation(IEnumerable<Trade> trades) : TradeTaxCalculat
     {
         StringBuilder output = new();
         output.Append($"Dispose {TotalQty:0.##} units of {AssetName} on " +
-            $"{Date.Date.ToString("dd-MMM-yyyy")} for {TotalCostOrProceed}.\t");
+            $"{Date:d} for {TotalCostOrProceed}.\t");
         output.AppendLine($"Total gain (loss): {Gain}");
         output.AppendLine(UnmatchedDescription());
         output.AppendLine($"Trade details:");
