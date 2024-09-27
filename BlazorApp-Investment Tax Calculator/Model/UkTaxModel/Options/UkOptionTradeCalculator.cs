@@ -60,6 +60,9 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
     {
         TradePairSorter<OptionTradeTaxCalculation> tradePairSorter = new(trade1, trade2);
         if (trade1.CalculationCompleted || trade2.CalculationCompleted) return;
+
+        // This part of the algo handle the case when you trade an option at the date of expiry and you traded/it expires/it is assigned/you execise it in the same day
+        // 
         decimal matchRatio = 1;
         if (tradePairSorter.LatterTrade.UnmatchedQty < tradePairSorter.EarlierTrade.UnmatchedQty)
         {
@@ -69,6 +72,7 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
         {
             matchRatio = tradePairSorter.EarlierTrade.UnmatchedQty / tradePairSorter.LatterTrade.UnmatchedQty;
         }
+        matchRatio *= tradePairSorter.LatterTrade.UnmatchedQty / tradePairSorter.LatterTrade.TotalQty;
         decimal assignmentQty = tradePairSorter.LatterTrade.AssignedQty * matchRatio;
         decimal expiredQty = tradePairSorter.LatterTrade.ExpiredQty * matchRatio;
         decimal exercisedQty = tradePairSorter.LatterTrade.OwnerExercisedQty * matchRatio;
@@ -82,8 +86,8 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
     private static void MatchNormalTrade(TradePairSorter<OptionTradeTaxCalculation> tradePairSorter, TaxMatchType taxMatchType)
     {
         TradeMatch disposalTradeMatch = CreateTradeMatch(tradePairSorter, tradePairSorter.AcquisitionMatchQuantity,
-            tradePairSorter.AcquisitionTrade.GetProportionedCostOrProceed(tradePairSorter.AcquisitionMatchQuantity),
-            tradePairSorter.DisposalTrade.GetProportionedCostOrProceed(tradePairSorter.DisposalMatchQuantity), string.Empty, taxMatchType);
+            tradePairSorter.AcquisitionTrade.GetProportionedCostOrProceedForTradeReason(TradeReason.OrderedTrade, tradePairSorter.AcquisitionMatchQuantity),
+            tradePairSorter.DisposalTrade.GetProportionedCostOrProceedForTradeReason(TradeReason.OrderedTrade, tradePairSorter.DisposalMatchQuantity), string.Empty, taxMatchType);
         TradeMatch AcquisitionTradeMatch = disposalTradeMatch with
         {
             BaseCurrencyMatchAllowableCost = WrappedMoney.GetBaseCurrencyZero(),
@@ -99,19 +103,18 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
     /// </summary>
     private static void MatchExpiredOption(TradePairSorter<OptionTradeTaxCalculation> tradePairSorter, TaxMatchType taxMatchType, decimal expiredQty)
     {
+        TradeMatch disposalTradeMatch;
         // You sold an option and it expires
-
-        TradeMatch disposalTradeMatch = CreateTradeMatch(tradePairSorter, expiredQty, WrappedMoney.GetBaseCurrencyZero(),
-            tradePairSorter.DisposalTrade.GetProportionedCostOrProceed(expiredQty), "The granted option expired. No allowable cost is added.", taxMatchType);
-        tradePairSorter.LatterTrade.ExpiredQty -= expiredQty;
-        // You bought an option and it expires
-        if (tradePairSorter.EarlierTrade.AcquisitionDisposal == TradeType.ACQUISITION)
+        if (tradePairSorter.EarlierTrade.AcquisitionDisposal == TradeType.DISPOSAL)
         {
-            disposalTradeMatch = disposalTradeMatch with
-            {
-                BaseCurrencyMatchAllowableCost = tradePairSorter.AcquisitionTrade.GetProportionedCostOrProceed(expiredQty),
-                AdditionalInformation = "The bought option expired. Full premium is added to alloable cost."
-            };
+            disposalTradeMatch = CreateTradeMatch(tradePairSorter, expiredQty, WrappedMoney.GetBaseCurrencyZero(),
+            tradePairSorter.DisposalTrade.GetProportionedCostOrProceed(expiredQty), "The granted option expired. No allowable cost is added.", taxMatchType);
+        }
+        // You bought an option and it expires
+        else
+        {
+            disposalTradeMatch = CreateTradeMatch(tradePairSorter, expiredQty, tradePairSorter.AcquisitionTrade.GetProportionedCostOrProceed(expiredQty),
+            tradePairSorter.DisposalTrade.GetProportionedCostOrProceedForTradeReason(TradeReason.Expired, expiredQty), "The bought option expired. Full premium is added to allowable cost.", taxMatchType);
         }
         TradeMatch acquisitionTradeMatch = disposalTradeMatch with
         {
@@ -130,7 +133,6 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
     private static void MatchExercisedOption(TradePairSorter<OptionTradeTaxCalculation> tradePairSorter, TaxMatchType taxMatchType, decimal exercisedQty)
     {
         WrappedMoney premiumCost = tradePairSorter.EarlierTrade.GetProportionedCostOrProceed(exercisedQty);
-        tradePairSorter.LatterTrade.OwnerExercisedQty -= exercisedQty;
         // If there is mutiple exercise trades it doesn't matter which trade to roll up, as all trades are the same ticker and same day are treated as a sigle trade.
         tradePairSorter.LatterTrade.AttachTradeToUnderlying(premiumCost,
             $"Trade is created by option exercise of option with premium {premiumCost} added(subtracted) on {tradePairSorter.LatterTrade.Date.Date}",
@@ -149,7 +151,6 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
     private void MatchAssignedOption(TradePairSorter<OptionTradeTaxCalculation> tradePairSorter, TaxMatchType taxMatchType, decimal assignmentQty)
     {
         WrappedMoney premiumCost = tradePairSorter.EarlierTrade.GetProportionedCostOrProceed(assignmentQty);
-        tradePairSorter.LatterTrade.AssignedQty -= assignmentQty;
         // If there is mutiple exercise trades it doesn't matter which trade to roll up, as all trades are the same ticker and same day are treated as a sigle trade.
         tradePairSorter.LatterTrade.AttachTradeToUnderlying(premiumCost, $"Trade is created by option assignment of option on {tradePairSorter.LatterTrade.Date.Date}. \n" +
                                   $"{premiumCost} is added(subtracted) to the trade amount.", TradeReason.OptionAssigned);
