@@ -188,6 +188,7 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
 
     private static void AssignTradeMatch(TradePairSorter<OptionTradeTaxCalculation> tradePairSorter, decimal quantity, TradeMatch acquisitionTradeMatch, TradeMatch disposalTradeMatch)
     {
+        if (tradePairSorter.DisposalMatchQuantity == 0 && tradePairSorter.AcquisitionMatchQuantity == 0) return;
         tradePairSorter.AcquisitionTrade.MatchQty(quantity);
         tradePairSorter.AcquisitionTrade.MatchHistory.Add(acquisitionTradeMatch);
         tradePairSorter.DisposalTrade.MatchQty(quantity);
