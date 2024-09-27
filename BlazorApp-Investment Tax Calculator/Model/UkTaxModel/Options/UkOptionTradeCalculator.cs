@@ -60,6 +60,7 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
     {
         TradePairSorter<OptionTradeTaxCalculation> tradePairSorter = new(trade1, trade2);
         if (trade1.CalculationCompleted || trade2.CalculationCompleted) return;
+        if (trade1.UnmatchedQty == 0 || trade2.UnmatchedQty == 0) return;
 
         // This part of the algo handle the case when you trade an option at the date of expiry and you traded/it expires/it is assigned/you execise it in the same day
         // 

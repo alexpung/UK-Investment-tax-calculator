@@ -45,6 +45,9 @@ public class TradeTaxCalculationTests
         trade1.NetProceed.Returns(new WrappedMoney(100));
         trade2.NetProceed.Returns(new WrappedMoney(100));
         trade3.NetProceed.Returns(new WrappedMoney(100));
+        trade1.Quantity.Returns(1m);
+        trade2.Quantity.Returns(1m);
+        trade3.Quantity.Returns(1m);
         var trades = new List<Trade> { trade1, trade2, trade3 };
         // Act & Assert
         TradeTaxCalculation calculation = new(trades);
@@ -56,6 +59,7 @@ public class TradeTaxCalculationTests
     {
         // Arrange
         Trade trade1 = Substitute.For<Trade>();
+        trade1.Quantity.Returns(1m);
         trade1.AcquisitionDisposal.Returns(TradeType.DISPOSAL);
         trade1.NetProceed.Returns(new WrappedMoney(100));
         var matchHistory = new List<TradeMatch> { TradeCalculationHelper.CreateTradeMatch(TaxMatchType.SECTION_104, 100, new WrappedMoney(100), new WrappedMoney(150)),
@@ -78,6 +82,7 @@ public class TradeTaxCalculationTests
     {
         // Arrange
         Trade trade1 = Substitute.For<Trade>();
+        trade1.Quantity.Returns(1m);
         trade1.AcquisitionDisposal.Returns(TradeType.DISPOSAL);
         trade1.NetProceed.Returns(new WrappedMoney(100));
         var matchHistory = new List<TradeMatch> { TradeCalculationHelper.CreateTradeMatch(TaxMatchType.SECTION_104, 100, WrappedMoney.GetBaseCurrencyZero(), new WrappedMoney(100)),
@@ -100,6 +105,7 @@ public class TradeTaxCalculationTests
     {
         // Arrange
         Trade trade1 = Substitute.For<Trade>();
+        trade1.Quantity.Returns(1m);
         trade1.AcquisitionDisposal.Returns(TradeType.DISPOSAL);
         trade1.NetProceed.Returns(new WrappedMoney(100));
         var matchHistory = new List<TradeMatch> { TradeCalculationHelper.CreateTradeMatch(TaxMatchType.SECTION_104, 100, new WrappedMoney(70), new WrappedMoney(100)),
@@ -137,6 +143,7 @@ public class TradeTaxCalculationTests
     {
         // Arrange
         Trade trade1 = Substitute.For<Trade>();
+        trade1.Quantity.Returns(1m);
         trade1.Date.Returns(new DateTime(2023, 1, 1, 12, 34, 56, DateTimeKind.Local));
         trade1.AcquisitionDisposal.Returns(TradeType.DISPOSAL);
         trade1.NetProceed.Returns(new WrappedMoney(100));
