@@ -22,12 +22,15 @@ public class TradeTaxCalculation : ITradeTaxCalculation
     public virtual WrappedMoney TotalProceeds => MatchHistory.Sum(tradeMatch => tradeMatch.BaseCurrencyMatchDisposalProceed);
     public WrappedMoney Gain => AcquisitionDisposal == TradeType.DISPOSAL ? TotalProceeds - TotalAllowableCost : WrappedMoney.GetBaseCurrencyZero();
     /// <summary>
-    /// For acquistion: Cost of buying + commission
+    /// For acquisition: Cost of buying + commission
     /// For disposal: Proceed you get - commission
     /// </summary>
     public virtual WrappedMoney TotalCostOrProceed { get; protected set; }
     public WrappedMoney UnmatchedCostOrProceed { get; protected set; }
     public WrappedMoney GetProportionedCostOrProceed(decimal qty) => TotalCostOrProceed / TotalQty * qty;
+    /// <summary>
+    /// Guaranteed by the constructor to be positive non zero decimal.
+    /// </summary>
     public decimal TotalQty { get; }
     public decimal UnmatchedQty { get; protected set; }
     public virtual TradeType AcquisitionDisposal { get; init; }
@@ -52,6 +55,7 @@ public class TradeTaxCalculation : ITradeTaxCalculation
         TotalCostOrProceed = trades.Sum(trade => trade.NetProceed);
         UnmatchedCostOrProceed = TotalCostOrProceed;
         TotalQty = trades.Sum(trade => trade.Quantity);
+        if (TotalQty <= 0) throw new ArgumentException($"The total quantity must be positive. It is {TotalQty}");
         UnmatchedQty = TotalQty;
         AcquisitionDisposal = trades.First().AcquisitionDisposal;
         Id = Interlocked.Increment(ref _nextId);
@@ -133,7 +137,7 @@ public class TradeTaxCalculation : ITradeTaxCalculation
     {
         StringBuilder output = new();
         output.Append($"Sold {TotalQty} units of {AssetName} on " +
-            $"{Date.Date.ToString("dd-MMM-yyyy")} for {TotalCostOrProceed}.\t");
+            $"{Date:d} for {TotalCostOrProceed}.\t");
         output.AppendLine($"Total gain (loss): {Gain}");
         output.AppendLine(UnmatchedDescription());
         output.AppendLine($"Trade details:");

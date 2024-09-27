@@ -121,7 +121,7 @@ public class FutureTradeTaxCalculation : TradeTaxCalculation
     {
         StringBuilder output = new();
         output.Append($"{PositionType.GetDescription()} {TotalQty} units of {AssetName} on " +
-            $"{Date.Date.ToString("dd-MMM-yyyy")}.\t");
+            $"{Date:d}.\t");
         output.AppendLine($"Total gain (loss): {Gain}");
         output.AppendLine($"Trade details:");
         foreach (var trade in TradeList)

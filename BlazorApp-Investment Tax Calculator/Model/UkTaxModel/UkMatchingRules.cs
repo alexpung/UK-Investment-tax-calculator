@@ -47,7 +47,7 @@ public static class UkMatchingRules
             {
                 if (sortedTradeList[i] is { AcquisitionDisposal: TradeType.DISPOSAL })
                 {
-                    for (int j = i + 1; j < sortedTradeList.Count; j++) // Look forward 30 days to check for acquistions after a disposal
+                    for (int j = i + 1; j < sortedTradeList.Count; j++) // Look forward 30 days to check for acquisitions after a disposal
                     {
                         if ((sortedTradeList[j].Date.Date - sortedTradeList[i].Date.Date).Days > 30) break;
                         if (sortedTradeList[j] is { AcquisitionDisposal: TradeType.ACQUISITION })

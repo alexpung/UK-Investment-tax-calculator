@@ -19,16 +19,33 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
     /// </summary>
     public List<TaxRepay> TaxRepayList { get; init; } = [];
     public PUTCALL PUTCALL { get; init; }
-    public decimal ExpiredQty { get; set; }
-    public decimal AssignedQty { get; set; }
-    public decimal OwnerExercisedQty { get; set; }
+    public decimal ExpiredQty { get; init; }
+    public decimal AssignedQty { get; init; }
+    public decimal OwnerExercisedQty { get; init; }
+    public decimal OrderedTradeQty { get; init; }
     /// <summary>
     /// When short an option, the option get "disappear" and the taxable proceed is reduced when the option is assigned. The premium get rolled to the assigned trade instead.
     /// This number indicate the amount to subtract from the full 
     /// </summary>
     private WrappedMoney _refundedDisposalProceed = WrappedMoney.GetBaseCurrencyZero();
+
+    public WrappedMoney GetProportionedCostOrProceedForTradeReason(TradeReason tradeReason, decimal qty)
+    {
+        WrappedMoney totalValue = TradeList.Where(trade => trade.TradeReason == tradeReason).Select(trade => trade.NetProceed).Sum();
+        decimal totalQty = tradeReason switch
+        {
+            TradeReason.OwnerExerciseOption => OwnerExercisedQty,
+            TradeReason.OptionAssigned => AssignedQty,
+            TradeReason.Expired => ExpiredQty,
+            TradeReason.OrderedTrade => OrderedTradeQty,
+            _ => throw new ArgumentException($"Unexpected trade reason {tradeReason}")
+        };
+        if (totalQty == 0) return WrappedMoney.GetBaseCurrencyZero();
+        return qty / totalQty * totalValue;
+    }
     public void RefundDisposalQty(decimal qty)
     {
+        if (AcquisitionDisposal != TradeType.DISPOSAL) throw new InvalidOperationException("Refunding option proceed can only be done in short option trade");
         _refundedDisposalProceed += GetProportionedCostOrProceed(qty);
     }
 
@@ -37,6 +54,7 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
         ExpiredQty = TradeList.Where(trade => ((OptionTrade)trade).TradeReason == TradeReason.Expired).Sum(trade => trade.Quantity);
         AssignedQty = TradeList.Where(trade => ((OptionTrade)trade).TradeReason == TradeReason.OptionAssigned).Sum(trade => trade.Quantity);
         OwnerExercisedQty = TradeList.Where(trade => ((OptionTrade)trade).TradeReason == TradeReason.OwnerExerciseOption).Sum(trade => trade.Quantity);
+        OrderedTradeQty = TradeList.Where(trade => ((OptionTrade)trade).TradeReason == TradeReason.OrderedTrade).Sum(trade => trade.Quantity);
         PUTCALL = trades.Any() ? trades.First().PUTCALL : throw new ArgumentException("trades is null when providing trade list");
     }
 
@@ -72,7 +90,6 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
             if (ExpiredQty > 0)
             {
                 additionalInformation += $"{ExpiredQty} option expired. ";
-                ExpiredQty = 0;
             }
             if (OwnerExercisedQty > 0)
             {
@@ -80,8 +97,7 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
                 allowableCost -= exerciseAllowableCost;
                 additionalInformation += $"{OwnerExercisedQty} option execised. ";
                 matchDisposalProceedQty -= OwnerExercisedQty;
-                OwnerExercisedQty = 0;
-                AttachTradeToUnderlying(exerciseAllowableCost, $"Trade is created by option exercise of option on {Date.ToString("dd/MM/yyyy")}", TradeReason.OwnerExerciseOption);
+                AttachTradeToUnderlying(exerciseAllowableCost, $"Trade is created by option exercise of option on {Date:d}", TradeReason.OwnerExerciseOption);
             }
             TradeMatch tradeMatch = new()
             {
@@ -111,7 +127,7 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
     public override string PrintToTextFile()
     {
         StringBuilder output = new();
-        output.Append($"Option trade of {TotalQty} units of {AssetName} on {Date.Date.ToString("dd-MMM-yyyy")}.\n");
+        output.Append($"Option trade of {TotalQty} units of {AssetName} on {Date:d}.\n");
         output.AppendLine($"Total proceeds: {TotalProceeds}.");
         output.AppendLine($"Total gain (loss): {Gain}.");
         output.AppendLine(UnmatchedDescription());
