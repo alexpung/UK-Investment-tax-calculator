@@ -22,7 +22,7 @@ public class TradeTaxCalculation : ITradeTaxCalculation
     public virtual WrappedMoney TotalProceeds => MatchHistory.Sum(tradeMatch => tradeMatch.BaseCurrencyMatchDisposalProceed);
     public WrappedMoney Gain => AcquisitionDisposal == TradeType.DISPOSAL ? TotalProceeds - TotalAllowableCost : WrappedMoney.GetBaseCurrencyZero();
     /// <summary>
-    /// For acquistion: Cost of buying + commission
+    /// For acquisition: Cost of buying + commission
     /// For disposal: Proceed you get - commission
     /// </summary>
     public virtual WrappedMoney TotalCostOrProceed { get; protected set; }
