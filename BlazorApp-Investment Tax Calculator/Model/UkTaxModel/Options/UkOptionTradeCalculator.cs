@@ -83,11 +83,23 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
         MatchNormalTrade(tradePairSorter, taxMatchType);
     }
 
-    private static void MatchNormalTrade(TradePairSorter<OptionTradeTaxCalculation> tradePairSorter, TaxMatchType taxMatchType)
+    private void MatchNormalTrade(TradePairSorter<OptionTradeTaxCalculation> tradePairSorter, TaxMatchType taxMatchType)
     {
+        WrappedMoney allowableCost = tradePairSorter.AcquisitionTrade.GetProportionedCostOrProceedForTradeReason(TradeReason.OrderedTrade, tradePairSorter.AcquisitionMatchQuantity);
+        WrappedMoney disposalProceed = tradePairSorter.DisposalTrade.GetProportionedCostOrProceedForTradeReason(TradeReason.OrderedTrade, tradePairSorter.DisposalMatchQuantity);
+        // If written an option and the position is held to next tax year, full disposal proceed is taxed and allowable cost can only be reclaimed when the trade is closed.
+        if (tradePairSorter.EarlierTrade.AcquisitionDisposal == TradeType.DISPOSAL && taxYear.ToTaxYear(tradePairSorter.EarlierTrade.Date) != taxYear.ToTaxYear(tradePairSorter.LatterTrade.Date))
+        {
+            TaxRepay refundPremium = new(
+                TaxYear: taxYear.ToTaxYear(tradePairSorter.LatterTrade.Date),
+                RefundAmount: allowableCost,
+                Reason: $"Sold option with ID:{tradePairSorter.EarlierTrade.Id} and position closed in later tax year {taxYear.ToTaxYear(tradePairSorter.LatterTrade.Date)}"
+                );
+            tradePairSorter.EarlierTrade.TaxRepayList.Add(refundPremium);
+            allowableCost = WrappedMoney.GetBaseCurrencyZero();
+        }
         TradeMatch disposalTradeMatch = CreateTradeMatch(tradePairSorter, tradePairSorter.AcquisitionMatchQuantity,
-            tradePairSorter.AcquisitionTrade.GetProportionedCostOrProceedForTradeReason(TradeReason.OrderedTrade, tradePairSorter.AcquisitionMatchQuantity),
-            tradePairSorter.DisposalTrade.GetProportionedCostOrProceedForTradeReason(TradeReason.OrderedTrade, tradePairSorter.DisposalMatchQuantity), string.Empty, taxMatchType);
+            allowableCost, disposalProceed, string.Empty, taxMatchType);
         TradeMatch AcquisitionTradeMatch = disposalTradeMatch with
         {
             BaseCurrencyMatchAllowableCost = WrappedMoney.GetBaseCurrencyZero(),
