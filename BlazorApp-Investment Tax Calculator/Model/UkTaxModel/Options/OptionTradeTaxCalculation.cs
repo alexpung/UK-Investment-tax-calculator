@@ -145,7 +145,7 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
     public override string PrintToTextFile()
     {
         StringBuilder output = new();
-        output.Append($"Sold {TotalQty} units of {AssetName} on " +
+        output.Append($"{(AcquisitionDisposal == TradeType.DISPOSAL ? "Sold" : "Purchased")} {TotalQty} units of {AssetName} on " +
             $"{Date:d} for {TotalCostOrProceed}.\t");
         output.AppendLine($"Total gain (loss): {Gain}.");
         output.AppendLine(UnmatchedDescription());
