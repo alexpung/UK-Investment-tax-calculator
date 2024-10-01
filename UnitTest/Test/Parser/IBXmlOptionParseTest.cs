@@ -5,7 +5,7 @@ using InvestmentTaxCalculator.Parser.InteractiveBrokersXml;
 
 using System.Xml.Linq;
 
-namespace OptionTradeParserTests;
+namespace UnitTest.Test.Parser;
 
 public class IBXmlOptionTradeParserTests
 {

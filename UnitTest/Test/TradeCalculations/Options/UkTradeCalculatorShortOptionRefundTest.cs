@@ -166,7 +166,7 @@ public class UkTradeCalculatorShortOptionRefundTest
         writtenOptionTrade!.TotalAllowableCost.ShouldBe(new WrappedMoney(850));
         ((OptionTradeTaxCalculation)writtenOptionTrade).TaxRepayList[0].RefundAmount.ShouldBe(new WrappedMoney(425));
         ((OptionTradeTaxCalculation)writtenOptionTrade).TaxRepayList[0].TaxYear.ShouldBe(2022);
-        var execisedTradeResult = result.Find(trade => trade is ITradeTaxCalculation { AcquisitionDisposal: TradeType.DISPOSAL, TotalQty: 100 });
-        execisedTradeResult!.UnmatchedCostOrProceed.ShouldBe(new WrappedMoney(14792));
+        var exercisedTradeResult = result.Find(trade => trade is ITradeTaxCalculation { AcquisitionDisposal: TradeType.DISPOSAL, TotalQty: 100 });
+        exercisedTradeResult!.UnmatchedCostOrProceed.ShouldBe(new WrappedMoney(14792));
     }
 }

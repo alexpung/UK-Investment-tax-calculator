@@ -10,6 +10,7 @@ public record TaxEventLists : IDividendLists, ITradeAndCorporateActionList
     public List<Dividend> Dividends { get; set; } = [];
     public List<OptionTrade> OptionTrades { get; set; } = [];
     public List<FutureContractTrade> FutureContractTrades { get; set; } = [];
+    public List<CashSettlement> CashSettlements { get; set; } = [];
 
     public void AddData(TaxEventLists taxEventLists)
     {
@@ -18,6 +19,7 @@ public record TaxEventLists : IDividendLists, ITradeAndCorporateActionList
         Dividends.AddRange(taxEventLists.Dividends);
         OptionTrades.AddRange(taxEventLists.OptionTrades);
         FutureContractTrades.AddRange(taxEventLists.FutureContractTrades);
+        CashSettlements.AddRange(taxEventLists.CashSettlements);
     }
 
     public void AddData(IEnumerable<TaxEvent> taxEvents)
@@ -29,6 +31,7 @@ public record TaxEventLists : IDividendLists, ITradeAndCorporateActionList
             if (taxEvent is Dividend dividend) Dividends.Add(dividend);
             if (taxEvent is OptionTrade optionTrade) OptionTrades.Add(optionTrade);
             if (taxEvent is FutureContractTrade futureContractTrade) FutureContractTrades.Add(futureContractTrade);
+            if (taxEvent is CashSettlement cashSettlements) CashSettlements.Add(cashSettlements);
         }
     }
 

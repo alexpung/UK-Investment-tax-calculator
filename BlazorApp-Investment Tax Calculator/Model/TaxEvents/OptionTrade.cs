@@ -13,6 +13,7 @@ public record OptionTrade : Trade
     public required PUTCALL PUTCALL { get; set; }
     public required decimal Multiplier { get; set; }
     public Trade? ExerciseOrExercisedTrade { get; set; }
+    public bool CashSettled { get; set; } = false;
 
     public override string PrintToTextFile()
     {

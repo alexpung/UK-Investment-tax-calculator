@@ -40,12 +40,29 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
                                                         trade.TradeReason == optionTrade.TradeReason &&
                                                         Math.Abs(trade.Quantity) == Math.Abs(optionTrade.Quantity * optionTrade.Multiplier) &&
                                                         trade.Date.Date == optionTrade.Date.Date);
-            if (underlyingTrade is null)
+            if (underlyingTrade is not null)
             {
-                toastService.ShowError($"No corresponding {optionTrade.TradeReason} trade found for option (Underlying: {optionTrade.Underlying}, " +
-                $"Quantity: {optionTrade.Quantity * optionTrade.Multiplier}, date: {optionTrade.Date.Date}, there is likely an omission of trade(s) in the input)");
+                optionTrade.ExerciseOrExercisedTrade = underlyingTrade;
             }
-            optionTrade.ExerciseOrExercisedTrade = underlyingTrade;
+            else
+            {
+                var matchingCashSettlement = tradeList.CashSettlements.Find(trade => trade.AssetName == optionTrade.AssetName &&
+                                                                                     trade.Date.Date == optionTrade.Date.Date &&
+                                                                                     trade.TradeReason == optionTrade.TradeReason);
+                if (matchingCashSettlement is not null)
+                {
+                    optionTrade.CashSettled = true;
+                    WrappedMoney tradeValue;
+                    if (matchingCashSettlement.TradeReason == TradeReason.OptionAssigned) tradeValue = matchingCashSettlement.Amount * -1;
+                    else tradeValue = matchingCashSettlement.Amount;
+                    optionTrade.GrossProceed = optionTrade.GrossProceed with { Amount = tradeValue, Description = matchingCashSettlement.Description };
+                }
+                else
+                {
+                    toastService.ShowError($"No corresponding {optionTrade.TradeReason} trade found for option (Underlying: {optionTrade.Underlying}, " +
+                    $"Quantity: {optionTrade.Quantity * optionTrade.Multiplier}, date: {optionTrade.Date.Date}, there is likely an omission of trade(s) in the input)");
+                }
+            }
         }
     }
 
@@ -64,16 +81,20 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
 
         // This part of the algo handle the case when you trade an option at the date of expiry and you traded/it expires/it is assigned/you execise it in the same day
         // 
-        decimal matchRatio = 1;
+        decimal matchRatio;
         if (tradePairSorter.LatterTrade.UnmatchedQty < tradePairSorter.EarlierTrade.UnmatchedQty)
         {
-            matchRatio = tradePairSorter.LatterTrade.UnmatchedQty / tradePairSorter.EarlierTrade.UnmatchedQty;
+            // (LatterTrade.UnmatchedQty/EarlierTrade.UnmatchedQty) * (LatterTrade.UnmatchedQty/LatterTrade.TotalQty)
+            matchRatio = tradePairSorter.LatterTrade.UnmatchedQty * tradePairSorter.LatterTrade.UnmatchedQty / (tradePairSorter.EarlierTrade.UnmatchedQty * tradePairSorter.LatterTrade.TotalQty);
         }
         else if (tradePairSorter.LatterTrade.UnmatchedQty > tradePairSorter.EarlierTrade.UnmatchedQty)
         {
-            matchRatio = tradePairSorter.EarlierTrade.UnmatchedQty / tradePairSorter.LatterTrade.UnmatchedQty;
+            matchRatio = tradePairSorter.EarlierTrade.UnmatchedQty * tradePairSorter.LatterTrade.UnmatchedQty / (tradePairSorter.LatterTrade.UnmatchedQty * tradePairSorter.LatterTrade.TotalQty);
         }
-        matchRatio *= tradePairSorter.LatterTrade.UnmatchedQty / tradePairSorter.LatterTrade.TotalQty;
+        else
+        {
+            matchRatio = tradePairSorter.LatterTrade.UnmatchedQty / tradePairSorter.LatterTrade.TotalQty;
+        }
         decimal assignmentQty = tradePairSorter.LatterTrade.AssignedQty * matchRatio;
         decimal expiredQty = tradePairSorter.LatterTrade.ExpiredQty * matchRatio;
         decimal exercisedQty = tradePairSorter.LatterTrade.OwnerExercisedQty * matchRatio;
@@ -145,13 +166,23 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
     /// </summary>
     private static void MatchExercisedOption(TradePairSorter<OptionTradeTaxCalculation> tradePairSorter, TaxMatchType taxMatchType, decimal exercisedQty)
     {
-        WrappedMoney premiumCost = tradePairSorter.EarlierTrade.GetProportionedCostOrProceed(exercisedQty);
-        // If there is mutiple exercise trades it doesn't matter which trade to roll up, as all trades are the same ticker and same day are treated as a sigle trade.
-        tradePairSorter.LatterTrade.AttachTradeToUnderlying(premiumCost,
-            $"Trade is created by option exercise of option with premium {premiumCost} added(subtracted) on {tradePairSorter.LatterTrade.Date:d}",
-            TradeReason.OwnerExerciseOption);
-        TradeMatch tradeMatch = CreateTradeMatch(tradePairSorter, exercisedQty, WrappedMoney.GetBaseCurrencyZero(), WrappedMoney.GetBaseCurrencyZero(),
-            $"{exercisedQty} option exercised.", taxMatchType);
+        TradeMatch tradeMatch;
+        if (tradePairSorter.LatterTrade.IsCashSettled)
+        {
+            WrappedMoney allowableCost = tradePairSorter.AcquisitionTrade.GetProportionedCostOrProceedForTradeReason(TradeReason.OrderedTrade, tradePairSorter.AcquisitionMatchQuantity);
+            WrappedMoney disposalProceed = tradePairSorter.DisposalTrade.GetProportionedCostOrProceedForTradeReason(TradeReason.OwnerExerciseOption, tradePairSorter.DisposalMatchQuantity);
+            tradeMatch = CreateTradeMatch(tradePairSorter, exercisedQty, allowableCost, disposalProceed, $"{exercisedQty:F2} option cash settled.", taxMatchType);
+        }
+        else
+        {
+            WrappedMoney premiumCost = tradePairSorter.EarlierTrade.GetProportionedCostOrProceed(exercisedQty);
+            // If there is mutiple exercise trades it doesn't matter which trade to roll up, as all trades are the same ticker and same day are treated as a sigle trade.
+            tradePairSorter.LatterTrade.AttachTradeToUnderlying(premiumCost,
+                $"Trade is created by option exercise of option with premium {premiumCost} added(subtracted) on {tradePairSorter.LatterTrade.Date:d}",
+                TradeReason.OwnerExerciseOption);
+            tradeMatch = CreateTradeMatch(tradePairSorter, exercisedQty, WrappedMoney.GetBaseCurrencyZero(), WrappedMoney.GetBaseCurrencyZero(),
+                $"{exercisedQty} option exercised.", taxMatchType);
+        }
         AssignTradeMatch(tradePairSorter, exercisedQty, tradeMatch, tradeMatch);
     }
 
@@ -163,21 +194,31 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
     /// </summary>
     private void MatchAssignedOption(TradePairSorter<OptionTradeTaxCalculation> tradePairSorter, TaxMatchType taxMatchType, decimal assignmentQty)
     {
-        WrappedMoney premiumCost = tradePairSorter.EarlierTrade.GetProportionedCostOrProceed(assignmentQty);
-        // If there is mutiple exercise trades it doesn't matter which trade to roll up, as all trades are the same ticker and same day are treated as a sigle trade.
-        tradePairSorter.LatterTrade.AttachTradeToUnderlying(premiumCost, $"Trade is created by option assignment of option on {tradePairSorter.LatterTrade.Date:d}. \n" +
-                                  $"{premiumCost} is added(subtracted) to the trade amount.", TradeReason.OptionAssigned);
-        if (taxYear.ToTaxYear(tradePairSorter.EarlierTrade.Date) == taxYear.ToTaxYear(tradePairSorter.LatterTrade.Date))
+        TradeMatch tradeMatch;
+        if (tradePairSorter.LatterTrade.IsCashSettled)
         {
-            tradePairSorter.EarlierTrade.RefundDisposalQty(assignmentQty);
+            WrappedMoney allowableCost = tradePairSorter.AcquisitionTrade.GetProportionedCostOrProceedForTradeReason(TradeReason.OptionAssigned, tradePairSorter.AcquisitionMatchQuantity);
+            WrappedMoney disposalProceed = tradePairSorter.DisposalTrade.GetProportionedCostOrProceedForTradeReason(TradeReason.OrderedTrade, tradePairSorter.DisposalMatchQuantity);
+            tradeMatch = CreateTradeMatch(tradePairSorter, assignmentQty, allowableCost, disposalProceed, $"{assignmentQty:F2} option cash settled.", taxMatchType);
         }
         else
         {
-            tradePairSorter.LatterTrade.TaxRepayList.Add(new TaxRepay(taxYear.ToTaxYear(tradePairSorter.LatterTrade.Date),
-              premiumCost, $"Sold option with ID:{tradePairSorter.EarlierTrade.Id} and it get assigned in later tax year {taxYear.ToTaxYear(tradePairSorter.LatterTrade.Date)}"));
+            WrappedMoney premiumCost = tradePairSorter.EarlierTrade.GetProportionedCostOrProceed(assignmentQty);
+            // If there is mutiple exercise trades it doesn't matter which trade to roll up, as all trades are the same ticker and same day are treated as a sigle trade.
+            tradePairSorter.LatterTrade.AttachTradeToUnderlying(premiumCost, $"Trade is created by option assignment of option on {tradePairSorter.LatterTrade.Date:d}. \n" +
+                                      $"{premiumCost} is added(subtracted) to the trade amount.", TradeReason.OptionAssigned);
+            if (taxYear.ToTaxYear(tradePairSorter.EarlierTrade.Date) == taxYear.ToTaxYear(tradePairSorter.LatterTrade.Date))
+            {
+                tradePairSorter.EarlierTrade.RefundDisposalQty(assignmentQty);
+            }
+            else
+            {
+                tradePairSorter.LatterTrade.TaxRepayList.Add(new TaxRepay(taxYear.ToTaxYear(tradePairSorter.LatterTrade.Date),
+                  premiumCost, $"Sold option with ID:{tradePairSorter.EarlierTrade.Id} and it get assigned in later tax year {taxYear.ToTaxYear(tradePairSorter.LatterTrade.Date)}"));
+            }
+            tradeMatch = CreateTradeMatch(tradePairSorter, assignmentQty, WrappedMoney.GetBaseCurrencyZero(), WrappedMoney.GetBaseCurrencyZero(),
+                $"{assignmentQty} option assigned.", taxMatchType);
         }
-        TradeMatch tradeMatch = CreateTradeMatch(tradePairSorter, assignmentQty, WrappedMoney.GetBaseCurrencyZero(), WrappedMoney.GetBaseCurrencyZero(),
-            $"{assignmentQty} option assigned.", taxMatchType);
         AssignTradeMatch(tradePairSorter, assignmentQty, tradeMatch, tradeMatch);
     }
 

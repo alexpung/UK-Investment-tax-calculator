@@ -361,3 +361,4 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/UnitTest/System Test/Interactive brokers/SystemTester.cs
