@@ -102,7 +102,7 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
             decimal matchQty = Math.Min(UnmatchedQty, ukSection104.Quantity);
             Section104History section104History = ukSection104.RemoveAssets(this, matchQty);
             string additionalInformation = string.Empty;
-            decimal matchDisposalProceedQty = matchQty; // allow owner execise to reduce disposalProceed as execised options are rolled to the underlying trade
+            decimal matchDisposalProceedQty = matchQty; // allow owner exercise to reduce disposalProceed as exercised options are rolled to the underlying trade
             WrappedMoney allowableCost = section104History.ValueChange * -1;
             if (ExpiredQty > 0)
             {
@@ -112,7 +112,7 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
             {
                 WrappedMoney exerciseAllowableCost = allowableCost * OwnerExercisedQty / matchQty;
                 allowableCost -= exerciseAllowableCost;
-                additionalInformation += $"{OwnerExercisedQty} option execised. ";
+                additionalInformation += $"{OwnerExercisedQty} option exercised. ";
                 matchDisposalProceedQty -= OwnerExercisedQty;
                 AttachTradeToUnderlying(exerciseAllowableCost, $"Trade is created by option exercise of option on {Date:d}", TradeReason.OwnerExerciseOption);
             }
