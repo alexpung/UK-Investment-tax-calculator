@@ -27,6 +27,8 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
     /// When short an option, the option get "disappear" and the taxable proceed is reduced when the option is assigned. The premium get rolled to the assigned trade instead.
     /// This number indicate the amount to subtract from the full 
     /// </summary>
+
+    public bool IsCashSettled { get; init; }
     private WrappedMoney _refundedDisposalProceed = WrappedMoney.GetBaseCurrencyZero();
 
     public WrappedMoney GetProportionedCostOrProceedForTradeReason(TradeReason tradeReason, decimal qty)
@@ -51,12 +53,27 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
 
     public OptionTradeTaxCalculation(IEnumerable<OptionTrade> trades) : base(trades)
     {
-        ExpiredQty = TradeList.Where(trade => ((OptionTrade)trade).TradeReason == TradeReason.Expired).Sum(trade => trade.Quantity);
-        AssignedQty = TradeList.Where(trade => ((OptionTrade)trade).TradeReason == TradeReason.OptionAssigned).Sum(trade => trade.Quantity);
-        OwnerExercisedQty = TradeList.Where(trade => ((OptionTrade)trade).TradeReason == TradeReason.OwnerExerciseOption).Sum(trade => trade.Quantity);
-        OrderedTradeQty = TradeList.Where(trade => ((OptionTrade)trade).TradeReason == TradeReason.OrderedTrade).Sum(trade => trade.Quantity);
-        PUTCALL = trades.Any() ? trades.First().PUTCALL : throw new ArgumentException("trades is null when providing trade list");
+        if (!trades.Any())
+        {
+            throw new ArgumentException("Trades list cannot be empty", nameof(trades));
+        }
+        ExpiredQty = trades.Where(trade => trade.TradeReason == TradeReason.Expired).Sum(trade => trade.Quantity);
+        AssignedQty = trades.Where(trade => trade.TradeReason == TradeReason.OptionAssigned).Sum(trade => trade.Quantity);
+        OwnerExercisedQty = trades.Where(trade => trade.TradeReason == TradeReason.OwnerExerciseOption).Sum(trade => trade.Quantity);
+        OrderedTradeQty = trades.Where(trade => trade.TradeReason == TradeReason.OrderedTrade).Sum(trade => trade.Quantity);
+        PUTCALL = trades.First().PUTCALL;
+        IEnumerable<bool> settlementTypes = trades
+            .Where(trade => trade.TradeReason is TradeReason.OwnerExerciseOption or TradeReason.OptionAssigned)
+            .Select(trade => trade.CashSettled)
+            .Distinct();
+        if (!settlementTypes.Any()) IsCashSettled = false;
+        else if (settlementTypes.Count() > 1)
+        {
+            throw new ArgumentException("Unexpected option that is both cash and underlying settled");
+        }
+        else IsCashSettled = settlementTypes.First();
     }
+
 
     public override void MatchWithSection104(UkSection104 ukSection104)
     {
@@ -91,7 +108,7 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
             {
                 additionalInformation += $"{ExpiredQty} option expired. ";
             }
-            if (OwnerExercisedQty > 0)
+            if (OwnerExercisedQty > 0 && !IsCashSettled)
             {
                 WrappedMoney exerciseAllowableCost = allowableCost * OwnerExercisedQty / matchQty;
                 allowableCost -= exerciseAllowableCost;
@@ -99,6 +116,7 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
                 matchDisposalProceedQty -= OwnerExercisedQty;
                 AttachTradeToUnderlying(exerciseAllowableCost, $"Trade is created by option exercise of option on {Date:d}", TradeReason.OwnerExerciseOption);
             }
+            if (OwnerExercisedQty > 0 && IsCashSettled) additionalInformation += $"{OwnerExercisedQty:F2} option cash settled.";
             TradeMatch tradeMatch = new()
             {
                 Date = DateOnly.FromDateTime(Date),
@@ -127,41 +145,32 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
     public override string PrintToTextFile()
     {
         StringBuilder output = new();
-        output.Append($"Option trade of {TotalQty} units of {AssetName} on {Date:d}.\n");
-        output.AppendLine($"Total proceeds: {TotalProceeds}.");
+        output.Append($"Sold {TotalQty} units of {AssetName} on " +
+            $"{Date:d} for {TotalCostOrProceed}.\t");
         output.AppendLine($"Total gain (loss): {Gain}.");
         output.AppendLine(UnmatchedDescription());
-
-        // Print trade details
         output.AppendLine("Trade details:");
         foreach (var trade in TradeList)
         {
             output.AppendLine($"\t{trade.PrintToTextFile()}");
         }
-
-        // Print trade matching history
         output.AppendLine("Trade matching:");
         foreach (var matching in MatchHistory)
         {
             output.AppendLine(matching.PrintToTextFile());
         }
-
-        // Include any tax repayments if present
         if (TaxRepayList.Count != 0)
         {
-            output.AppendLine("Tax repayments:");
+            output.AppendLine("Overpaid tax refund:");
             foreach (var taxRepay in TaxRepayList)
             {
                 output.AppendLine($"\tTax Year: {taxRepay.TaxYear}, Refund Amount: {taxRepay.RefundAmount}, Reason: {taxRepay.Reason}");
             }
         }
-
-        // Final summary if there are more than 2 match history items
         if (MatchHistory.Count > 2)
         {
             output.AppendLine($"Resulting overall gain for this disposal: {GetSumFormula(MatchHistory.Select(match => match.MatchGain))}");
         }
-
         output.AppendLine();
         return output.ToString();
     }
