@@ -117,7 +117,7 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
                 RefundAmount: allowableCost,
                 Reason: $"Sold option with ID:{tradePairSorter.EarlierTrade.Id} and position closed in later tax year {taxYear.ToTaxYear(tradePairSorter.LatterTrade.Date)}"
                 );
-            tradePairSorter.EarlierTrade.TaxRepayList.Add(refundPremium);
+            tradePairSorter.DisposalTrade.TaxRepayList.Add(refundPremium);
             allowableCost = WrappedMoney.GetBaseCurrencyZero();
         }
         TradeMatch disposalTradeMatch = CreateTradeMatch(tradePairSorter, tradePairSorter.AcquisitionMatchQuantity,
