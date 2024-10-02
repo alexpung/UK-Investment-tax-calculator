@@ -230,7 +230,7 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
                 new TaxRepay(
                 taxYear.ToTaxYear(tradePairSorter.LatterTrade.Date),
                 allowableCost,
-                $"Sold option with ID:{tradePairSorter.EarlierTrade.Id} and it get assigned in later tax year {taxYear.ToTaxYear(tradePairSorter.LatterTrade.Date)}"
+                $"Sold option with ID:{tradePairSorter.EarlierTrade.Id} and it gets assigned in later tax year {taxYear.ToTaxYear(tradePairSorter.LatterTrade.Date)}"
                 ));
             refunded = true;
         }
