@@ -199,6 +199,10 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
         {
             WrappedMoney allowableCost = tradePairSorter.AcquisitionTrade.GetProportionedCostOrProceedForTradeReason(TradeReason.OptionAssigned, tradePairSorter.AcquisitionMatchQuantity);
             WrappedMoney disposalProceed = tradePairSorter.DisposalTrade.GetProportionedCostOrProceedForTradeReason(TradeReason.OrderedTrade, tradePairSorter.DisposalMatchQuantity);
+            if (RefundIfNotInSameYear(tradePairSorter, taxYear, allowableCost))
+            {
+                allowableCost = WrappedMoney.GetBaseCurrencyZero();
+            }
             tradeMatch = CreateTradeMatch(tradePairSorter, assignmentQty, allowableCost, disposalProceed, $"{assignmentQty:F2} option cash settled.", taxMatchType);
         }
         else
@@ -207,19 +211,30 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
             // If there is mutiple exercise trades it doesn't matter which trade to roll up, as all trades are the same ticker and same day are treated as a sigle trade.
             tradePairSorter.LatterTrade.AttachTradeToUnderlying(premiumCost, $"Trade is created by option assignment of option on {tradePairSorter.LatterTrade.Date:d}. \n" +
                                       $"{premiumCost} is added(subtracted) to the trade amount.", TradeReason.OptionAssigned);
-            if (taxYear.ToTaxYear(tradePairSorter.EarlierTrade.Date) == taxYear.ToTaxYear(tradePairSorter.LatterTrade.Date))
+            if (!RefundIfNotInSameYear(tradePairSorter, taxYear, premiumCost))
             {
                 tradePairSorter.EarlierTrade.RefundDisposalQty(assignmentQty);
-            }
-            else
-            {
-                tradePairSorter.LatterTrade.TaxRepayList.Add(new TaxRepay(taxYear.ToTaxYear(tradePairSorter.LatterTrade.Date),
-                  premiumCost, $"Sold option with ID:{tradePairSorter.EarlierTrade.Id} and it get assigned in later tax year {taxYear.ToTaxYear(tradePairSorter.LatterTrade.Date)}"));
             }
             tradeMatch = CreateTradeMatch(tradePairSorter, assignmentQty, WrappedMoney.GetBaseCurrencyZero(), WrappedMoney.GetBaseCurrencyZero(),
                 $"{assignmentQty} option assigned.", taxMatchType);
         }
         AssignTradeMatch(tradePairSorter, assignmentQty, tradeMatch, tradeMatch);
+    }
+
+    private static bool RefundIfNotInSameYear(TradePairSorter<OptionTradeTaxCalculation> tradePairSorter, ITaxYear taxYear, WrappedMoney allowableCost)
+    {
+        bool refunded = false;
+        if (taxYear.ToTaxYear(tradePairSorter.EarlierTrade.Date) != taxYear.ToTaxYear(tradePairSorter.LatterTrade.Date))
+        {
+            tradePairSorter.DisposalTrade.TaxRepayList.Add(
+                new TaxRepay(
+                taxYear.ToTaxYear(tradePairSorter.LatterTrade.Date),
+                allowableCost,
+                $"Sold option with ID:{tradePairSorter.EarlierTrade.Id} and it get assigned in later tax year {taxYear.ToTaxYear(tradePairSorter.LatterTrade.Date)}"
+                ));
+            refunded = true;
+        }
+        return refunded;
     }
 
     private static TradeMatch CreateTradeMatch(TradePairSorter<OptionTradeTaxCalculation> tradePairSorter, decimal matchQty, WrappedMoney allowableCost,
