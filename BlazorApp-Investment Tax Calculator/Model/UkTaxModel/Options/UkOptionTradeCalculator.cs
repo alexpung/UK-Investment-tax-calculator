@@ -102,7 +102,7 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
         if (expiredQty > 0) MatchExpiredOption(tradePairSorter, taxMatchType, expiredQty);
         if (exercisedQty > 0) MatchExercisedOption(tradePairSorter, taxMatchType, exercisedQty);
         if (assignmentQty > 0) MatchAssignedOption(tradePairSorter, taxMatchType, assignmentQty);
-        MatchNormalTrade(tradePairSorter, taxMatchType);
+        if (tradePairSorter.DisposalMatchQuantity > 0) MatchNormalTrade(tradePairSorter, taxMatchType);
     }
 
     private void MatchNormalTrade(TradePairSorter<OptionTradeTaxCalculation> tradePairSorter, TaxMatchType taxMatchType)
