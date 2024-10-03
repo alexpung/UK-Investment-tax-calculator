@@ -270,7 +270,7 @@ public class UkTradeCalculatorOptionCashSettleTest
             GrossProceed = new DescribedMoney(200000, "USD", 1),
             Expenses = [new DescribedMoney(200, "USD", 1)],
             AcquisitionDisposal = TradeType.ACQUISITION,
-            Description = "Write SPX call Option (4000 Strike Price)"
+            Description = "Buy SPX call Option (4000 Strike Price)"
         };
 
         var closeCallOptionTrade1 = new OptionTrade
@@ -338,7 +338,7 @@ public class UkTradeCalculatorOptionCashSettleTest
             GrossProceed = new DescribedMoney(0, "USD", 1),
             Expenses = [],
             AcquisitionDisposal = TradeType.DISPOSAL,
-            Description = "SPX Put Option exercised",
+            Description = "SPX call Option exercised",
         };
 
         var cashSettlement = new CashSettlement
