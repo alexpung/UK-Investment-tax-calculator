@@ -77,7 +77,7 @@ public class UkTradeCalculatorOptionCashSettleTest
     [InlineData("25-Jan-23 09:30:00", 30000, false)]
     public void ShortCallOptionAndCashSettleAssigned(string optionDate, decimal allowableCost, bool refunded)
     {
-        var writePutOptionTrade = new OptionTrade
+        var writeCallOptionTrade = new OptionTrade
         {
             AssetName = "SPX230125C04000000",
             Date = DateTime.Parse(optionDate, CultureInfo.InvariantCulture),
@@ -94,7 +94,7 @@ public class UkTradeCalculatorOptionCashSettleTest
             Description = "Write SPX call Option (4000 Strike Price)"
         };
 
-        var assignPutOptionTrade = new OptionTrade
+        var assignCallOptionTrade = new OptionTrade
         {
             AssetName = "SPX230125C04000000",
             Date = DateTime.Parse("25-Jan-23 16:00:00", CultureInfo.InvariantCulture),
@@ -108,7 +108,7 @@ public class UkTradeCalculatorOptionCashSettleTest
             GrossProceed = new DescribedMoney(0, "USD", 1),
             Expenses = [],
             AcquisitionDisposal = TradeType.ACQUISITION,
-            Description = "SPX Put Option assigned",
+            Description = "SPX Call Option assigned",
         };
 
         var cashSettlement = new CashSettlement
@@ -121,7 +121,7 @@ public class UkTradeCalculatorOptionCashSettleTest
         };
 
         List<ITradeTaxCalculation> result = TradeCalculationHelper.CalculateTrades(
-            [writePutOptionTrade, assignPutOptionTrade, cashSettlement],
+            [writeCallOptionTrade, assignCallOptionTrade, cashSettlement],
             out _
         );
 
@@ -138,5 +138,118 @@ public class UkTradeCalculatorOptionCashSettleTest
         {
             optionDisposalTrade.TaxRepayList.Count.ShouldBe(0);
         }
+    }
+
+    [Fact]
+    public void ShortOptionMultipleTradeTest()
+    {
+        var writePutOptionTrade = new OptionTrade
+        {
+            AssetName = "SPX230125C04000000",
+            Date = DateTime.Parse("03-Apr-22 09:30:00", CultureInfo.InvariantCulture),
+            Underlying = "SPX",
+            StrikePrice = new WrappedMoney(4000),
+            ExpiryDate = DateTime.Parse("25-Jan-23 16:00:00", CultureInfo.InvariantCulture),
+            PUTCALL = PUTCALL.CALL,
+            Multiplier = 100,
+            TradeReason = TradeReason.OrderedTrade,
+            Quantity = 10,
+            GrossProceed = new DescribedMoney(200000, "USD", 1),
+            Expenses = [new DescribedMoney(30, "USD", 1)],
+            AcquisitionDisposal = TradeType.DISPOSAL,
+            Description = "Write SPX call Option (4000 Strike Price)"
+        };
+
+        var closePutOptionTrade1 = new OptionTrade
+        {
+            AssetName = "SPX230125C04000000",
+            Date = DateTime.Parse("05-Apr-22 09:30:00", CultureInfo.InvariantCulture),
+            Underlying = "SPX",
+            StrikePrice = new WrappedMoney(4000),
+            ExpiryDate = DateTime.Parse("25-Jan-23 16:00:00", CultureInfo.InvariantCulture),
+            PUTCALL = PUTCALL.CALL,
+            Multiplier = 100,
+            TradeReason = TradeReason.OrderedTrade,
+            Quantity = 4,
+            GrossProceed = new DescribedMoney(70000, "USD", 1),
+            Expenses = [new DescribedMoney(50, "USD", 0.5m)],
+            AcquisitionDisposal = TradeType.ACQUISITION,
+            Description = "SPX Put Option partly closed",
+        };
+
+        var closePutOptionTrade2 = new OptionTrade
+        {
+            AssetName = "SPX230125C04000000",
+            Date = DateTime.Parse("20-Jan-23 16:00:00", CultureInfo.InvariantCulture),
+            Underlying = "SPX",
+            StrikePrice = new WrappedMoney(4000),
+            ExpiryDate = DateTime.Parse("25-Jan-23 16:00:00", CultureInfo.InvariantCulture),
+            PUTCALL = PUTCALL.CALL,
+            Multiplier = 100,
+            TradeReason = TradeReason.OrderedTrade,
+            Quantity = 1,
+            GrossProceed = new DescribedMoney(10000, "USD", 1),
+            Expenses = [new DescribedMoney(50, "USD", 0.5m)],
+            AcquisitionDisposal = TradeType.ACQUISITION,
+            Description = "SPX Put Option partly closed",
+        };
+
+        var closePutOptionTrade3 = new OptionTrade
+        {
+            AssetName = "SPX230125C04000000",
+            Date = DateTime.Parse("25-Jan-23 16:00:00", CultureInfo.InvariantCulture),
+            Underlying = "SPX",
+            StrikePrice = new WrappedMoney(4000),
+            ExpiryDate = DateTime.Parse("25-Jan-23 16:00:00", CultureInfo.InvariantCulture),
+            PUTCALL = PUTCALL.CALL,
+            Multiplier = 100,
+            TradeReason = TradeReason.OrderedTrade,
+            Quantity = 2,
+            GrossProceed = new DescribedMoney(30000, "USD", 1),
+            Expenses = [new DescribedMoney(20, "USD", 1)],
+            AcquisitionDisposal = TradeType.ACQUISITION,
+            Description = "SPX Put Option closed",
+        };
+
+        var assignPutOptionTrade = new OptionTrade
+        {
+            AssetName = "SPX230125C04000000",
+            Date = DateTime.Parse("25-Jan-23 16:00:00", CultureInfo.InvariantCulture),
+            Underlying = "SPX",
+            StrikePrice = new WrappedMoney(4000),
+            ExpiryDate = DateTime.Parse("25-Jan-23 16:00:00", CultureInfo.InvariantCulture),
+            PUTCALL = PUTCALL.CALL,
+            Multiplier = 100,
+            TradeReason = TradeReason.OptionAssigned,
+            Quantity = 3,
+            GrossProceed = new DescribedMoney(0, "USD", 1),
+            Expenses = [],
+            AcquisitionDisposal = TradeType.ACQUISITION,
+            Description = "SPX Put Option assigned",
+        };
+
+        var cashSettlement = new CashSettlement
+        {
+            AssetName = "SPX230125C04000000",
+            Date = DateTime.Parse("25-Jan-23 16:00:00", CultureInfo.InvariantCulture),
+            Description = "Option exercise cash settlement",
+            TradeReason = TradeReason.OptionAssigned,
+            Amount = new WrappedMoney(-90000)
+        };
+
+        List<ITradeTaxCalculation> result = TradeCalculationHelper.CalculateTrades(
+            [writePutOptionTrade, closePutOptionTrade1, closePutOptionTrade2, closePutOptionTrade3, assignPutOptionTrade, cashSettlement],
+            out _
+        );
+        OptionTradeTaxCalculation optionDisposalTrade = (OptionTradeTaxCalculation)result.Find(trade => trade is OptionTradeTaxCalculation { AcquisitionDisposal: TradeType.DISPOSAL })!;
+        optionDisposalTrade!.TotalAllowableCost.ShouldBe(new WrappedMoney(70000 + (50 / 2)));
+        optionDisposalTrade.TotalProceeds.ShouldBe(new WrappedMoney(200000 - 30));
+        optionDisposalTrade.TaxRepayList.Count.ShouldBe(3);
+        optionDisposalTrade.TaxRepayList[0].RefundAmount.ShouldBe(new WrappedMoney(10000 + 25));
+        optionDisposalTrade.TaxRepayList[0].TaxYear.ShouldBe(2022);
+        optionDisposalTrade.TaxRepayList[1].RefundAmount.ShouldBe(new WrappedMoney(90000));
+        optionDisposalTrade.TaxRepayList[1].TaxYear.ShouldBe(2022);
+        optionDisposalTrade.TaxRepayList[2].RefundAmount.ShouldBe(new WrappedMoney(30000 + 20));
+        optionDisposalTrade.TaxRepayList[2].TaxYear.ShouldBe(2022);
     }
 }

@@ -169,8 +169,8 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
         TradeMatch tradeMatch;
         if (tradePairSorter.LatterTrade.IsCashSettled)
         {
-            WrappedMoney allowableCost = tradePairSorter.AcquisitionTrade.GetProportionedCostOrProceedForTradeReason(TradeReason.OrderedTrade, tradePairSorter.AcquisitionMatchQuantity);
-            WrappedMoney disposalProceed = tradePairSorter.DisposalTrade.GetProportionedCostOrProceedForTradeReason(TradeReason.OwnerExerciseOption, tradePairSorter.DisposalMatchQuantity);
+            WrappedMoney allowableCost = tradePairSorter.AcquisitionTrade.GetProportionedCostOrProceedForTradeReason(TradeReason.OrderedTrade, exercisedQty);
+            WrappedMoney disposalProceed = tradePairSorter.DisposalTrade.GetProportionedCostOrProceedForTradeReason(TradeReason.OwnerExerciseOption, exercisedQty);
             tradeMatch = CreateTradeMatch(tradePairSorter, exercisedQty, allowableCost, disposalProceed, $"{exercisedQty:F2} option cash settled.", taxMatchType);
         }
         else
@@ -197,8 +197,8 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
         TradeMatch tradeMatch;
         if (tradePairSorter.LatterTrade.IsCashSettled)
         {
-            WrappedMoney allowableCost = tradePairSorter.AcquisitionTrade.GetProportionedCostOrProceedForTradeReason(TradeReason.OptionAssigned, tradePairSorter.AcquisitionMatchQuantity);
-            WrappedMoney disposalProceed = tradePairSorter.DisposalTrade.GetProportionedCostOrProceedForTradeReason(TradeReason.OrderedTrade, tradePairSorter.DisposalMatchQuantity);
+            WrappedMoney allowableCost = tradePairSorter.AcquisitionTrade.GetProportionedCostOrProceedForTradeReason(TradeReason.OptionAssigned, assignmentQty);
+            WrappedMoney disposalProceed = tradePairSorter.DisposalTrade.GetProportionedCostOrProceedForTradeReason(TradeReason.OrderedTrade, assignmentQty);
             if (RefundIfNotInSameYear(tradePairSorter, taxYear, allowableCost))
             {
                 allowableCost = WrappedMoney.GetBaseCurrencyZero();
