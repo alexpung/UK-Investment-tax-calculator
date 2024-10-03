@@ -225,7 +225,7 @@ public class UkTradeCalculatorOptionCashSettleTest
             GrossProceed = new DescribedMoney(0, "USD", 1),
             Expenses = [],
             AcquisitionDisposal = TradeType.ACQUISITION,
-            Description = "SPX Put Option assigned",
+            Description = "SPX Call Option assigned",
         };
 
         var cashSettlement = new CashSettlement
@@ -338,7 +338,7 @@ public class UkTradeCalculatorOptionCashSettleTest
             GrossProceed = new DescribedMoney(0, "USD", 1),
             Expenses = [],
             AcquisitionDisposal = TradeType.DISPOSAL,
-            Description = "SPX call Option exercised",
+            Description = "SPX Call Option exercised",
         };
 
         var cashSettlement = new CashSettlement
