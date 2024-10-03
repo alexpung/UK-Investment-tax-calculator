@@ -11,7 +11,7 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
 {
     public List<ITradeTaxCalculation> CalculateTax()
     {
-        MatchExeciseAndAssignmentOptionTrade();
+        MatchExerciseAndAssignmentOptionTrade();
         List<OptionTradeTaxCalculation> tradeTaxCalculations = [.. GroupTrade(tradeList.OptionTrades)];
         GroupedTradeContainer<OptionTradeTaxCalculation> _tradeContainer = new(tradeTaxCalculations, tradeList.CorporateActions);
         foreach (var match in UkMatchingRules.ApplySameDayMatchingRule(_tradeContainer))
@@ -29,7 +29,7 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
         return tradeTaxCalculations.Cast<ITradeTaxCalculation>().ToList();
     }
 
-    private void MatchExeciseAndAssignmentOptionTrade()
+    private void MatchExerciseAndAssignmentOptionTrade()
     {
         List<OptionTrade> filteredTrades = tradeList.OptionTrades.Where(trade => trade is OptionTrade
         { TradeReason: TradeReason.OwnerExerciseOption or TradeReason.OptionAssigned }).ToList();
@@ -79,7 +79,7 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
         if (trade1.CalculationCompleted || trade2.CalculationCompleted) return;
         if (trade1.UnmatchedQty == 0 || trade2.UnmatchedQty == 0) return;
 
-        // This part of the algo handle the case when you trade an option at the date of expiry and you traded/it expires/it is assigned/you execise it in the same day
+        // This part of the algo handle the case when you trade an option at the date of expiry and you traded/it expires/it is assigned/you exercise it in the same day
         // 
         decimal matchRatio;
         if (tradePairSorter.LatterTrade.UnmatchedQty < tradePairSorter.EarlierTrade.UnmatchedQty)

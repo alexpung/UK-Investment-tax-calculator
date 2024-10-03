@@ -324,7 +324,7 @@ public class UkTradeCalculatorOptionCashSettleTest
             Description = "SPX Call Option closed",
         };
 
-        var execiseCallOptionTrade = new OptionTrade
+        var exerciseCallOptionTrade = new OptionTrade
         {
             AssetName = "SPX230125C04000000",
             Date = DateTime.Parse("25-Jan-23 16:00:00", CultureInfo.InvariantCulture),
@@ -338,7 +338,7 @@ public class UkTradeCalculatorOptionCashSettleTest
             GrossProceed = new DescribedMoney(0, "USD", 1),
             Expenses = [],
             AcquisitionDisposal = TradeType.DISPOSAL,
-            Description = "SPX Put Option execised",
+            Description = "SPX Put Option exercised",
         };
 
         var cashSettlement = new CashSettlement
@@ -351,7 +351,7 @@ public class UkTradeCalculatorOptionCashSettleTest
         };
 
         List<ITradeTaxCalculation> result = TradeCalculationHelper.CalculateTrades(
-            [BuyCallOptionTrade, closeCallOptionTrade1, closeCallOptionTrade2, closeCallOptionTrade3, execiseCallOptionTrade, cashSettlement],
+            [BuyCallOptionTrade, closeCallOptionTrade1, closeCallOptionTrade2, closeCallOptionTrade3, exerciseCallOptionTrade, cashSettlement],
             out _
         );
         OptionTradeTaxCalculation optionDisposalTrade = (OptionTradeTaxCalculation)result.Find(trade => trade is OptionTradeTaxCalculation
