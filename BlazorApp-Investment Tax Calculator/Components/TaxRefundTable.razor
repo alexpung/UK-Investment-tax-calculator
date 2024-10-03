@@ -39,9 +39,8 @@
 @code {
     private SfGrid<TaxRepay> taxRefundGrid = new();
     private IEnumerable<TaxRepay> _trades => tradeCalculationResult.CalculatedTrade
-                                                                .Where(trade => trade is OptionTradeTaxCalculation)
-                                                                .SelectMany(trade => ((OptionTradeTaxCalculation)trade).TaxRepayList)
-                                                                .DefaultIfEmpty()!;
+                                                                .OfType<OptionTradeTaxCalculation>()
+                                                                .SelectMany(trade => trade.TaxRepayList);
 
     public async Task ToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)
     {
