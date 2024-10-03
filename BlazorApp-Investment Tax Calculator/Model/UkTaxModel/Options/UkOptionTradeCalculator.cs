@@ -115,7 +115,9 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
             TaxRepay refundPremium = new(
                 TaxYear: taxYear.ToTaxYear(tradePairSorter.LatterTrade.Date),
                 RefundAmount: allowableCost,
-                Reason: $"Sold option with ID:{tradePairSorter.EarlierTrade.Id} and position closed in later tax year {taxYear.ToTaxYear(tradePairSorter.LatterTrade.Date)}"
+                Reason: $"Sold option {tradePairSorter.EarlierTrade.AssetName}" +
+                $" with ID:{tradePairSorter.EarlierTrade.Id} on {tradePairSorter.EarlierTrade.Date:d}" +
+                $" and position closed in later tax year with trade ID:{tradePairSorter.LatterTrade.Id}"
                 );
             tradePairSorter.DisposalTrade.TaxRepayList.Add(refundPremium);
             allowableCost = WrappedMoney.GetBaseCurrencyZero();
@@ -230,7 +232,9 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
                 new TaxRepay(
                 taxYear.ToTaxYear(tradePairSorter.LatterTrade.Date),
                 allowableCost,
-                $"Sold option with ID:{tradePairSorter.EarlierTrade.Id} and it gets assigned in later tax year {taxYear.ToTaxYear(tradePairSorter.LatterTrade.Date)}"
+                $"Sold {tradePairSorter.EarlierTrade.AssetName} " +
+                $"option with ID:{tradePairSorter.EarlierTrade.Id} on {tradePairSorter.EarlierTrade.Date:d} " +
+                $"and it get assigned in later tax year with trade ID:{tradePairSorter.LatterTrade.Id}"
                 ));
             refunded = true;
         }

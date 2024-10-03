@@ -1,0 +1,50 @@
+﻿@using InvestmentTaxCalculator.Model
+@using InvestmentTaxCalculator.ViewModel
+@using InvestmentTaxCalculator.Model.Interfaces
+@using Syncfusion.Blazor.Grids
+@using InvestmentTaxCalculator.Model.TaxEvents
+@using InvestmentTaxCalculator.Model.UkTaxModel
+@using InvestmentTaxCalculator.Model.UkTaxModel.Stocks
+@using InvestmentTaxCalculator.Enumerations
+@using InvestmentTaxCalculator.Components
+@using InvestmentTaxCalculator.Services
+@using InvestmentTaxCalculator.Model.UkTaxModel.Options;
+
+@inject TradeCalculationResult tradeCalculationResult
+@inject SfGridToolBarHandlingService _toolbarHandlingService
+
+<div class="bg-dark text-light">
+    <div class="row my-4">
+        <div class="col">
+            <h3>Tax refund</h3>
+            <p>This shows your overpaid tax due to writing option and not closing it in the same tax year.</p>
+        </div>
+    </div>
+        <div class="col">
+            <SfGrid ID="TaxRefundGrid" @ref="taxRefundGrid" DataSource="@_trades"
+                    AllowPaging="true" AllowSorting="true" AllowPdfExport="true" AllowExcelExport="true" AllowResizing="true" AllowFiltering="true" AllowTextWrap="true"
+                    Toolbar="@(new List<string>() { "PdfExport", "ExcelExport", "Print" })">
+                <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
+                <GridPageSettings PageSizes=@(new List<int>() {25, 50, 100}) PageSize="25"></GridPageSettings>
+                <GridEvents OnToolbarClick="ToolbarClickHandler" TValue="TaxRepay"></GridEvents>
+                <GridColumns>
+                    <GridColumn Field=@nameof(TaxRepay.TaxYear) HeaderText="Tax Year"></GridColumn>
+                    <GridColumn Field=@nameof(TaxRepay.RefundAmount) HeaderText="Refund Amount"></GridColumn>
+                    <GridColumn Field=@nameof(TaxRepay.Reason) HeaderText="Reason"></GridColumn>
+                </GridColumns>
+            </SfGrid>
+        </div>
+</div>
+
+@code {
+    private SfGrid<TaxRepay> taxRefundGrid = new();
+    private IEnumerable<TaxRepay> _trades => tradeCalculationResult.CalculatedTrade
+                                                                .OfType<OptionTradeTaxCalculation>()
+                                                                .SelectMany(trade => trade.TaxRepayList);
+
+    public async Task ToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)
+    {
+        await _toolbarHandlingService.ToolbarClickHandler(args, taxRefundGrid);
+    }
+}
+
