@@ -20,7 +20,7 @@ public static class IBXmlFutureTradeParser
     {
         return new FutureContractTrade
         {
-            AssetType = AssetCatagoryType.FUTURE,
+            AssetType = AssetCategoryType.FUTURE,
             AcquisitionDisposal = element.GetTradeType(),
             AssetName = element.GetAttribute("symbol"),
             Description = element.GetAttribute("description"),

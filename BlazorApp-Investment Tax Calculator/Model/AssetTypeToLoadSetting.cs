@@ -14,9 +14,9 @@ public class AssetTypeToLoadSetting
         TaxEventLists resultFiltered = new();
         if (LoadDividends) resultFiltered.Dividends.AddRange(taxEventLists.Dividends);
         if (LoadStocks) resultFiltered.CorporateActions.AddRange(taxEventLists.CorporateActions);
-        if (LoadStocks) resultFiltered.Trades.AddRange(taxEventLists.Trades.Where(trade => trade.AssetType == AssetCatagoryType.STOCK));
+        if (LoadStocks) resultFiltered.Trades.AddRange(taxEventLists.Trades.Where(trade => trade.AssetType == AssetCategoryType.STOCK));
         if (LoadFutures) resultFiltered.FutureContractTrades.AddRange(taxEventLists.FutureContractTrades);
-        if (LoadFx) resultFiltered.Trades.AddRange(taxEventLists.Trades.Where(trade => trade.AssetType == AssetCatagoryType.FX));
+        if (LoadFx) resultFiltered.Trades.AddRange(taxEventLists.Trades.Where(trade => trade.AssetType == AssetCategoryType.FX));
         if (LoadOptions) resultFiltered.OptionTrades.AddRange(taxEventLists.OptionTrades);
         if (LoadOptions) resultFiltered.CashSettlements.AddRange(taxEventLists.CashSettlements);
         return resultFiltered;

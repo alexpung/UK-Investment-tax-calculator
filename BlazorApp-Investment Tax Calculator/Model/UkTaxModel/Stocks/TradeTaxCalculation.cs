@@ -36,7 +36,7 @@ public class TradeTaxCalculation : ITradeTaxCalculation
     public virtual TradeType AcquisitionDisposal { get; init; }
     public bool CalculationCompleted => UnmatchedQty == 0;
     public DateTime Date => TradeList[0].Date;
-    public AssetCatagoryType AssetCatagoryType => TradeList[0].AssetType;
+    public AssetCategoryType AssetCategoryType => TradeList[0].AssetType;
     public string AssetName => TradeList[0].AssetName;
 
 

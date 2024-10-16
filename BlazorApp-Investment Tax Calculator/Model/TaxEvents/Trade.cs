@@ -8,7 +8,7 @@ namespace InvestmentTaxCalculator.Model.TaxEvents;
 
 public record Trade : TaxEvent, ITextFilePrintable
 {
-    public virtual AssetCatagoryType AssetType { get; set; } = AssetCatagoryType.STOCK;
+    public virtual AssetCategoryType AssetType { get; set; } = AssetCategoryType.STOCK;
     public virtual required TradeType AcquisitionDisposal { get; set; }
     private decimal _quantity;
     /// <summary>

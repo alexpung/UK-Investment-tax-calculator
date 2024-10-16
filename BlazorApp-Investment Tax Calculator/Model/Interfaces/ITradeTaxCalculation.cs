@@ -11,7 +11,7 @@ namespace InvestmentTaxCalculator.Model.Interfaces;
 public interface ITradeTaxCalculation : ITextFilePrintable, ITaxMatchable
 {
     int Id { get; }
-    AssetCatagoryType AssetCatagoryType { get; }
+    AssetCategoryType AssetCategoryType { get; }
     bool CalculationCompleted { get; }
     List<TradeMatch> MatchHistory { get; init; }
     WrappedMoney TotalCostOrProceed { get; }

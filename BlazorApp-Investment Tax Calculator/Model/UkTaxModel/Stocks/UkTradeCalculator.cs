@@ -39,10 +39,10 @@ public class UkTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorpo
     private static List<TradeTaxCalculation> GroupTrade(IEnumerable<Trade> trades)
     {
         var groupedTrade = from trade in trades
-                           where trade.AssetType == AssetCatagoryType.STOCK
+                           where trade.AssetType == AssetCategoryType.STOCK
                            group trade by new { trade.AssetName, trade.Date.Date, trade.AcquisitionDisposal };
         var groupedFxTrade = from trade in trades
-                             where trade.AssetType == AssetCatagoryType.FX
+                             where trade.AssetType == AssetCategoryType.FX
                              group trade by new { trade.AssetName, trade.Date.Date, trade.AcquisitionDisposal };
         IEnumerable<TradeTaxCalculation> groupedTradeCalculations = groupedTrade.Select(group => new TradeTaxCalculation(group)).ToList();
         IEnumerable<TradeTaxCalculation> groupedFxTradeCalculations = groupedFxTrade.Select(group => new FxTradeTaxCalculation(group)).ToList();

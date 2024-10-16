@@ -9,7 +9,7 @@ namespace InvestmentTaxCalculator.ViewModel;
 public class TradeTaxCalculationViewModel(ITradeTaxCalculation TradeTaxCalculation)
 {
     public int TradeId { get; } = TradeTaxCalculation.Id;
-    public string AssetType { get; } = TradeTaxCalculation.AssetCatagoryType.GetDescription();
+    public string AssetType { get; } = TradeTaxCalculation.AssetCategoryType.GetDescription();
     public DateTime Date { get; } = TradeTaxCalculation.Date;
     public string AssetName { get; } = TradeTaxCalculation.AssetName;
     public string AcquisitionOrDisposal { get; } = TradeTaxCalculation.AcquisitionDisposal.GetDescription();
