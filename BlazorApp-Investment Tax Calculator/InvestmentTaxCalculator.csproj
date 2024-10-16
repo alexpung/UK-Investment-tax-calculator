@@ -26,7 +26,7 @@
     <PackageReference Include="Syncfusion.Blazor.Lists" Version="24.1.41" />
     <PackageReference Include="Syncfusion.Blazor.Navigations" Version="24.1.41" />
     <PackageReference Include="Syncfusion.Blazor.Themes" Version="24.1.41" />
-    <PackageReference Include="System.Text.Json" Version="8.0.4" />
+    <PackageReference Include="System.Text.Json" Version="8.0.5" />
   </ItemGroup>
 
   <ItemGroup>

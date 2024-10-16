@@ -2,7 +2,7 @@
 
 namespace InvestmentTaxCalculator.Enumerations;
 
-public enum AssetCatagoryType
+public enum AssetCategoryType
 {
     [Description("Stock")]
     STOCK,

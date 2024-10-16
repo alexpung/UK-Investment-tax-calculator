@@ -37,8 +37,8 @@ public class TradeCalculationResult(ITaxYear taxYear)
     private static bool FilterAssetType(ITradeTaxCalculation trade, AssetGroupType assetGroupType) => assetGroupType switch
     {
         AssetGroupType.ALL => true,
-        AssetGroupType.LISTEDSHARES => trade.AssetCatagoryType is AssetCatagoryType.STOCK,
-        AssetGroupType.OTHERASSETS => trade.AssetCatagoryType is AssetCatagoryType.FUTURE or AssetCatagoryType.FX,
+        AssetGroupType.LISTEDSHARES => trade.AssetCategoryType is AssetCategoryType.STOCK,
+        AssetGroupType.OTHERASSETS => trade.AssetCategoryType is AssetCategoryType.FUTURE or AssetCategoryType.FX,
         _ => throw new NotImplementedException()
     };
 

@@ -67,8 +67,8 @@
                             <GridColumn Field=@nameof(TradeInputViewModel.AssetType) HeaderText="Asset Category">
                                 <EditTemplate>
                                 @{
-                                        <SfDropDownList DataSource="@AssetCatagoryDropDownEnumValue" @bind-Value="DropDownAssetCatagoryType"
-                                                        TValue="AssetCatagoryType" TItem="EnumDescriptionPair<AssetCatagoryType>" Placeholder="Asset Category Type">
+                                        <SfDropDownList DataSource="@AssetCatagoryDropDownEnumValue" @bind-Value="DropDownAssetCategoryType"
+                                                        TValue="AssetCategoryType" TItem="EnumDescriptionPair<AssetCategoryType>" Placeholder="Asset Category Type">
                                             <DropDownListFieldSettings Value="EnumValue" Text="Description"></DropDownListFieldSettings>
                                         </SfDropDownList>
                                 }
@@ -101,14 +101,14 @@
 @code {
     private SfGrid<TradeInputViewModel> _addTradeGrid = new();
     public TradeType DropDownSelectedTradeType { get; set; } = TradeType.ACQUISITION;
-    public AssetCatagoryType DropDownAssetCatagoryType { get; set; } = AssetCatagoryType.STOCK;
-    public List<EnumDescriptionPair<AssetCatagoryType>> AssetCatagoryDropDownEnumValue = [];
+    public AssetCategoryType DropDownAssetCategoryType { get; set; } = AssetCategoryType.STOCK;
+    public List<EnumDescriptionPair<AssetCategoryType>> AssetCatagoryDropDownEnumValue = [];
     public List<EnumDescriptionPair<TradeType>> TradeTypeDropDownEnumValue = [];
 
     protected override void OnInitialized()
     {
         TradeTypeDropDownEnumValue = EnumExtensions.GetEnumDescriptionPair<TradeType>(typeof(TradeType));
-        AssetCatagoryDropDownEnumValue = EnumExtensions.GetEnumDescriptionPair<AssetCatagoryType>(typeof(AssetCatagoryType));
+        AssetCatagoryDropDownEnumValue = EnumExtensions.GetEnumDescriptionPair<AssetCategoryType>(typeof(AssetCategoryType));
     }
 
     public void OnImportTrade()
@@ -136,7 +136,7 @@
         if (Args.RequestType == Syncfusion.Blazor.Grids.Action.Save)
         {
             Args.Data.AcquisitionDisposal = DropDownSelectedTradeType;
-            Args.Data.AssetType = DropDownAssetCatagoryType;
+            Args.Data.AssetType = DropDownAssetCategoryType;
             var inputData = Args.Data;
             foreach(var error in inputData.ValidateError())
             {
@@ -151,7 +151,7 @@
         if (Args.RequestType == Syncfusion.Blazor.Grids.Action.BeginEdit)
         {
             DropDownSelectedTradeType = Args.Data.AcquisitionDisposal;
-            DropDownAssetCatagoryType = Args.Data.AssetType;
+            DropDownAssetCategoryType = Args.Data.AssetType;
         }
     }
 }

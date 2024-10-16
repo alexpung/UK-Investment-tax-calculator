@@ -8,7 +8,7 @@ namespace InvestmentTaxCalculator.Model.TaxEvents;
 public record FutureContractTrade : Trade, ISplittableToLongAndShort<FutureContractTrade>
 {
     public required DescribedMoney ContractValue { get; set; }
-    public override AssetCatagoryType AssetType { get; set; } = AssetCatagoryType.FUTURE;
+    public override AssetCategoryType AssetType { get; set; } = AssetCategoryType.FUTURE;
     public PositionType PositionType { get; set; }
 
     /// <summary>

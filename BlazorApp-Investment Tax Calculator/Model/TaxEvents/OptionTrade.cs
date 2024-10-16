@@ -6,7 +6,7 @@ namespace InvestmentTaxCalculator.Model.TaxEvents;
 
 public record OptionTrade : Trade
 {
-    public override AssetCatagoryType AssetType { get; set; } = AssetCatagoryType.OPTION;
+    public override AssetCategoryType AssetType { get; set; } = AssetCategoryType.OPTION;
     public required string Underlying { get; set; }
     public required WrappedMoney StrikePrice { get; set; }
     public required DateTime ExpiryDate { get; set; }

@@ -52,7 +52,7 @@ public class IBXmlFxParser
         {
             AcquisitionDisposal = GetTradeType(element),
             AssetName = currency,
-            AssetType = AssetCatagoryType.FX,
+            AssetType = AssetCategoryType.FX,
             Description = element.GetAttribute("activityDescription"),
             Date = reportDate,
             Quantity = amountOfFx,

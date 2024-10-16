@@ -4,7 +4,7 @@ namespace InvestmentTaxCalculator.Model.TaxEvents;
 
 public record FxTrade : Trade
 {
-    public override AssetCatagoryType AssetType { get; set; } = AssetCatagoryType.FX;
+    public override AssetCategoryType AssetType { get; set; } = AssetCategoryType.FX;
     public override string PrintToTextFile()
     {
         string action = AcquisitionDisposal switch

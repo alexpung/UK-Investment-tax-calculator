@@ -21,7 +21,7 @@ public class TradeInputViewModel
     [Required(ErrorMessage = "Please select if you are buying (acquiring) or selling/shorting (disposing) the asset.")]
     public required TradeType AcquisitionDisposal { get; set; }
     [Required(ErrorMessage = "Please select the asset type.")]
-    public required AssetCatagoryType AssetType { get; set; }
+    public required AssetCategoryType AssetType { get; set; }
     [Required(ErrorMessage = "Please enter the currency used for the trade")]
     [CustomValidationCurrencyString]
     public required string GrossProceedCurrency { get; set; } = "gbp";
@@ -61,7 +61,7 @@ public class TradeInputViewModel
         if (CommissionAmount != 0) expenses.Add(new(CommissionAmount, CommissionCurrency, CommissionExchangeRate));
         return AssetType switch
         {
-            AssetCatagoryType.STOCK => new Trade()
+            AssetCategoryType.STOCK => new Trade()
             {
                 AssetName = AssetName,
                 Date = Date,
@@ -72,7 +72,7 @@ public class TradeInputViewModel
                 Expenses = [.. expenses],
                 Description = Description
             },
-            AssetCatagoryType.FX => new FxTrade()
+            AssetCategoryType.FX => new FxTrade()
             {
                 AssetName = AssetName,
                 Date = Date,
@@ -83,7 +83,7 @@ public class TradeInputViewModel
                 Expenses = [.. expenses],
                 Description = Description
             },
-            AssetCatagoryType.FUTURE => new FutureContractTrade()
+            AssetCategoryType.FUTURE => new FutureContractTrade()
             {
                 AssetName = AssetName,
                 Date = Date,
@@ -102,11 +102,11 @@ public class TradeInputViewModel
     public List<string> ValidateError()
     {
         List<string> errorList = [];
-        if (AssetType == AssetCatagoryType.FUTURE && string.IsNullOrEmpty(ContractValueCurrency))
+        if (AssetType == AssetCategoryType.FUTURE && string.IsNullOrEmpty(ContractValueCurrency))
         {
             errorList.Add("Contract Value Currency is required for a future contract");
         }
-        if (AssetType == AssetCatagoryType.FUTURE && GrossProceed != 0)
+        if (AssetType == AssetCategoryType.FUTURE && GrossProceed != 0)
         {
             errorList.Add("For a future contract gross proceeds should be set to 0. Profit and loss is calucated from contract values, taxes and commission");
         }
@@ -118,7 +118,7 @@ public class TradeInputViewModel
         List<string> errorList = [];
         if (CommissionAmount < 0) errorList.Add("Commission is negative and means a rebate, please check if this is correct.");
         if (TaxAmount < 0) errorList.Add("Tax is negative and means a refund, please check if this is correct.");
-        if (ContractValueAmount <= 0 && AssetType == AssetCatagoryType.FUTURE) errorList.Add("Negative or zero price in future contract, please check if this is correct.");
+        if (ContractValueAmount <= 0 && AssetType == AssetCategoryType.FUTURE) errorList.Add("Negative or zero price in future contract, please check if this is correct.");
         return errorList;
     }
 }
