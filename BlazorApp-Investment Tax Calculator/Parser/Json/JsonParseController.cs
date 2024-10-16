@@ -1,5 +1,4 @@
-﻿using InvestmentTaxCalculator.Enumerations;
-using InvestmentTaxCalculator.Model;
+﻿using InvestmentTaxCalculator.Model;
 using InvestmentTaxCalculator.Parser;
 
 using System.Text.Json;
@@ -22,11 +21,7 @@ public class JsonParseController(AssetTypeToLoadSetting assetTypeToLoadSetting) 
         }
         TaxEventLists resultFiltered = new();
         if (result == null) return resultFiltered;
-        if (assetTypeToLoadSetting.LoadDividends) resultFiltered.Dividends.AddRange(result.Dividends);
-        if (assetTypeToLoadSetting.LoadStocks) resultFiltered.CorporateActions.AddRange(result.CorporateActions);
-        if (assetTypeToLoadSetting.LoadStocks) resultFiltered.Trades.AddRange(result.Trades.Where(trade => trade.AssetType == AssetCatagoryType.STOCK));
-        if (assetTypeToLoadSetting.LoadFutures) resultFiltered.Trades.AddRange(result.Trades.Where(trade => trade.AssetType == AssetCatagoryType.FUTURE));
-        if (assetTypeToLoadSetting.LoadFx) resultFiltered.Trades.AddRange(result.Trades.Where(trade => trade.AssetType == AssetCatagoryType.FX));
+        resultFiltered = assetTypeToLoadSetting.FilterTaxEvent(result);
         return resultFiltered;
     }
 

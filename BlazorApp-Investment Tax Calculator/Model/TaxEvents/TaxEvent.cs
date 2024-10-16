@@ -1,7 +1,10 @@
 ﻿using InvestmentTaxCalculator.Model.Interfaces;
 
+using System.Text.Json.Serialization;
+
 namespace InvestmentTaxCalculator.Model.TaxEvents;
 
+[JsonPolymorphic()]
 public abstract record TaxEvent : IAssetDatedEvent
 {
     private static int _nextId = 0;
