@@ -52,7 +52,18 @@
     {
         foreach (var file in args.Files)
         {
-            taxEventLists.AddData(await fileParseController.ReadFile(file.File));
+            try
+            {
+                taxEventLists.AddData(await fileParseController.ReadFile(file.File));
+            }
+            catch (ParseException ex)
+            {
+                toastService.ShowError(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                toastService.ShowError($"An unexpected error have occurred.\n {ex.Message}");
+            }
         }
         args.Files.Clear();
     }
