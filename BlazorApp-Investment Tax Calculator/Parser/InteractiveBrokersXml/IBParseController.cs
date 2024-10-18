@@ -30,10 +30,7 @@ public class IBParseController(AssetTypeToLoadSetting assetTypeToLoadSetting) : 
     {
         if (contentType != "text/xml") return false;
         XElement? xml = XDocument.Parse(data).Root;
-        if (xml is not null)
-        {
-            return xml.DescendantsAndSelf("FlexQueryResponse").Any() && xml.Descendants("FlexStatements").Any();
-        }
-        return false;
+        if (xml is null) return false;
+        return xml.DescendantsAndSelf("FlexQueryResponse").Any() && xml.Descendants("FlexStatements").Any();
     }
 }
