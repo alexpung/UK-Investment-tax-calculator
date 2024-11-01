@@ -33,7 +33,7 @@ public class TaxYearCgtByTypeReportService(TradeCalculationResult tradeCalculati
         }
     }
 
-    public TaxYearCgtByTypeReport GetTaxYearCgtByTypeReports(int taxYear)
+    public TaxYearCgtByTypeReport GetTaxYearCgtByTypeReport(int taxYear)
     {
         return new TaxYearCgtByTypeReport()
         {

@@ -37,7 +37,7 @@ public class UkCalculationResultExportService(ITaxYear taxYear, TradeCalculation
     private string WriteTaxYearSummary(int year)
     {
         TaxYearCgtReport? taxYearCgtReport = _taxYearReports?.FirstOrDefault(report => report.TaxYear == year);
-        TaxYearCgtByTypeReport taxYearCgtByTypeReport = taxYearCgtByTypeReportService.GetTaxYearCgtByTypeReports(year);
+        TaxYearCgtByTypeReport taxYearCgtByTypeReport = taxYearCgtByTypeReportService.GetTaxYearCgtByTypeReport(year);
         StringBuilder output = new();
         output.AppendLine($"Summary for tax year {year}:");
         if (taxYearCgtReport != null) WriteTaxYearOverallSummary(output, taxYearCgtReport);
