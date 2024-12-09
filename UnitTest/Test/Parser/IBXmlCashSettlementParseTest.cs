@@ -17,13 +17,13 @@ public class IBXmlCashSettlementParserTests
             <root>
                 <StatementOfFundsLine assetCategory='OPT' symbol='SPX 180316C01000000' 
                     activityDescription='Option Cash Settlement for: Assignment' 
-                    reportDate='16-Mar-18' amount='-700732' currency='USD' />
+                    date='16-Mar-18' amount='-700732' currency='USD' />
                 <StatementOfFundsLine assetCategory='STK' symbol='AAPL' 
                     activityDescription='Option Cash Settlement for: Exercise' 
-                    reportDate='16-Mar-18' amount='5000' currency='USD' />
+                    date='16-Mar-18' amount='5000' currency='USD' />
                 <StatementOfFundsLine assetCategory='OPT' symbol='SPX 180316P01000000' 
                     activityDescription='Option Cash Settlement for: Exercise' 
-                    reportDate='16-Mar-18' amount='-12345' currency='USD' />
+                    date='16-Mar-18' amount='-12345' currency='USD' />
             </root>";
 
         var document = XElement.Parse(xml);
@@ -56,7 +56,7 @@ public class IBXmlCashSettlementParserTests
             <root>
                 <StatementOfFundsLine assetCategory='OPT' symbol='SPX 180316C01000000' 
                     activityDescription='Option Cash Settlement for: UnknownActivity' 
-                    reportDate='16-Mar-18' amount='-700732' currency='USD' />
+                    date='16-Mar-18' amount='-700732' currency='USD' />
             </root>";
         var document = XElement.Parse(xml);
         var ex = Should.Throw<ParseException>(() => IBXmlCashSettlementParser.ParseXml(document));
@@ -70,7 +70,7 @@ public class IBXmlCashSettlementParserTests
             <root>
                 <StatementOfFundsLine assetCategory='STK' symbol='AAPL' 
                     activityDescription='Option Cash Settlement for: Assignment' 
-                    reportDate='16-Mar-18' amount='5000' currency='USD' />
+                    date='16-Mar-18' amount='5000' currency='USD' />
             </root>";
         var document = XElement.Parse(xml);
         var result = IBXmlCashSettlementParser.ParseXml(document);
