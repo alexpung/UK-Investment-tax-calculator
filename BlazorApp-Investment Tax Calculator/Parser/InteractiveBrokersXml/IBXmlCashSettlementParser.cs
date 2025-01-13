@@ -23,7 +23,7 @@ public static class IBXmlCashSettlementParser
         {
             AssetName = element.GetAttribute("symbol"),
             Description = element.GetAttribute("activityDescription"),
-            Date = DateTime.Parse(element.GetAttribute("reportDate"), CultureInfo.InvariantCulture),
+            Date = DateTime.Parse(element.GetAttribute("date"), CultureInfo.InvariantCulture),
             Amount = element.BuildMoney("amount", "currency"),
             TradeReason = element.GetAttribute("activityDescription") switch
             {
