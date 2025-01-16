@@ -1,7 +1,6 @@
 ﻿using InvestmentTaxCalculator.Enumerations;
 using InvestmentTaxCalculator.Model;
 using InvestmentTaxCalculator.Model.TaxEvents;
-using InvestmentTaxCalculator.Parser;
 
 using System.Globalization;
 using System.Xml.Linq;
@@ -42,7 +41,7 @@ public class IBXmlFxParser
         decimal amountOfFx = Math.Abs(decimal.Parse(element.GetAttribute("amount")));
         if (amountOfFx == 0) return null; // Nothing to tax if amount is 0.
         string currency = element.GetAttribute("currency");
-        DateTime reportDate = DateTime.Parse(element.GetAttribute("reportDate"), CultureInfo.InvariantCulture);
+        DateTime reportDate = XmlParserHelper.ParseDate(element.GetAttribute("reportDate"));
         DescribedMoney valueInSterlingWrapped = new()
         {
             Amount = new WrappedMoney(amountOfFx, currency),

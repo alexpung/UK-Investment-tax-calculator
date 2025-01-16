@@ -1,5 +1,6 @@
 ﻿using InvestmentTaxCalculator.Model;
 
+using System.Globalization;
 using System.Xml.Linq;
 
 namespace InvestmentTaxCalculator.Parser;
@@ -51,5 +52,15 @@ public static class XmlParserHelper
                 $"01-May-21 12:34:56";
             throw new ParseException(exceptionMessage, ex);
         }
+    }
+
+    public static DateTime ParseDate(string dateString)
+    {
+        string[] formats = { "dd-MMM-yyHH:mm:ss", "dd-MMM-yyHHmmss", "dd-MMM-yyyyHH:mm:ss", "dd-MMM-yyyyHHmmss", "dd-MMM-yy", "dd-MMM-yyyy" };
+        if (DateTime.TryParseExact(dateString, formats, CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, out DateTime date))
+        {
+            return date;
+        }
+        throw new FormatException($"Unable to parse date: {dateString}");
     }
 }

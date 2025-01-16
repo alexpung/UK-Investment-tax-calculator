@@ -57,7 +57,7 @@ Tests and feedback are welcome, bugs are to be expected.
 ## To use:
 File sample is [here](https://github.com/alexpung/UK-Investment-tax-calculator/blob/master/UnitTest/System%20Test/Interactive%20brokers/TaxExample.xml "here"), you can download it and put it in the web app to see how it works.
 1. You should configure the base currency of your IBKR account to GBP.
-2. Configure flex query from interactive brokers. Following report required. Date format dd-MMM-yy, the date and time separator should be set to a single space.
+2. Configure flex query from interactive brokers. Following report required. Date format dd-MMM-yy, the date and time separator should be set to a single space and time format set to HH:mm:ss.
    1. Cash Transactions: Level of detail: Detail (for dividends)
    2. Corporate actions (for stocks)
    3. Trades: Level of detail: Orders (for stocks)
