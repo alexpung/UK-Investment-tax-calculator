@@ -8,6 +8,7 @@ using InvestmentTaxCalculator.Model.UkTaxModel.Stocks;
 using InvestmentTaxCalculator.Parser;
 using InvestmentTaxCalculator.Parser.InteractiveBrokersXml;
 using InvestmentTaxCalculator.Services;
+using InvestmentTaxCalculator.Services.PdfExport;
 using InvestmentTaxCalculator.ViewModel;
 
 using Microsoft.AspNetCore.Components.Web;
@@ -29,6 +30,8 @@ builder.Services.AddSingleton<SfGridToolBarHandlingService>();
 builder.Services.AddSingleton<ExportTaxEventService>();
 builder.Services.AddSingleton<TaxYearReportService>();
 builder.Services.AddSingleton<TaxYearCgtByTypeReportService>();
+builder.Services.AddSingleton<PdfExportService>();
+builder.Services.AddScoped<CustomFontResolver>();
 
 // UK tax specific components - replace if you want to calculate some other countries.
 builder.Services.AddSingleton<UkCalculationResultExportService>();

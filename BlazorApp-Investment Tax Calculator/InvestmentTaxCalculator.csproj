@@ -17,6 +17,8 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.8" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.8" PrivateAssets="all" />
     <PackageReference Include="NMoneys" Version="7.0.0" />
+    <PackageReference Include="PDFsharp" Version="6.1.1" />
+    <PackageReference Include="PDFsharp-MigraDoc" Version="6.1.1" />
     <PackageReference Include="PublishSPAforGitHubPages.Build" Version="2.2.1" />
     <PackageReference Include="Syncfusion.Blazor.Buttons" Version="24.1.41" />
     <PackageReference Include="Syncfusion.Blazor.Core" Version="24.1.41" />
@@ -26,11 +28,16 @@
     <PackageReference Include="Syncfusion.Blazor.Lists" Version="24.1.41" />
     <PackageReference Include="Syncfusion.Blazor.Navigations" Version="24.1.41" />
     <PackageReference Include="Syncfusion.Blazor.Themes" Version="24.1.41" />
+    <PackageReference Include="Syncfusion.Pdf.Net.Core" Version="24.1.41" />
     <PackageReference Include="System.Text.Json" Version="8.0.5" />
   </ItemGroup>
 
   <ItemGroup>
     <None Include="Components\ExportFile.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\fonts\" />
   </ItemGroup>
 
 </Project>
