@@ -24,7 +24,7 @@
                 <GridEvents OnToolbarClick="ToolbarClickHandler" TValue="DividendSummary"></GridEvents>
                 <GridColumns>
                     <GridColumn Field=@nameof(DividendSummary.TaxYear) HeaderText="Tax Year" TextAlign="TextAlign.Right"></GridColumn>
-                    <GridColumn Field=@(nameof(DividendSummary.CountryOfOrigin) + "." + nameof(RegionInfo.ThreeLetterISORegionName)) HeaderText="Country of Origin"></GridColumn>
+                    <GridColumn Field=@(nameof(DividendSummary.CountryOfOrigin) + "." + nameof(CountryCode.ThreeDigitCode)) HeaderText="Country of Origin"></GridColumn>
                     <GridColumn Field=@(nameof(DividendSummary.TotalTaxableDividend) + "." + nameof(WrappedMoney.Amount)) 
                     HeaderText="Total Taxable Dividend" Format="C2" TextAlign="TextAlign.Right"></GridColumn>
                     <GridColumn Field=@(nameof(DividendSummary.TotalForeignTaxPaid) + "." + nameof(WrappedMoney.Amount)) 

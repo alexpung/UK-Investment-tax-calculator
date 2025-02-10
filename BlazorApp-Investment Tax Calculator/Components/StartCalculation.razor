@@ -30,19 +30,19 @@
 
 
 @code{
-        public async Task OnStartCalculation()
+    public async Task OnStartCalculation()
+    {
+        section104Pools.Clear();
+        tradeCalculationResult.Clear();
+        foreach (ITradeCalculator tradeCalculator in tradeCalculators)
         {
-            section104Pools.Clear();
-            tradeCalculationResult.Clear();
-            foreach (ITradeCalculator tradeCalculator in tradeCalculators)
-            {
-                tradeCalculationResult.SetResult(await Task.Run(tradeCalculator.CalculateTax));
-            }
-            dividendCalculationResult.SetResult(await Task.Run(dividendCalculator.CalculateTax));
-            years.SetYears(GetSelectableYears());
-            StateHasChanged();
-            toastService.ShowInformation("Calculation completed.");
+            tradeCalculationResult.SetResult(await Task.Run(tradeCalculator.CalculateTax));
         }
+        dividendCalculationResult.SetResult(await Task.Run(dividendCalculator.CalculateTax));
+        years.SetYears(GetSelectableYears());
+        StateHasChanged();
+        toastService.ShowInformation("Calculation completed.");
+    }
 
     private IEnumerable<int> GetSelectableYears()
     {

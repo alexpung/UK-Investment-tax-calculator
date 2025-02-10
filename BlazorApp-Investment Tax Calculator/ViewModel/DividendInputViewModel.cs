@@ -3,7 +3,6 @@ using InvestmentTaxCalculator.Model;
 using InvestmentTaxCalculator.Model.TaxEvents;
 
 using System.ComponentModel.DataAnnotations;
-using System.Globalization;
 namespace InvestmentTaxCalculator.ViewModel;
 
 public class DividendInputViewModel
@@ -55,7 +54,7 @@ public class DividendInputViewModel
 
     private Dividend Convert(DividendType dividendType, decimal amount)
     {
-        RegionInfo companyLocation = new(CompanyLocationString);
+        CountryCode companyLocation = CountryCode.GetRegionByTwoDigitCode(CompanyLocationString);
         DescribedMoney describedMoney = new(amount, CurrencyString, FxRate, Description);
         return new Dividend()
         {

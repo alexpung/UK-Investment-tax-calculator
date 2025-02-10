@@ -58,4 +58,12 @@ public class IBXmlParseTest
         parsedData[0].SplitFrom.ShouldBe(1);
         parsedData[0].SplitTo.ShouldBe(2);
     }
+
+    [Fact]
+    public void TestUnknownCountryCodeInDividend()
+    {
+        XElement xmlDoc = XElement.Parse(@"<CashTransactions><CashTransaction settleDate=""02-Feb-21"" symbol=""ABCD"" isin=""AA12345"" description=""ABC CASH DIVIDEND - JP TAX"" amount=""-30000"" type=""Withholding Tax"" currency=""JPY"" fxRateToBase=""0.00555"" levelOfDetail=""DETAIL""/></CashTransactions>");
+        var result = IBXmlDividendParser.ParseXml(xmlDoc);
+        result[0].CompanyLocation.ShouldBe(CountryCode.UnknownRegion);
+    }
 }
