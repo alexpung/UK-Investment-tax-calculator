@@ -89,15 +89,15 @@ public class UkDividendCalculatorTest
         UkDividendCalculator calculator = SetUpCalculator(data);
         List<DividendSummary> result = calculator.CalculateTax();
         result.Count.ShouldBe(3);
-        var hkResult = result.Single(i => i.CountryOfOrigin.TwoDigitCode == "HK");
+        var hkResult = result.Single(i => i.CountryOfOrigin.ThreeDigitCode == "HKG");
         hkResult.TaxYear.ShouldBe(2021);
         hkResult.TotalTaxableDividend.ShouldBe(new WrappedMoney(165m));
         hkResult.TotalForeignTaxPaid.ShouldBe(new WrappedMoney(0m));
-        var gbResult = result.Single(i => i.CountryOfOrigin.TwoDigitCode == "GB");
+        var gbResult = result.Single(i => i.CountryOfOrigin.ThreeDigitCode == "GBR");
         gbResult.TaxYear.ShouldBe(2021);
         gbResult.TotalTaxableDividend.ShouldBe(new WrappedMoney(2000m));
         gbResult.TotalForeignTaxPaid.ShouldBe(new WrappedMoney(100m));
-        var jpResult = result.Single(i => i.CountryOfOrigin.TwoDigitCode == "JP");
+        var jpResult = result.Single(i => i.CountryOfOrigin.ThreeDigitCode == "JPN");
         jpResult.TaxYear.ShouldBe(2022);
         jpResult.TotalTaxableDividend.ShouldBe(new WrappedMoney(196m));
         jpResult.TotalForeignTaxPaid.ShouldBe(new WrappedMoney(29.4m));

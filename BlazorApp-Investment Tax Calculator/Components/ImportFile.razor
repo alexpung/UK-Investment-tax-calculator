@@ -45,26 +45,3 @@
         <p>Number of cash settlement imported: @taxEventLists.CashSettlements.Count</p>
     </div>
 </div>
-
-
-@code {
-    private async Task LoadFiles(UploadChangeEventArgs args)
-    {
-        foreach (var file in args.Files)
-        {
-            try
-            {
-                taxEventLists.AddData(await fileParseController.ReadFile(file.File));
-            }
-            catch (ParseException ex)
-            {
-                toastService.ShowError(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                toastService.ShowError($"An unexpected error have occurred.\n {ex.Message}");
-            }
-        }
-        args.Files.Clear();
-    }
-}
