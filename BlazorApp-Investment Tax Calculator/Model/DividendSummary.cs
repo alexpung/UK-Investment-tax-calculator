@@ -1,13 +1,11 @@
 ﻿using InvestmentTaxCalculator.Enumerations;
 using InvestmentTaxCalculator.Model.TaxEvents;
 
-using System.Globalization;
-
 namespace InvestmentTaxCalculator.Model;
 
 public record DividendSummary
 {
-    public required RegionInfo CountryOfOrigin { get; set; }
+    public required CountryCode CountryOfOrigin { get; set; }
     public virtual required int TaxYear { get; set; }
     public required List<Dividend> RelatedDividendsAndTaxes { get; set; }
     public virtual WrappedMoney TotalTaxableDividend => (from dividend in RelatedDividendsAndTaxes

@@ -13,7 +13,7 @@ public class DividendExportService(DividendCalculationResult dividendCalculation
         foreach (DividendSummary dividendSummary in dividendSummaries)
         {
             output.AppendLine($"Tax Year: {dividendSummary.TaxYear}");
-            output.AppendLine($"Region: {dividendSummary.CountryOfOrigin.ThreeLetterISORegionName} ({dividendSummary.CountryOfOrigin.EnglishName})");
+            output.AppendLine($"Region: {dividendSummary.CountryOfOrigin.ThreeDigitCode} ({dividendSummary.CountryOfOrigin.CountryName})");
             output.AppendLine($"\tTotal dividends: {dividendSummary.TotalTaxableDividend}");
             output.AppendLine($"\tTotal withholding tax: {dividendSummary.TotalForeignTaxPaid}\n");
             output.AppendLine("\t\tTransactions:");
