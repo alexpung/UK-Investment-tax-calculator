@@ -50,6 +50,10 @@ public class TradeCalculationResult(ITaxYear taxYear)
 
     public WrappedMoney DisposalProceeds(IEnumerable<int> taxYearsFilter, AssetGroupType assetGroupType = AssetGroupType.ALL)
     {
+        if (assetGroupType == AssetGroupType.ALL)
+        {
+            return DisposalProceeds(taxYearsFilter, AssetGroupType.LISTEDSHARES) + DisposalProceeds(taxYearsFilter, AssetGroupType.OTHERASSETS);
+        }
         return CalculatedTrade.Where(trade => IsTradeInSelectedTaxYear(taxYearsFilter, trade) && FilterAssetType(trade, assetGroupType))
                           .Where(trade => trade.AcquisitionDisposal == TradeType.DISPOSAL)
                           .GroupBy(trade => taxYear.ToTaxYear(trade.Date))
@@ -58,6 +62,10 @@ public class TradeCalculationResult(ITaxYear taxYear)
 
     public WrappedMoney AllowableCosts(IEnumerable<int> taxYearsFilter, AssetGroupType assetGroupType = AssetGroupType.ALL)
     {
+        if (assetGroupType == AssetGroupType.ALL)
+        {
+            return AllowableCosts(taxYearsFilter, AssetGroupType.LISTEDSHARES) + AllowableCosts(taxYearsFilter, AssetGroupType.OTHERASSETS);
+        }
         return CalculatedTrade.Where(trade => IsTradeInSelectedTaxYear(taxYearsFilter, trade) && FilterAssetType(trade, assetGroupType))
                               .Where(trade => trade.AcquisitionDisposal == TradeType.DISPOSAL)
                               .GroupBy(trade => taxYear.ToTaxYear(trade.Date))
@@ -66,6 +74,10 @@ public class TradeCalculationResult(ITaxYear taxYear)
 
     public WrappedMoney TotalGain(IEnumerable<int> taxYearsFilter, AssetGroupType assetGroupType = AssetGroupType.ALL)
     {
+        if (assetGroupType == AssetGroupType.ALL)
+        {
+            return TotalGain(taxYearsFilter, AssetGroupType.LISTEDSHARES) + TotalGain(taxYearsFilter, AssetGroupType.OTHERASSETS);
+        }
         return CalculatedTrade.Where(trade => IsTradeInSelectedTaxYear(taxYearsFilter, trade) && FilterAssetType(trade, assetGroupType))
                               .Where(trade => trade.AcquisitionDisposal == TradeType.DISPOSAL)
                               .Where(trade => trade.Gain.Amount > 0)
@@ -75,6 +87,10 @@ public class TradeCalculationResult(ITaxYear taxYear)
 
     public WrappedMoney TotalLoss(IEnumerable<int> taxYearsFilter, AssetGroupType assetGroupType = AssetGroupType.ALL)
     {
+        if (assetGroupType == AssetGroupType.ALL)
+        {
+            return TotalLoss(taxYearsFilter, AssetGroupType.LISTEDSHARES) + TotalLoss(taxYearsFilter, AssetGroupType.OTHERASSETS);
+        }
         return CalculatedTrade.Where(trade => IsTradeInSelectedTaxYear(taxYearsFilter, trade) && FilterAssetType(trade, assetGroupType))
                               .Where(trade => trade.AcquisitionDisposal == TradeType.DISPOSAL)
                               .Where(trade => trade.Gain.Amount < 0)
