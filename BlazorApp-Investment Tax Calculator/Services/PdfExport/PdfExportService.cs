@@ -9,11 +9,11 @@ using PdfSharp.Snippets.Font;
 
 namespace InvestmentTaxCalculator.Services.PdfExport;
 
-public class PdfExportService(TaxYearCgtByTypeReportService taxYearCgtByTypeReportService)
+public class PdfExportService(TaxYearCgtByTypeReportService taxYearCgtByTypeReportService, TaxYearReportService taxYearReportService)
 {
     public MemoryStream CreatePdf()
     {
-        ISection section = new YearlyTaxSummarySection(taxYearCgtByTypeReportService);
+        ISection section = new YearlyTaxSummarySection(taxYearCgtByTypeReportService, taxYearReportService);
         return GeneratePdf([section]);
     }
 
