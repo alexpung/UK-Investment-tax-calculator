@@ -3,6 +3,7 @@
 using PdfSharp.Fonts;
 
 using System.Net.Http;
+using System.Threading;
 
 public class CustomFontResolver(HttpClient httpClient) : IFontResolver
 {
@@ -19,13 +20,11 @@ public class CustomFontResolver(HttpClient httpClient) : IFontResolver
         _openSansItalic = await GetFontData("OpenSans-Italic.ttf", httpClient);
     }
 
-    private static async Task<byte[]> GetFontData(string name, HttpClient httpClient)
+    private static async Task<byte[]> GetFontData(string name, HttpClient httpClient, CancellationToken cancellationToken = default)
     {
-        var sourceStream = await httpClient.GetStreamAsync($"fonts/{name}");
-
-        using MemoryStream memoryStream = new();
-
-        sourceStream.CopyTo(memoryStream);
+        await using var sourceStream = await httpClient.GetStreamAsync($"fonts/{name}", cancellationToken);
+        using var memoryStream = new MemoryStream();
+        await sourceStream.CopyToAsync(memoryStream, cancellationToken);
         return memoryStream.ToArray();
     }
 
