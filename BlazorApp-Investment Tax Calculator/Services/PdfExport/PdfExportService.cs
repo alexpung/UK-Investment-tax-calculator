@@ -1,4 +1,5 @@
-﻿using InvestmentTaxCalculator.Services.PdfExport.Sections;
+﻿using InvestmentTaxCalculator.Model;
+using InvestmentTaxCalculator.Services.PdfExport.Sections;
 
 using MigraDoc.DocumentObjectModel;
 using MigraDoc.Rendering;
@@ -9,22 +10,19 @@ using PdfSharp.Snippets.Font;
 
 namespace InvestmentTaxCalculator.Services.PdfExport;
 
-public class PdfExportService(TaxYearCgtByTypeReportService taxYearCgtByTypeReportService, TaxYearReportService taxYearReportService)
+public class PdfExportService(TaxYearCgtByTypeReportService taxYearCgtByTypeReportService, TaxYearReportService taxYearReportService, TradeCalculationResult tradeCalculationResult)
 {
-    public MemoryStream CreatePdf()
+    public MemoryStream CreatePdf(int year)
     {
-        ISection section = new YearlyTaxSummarySection(taxYearCgtByTypeReportService, taxYearReportService);
-        return GeneratePdf([section]);
-    }
-
-    public MemoryStream GeneratePdf(List<ISection> sections)
-    {
+        ISection yearSummarySection = new YearlyTaxSummarySection(taxYearCgtByTypeReportService, taxYearReportService);
+        ISection allTradesListSection = new AllTradesListSection(tradeCalculationResult);
         GlobalFontSettings.FontResolver = new FailsafeFontResolver();
         var document = new Document();
+        List<ISection> sections = [yearSummarySection, allTradesListSection];
         foreach (var ISection in sections)
         {
             Section pdfSection = document.AddSection();
-            ISection.WriteSection(pdfSection, 2023);
+            ISection.WriteSection(pdfSection, year);
         }
         var pdfRenderer = new PdfDocumentRenderer
         {

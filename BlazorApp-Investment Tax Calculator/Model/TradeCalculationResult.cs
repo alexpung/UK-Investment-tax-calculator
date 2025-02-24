@@ -29,7 +29,7 @@ public class TradeCalculationResult(ITaxYear taxYear)
         }
     }
 
-    private bool IsTradeInSelectedTaxYear(IEnumerable<int> selectedYears, ITradeTaxCalculation taxCalculation)
+    public bool IsTradeInSelectedTaxYear(IEnumerable<int> selectedYears, ITradeTaxCalculation taxCalculation)
     {
         return selectedYears.Contains(taxYear.ToTaxYear(taxCalculation.Date));
     }
