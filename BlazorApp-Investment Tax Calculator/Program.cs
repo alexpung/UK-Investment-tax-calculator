@@ -8,12 +8,15 @@ using InvestmentTaxCalculator.Model.UkTaxModel.Stocks;
 using InvestmentTaxCalculator.Parser;
 using InvestmentTaxCalculator.Parser.InteractiveBrokersXml;
 using InvestmentTaxCalculator.Services;
+using InvestmentTaxCalculator.Services.PdfExport;
 using InvestmentTaxCalculator.ViewModel;
 
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 using Parser.InteractiveBrokersXml;
+
+using PdfSharp.Fonts;
 
 using Syncfusion.Blazor;
 
@@ -29,6 +32,7 @@ builder.Services.AddSingleton<SfGridToolBarHandlingService>();
 builder.Services.AddSingleton<ExportTaxEventService>();
 builder.Services.AddSingleton<TaxYearReportService>();
 builder.Services.AddSingleton<TaxYearCgtByTypeReportService>();
+builder.Services.AddSingleton<PdfExportService>();
 
 // UK tax specific components - replace if you want to calculate some other countries.
 builder.Services.AddSingleton<UkCalculationResultExportService>();
@@ -60,5 +64,8 @@ builder.Services.AddSingleton<InputGridDatas>();
 builder.Services.AddSyncfusionBlazor();
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
-
-await builder.Build().RunAsync();
+WebAssemblyHost hostInstance = builder.Build();
+CustomFontResolver fontResolver = new(hostInstance.Services.GetRequiredService<HttpClient>());
+await fontResolver.InitializeFontsAsync();
+GlobalFontSettings.FontResolver = fontResolver;
+await hostInstance.RunAsync();

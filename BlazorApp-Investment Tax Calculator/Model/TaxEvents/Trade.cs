@@ -49,6 +49,11 @@ public record Trade : TaxEvent, ITextFilePrintable
     /// indicate if the cost of the option is added to this trade already or not.
     /// </summary>
     public bool OptionAttached { get; set; } = false;
+    /// <summary>
+    /// If a trade is a result of an option, the cost or premium received is rolled to the trade. 
+    /// </summary>
+    /// <param name="cost"></param>
+    /// <param name="description"></param>
     public void AttachOptionTrade(WrappedMoney cost, string description)
     {
         if (!OptionAttached)
@@ -70,7 +75,9 @@ public record Trade : TaxEvent, ITextFilePrintable
             else return GrossProceed.BaseCurrencyAmount - Expenses.Select(i => i.BaseCurrencyAmount).Sum();
         }
     }
-
+    /// <summary>
+    /// Quantity but positive for an acquisition but negative for a disposal.
+    /// </summary>
     public decimal RawQuantity => AcquisitionDisposal switch
     {
         TradeType.ACQUISITION => Quantity,

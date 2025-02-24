@@ -1,0 +1,19 @@
+﻿@page "/PdfReportPage"
+@using InvestmentTaxCalculator.Components
+@using Microsoft.AspNetCore.Components
+
+<div class="container mt-4">
+    <div class="alert alert-info" role="alert">
+        Note: Selecting multiple years will generate multiple PDFs, one for each year selected.
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <CalculationSummary></CalculationSummary>
+        </div>
+    </div>
+    <div class="row mt-3">
+        <div class="col-12">
+            <ExportPdfTaxReport></ExportPdfTaxReport>
+        </div>
+    </div>
+</div>
