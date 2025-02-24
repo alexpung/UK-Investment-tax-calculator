@@ -44,7 +44,7 @@ public class CustomFontResolver(HttpClient httpClient) : IFontResolver
     {
         if (!familyName.Equals("OpenSans-Regular", StringComparison.CurrentCultureIgnoreCase))
         {
-            return new FontResolverInfo("OpenSans-Regular.ttf"); // would be null 
+            throw new ArgumentException("Font family not supported", nameof(familyName));
         }
         FontResolverInfo fontResolverInfo = (bold, italic) switch
         {
