@@ -16,6 +16,8 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 using Parser.InteractiveBrokersXml;
 
+using PdfSharp.Fonts;
+
 using Syncfusion.Blazor;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
@@ -31,7 +33,6 @@ builder.Services.AddSingleton<ExportTaxEventService>();
 builder.Services.AddSingleton<TaxYearReportService>();
 builder.Services.AddSingleton<TaxYearCgtByTypeReportService>();
 builder.Services.AddSingleton<PdfExportService>();
-builder.Services.AddScoped<CustomFontResolver>();
 
 // UK tax specific components - replace if you want to calculate some other countries.
 builder.Services.AddSingleton<UkCalculationResultExportService>();
@@ -63,5 +64,8 @@ builder.Services.AddSingleton<InputGridDatas>();
 builder.Services.AddSyncfusionBlazor();
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
-
-await builder.Build().RunAsync();
+WebAssemblyHost hostInstance = builder.Build();
+CustomFontResolver fontResolver = new(hostInstance.Services.GetRequiredService<HttpClient>());
+await fontResolver.InitializeFontsAsync();
+GlobalFontSettings.FontResolver = fontResolver;
+await hostInstance.RunAsync();
