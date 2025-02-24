@@ -10,6 +10,7 @@ public partial class ExportPdfTaxReport
     [Inject] public required IJSRuntime JSRuntime { get; set; }
     [Inject] public required PdfExportService PdfExportService { get; set; }
     [Inject] public required YearOptions YearsToExport { get; set; }
+    [Inject] public required ToastService ToastService { get; set; }
 
     private IJSObjectReference? _downloadFileJsScript;
 
@@ -22,8 +23,15 @@ public partial class ExportPdfTaxReport
     {
         foreach (int year in YearsToExport.SelectedOptions)
         {
-            using var streamRef = new DotNetStreamReference(PdfExportService.CreatePdf(year));
-            await _downloadFileJsScript!.InvokeVoidAsync("BlazorDownloadFile", $"Tax Report {year}.pdf", streamRef);
+            try
+            {
+                using var streamRef = new DotNetStreamReference(PdfExportService.CreatePdf(year));
+                await _downloadFileJsScript!.InvokeVoidAsync("BlazorDownloadFile", $"Tax Report {year}.pdf", streamRef);
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowError(ex.Message);
+            }
         }
     }
 }
