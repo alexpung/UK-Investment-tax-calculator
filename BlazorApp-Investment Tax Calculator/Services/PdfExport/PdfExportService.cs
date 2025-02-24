@@ -4,9 +4,7 @@ using InvestmentTaxCalculator.Services.PdfExport.Sections;
 using MigraDoc.DocumentObjectModel;
 using MigraDoc.Rendering;
 
-using PdfSharp.Fonts;
 using PdfSharp.Pdf;
-using PdfSharp.Snippets.Font;
 
 namespace InvestmentTaxCalculator.Services.PdfExport;
 
@@ -16,7 +14,6 @@ public class PdfExportService(TaxYearCgtByTypeReportService taxYearCgtByTypeRepo
     {
         ISection yearSummarySection = new YearlyTaxSummarySection(taxYearCgtByTypeReportService, taxYearReportService);
         ISection allTradesListSection = new AllTradesListSection(tradeCalculationResult);
-        GlobalFontSettings.FontResolver = new FailsafeFontResolver();
         var document = new Document();
         List<ISection> sections = [yearSummarySection, allTradesListSection];
         foreach (var ISection in sections)
@@ -38,8 +35,16 @@ public class PdfExportService(TaxYearCgtByTypeReportService taxYearCgtByTypeRepo
         };
 
         pdfRenderer.RenderDocument();
-        var stream = new MemoryStream();
-        pdfRenderer.PdfDocument.Save(stream, false);
+        var stream = new MemoryStream(); // Caller is responsible for disposing
+        try
+        {
+            pdfRenderer.PdfDocument.Save(stream, false);
+        }
+        catch
+        {
+            stream.Dispose();
+            throw;
+        }
         return stream;
     }
 }
