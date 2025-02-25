@@ -25,25 +25,27 @@ public class AllTradesListSection(TradeCalculationResult tradeCalculationResult)
             tableSubheading.Format.Font.Color = Colors.DarkBlue;
             tableSubheading.Format.Font.Size = 14;
             tableSubheading.Format.SpaceAfter = Unit.FromPoint(10);
-            Table table = section.AddTable();
-            WriteTradeTable(table, grouping, taxYear, grouping.Key);
+            WriteTradeTable(section, grouping, taxYear, grouping.Key);
         }
         return section;
     }
 
-    private void WriteTradeTable(Table table, IEnumerable<ITradeTaxCalculation> tradeTaxCalculations, int taxYear, AssetCategoryType assetCategoryType)
+    private void WriteTradeTable(Section section, IEnumerable<ITradeTaxCalculation> tradeTaxCalculations, int taxYear, AssetCategoryType assetCategoryType)
     {
-        table.AddColumn(Unit.FromPoint(35)).Format.Alignment = ParagraphAlignment.Left;
-        table.AddColumn(Unit.FromPoint(70)).Format.Alignment = ParagraphAlignment.Left;
-        table.AddColumn(Unit.FromPoint(70)).Format.Alignment = ParagraphAlignment.Left;
-        table.AddColumn(Unit.FromPoint(70)).Format.Alignment = ParagraphAlignment.Left;
-        table.AddColumn(Unit.FromPoint(70)).Format.Alignment = ParagraphAlignment.Left;
-        table.AddColumn(Unit.FromPoint(40)).Format.Alignment = ParagraphAlignment.Right;
-        table.AddColumn(Unit.FromPoint(70)).Format.Alignment = ParagraphAlignment.Right;
+        List<(int, ParagraphAlignment)> columnProportionedWidthAndAlignment = [
+            (35, ParagraphAlignment.Left),
+            (70, ParagraphAlignment.Left),
+            (70, ParagraphAlignment.Left),
+            (70, ParagraphAlignment.Left),
+            (70, ParagraphAlignment.Left),
+            (40, ParagraphAlignment.Right),
+            (70, ParagraphAlignment.Right)
+        ];
         if (assetCategoryType == AssetCategoryType.FUTURE)
         {
-            table.AddColumn(Unit.FromPoint(70)).Format.Alignment = ParagraphAlignment.Right;
+            columnProportionedWidthAndAlignment.Add((70, ParagraphAlignment.Right));
         }
+        Table table = Style.CreateTableWithProportionedWidth(section, columnProportionedWidthAndAlignment);
         Row headerRow = table.AddRow();
         headerRow.Cells[0].AddParagraph("ID");
         headerRow.Cells[1].AddParagraph("Date/Time");
