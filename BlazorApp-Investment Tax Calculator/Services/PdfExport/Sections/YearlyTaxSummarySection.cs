@@ -17,20 +17,20 @@ public class YearlyTaxSummarySection(TaxYearCgtByTypeReportService taxYearCgtByT
         TaxYearCgtReport taxYearCgtReport = taxYearReportService.GetTaxYearReports().First(report => report.TaxYear == taxYear);
         Paragraph paragraph = section.AddParagraph(Title);
         Style.StyleTitle(paragraph);
-        WriteTaxYearCgtByTypeTable(section.AddTable(), taxYearCgtByTypeReport);
-        WriteTaxYearCapitalGainTable(section.AddTable(), taxYearCgtReport);
+        WriteTaxYearCgtByTypeTable(section, taxYearCgtByTypeReport);
+        WriteTaxYearCapitalGainTable(section, taxYearCgtReport);
         return section;
     }
 
-    private static void WriteTaxYearCgtByTypeTable(Table table, TaxYearCgtByTypeReport report)
+    private static void WriteTaxYearCgtByTypeTable(Section section, TaxYearCgtByTypeReport report)
     {
-        table.AddColumn(Unit.FromPoint(100)).Format.Alignment = ParagraphAlignment.Left;
-        table.AddColumn(Unit.FromPoint(70)).Format.Alignment = ParagraphAlignment.Right;
-        table.AddColumn(Unit.FromPoint(70)).Format.Alignment = ParagraphAlignment.Right;
-        table.AddColumn(Unit.FromPoint(70)).Format.Alignment = ParagraphAlignment.Right;
-        table.AddColumn(Unit.FromPoint(70)).Format.Alignment = ParagraphAlignment.Right;
-        table.AddColumn(Unit.FromPoint(70)).Format.Alignment = ParagraphAlignment.Right;
-
+        Table table = Style.CreateTableWithProportionedWidth(section,
+            [(10, ParagraphAlignment.Left),
+            (7, ParagraphAlignment.Right),
+            (7, ParagraphAlignment.Right),
+            (7, ParagraphAlignment.Right),
+            (7, ParagraphAlignment.Right),
+            (7, ParagraphAlignment.Right)]);
         Row headerRow = table.AddRow();
         Style.StyleHeaderRow(headerRow);
         headerRow.Cells[0].AddParagraph();
@@ -64,10 +64,9 @@ public class YearlyTaxSummarySection(TaxYearCgtByTypeReportService taxYearCgtByT
         table.Format.SpaceAfter = Unit.FromPoint(20);
     }
 
-    private static void WriteTaxYearCapitalGainTable(Table table, TaxYearCgtReport taxYearCgtReport)
+    private static void WriteTaxYearCapitalGainTable(Section section, TaxYearCgtReport taxYearCgtReport)
     {
-        table.AddColumn(Unit.FromPoint(250)).Format.Alignment = ParagraphAlignment.Left;
-        table.AddColumn(Unit.FromPoint(200)).Format.Alignment = ParagraphAlignment.Right;
+        Table table = Style.CreateTableWithProportionedWidth(section, [(250, ParagraphAlignment.Left), (200, ParagraphAlignment.Right)]);
         Row totalGainRow = table.AddRow();
         totalGainRow.Cells[0].AddParagraph("Total Gain excluding loss");
         totalGainRow.Cells[1].AddParagraph(taxYearCgtReport.TotalGainInYear.ToString("C", CultureInfo.CreateSpecificCulture("en-GB")));
