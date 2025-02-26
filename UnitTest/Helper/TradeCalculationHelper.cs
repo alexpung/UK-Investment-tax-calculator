@@ -13,7 +13,7 @@ public static class TradeCalculationHelper
 {
     public static List<ITradeTaxCalculation> CalculateTrades(IEnumerable<TaxEvent> taxEvents, out UkSection104Pools section104Pools)
     {
-        section104Pools = new UkSection104Pools();
+        section104Pools = new UkSection104Pools(new UKTaxYear());
         TaxEventLists taxEventLists = new();
         taxEventLists.AddData(taxEvents);
         UkOptionTradeCalculator optionTradeCalculator = new(section104Pools, taxEventLists, new UKTaxYear(), new ToastService());
