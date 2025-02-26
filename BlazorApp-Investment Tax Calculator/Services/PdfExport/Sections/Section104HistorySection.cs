@@ -1,5 +1,4 @@
-﻿using InvestmentTaxCalculator.Model;
-using InvestmentTaxCalculator.Model.UkTaxModel;
+﻿using InvestmentTaxCalculator.Model.UkTaxModel;
 
 using MigraDoc.DocumentObjectModel;
 using MigraDoc.DocumentObjectModel.Tables;
@@ -65,10 +64,6 @@ public class Section104HistorySection(UkSection104Pools ukSection104Pools) : ISe
             row.Cells[5].AddParagraph(section104History.ValueChange.ToString());
             if (extendFutureContractValueColumn)
             {
-                if (section104History.OldContractValue.Amount == 0)
-                {
-                    WrappedMoney newValue = section104History.ContractValueChange;
-                }
                 row.Cells[6].AddParagraph($"{section104History.NewContractValue}");
                 row.Cells[7].AddParagraph(section104History.ContractValueChange.ToString());
             }
