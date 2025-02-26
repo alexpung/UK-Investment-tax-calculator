@@ -1,11 +1,33 @@
-﻿namespace InvestmentTaxCalculator.Model.UkTaxModel;
-public class UkSection104Pools
+﻿using InvestmentTaxCalculator.Model.Interfaces;
+
+namespace InvestmentTaxCalculator.Model.UkTaxModel;
+public class UkSection104Pools(ITaxYear taxYearModel)
 {
     private readonly Dictionary<string, UkSection104> _section104Pools = [];
 
     public List<UkSection104> GetSection104s()
     {
         return [.. _section104Pools.Values];
+    }
+
+    /// <summary>
+    /// Return all section104s that have history in the given tax year
+    /// </summary>
+    /// <param name="taxYear"></param>
+    /// <returns></returns>
+    public List<UkSection104> GetActiveSection104s(int taxYear)
+    {
+        return [.. _section104Pools.Values.Where(section104 => section104.Section104HistoryList.Exists(history => taxYearModel.ToTaxYear(history.Date) == taxYear))];
+    }
+
+    /// <summary>
+    /// Return all section104s that have history in the given tax years
+    /// </summary>
+    /// <param name="taxYear"></param>
+    /// <returns></returns>
+    public List<UkSection104> GetActiveSection104s(IEnumerable<int> taxYear)
+    {
+        return [.. _section104Pools.Values.Where(section104 => section104.Section104HistoryList.Exists(history => taxYear.Contains(taxYearModel.ToTaxYear(history.Date))))];
     }
 
     /// <summary>

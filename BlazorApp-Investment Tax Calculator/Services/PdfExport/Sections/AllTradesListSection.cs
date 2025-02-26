@@ -18,19 +18,20 @@ public class AllTradesListSection(TradeCalculationResult tradeCalculationResult)
     {
         Paragraph paragraph = section.AddParagraph(Title);
         Style.StyleTitle(paragraph);
-        IEnumerable<IGrouping<AssetCategoryType, ITradeTaxCalculation>> tradeTaxCalculations = tradeCalculationResult.CalculatedTrade.GroupBy(trade => trade.AssetCategoryType);
+        IEnumerable<IGrouping<AssetCategoryType, ITradeTaxCalculation>> tradeTaxCalculations = tradeCalculationResult.CalculatedTrade
+            .Where(trade => tradeCalculationResult.IsTradeInSelectedTaxYear([taxYear], trade))
+            .GroupBy(trade => trade.AssetCategoryType);
         foreach (var grouping in tradeTaxCalculations)
         {
             Paragraph tableSubheading = section.AddParagraph(grouping.Key.GetDescription());
-            tableSubheading.Format.Font.Color = Colors.DarkBlue;
-            tableSubheading.Format.Font.Size = 14;
-            tableSubheading.Format.SpaceAfter = Unit.FromPoint(10);
-            WriteTradeTable(section, grouping, taxYear, grouping.Key);
+            Style.StyleTableSubheading(tableSubheading);
+            tableSubheading.Format.KeepWithNext = true;
+            WriteTradeTable(section, grouping, grouping.Key);
         }
         return section;
     }
 
-    private void WriteTradeTable(Section section, IEnumerable<ITradeTaxCalculation> tradeTaxCalculations, int taxYear, AssetCategoryType assetCategoryType)
+    private static void WriteTradeTable(Section section, IEnumerable<ITradeTaxCalculation> tradeTaxCalculations, AssetCategoryType assetCategoryType)
     {
         List<(int, ParagraphAlignment)> columnProportionedWidthAndAlignment = [
             (35, ParagraphAlignment.Left),
@@ -59,9 +60,7 @@ public class AllTradesListSection(TradeCalculationResult tradeCalculationResult)
             headerRow.Cells[7].AddParagraph("Contract Value");
         }
         Style.StyleHeaderRow(headerRow);
-        foreach (var trade in tradeTaxCalculations
-            .Where(trade => tradeCalculationResult.IsTradeInSelectedTaxYear([taxYear], trade))
-            .OrderBy(trade => trade.Date))
+        foreach (var trade in tradeTaxCalculations.OrderBy(trade => trade.Date))
         {
             Row row = table.AddRow();
             row.Cells[0].AddParagraph(trade.Id.ToString());

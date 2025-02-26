@@ -1,4 +1,5 @@
 ﻿using InvestmentTaxCalculator.Model;
+using InvestmentTaxCalculator.Model.UkTaxModel;
 using InvestmentTaxCalculator.Services.PdfExport.Sections;
 
 using MigraDoc.DocumentObjectModel;
@@ -8,14 +9,16 @@ using PdfSharp.Pdf;
 
 namespace InvestmentTaxCalculator.Services.PdfExport;
 
-public class PdfExportService(TaxYearCgtByTypeReportService taxYearCgtByTypeReportService, TaxYearReportService taxYearReportService, TradeCalculationResult tradeCalculationResult)
+public class PdfExportService(TaxYearCgtByTypeReportService taxYearCgtByTypeReportService, TaxYearReportService taxYearReportService, TradeCalculationResult tradeCalculationResult,
+    UkSection104Pools uKSection104Pools)
 {
     public MemoryStream CreatePdf(int year)
     {
         ISection yearSummarySection = new YearlyTaxSummarySection(taxYearCgtByTypeReportService, taxYearReportService);
         ISection allTradesListSection = new AllTradesListSection(tradeCalculationResult);
+        ISection section104Section = new Section104HistorySection(uKSection104Pools);
         var document = new Document();
-        List<ISection> sections = [yearSummarySection, allTradesListSection];
+        List<ISection> sections = [yearSummarySection, section104Section, allTradesListSection];
         foreach (var ISection in sections)
         {
             Section pdfSection = document.AddSection();

@@ -40,11 +40,15 @@ public record WrappedMoney : IComparable<WrappedMoney>, IEquatable<WrappedMoney>
 
     public static WrappedMoney operator +(WrappedMoney money1, WrappedMoney money2)
     {
+        if (money1.Amount == 0) return money2;
+        if (money2.Amount == 0) return money1;
         return new WrappedMoney(money1._nMoney + money2._nMoney);
     }
 
     public static WrappedMoney operator -(WrappedMoney money1, WrappedMoney money2)
     {
+        if (money1.Amount == 0) return -money2;
+        if (money2.Amount == 0) return money1;
         return new WrappedMoney(money1._nMoney - money2._nMoney);
     }
 
