@@ -14,6 +14,9 @@ public class Section104History : ITextFilePrintable
     public decimal QuantityChange { get; set; }
     public WrappedMoney ValueChange { get; set; } = WrappedMoney.GetBaseCurrencyZero();
     public WrappedMoney ContractValueChange { get; set; } = WrappedMoney.GetBaseCurrencyZero();
+    public decimal NewQuantity => OldQuantity + QuantityChange;
+    public WrappedMoney NewValue => OldValue + ValueChange;
+    public WrappedMoney NewContractValue => OldContractValue + ContractValueChange;
     public string Explanation { get; set; } = string.Empty;
 
     public static Section104History AdjustSection104(ITradeTaxCalculation tradeTaxCalculation, decimal quantityChange, WrappedMoney valueChange, decimal oldQuantity,
@@ -51,10 +54,10 @@ public class Section104History : ITextFilePrintable
         {
             (0, 0) => "",
             (0, not 0) => $"{ContractValueChange:0.##} ({ContractValueChange.ToSignedNumberString():0.##})",
-            (not 0, _) => $"{OldContractValue + ContractValueChange:0.##} ({ContractValueChange.ToSignedNumberString():0.##})",
+            (not 0, _) => $"{NewContractValue:0.##} ({ContractValueChange.ToSignedNumberString():0.##})",
         };
-        output.AppendLine($"{Date.ToShortDateString()}\t{OldQuantity + QuantityChange:0.##} ({QuantityChange.ToSignedNumberString():0.##})\t\t\t\t" +
-            $"{OldValue + ValueChange:0.##} ({ValueChange.ToSignedNumberString()})\t\t\t" +
+        output.AppendLine($"{Date.ToShortDateString()}\t{NewQuantity:0.##} ({QuantityChange.ToSignedNumberString():0.##})\t\t\t\t" +
+            $"{NewValue:0.##} ({ValueChange.ToSignedNumberString()})\t\t\t" +
             contractValueString);
         if (Explanation != string.Empty)
         {
