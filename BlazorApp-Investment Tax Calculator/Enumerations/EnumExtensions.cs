@@ -40,6 +40,21 @@ public static class EnumExtensions
         }
         return enumDescriptionPairList;
     }
+
+    public static AssetGroupType GetHmrcAssetCategoryType(this AssetCategoryType assetCategoryType)
+    {
+        var type = assetCategoryType.GetType();
+        var memberInfo = type.GetMember(assetCategoryType.ToString()).FirstOrDefault();
+        if (memberInfo != null)
+        {
+            var attribute = memberInfo.GetCustomAttribute<HmrcAssetCategoryTypeAttribute>();
+            if (attribute != null)
+            {
+                return attribute.AssetGroupType;
+            }
+        }
+        throw new InvalidOperationException($"HmrcAssetCategoryTypeAttribute not found for {assetCategoryType}");
+    }
 }
 
 public record EnumDescriptionPair<T>(T EnumValue, string Description) where T : Enum;

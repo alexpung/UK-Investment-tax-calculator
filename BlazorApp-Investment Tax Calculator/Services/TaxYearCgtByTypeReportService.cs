@@ -1,4 +1,5 @@
-﻿using InvestmentTaxCalculator.Model;
+﻿using InvestmentTaxCalculator.Enumerations;
+using InvestmentTaxCalculator.Model;
 using InvestmentTaxCalculator.Model.Interfaces;
 
 namespace InvestmentTaxCalculator.Services;
