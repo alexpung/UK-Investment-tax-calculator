@@ -18,8 +18,9 @@ public class AllTradesListSection(TradeCalculationResult tradeCalculationResult)
     {
         Paragraph paragraph = section.AddParagraph(Title);
         Style.StyleTitle(paragraph);
-        IEnumerable<IGrouping<AssetCategoryType, ITradeTaxCalculation>> tradeTaxCalculations = tradeCalculationResult.CalculatedTrade
-            .Where(trade => tradeCalculationResult.IsTradeInSelectedTaxYear([taxYear], trade))
+        IEnumerable<IGrouping<AssetCategoryType, ITradeTaxCalculation>> tradeTaxCalculations = tradeCalculationResult.TradeByYear
+            .Where(kvp => kvp.Key.Item1 == taxYear)
+            .SelectMany(kvp => kvp.Value)
             .GroupBy(trade => trade.AssetCategoryType);
         foreach (var grouping in tradeTaxCalculations)
         {
