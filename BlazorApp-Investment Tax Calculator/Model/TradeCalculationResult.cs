@@ -34,18 +34,15 @@ public class TradeCalculationResult(ITaxYear taxYear)
         return selectedYears.Contains(taxYear.ToTaxYear(taxCalculation.Date));
     }
 
-    private static bool FilterAssetType(ITradeTaxCalculation trade, AssetGroupType assetGroupType) => assetGroupType switch
-    {
-        AssetGroupType.ALL => true,
-        AssetGroupType.LISTEDSHARES => trade.AssetCategoryType is AssetCategoryType.STOCK,
-        AssetGroupType.OTHERASSETS => trade.AssetCategoryType is AssetCategoryType.FUTURE or AssetCategoryType.FX,
-        _ => throw new NotImplementedException()
-    };
-
     public int NumberOfDisposals(IEnumerable<int> taxYearsFilter, AssetGroupType assetGroupType = AssetGroupType.ALL)
     {
-        return CalculatedTrade.Where(trade => IsTradeInSelectedTaxYear(taxYearsFilter, trade) && FilterAssetType(trade, assetGroupType))
-                              .Count(trade => trade.AcquisitionDisposal == TradeType.DISPOSAL);
+        if (assetGroupType == AssetGroupType.ALL)
+        {
+            return CalculatedTrade.Count(trade => IsTradeInSelectedTaxYear(taxYearsFilter, trade) && trade.AcquisitionDisposal == TradeType.DISPOSAL);
+        }
+        return CalculatedTrade.Count(trade => IsTradeInSelectedTaxYear(taxYearsFilter, trade)
+                                              && trade.AssetCategoryType.GetHmrcAssetCategoryType() == assetGroupType
+                                              && trade.AcquisitionDisposal == TradeType.DISPOSAL);
     }
 
     public WrappedMoney DisposalProceeds(IEnumerable<int> taxYearsFilter, AssetGroupType assetGroupType = AssetGroupType.ALL)
@@ -54,7 +51,7 @@ public class TradeCalculationResult(ITaxYear taxYear)
         {
             return DisposalProceeds(taxYearsFilter, AssetGroupType.LISTEDSHARES) + DisposalProceeds(taxYearsFilter, AssetGroupType.OTHERASSETS);
         }
-        return CalculatedTrade.Where(trade => IsTradeInSelectedTaxYear(taxYearsFilter, trade) && FilterAssetType(trade, assetGroupType))
+        return CalculatedTrade.Where(trade => IsTradeInSelectedTaxYear(taxYearsFilter, trade) && trade.AssetCategoryType.GetHmrcAssetCategoryType() == assetGroupType)
                           .Where(trade => trade.AcquisitionDisposal == TradeType.DISPOSAL)
                           .GroupBy(trade => taxYear.ToTaxYear(trade.Date))
                           .Sum(group => group.Sum(trade => trade.TotalProceeds).Floor());
@@ -66,8 +63,9 @@ public class TradeCalculationResult(ITaxYear taxYear)
         {
             return AllowableCosts(taxYearsFilter, AssetGroupType.LISTEDSHARES) + AllowableCosts(taxYearsFilter, AssetGroupType.OTHERASSETS);
         }
-        return CalculatedTrade.Where(trade => IsTradeInSelectedTaxYear(taxYearsFilter, trade) && FilterAssetType(trade, assetGroupType))
-                              .Where(trade => trade.AcquisitionDisposal == TradeType.DISPOSAL)
+        return CalculatedTrade.Where(trade => IsTradeInSelectedTaxYear(taxYearsFilter, trade)
+                                              && trade.AssetCategoryType.GetHmrcAssetCategoryType() == assetGroupType
+                                              && trade.AcquisitionDisposal == TradeType.DISPOSAL)
                               .GroupBy(trade => taxYear.ToTaxYear(trade.Date))
                               .Sum(group => group.Sum(trade => trade.TotalAllowableCost).Ceiling());
     }
@@ -78,9 +76,10 @@ public class TradeCalculationResult(ITaxYear taxYear)
         {
             return TotalGain(taxYearsFilter, AssetGroupType.LISTEDSHARES) + TotalGain(taxYearsFilter, AssetGroupType.OTHERASSETS);
         }
-        return CalculatedTrade.Where(trade => IsTradeInSelectedTaxYear(taxYearsFilter, trade) && FilterAssetType(trade, assetGroupType))
-                              .Where(trade => trade.AcquisitionDisposal == TradeType.DISPOSAL)
-                              .Where(trade => trade.Gain.Amount > 0)
+        return CalculatedTrade.Where(trade => IsTradeInSelectedTaxYear(taxYearsFilter, trade)
+                                              && trade.AssetCategoryType.GetHmrcAssetCategoryType() == assetGroupType
+                                              && trade.AcquisitionDisposal == TradeType.DISPOSAL
+                                              && trade.Gain.Amount > 0)
                               .GroupBy(trade => taxYear.ToTaxYear(trade.Date))
                               .Sum(group => group.Sum(trade => trade.Gain).Floor());
     }
@@ -91,17 +90,11 @@ public class TradeCalculationResult(ITaxYear taxYear)
         {
             return TotalLoss(taxYearsFilter, AssetGroupType.LISTEDSHARES) + TotalLoss(taxYearsFilter, AssetGroupType.OTHERASSETS);
         }
-        return CalculatedTrade.Where(trade => IsTradeInSelectedTaxYear(taxYearsFilter, trade) && FilterAssetType(trade, assetGroupType))
-                              .Where(trade => trade.AcquisitionDisposal == TradeType.DISPOSAL)
-                              .Where(trade => trade.Gain.Amount < 0)
+        return CalculatedTrade.Where(trade => IsTradeInSelectedTaxYear(taxYearsFilter, trade)
+                                              && trade.AssetCategoryType.GetHmrcAssetCategoryType() == assetGroupType
+                                              && trade.AcquisitionDisposal == TradeType.DISPOSAL
+                                              && trade.Gain.Amount < 0)
                               .GroupBy(trade => taxYear.ToTaxYear(trade.Date))
                               .Sum(group => group.Sum(trade => trade.Gain).Floor());
     }
-}
-
-public enum AssetGroupType
-{
-    ALL,
-    LISTEDSHARES,
-    OTHERASSETS,
 }
