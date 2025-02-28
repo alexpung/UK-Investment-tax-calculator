@@ -24,18 +24,28 @@ public partial class StartCalculation
 
     public async Task OnStartCalculation()
     {
-        _isCalculating = true;
-        Section104Pools.Clear();
-        TradeCalculationResult.Clear();
-        foreach (ITradeCalculator tradeCalculator in TradeCalculators)
+        try
         {
-            TradeCalculationResult.SetResult(await Task.Run(tradeCalculator.CalculateTax));
+            _isCalculating = true;
+            Section104Pools.Clear();
+            TradeCalculationResult.Clear();
+            foreach (ITradeCalculator tradeCalculator in TradeCalculators)
+            {
+                TradeCalculationResult.SetResult(await Task.Run(tradeCalculator.CalculateTax));
+            }
+            DividendCalculationResult.SetResult(await Task.Run(DividendCalculator.CalculateTax));
+            Years.SetYears(GetSelectableYears());
+            StateHasChanged();
+            ToastService.ShowInformation("Calculation completed.");
         }
-        DividendCalculationResult.SetResult(await Task.Run(DividendCalculator.CalculateTax));
-        Years.SetYears(GetSelectableYears());
-        StateHasChanged();
-        ToastService.ShowInformation("Calculation completed.");
-        _isCalculating = false;
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Calculation failed: {ex.Message}");
+        }
+        finally
+        {
+            _isCalculating = false;
+        }
     }
 
     private IEnumerable<int> GetSelectableYears()
