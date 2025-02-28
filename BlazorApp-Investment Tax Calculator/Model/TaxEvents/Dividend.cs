@@ -1,22 +1,12 @@
 ﻿using InvestmentTaxCalculator.Enumerations;
 using InvestmentTaxCalculator.Model.Interfaces;
 
-using System.Globalization;
-using System.Text.Json.Serialization;
-
 namespace InvestmentTaxCalculator.Model.TaxEvents;
 
 public record Dividend : TaxEvent, ITextFilePrintable
 {
     public required DividendType DividendType { get; set; }
-    [JsonIgnore]
-    public RegionInfo CompanyLocation { get; set; } = RegionInfo.CurrentRegion;
-
-    public string CompanyLocationName
-    {
-        get => CompanyLocation.Name;
-        set => CompanyLocation = new RegionInfo(value);
-    }
+    public CountryCode CompanyLocation { get; set; } = CountryCode.UnknownRegion;
     public required DescribedMoney Proceed { get; set; }
 
     public string PrintToTextFile()

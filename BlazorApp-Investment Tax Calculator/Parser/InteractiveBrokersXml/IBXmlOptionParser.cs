@@ -1,7 +1,6 @@
 ﻿using InvestmentTaxCalculator.Enumerations;
 using InvestmentTaxCalculator.Model.TaxEvents;
 
-using System.Globalization;
 using System.Xml.Linq;
 
 namespace InvestmentTaxCalculator.Parser.InteractiveBrokersXml;
@@ -24,13 +23,13 @@ public static class IBXmlOptionTradeParser
             AcquisitionDisposal = element.GetTradeType(),
             AssetName = element.GetAttribute("symbol"),
             Description = element.GetAttribute("description"),
-            Date = DateTime.Parse(element.GetAttribute("dateTime"), CultureInfo.InvariantCulture),
+            Date = XmlParserHelper.ParseDate(element.GetAttribute("dateTime")),
             Quantity = element.GetQuantity(),
             GrossProceed = element.GetGrossProceed(),
             Expenses = element.BuildExpenses(),
             Underlying = element.GetAttribute("underlyingSymbol"),
             StrikePrice = element.BuildMoney("strike", "currency"),
-            ExpiryDate = DateTime.Parse(element.GetAttribute("expiry"), CultureInfo.InvariantCulture),
+            ExpiryDate = XmlParserHelper.ParseDate(element.GetAttribute("expiry")),
             Multiplier = decimal.Parse(element.GetAttribute("multiplier")),
             PUTCALL = element.GetAttribute("putCall") switch
             {
