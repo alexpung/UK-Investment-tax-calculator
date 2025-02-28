@@ -1,7 +1,6 @@
 ﻿using InvestmentTaxCalculator.Enumerations;
 using InvestmentTaxCalculator.Model.TaxEvents;
 
-using System.Globalization;
 using System.Xml.Linq;
 
 namespace InvestmentTaxCalculator.Parser.InteractiveBrokersXml;
@@ -23,7 +22,7 @@ public static class IBXmlCashSettlementParser
         {
             AssetName = element.GetAttribute("symbol"),
             Description = element.GetAttribute("activityDescription"),
-            Date = DateTime.Parse(element.GetAttribute("date"), CultureInfo.InvariantCulture),
+            Date = XmlParserHelper.ParseDate(element.GetAttribute("date")),
             Amount = element.BuildMoney("amount", "currency"),
             TradeReason = element.GetAttribute("activityDescription") switch
             {

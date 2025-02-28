@@ -2,7 +2,6 @@
 using InvestmentTaxCalculator.Model;
 using InvestmentTaxCalculator.Model.TaxEvents;
 
-using System.Globalization;
 using System.Xml.Linq;
 
 namespace InvestmentTaxCalculator.Parser.InteractiveBrokersXml;
@@ -24,7 +23,7 @@ public static class IBXmlFutureTradeParser
             AcquisitionDisposal = element.GetTradeType(),
             AssetName = element.GetAttribute("symbol"),
             Description = element.GetAttribute("description"),
-            Date = DateTime.Parse(element.GetAttribute("dateTime"), CultureInfo.InvariantCulture),
+            Date = XmlParserHelper.ParseDate(element.GetAttribute("dateTime")),
             Quantity = element.GetQuantity(),
             GrossProceed = new DescribedMoney() { Amount = WrappedMoney.GetBaseCurrencyZero() },
             Expenses = element.BuildExpenses(),

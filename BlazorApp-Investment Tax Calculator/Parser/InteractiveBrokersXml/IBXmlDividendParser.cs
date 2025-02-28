@@ -1,10 +1,7 @@
 ﻿using InvestmentTaxCalculator.Enumerations;
+using InvestmentTaxCalculator.Model;
 using InvestmentTaxCalculator.Model.TaxEvents;
-using InvestmentTaxCalculator.Parser;
 
-using Parser;
-
-using System.Globalization;
 using System.Xml.Linq;
 
 namespace InvestmentTaxCalculator.Parser.InteractiveBrokersXml;
@@ -26,7 +23,7 @@ public static class IBXmlDividendParser
             {
                 DividendType = GetDividendType(element),
                 AssetName = element.GetAttribute("symbol"),
-                Date = DateTime.Parse(element.GetAttribute("settleDate"), CultureInfo.InvariantCulture),
+                Date = XmlParserHelper.ParseDate(element.GetAttribute("settleDate")),
                 CompanyLocation = GetCompanyLocation(element),
                 Proceed = element.BuildDescribedMoney("amount", "currency", "fxRateToBase", element.GetAttribute("description"))
             };
@@ -38,24 +35,17 @@ public static class IBXmlDividendParser
         }
     }
 
-    private static RegionInfo GetCompanyLocation(XElement dividendElement)
+    private static CountryCode GetCompanyLocation(XElement dividendElement)
     {
-        try
+        if (dividendElement.GetAttribute("description").Contains("US TAX"))
         {
-            return new RegionInfo(dividendElement.GetAttribute("isin")[..2]);
+            return CountryCode.GetRegionByTwoDigitCode("US");
         }
-        catch (ArgumentException) //CUSIP is shown
+        if (dividendElement.GetAttribute("description").Contains("CA TAX"))
         {
-            if (dividendElement.GetAttribute("description").Contains("US TAX"))
-            {
-                return new RegionInfo("US");
-            }
-            else if (dividendElement.GetAttribute("description").Contains("CA TAX"))
-            {
-                return new RegionInfo("CA");
-            }
-            else throw new ArgumentException($"Unable to determine Company Location with {dividendElement}");
+            return CountryCode.GetRegionByTwoDigitCode("CA");
         }
+        return CountryCode.GetRegionByTwoDigitCode(dividendElement.GetAttribute("isin")[..2]);
     }
 
     private static DividendType GetDividendType(XElement dividendElement) => dividendElement.GetAttribute("type") switch
