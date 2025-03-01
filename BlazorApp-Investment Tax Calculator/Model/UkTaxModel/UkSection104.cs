@@ -44,7 +44,8 @@ public record UkSection104
 
     public Section104History RemoveAssets(ITradeTaxCalculation tradeTaxCalculation, decimal removedQuantity)
     {
-        if (removedQuantity < 0) throw new ArgumentException($"Invalid remove quantity from S104 {removedQuantity}, must be greater than zero.");
+        if (removedQuantity < 0) throw new ArgumentException($"Invalid remove quantity for {tradeTaxCalculation.AssetName} on {tradeTaxCalculation.Date.ToShortDateString()}" +
+            $"from S104 {removedQuantity}, must be greater than zero.");
         WrappedMoney costAdjustment = AcquisitionCostInBaseCurrency * removedQuantity * -1 / Quantity;
         WrappedMoney contractValueAdjustment = TotalContractValue * removedQuantity * -1 / Quantity;
         decimal quantityAdjustment = removedQuantity * -1;
