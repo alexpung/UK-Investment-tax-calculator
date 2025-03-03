@@ -24,7 +24,7 @@ public record OptionTrade : Trade
         output.AppendLine($"\tOption Type: {PUTCALL}");
         output.AppendLine($"\tStrike Price: {StrikePrice}");
         output.AppendLine($"\tExpiry Date: {ExpiryDate:dd-MMM-yyyy}");
-        output.AppendLine($"\tTrade Reason: {TradeReason}");
+        output.AppendLine($"\tTrade Reason: {TradeReason.GetDescription()}");
 
         // Add details about the exercise or assigned trade, if available
         if (ExerciseOrExercisedTrade != null)
