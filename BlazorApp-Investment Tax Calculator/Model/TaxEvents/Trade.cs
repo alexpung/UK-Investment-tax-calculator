@@ -12,7 +12,7 @@ public record Trade : TaxEvent, ITextFilePrintable
     public virtual required TradeType AcquisitionDisposal { get; set; }
     private decimal _quantity;
     /// <summary>
-    /// Greater than 0 regardless of acquisition or disposal
+    /// Greater than 0 regardless of acquisition or disposal. e.g. Should be set to 100 if you sell 100 shares.
     /// </summary>
     public virtual required decimal Quantity
     {
@@ -27,7 +27,8 @@ public record Trade : TaxEvent, ITextFilePrintable
     private DescribedMoney _grossProceed;
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
     /// <summary>
-    /// Greater than 0 regardless of acquisition or disposal
+    /// Greater than 0 regardless of acquisition or disposal. i.e. Should not be set to negative when buying.
+    /// Not designed for stuff with negative price.
     /// </summary>
     public virtual required DescribedMoney GrossProceed
     {
