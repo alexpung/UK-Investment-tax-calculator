@@ -71,18 +71,7 @@ File sample is [here](https://github.com/alexpung/UK-Investment-tax-calculator/b
 
 ## Privacy concerns:
 
-Your trade data is not uploaded anywhere. They never leave your browser thanks to Blazor WASM framework. The calculation is entirely done in your browser.
-
-## Design notes:
-
-1. When a share forward or reverse split occurs it is assumed that the decimal shares will be lost (see StockSplit class). Other cases to be implemented as necessary.
-2. Share matching rules are implemented according to: https://rppaccounts.co.uk/taxation-of-shares/
-   1. acquisitions on the same day as the disposal
-   2. acquisitions within 30 days after the day of disposal (except where made by a non-resident). Disposals are identified first with securities acquired earlier within the 30-day period after disposal – the First In First Out basis (FIFO)
-   3. any shares acquired before the date of disposal which are included in an expanded ‘s. 104 holding’
-   4. if the above identification rules fail to exhaust the shares disposed of, they are to be identified with subsequent acquisitions beyond the 30-day period following the disposal.
-
-  Note point #4 when buying back shorted shares #1 (same day rule) and #2 (bed&breakfast) still applies.  
+Your trade data is not uploaded anywhere. They never leave your browser thanks to Blazor WASM framework. The calculation is entirely done in your browser.  
 
 ## Example
 Examples can be found in https://github.com/alexpung/UK-Investment-tax-calculator/tree/master/UnitTest/System%20Test/Interactive%20brokers
