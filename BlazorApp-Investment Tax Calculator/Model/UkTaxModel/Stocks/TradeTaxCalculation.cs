@@ -32,6 +32,9 @@ public class TradeTaxCalculation : ITradeTaxCalculation
     /// Guaranteed by the constructor to be positive non zero decimal.
     /// </summary>
     public decimal TotalQty { get; }
+    /// <summary>
+    /// The quantity that is not matched with other trades.
+    /// </summary>
     public decimal UnmatchedQty { get; protected set; }
     public virtual TradeType AcquisitionDisposal { get; init; }
     public bool CalculationCompleted => UnmatchedQty == 0;

@@ -19,18 +19,38 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
     /// </summary>
     public List<TaxRepay> TaxRepayList { get; init; } = [];
     public PUTCALL PUTCALL { get; init; }
+
+    /// <summary>
+    /// Denote the quantity of the option that are expired
+    /// </summary>
     public decimal ExpiredQty { get; init; }
+
+    /// <summary>
+    /// Denote the quantity of the option that are assigned
+    /// </summary>
     public decimal AssignedQty { get; init; }
+    /// <summary>
+    /// Denote the quantity of the option that the owner exercised
+    /// </summary>
     public decimal OwnerExercisedQty { get; init; }
     public decimal OrderedTradeQty { get; init; }
     /// <summary>
-    /// When short an option, the option get "disappear" and the taxable proceed is reduced when the option is assigned. The premium get rolled to the assigned trade instead.
-    /// This number indicate the amount to subtract from the full 
+    /// True if the option is cash settled, false if the option is settled by the underlying asset
     /// </summary>
-
     public bool IsCashSettled { get; init; }
+    /// <summary>
+    /// When short an option, the option get "disappear" and the taxable proceed is reduced when the option is assigned. The premium get rolled to the assigned trade instead.
+    /// This number indicate the amount to subtract from the full disposal proceed
+    /// </summary>
     private WrappedMoney _refundedDisposalProceed = WrappedMoney.GetBaseCurrencyZero();
 
+    /// <summary>
+    /// Get the total cost or proceed for a trade reason
+    /// </summary>
+    /// <param name="tradeReason"></param>
+    /// <param name="qty"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
     public WrappedMoney GetProportionedCostOrProceedForTradeReason(TradeReason tradeReason, decimal qty)
     {
         WrappedMoney totalValue = TradeList.Where(trade => trade.TradeReason == tradeReason).Select(trade => trade.NetProceed).Sum();
@@ -45,6 +65,12 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
         if (totalQty == 0) return WrappedMoney.GetBaseCurrencyZero();
         return qty / totalQty * totalValue;
     }
+
+    /// <summary>
+    /// Reduce the disposal proceed for short option trade when it is assigned, as the disposal proceed is rolled to the underlying trade
+    /// </summary>
+    /// <param name="qty"></param>
+    /// <exception cref="InvalidOperationException"></exception>
     public void RefundDisposalQty(decimal qty)
     {
         if (AcquisitionDisposal != TradeType.DISPOSAL) throw new InvalidOperationException("Refunding option proceed can only be done in short option trade");
@@ -135,6 +161,12 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
         }
     }
 
+    /// <summary>
+    /// Attach the premium of the option to the underlying trade and add a comment in the trade
+    /// </summary>
+    /// <param name="attachedPremium"></param>
+    /// <param name="comment"></param>
+    /// <param name="tradeReason"></param>
     public void AttachTradeToUnderlying(WrappedMoney attachedPremium, string comment, TradeReason tradeReason)
     {
         if (PUTCALL == PUTCALL.PUT) attachedPremium = attachedPremium * -1;
