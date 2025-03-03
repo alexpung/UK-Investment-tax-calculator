@@ -79,25 +79,20 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
         if (trade1.CalculationCompleted || trade2.CalculationCompleted) return;
         if (trade1.UnmatchedQty == 0 || trade2.UnmatchedQty == 0) return;
 
+        decimal assignmentQty, expiredQty, exercisedQty;
         // This part of the algo handle the case when you trade an option at the date of expiry and you traded/it expires/it is assigned/you exercise it in the same day
-        // 
-        decimal matchRatio;
         if (tradePairSorter.LatterTrade.UnmatchedQty < tradePairSorter.EarlierTrade.UnmatchedQty)
         {
-            // (LatterTrade.UnmatchedQty/EarlierTrade.UnmatchedQty) * (LatterTrade.UnmatchedQty/LatterTrade.TotalQty)
-            matchRatio = tradePairSorter.LatterTrade.UnmatchedQty * tradePairSorter.LatterTrade.UnmatchedQty / (tradePairSorter.EarlierTrade.UnmatchedQty * tradePairSorter.LatterTrade.TotalQty);
-        }
-        else if (tradePairSorter.LatterTrade.UnmatchedQty > tradePairSorter.EarlierTrade.UnmatchedQty)
-        {
-            matchRatio = tradePairSorter.EarlierTrade.UnmatchedQty * tradePairSorter.LatterTrade.UnmatchedQty / (tradePairSorter.LatterTrade.UnmatchedQty * tradePairSorter.LatterTrade.TotalQty);
+            assignmentQty = tradePairSorter.LatterTrade.AssignedQty * tradePairSorter.LatterTrade.UnmatchedQty / tradePairSorter.LatterTrade.TotalQty;
+            expiredQty = tradePairSorter.LatterTrade.ExpiredQty * tradePairSorter.LatterTrade.UnmatchedQty / tradePairSorter.LatterTrade.TotalQty;
+            exercisedQty = tradePairSorter.LatterTrade.OwnerExercisedQty * tradePairSorter.LatterTrade.UnmatchedQty / tradePairSorter.LatterTrade.TotalQty;
         }
         else
         {
-            matchRatio = tradePairSorter.LatterTrade.UnmatchedQty / tradePairSorter.LatterTrade.TotalQty;
+            assignmentQty = tradePairSorter.LatterTrade.AssignedQty * tradePairSorter.EarlierTrade.UnmatchedQty / tradePairSorter.LatterTrade.TotalQty;
+            expiredQty = tradePairSorter.LatterTrade.ExpiredQty * tradePairSorter.EarlierTrade.UnmatchedQty / tradePairSorter.LatterTrade.TotalQty;
+            exercisedQty = tradePairSorter.LatterTrade.OwnerExercisedQty * tradePairSorter.EarlierTrade.UnmatchedQty / tradePairSorter.LatterTrade.TotalQty;
         }
-        decimal assignmentQty = tradePairSorter.LatterTrade.AssignedQty * matchRatio;
-        decimal expiredQty = tradePairSorter.LatterTrade.ExpiredQty * matchRatio;
-        decimal exercisedQty = tradePairSorter.LatterTrade.OwnerExercisedQty * matchRatio;
         if (assignmentQty > 0 && exercisedQty > 0) throw new ParseException($"{tradePairSorter.LatterTrade} has both assignment and exercise which is impossible");
         if (expiredQty > 0) MatchExpiredOption(tradePairSorter, taxMatchType, expiredQty);
         if (exercisedQty > 0) MatchExercisedOption(tradePairSorter, taxMatchType, exercisedQty);
