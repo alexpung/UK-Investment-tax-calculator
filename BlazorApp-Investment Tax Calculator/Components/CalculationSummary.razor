@@ -25,11 +25,11 @@
 
 <div class="mt-4">
     <h3 class="mb-3">Tax Summary:</h3>
-    <p>Number of disposals: @tradeCalculationResult.NumberOfDisposals(years.SelectedOptions)</p>
-    <p>Total Disposal Proceed: @tradeCalculationResult.DisposalProceeds(years.SelectedOptions)</p>
-    <p>Total Allowable Cost: @tradeCalculationResult.AllowableCosts(years.SelectedOptions)</p>
-    <p>Total Gain: @tradeCalculationResult.TotalGain(years.SelectedOptions)</p>
-    <p>Total Loss: @tradeCalculationResult.TotalLoss(years.SelectedOptions)</p>
+    <p>Number of disposals: @tradeCalculationResult.GetNumberOfDisposals(years.SelectedOptions)</p>
+    <p>Total Disposal Proceed: @tradeCalculationResult.GetDisposalProceeds(years.SelectedOptions)</p>
+    <p>Total Allowable Cost: @tradeCalculationResult.GetAllowableCosts(years.SelectedOptions)</p>
+    <p>Total Gain: @tradeCalculationResult.GetTotalGain(years.SelectedOptions)</p>
+    <p>Total Loss: @tradeCalculationResult.GetTotalLoss(years.SelectedOptions)</p>
     <p>Total Dividend: @dividendCalculationResult.GetTotalDividend(years.SelectedOptions)</p>
     <p>Total Foreign Witholding Tax Paid: @dividendCalculationResult.GetForeignTaxPaid(years.SelectedOptions)</p>
 </div>
