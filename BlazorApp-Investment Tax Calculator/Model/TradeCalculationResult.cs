@@ -16,13 +16,19 @@ public class TradeCalculationResult(ITaxYear taxYear)
     private readonly ConcurrentBag<ITradeTaxCalculation> _calculatedTrade = [];
     public ConcurrentBag<ITradeTaxCalculation> CalculatedTrade => _calculatedTrade;
     public IEnumerable<ITradeTaxCalculation> GetDisposals => _calculatedTrade.Where(trade => trade.AcquisitionDisposal == TradeType.DISPOSAL);
-    public ConcurrentDictionary<(int, AssetGroupType), List<ITradeTaxCalculation>> TradeByYear { get; } = new();
-    public ConcurrentDictionary<(int, AssetGroupType), List<ITradeTaxCalculation>> DisposalByYear { get; } = new();
-    private readonly ConcurrentDictionary<(int, AssetGroupType), int> _numberOfDisposals = new();
-    private readonly ConcurrentDictionary<(int, AssetGroupType), WrappedMoney> _disposalProceeds = new();
-    private readonly ConcurrentDictionary<(int, AssetGroupType), WrappedMoney> _allowableCosts = new();
-    private readonly ConcurrentDictionary<(int, AssetGroupType), WrappedMoney> _totalGain = new();
-    private readonly ConcurrentDictionary<(int, AssetGroupType), WrappedMoney> _totalLoss = new();
+    public ConcurrentDictionary<(int, AssetCategoryType), List<ITradeTaxCalculation>> TradeByYear { get; } = new();
+    public ConcurrentDictionary<(int, AssetCategoryType), List<ITradeTaxCalculation>> DisposalByYear { get; } = new();
+    public ConcurrentDictionary<(int, AssetCategoryType), int> NumberOfDisposals => _numberOfDisposals;
+    public ConcurrentDictionary<(int, AssetCategoryType), WrappedMoney> DisposalProceeds => _disposalProceeds;
+    public ConcurrentDictionary<(int, AssetCategoryType), WrappedMoney> AllowableCosts => _allowableCosts;
+    public ConcurrentDictionary<(int, AssetCategoryType), WrappedMoney> TotalGain => _totalGain;
+    public ConcurrentDictionary<(int, AssetCategoryType), WrappedMoney> TotalLoss => _totalLoss;
+
+    private readonly ConcurrentDictionary<(int, AssetCategoryType), int> _numberOfDisposals = new();
+    private readonly ConcurrentDictionary<(int, AssetCategoryType), WrappedMoney> _disposalProceeds = new();
+    private readonly ConcurrentDictionary<(int, AssetCategoryType), WrappedMoney> _allowableCosts = new();
+    private readonly ConcurrentDictionary<(int, AssetCategoryType), WrappedMoney> _totalGain = new();
+    private readonly ConcurrentDictionary<(int, AssetCategoryType), WrappedMoney> _totalLoss = new();
 
     public void Clear()
     {
@@ -42,8 +48,8 @@ public class TradeCalculationResult(ITaxYear taxYear)
         {
             _calculatedTrade.Add(trade);
         }
-        IEnumerable<IGrouping<(int, AssetGroupType), ITradeTaxCalculation>> groupedTradeByYear = _calculatedTrade
-            .GroupBy(trade => (taxYear.ToTaxYear(trade.Date), trade.AssetCategoryType.GetHmrcAssetCategoryType()));
+        IEnumerable<IGrouping<(int, AssetCategoryType), ITradeTaxCalculation>> groupedTradeByYear = _calculatedTrade
+            .GroupBy(trade => (taxYear.ToTaxYear(trade.Date), trade.AssetCategoryType));
         foreach (var group in groupedTradeByYear)
         {
             TradeByYear[group.Key] = [.. group];
@@ -56,57 +62,79 @@ public class TradeCalculationResult(ITaxYear taxYear)
         }
     }
 
-    public int NumberOfDisposals(IEnumerable<int> taxYearsFilter, AssetGroupType assetGroupType = AssetGroupType.ALL)
+    public int GetNumberOfDisposals(IEnumerable<int> taxYearsFilter, AssetGroupType assetGroupType = AssetGroupType.ALL)
     {
         int result = 0;
         foreach (int year in taxYearsFilter)
         {
             if (assetGroupType == AssetGroupType.ALL)
             {
-                result += _numberOfDisposals.TryGetValue((year, AssetGroupType.LISTEDSHARES), out int result1) ? result1 : 0;
-                result += _numberOfDisposals.TryGetValue((year, AssetGroupType.OTHERASSETS), out int result2) ? result2 : 0;
+                foreach (var group in _numberOfDisposals)
+                {
+                    if (group.Key.Item1 == year)
+                    {
+                        result += group.Value;
+                    }
+                }
             }
             else
             {
-                result += _numberOfDisposals.TryGetValue((year, assetGroupType), out int result1) ? result1 : 0;
+                foreach (var group in _numberOfDisposals)
+                {
+                    if (group.Key.Item1 == year && group.Key.Item2.GetHmrcAssetCategoryType() == assetGroupType)
+                    {
+                        result += group.Value;
+                    }
+                }
             }
         }
         return result;
     }
 
-    public WrappedMoney DisposalProceeds(IEnumerable<int> taxYearsFilter, AssetGroupType assetGroupType = AssetGroupType.ALL)
+    public WrappedMoney GetDisposalProceeds(IEnumerable<int> taxYearsFilter, AssetGroupType assetGroupType = AssetGroupType.ALL)
     {
         return GetStats(taxYearsFilter, assetGroupType, _disposalProceeds);
     }
 
-    public WrappedMoney AllowableCosts(IEnumerable<int> taxYearsFilter, AssetGroupType assetGroupType = AssetGroupType.ALL)
+    public WrappedMoney GetAllowableCosts(IEnumerable<int> taxYearsFilter, AssetGroupType assetGroupType = AssetGroupType.ALL)
     {
         return GetStats(taxYearsFilter, assetGroupType, _allowableCosts);
     }
 
-    public WrappedMoney TotalGain(IEnumerable<int> taxYearsFilter, AssetGroupType assetGroupType = AssetGroupType.ALL)
+    public WrappedMoney GetTotalGain(IEnumerable<int> taxYearsFilter, AssetGroupType assetGroupType = AssetGroupType.ALL)
     {
         return GetStats(taxYearsFilter, assetGroupType, _totalGain);
     }
 
-    public WrappedMoney TotalLoss(IEnumerable<int> taxYearsFilter, AssetGroupType assetGroupType = AssetGroupType.ALL)
+    public WrappedMoney GetTotalLoss(IEnumerable<int> taxYearsFilter, AssetGroupType assetGroupType = AssetGroupType.ALL)
     {
         return GetStats(taxYearsFilter, assetGroupType, _totalLoss);
     }
 
-    private static WrappedMoney GetStats(IEnumerable<int> taxYearsFilter, AssetGroupType assetGroupType, ConcurrentDictionary<(int, AssetGroupType), WrappedMoney> data)
+    private static WrappedMoney GetStats(IEnumerable<int> taxYearsFilter, AssetGroupType assetGroupType, ConcurrentDictionary<(int, AssetCategoryType), WrappedMoney> data)
     {
         WrappedMoney result = WrappedMoney.GetBaseCurrencyZero();
         foreach (int year in taxYearsFilter)
         {
             if (assetGroupType == AssetGroupType.ALL)
             {
-                result += data.TryGetValue((year, AssetGroupType.LISTEDSHARES), out WrappedMoney? result1) ? result1 : WrappedMoney.GetBaseCurrencyZero();
-                result += data.TryGetValue((year, AssetGroupType.OTHERASSETS), out WrappedMoney? result2) ? result2 : WrappedMoney.GetBaseCurrencyZero();
+                foreach (var group in data)
+                {
+                    if (group.Key.Item1 == year)
+                    {
+                        result += group.Value;
+                    }
+                }
             }
             else
             {
-                result += data.TryGetValue((year, assetGroupType), out WrappedMoney? result1) ? result1 : WrappedMoney.GetBaseCurrencyZero();
+                foreach (var group in data)
+                {
+                    if (group.Key.Item1 == year && group.Key.Item2.GetHmrcAssetCategoryType() == assetGroupType)
+                    {
+                        result += group.Value;
+                    }
+                }
             }
         }
         return result;

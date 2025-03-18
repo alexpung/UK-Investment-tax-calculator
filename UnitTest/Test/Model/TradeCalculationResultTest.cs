@@ -48,7 +48,7 @@ public class TradeCalculationResultTests
         var taxYearsFilter = new List<int> { 2021 };
 
         // Act
-        int numberOfDisposals = result.NumberOfDisposals(taxYearsFilter);
+        int numberOfDisposals = result.GetNumberOfDisposals(taxYearsFilter);
 
         // Assert
         numberOfDisposals.ShouldBe(1);
@@ -86,7 +86,7 @@ public class TradeCalculationResultTests
         var taxYearsFilter = new List<int> { 2021, 2023 };
 
         // Act
-        WrappedMoney disposalProceeds = result.DisposalProceeds(taxYearsFilter);
+        WrappedMoney disposalProceeds = result.GetDisposalProceeds(taxYearsFilter);
 
         // Assert
         disposalProceeds.ShouldBe(new WrappedMoney(500));
@@ -124,7 +124,7 @@ public class TradeCalculationResultTests
         var taxYearsFilter = new List<int> { 2021, 2023 };
 
         // Act
-        WrappedMoney allowableCosts = result.AllowableCosts(taxYearsFilter);
+        WrappedMoney allowableCosts = result.GetAllowableCosts(taxYearsFilter);
 
         // Assert
         allowableCosts.ShouldBe(new WrappedMoney(500));
@@ -166,8 +166,8 @@ public class TradeCalculationResultTests
         var taxYearsFilter = new List<int> { 2021, 2023 };
 
         // Act
-        WrappedMoney totalGain = result.TotalGain(taxYearsFilter);
-        WrappedMoney totalLoss = result.TotalLoss(taxYearsFilter);
+        WrappedMoney totalGain = result.GetTotalGain(taxYearsFilter);
+        WrappedMoney totalLoss = result.GetTotalLoss(taxYearsFilter);
 
         // Assert
         totalGain.ShouldBe(new WrappedMoney(100));
@@ -207,16 +207,16 @@ public class TradeCalculationResultTests
         WrappedMoney expectedTotalAllowableCost = new WrappedMoney(150);
         WrappedMoney expectedTotalProceeds = new WrappedMoney(550);
 
-        WrappedMoney totalGain = result.TotalGain(taxYearsFilter, AssetGroupType.ALL);
-        WrappedMoney totalAllowableCost = result.AllowableCosts(taxYearsFilter, AssetGroupType.ALL);
-        WrappedMoney totalProceeds = result.DisposalProceeds(taxYearsFilter, AssetGroupType.ALL);
+        WrappedMoney totalGain = result.GetTotalGain(taxYearsFilter, AssetGroupType.ALL);
+        WrappedMoney totalAllowableCost = result.GetAllowableCosts(taxYearsFilter, AssetGroupType.ALL);
+        WrappedMoney totalProceeds = result.GetDisposalProceeds(taxYearsFilter, AssetGroupType.ALL);
 
         totalGain.ShouldBe(expectedTotalGain);
         totalAllowableCost.ShouldBe(expectedTotalAllowableCost);
         totalProceeds.ShouldBe(expectedTotalProceeds);
-        (result.TotalGain(taxYearsFilter, AssetGroupType.LISTEDSHARES) + result.TotalGain(taxYearsFilter, AssetGroupType.OTHERASSETS)).ShouldBe(expectedTotalGain);
-        (result.AllowableCosts(taxYearsFilter, AssetGroupType.LISTEDSHARES) + result.AllowableCosts(taxYearsFilter, AssetGroupType.OTHERASSETS)).ShouldBe(expectedTotalAllowableCost);
-        (result.DisposalProceeds(taxYearsFilter, AssetGroupType.LISTEDSHARES) + result.DisposalProceeds(taxYearsFilter, AssetGroupType.OTHERASSETS)).ShouldBe(expectedTotalProceeds);
+        (result.GetTotalGain(taxYearsFilter, AssetGroupType.LISTEDSHARES) + result.GetTotalGain(taxYearsFilter, AssetGroupType.OTHERASSETS)).ShouldBe(expectedTotalGain);
+        (result.GetAllowableCosts(taxYearsFilter, AssetGroupType.LISTEDSHARES) + result.GetAllowableCosts(taxYearsFilter, AssetGroupType.OTHERASSETS)).ShouldBe(expectedTotalAllowableCost);
+        (result.GetDisposalProceeds(taxYearsFilter, AssetGroupType.LISTEDSHARES) + result.GetDisposalProceeds(taxYearsFilter, AssetGroupType.OTHERASSETS)).ShouldBe(expectedTotalProceeds);
     }
 
 

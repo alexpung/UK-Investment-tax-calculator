@@ -1,4 +1,5 @@
-﻿using InvestmentTaxCalculator.Model;
+﻿using InvestmentTaxCalculator.Enumerations;
+using InvestmentTaxCalculator.Model;
 
 using MigraDoc.DocumentObjectModel;
 using MigraDoc.DocumentObjectModel.Tables;
@@ -7,22 +8,21 @@ using System.Globalization;
 
 namespace InvestmentTaxCalculator.Services.PdfExport.Sections;
 
-public class YearlyTaxSummarySection(TaxYearCgtByTypeReportService taxYearCgtByTypeReportService, TaxYearReportService taxYearReportService) : ISection
+public class YearlyTaxSummarySection(TradeCalculationResult tradeCalculationResult, TaxYearReportService taxYearReportService) : ISection
 {
     public string Name { get; set; } = "Tax Summary";
     public string Title { get; set; } = "Yearly Tax Summary";
     public Section WriteSection(Section section, int taxYear)
     {
-        TaxYearCgtByTypeReport taxYearCgtByTypeReport = taxYearCgtByTypeReportService.GetTaxYearCgtByTypeReport(taxYear);
         TaxYearCgtReport taxYearCgtReport = taxYearReportService.GetTaxYearReports().First(report => report.TaxYear == taxYear);
         Paragraph paragraph = section.AddParagraph(Title);
         Style.StyleTitle(paragraph);
-        WriteTaxYearCgtByTypeTable(section, taxYearCgtByTypeReport);
+        WriteTaxYearCgtByTypeTable(section, tradeCalculationResult, taxYear);
         WriteTaxYearCapitalGainTable(section, taxYearCgtReport);
         return section;
     }
 
-    private static void WriteTaxYearCgtByTypeTable(Section section, TaxYearCgtByTypeReport report)
+    private static void WriteTaxYearCgtByTypeTable(Section section, TradeCalculationResult tradeCalculationResult, int taxYear)
     {
         Table table = Style.CreateTableWithProportionedWidth(section,
             [(10, ParagraphAlignment.Left),
@@ -39,29 +39,59 @@ public class YearlyTaxSummarySection(TaxYearCgtByTypeReportService taxYearCgtByT
         headerRow.Cells[3].AddParagraph("Allowable costs");
         headerRow.Cells[4].AddParagraph("Gain excluding loss");
         headerRow.Cells[5].AddParagraph("Loss");
-        Row listedSecuritiesRow = table.AddRow();
-        listedSecuritiesRow.Cells[0].AddParagraph("Listed securities");
-        listedSecuritiesRow.Cells[1].AddParagraph(report.ListedSecurityNumberOfDisposals.ToString());
-        listedSecuritiesRow.Cells[2].AddParagraph(report.ListedSecurityDisposalProceeds.ToString("C", CultureInfo.CreateSpecificCulture("en-GB")));
-        listedSecuritiesRow.Cells[3].AddParagraph(report.ListedSecurityAllowableCosts.ToString("C", CultureInfo.CreateSpecificCulture("en-GB")));
-        listedSecuritiesRow.Cells[4].AddParagraph(report.ListedSecurityGainExcludeLoss.ToString("C", CultureInfo.CreateSpecificCulture("en-GB")));
-        listedSecuritiesRow.Cells[5].AddParagraph(report.ListedSecurityLoss.ToString("C", CultureInfo.CreateSpecificCulture("en-GB")));
-        Row otherAssetRow = table.AddRow();
-        otherAssetRow.Cells[0].AddParagraph("Other assets");
-        otherAssetRow.Cells[1].AddParagraph(report.OtherAssetsNumberOfDisposals.ToString());
-        otherAssetRow.Cells[2].AddParagraph(report.OtherAssetsDisposalProceeds.ToString("C", CultureInfo.CreateSpecificCulture("en-GB")));
-        otherAssetRow.Cells[3].AddParagraph(report.OtherAssetsAllowableCosts.ToString("C", CultureInfo.CreateSpecificCulture("en-GB")));
-        otherAssetRow.Cells[4].AddParagraph(report.OtherAssetsGainExcludeLoss.ToString("C", CultureInfo.CreateSpecificCulture("en-GB")));
-        otherAssetRow.Cells[5].AddParagraph(report.OtherAssetsLoss.ToString("C", CultureInfo.CreateSpecificCulture("en-GB")));
-        Style.StyleBottomRowForSum(otherAssetRow);
-        Row sumRow = table.AddRow();
-        sumRow.Cells[0].AddParagraph("Total").Format.Font.Bold = true;
-        sumRow.Cells[1].AddParagraph((report.ListedSecurityNumberOfDisposals + report.OtherAssetsNumberOfDisposals).ToString()).Format.Font.Bold = true;
-        sumRow.Cells[2].AddParagraph((report.ListedSecurityDisposalProceeds + report.OtherAssetsDisposalProceeds).ToString("C", CultureInfo.CreateSpecificCulture("en-GB"))).Format.Font.Bold = true;
-        sumRow.Cells[3].AddParagraph((report.ListedSecurityAllowableCosts + report.OtherAssetsAllowableCosts).ToString("C", CultureInfo.CreateSpecificCulture("en-GB"))).Format.Font.Bold = true;
-        sumRow.Cells[4].AddParagraph((report.ListedSecurityGainExcludeLoss + report.OtherAssetsGainExcludeLoss).ToString("C", CultureInfo.CreateSpecificCulture("en-GB"))).Format.Font.Bold = true;
-        sumRow.Cells[5].AddParagraph((report.ListedSecurityLoss + report.OtherAssetsLoss).ToString("C", CultureInfo.CreateSpecificCulture("en-GB"))).Format.Font.Bold = true;
+        foreach (AssetCategoryType assetType in Enum.GetValues(typeof(AssetCategoryType)))
+        {
+            if (assetType.GetHmrcAssetCategoryType() == AssetGroupType.LISTEDSHARES)
+            {
+                PrintAssetTypeStats(assetType, tradeCalculationResult, table, taxYear);
+            }
+
+        }
+        Row? bottomRow = table.Rows.LastObject as Row;
+        if (bottomRow is not null)
+        {
+            Style.StyleBottomRowForSum(bottomRow);
+            Row sumRow = table.AddRow();
+            sumRow.Cells[0].AddParagraph("Listed Shares Total").Format.Font.Bold = true;
+            sumRow.Cells[1].AddParagraph(tradeCalculationResult.GetNumberOfDisposals([taxYear], AssetGroupType.LISTEDSHARES).ToString());
+            sumRow.Cells[2].AddParagraph(tradeCalculationResult.GetDisposalProceeds([taxYear], AssetGroupType.LISTEDSHARES).ToString());
+            sumRow.Cells[3].AddParagraph(tradeCalculationResult.GetAllowableCosts([taxYear], AssetGroupType.LISTEDSHARES).ToString());
+            sumRow.Cells[4].AddParagraph(tradeCalculationResult.GetTotalGain([taxYear], AssetGroupType.LISTEDSHARES).ToString());
+            sumRow.Cells[5].AddParagraph(tradeCalculationResult.GetTotalLoss([taxYear], AssetGroupType.LISTEDSHARES).ToString());
+        }
+        foreach (AssetCategoryType assetType in Enum.GetValues(typeof(AssetCategoryType)))
+        {
+            if (assetType.GetHmrcAssetCategoryType() == AssetGroupType.OTHERASSETS)
+            {
+                PrintAssetTypeStats(assetType, tradeCalculationResult, table, taxYear);
+            }
+        }
+        bottomRow = table.Rows.LastObject as Row;
+        if (bottomRow is not null)
+        {
+            Style.StyleBottomRowForSum(bottomRow);
+            Row sumRow = table.AddRow();
+            sumRow.Cells[0].AddParagraph("Other Assets Total").Format.Font.Bold = true;
+            sumRow.Cells[1].AddParagraph(tradeCalculationResult.GetNumberOfDisposals([taxYear], AssetGroupType.OTHERASSETS).ToString());
+            sumRow.Cells[2].AddParagraph(tradeCalculationResult.GetDisposalProceeds([taxYear], AssetGroupType.OTHERASSETS).ToString());
+            sumRow.Cells[3].AddParagraph(tradeCalculationResult.GetAllowableCosts([taxYear], AssetGroupType.OTHERASSETS).ToString());
+            sumRow.Cells[4].AddParagraph(tradeCalculationResult.GetTotalGain([taxYear], AssetGroupType.OTHERASSETS).ToString());
+            sumRow.Cells[5].AddParagraph(tradeCalculationResult.GetTotalLoss([taxYear], AssetGroupType.OTHERASSETS).ToString());
+        }
         table.Format.SpaceAfter = Unit.FromPoint(20);
+    }
+
+    private static Row? PrintAssetTypeStats(AssetCategoryType assetCategoryType, TradeCalculationResult tradeCalculationResult, Table table, int taxYear)
+    {
+        if (tradeCalculationResult.NumberOfDisposals[(taxYear, assetCategoryType)] == 0) return null;
+        Row row = table.AddRow();
+        row.Cells[0].AddParagraph(assetCategoryType.GetDescription());
+        row.Cells[1].AddParagraph(tradeCalculationResult.NumberOfDisposals[(taxYear, assetCategoryType)].ToString());
+        row.Cells[2].AddParagraph(tradeCalculationResult.DisposalProceeds[(taxYear, assetCategoryType)].ToString());
+        row.Cells[3].AddParagraph(tradeCalculationResult.AllowableCosts[(taxYear, assetCategoryType)].ToString());
+        row.Cells[4].AddParagraph(tradeCalculationResult.TotalGain[(taxYear, assetCategoryType)].ToString());
+        row.Cells[5].AddParagraph(tradeCalculationResult.TotalLoss[(taxYear, assetCategoryType)].ToString());
+        return row;
     }
 
     private static void WriteTaxYearCapitalGainTable(Section section, TaxYearCgtReport taxYearCgtReport)

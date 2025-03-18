@@ -15,8 +15,8 @@ public class TaxYearReportService(TradeCalculationResult tradeCalculationResult,
         decimal capitalLossInPreviousYears = 0m;
         foreach (int taxYear in taxYears)
         {
-            decimal totalGainInYear = tradeCalculationResult.TotalGain([taxYear]).Amount;
-            decimal totalLossInYear = tradeCalculationResult.TotalLoss([taxYear]).Amount; // Is a negative value
+            decimal totalGainInYear = tradeCalculationResult.GetTotalGain([taxYear]).Amount;
+            decimal totalLossInYear = tradeCalculationResult.GetTotalLoss([taxYear]).Amount; // Is a negative value
             decimal netGainInYear = totalGainInYear + totalLossInYear;
             decimal capitalGainAllowance = _ukCapitalGainAllowance.GetTaxAllowance(taxYear);
             decimal lossBroughtForward = 0m;
