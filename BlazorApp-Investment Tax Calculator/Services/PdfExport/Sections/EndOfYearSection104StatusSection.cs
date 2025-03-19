@@ -25,21 +25,24 @@ public class EndOfYearSection104StatusSection(UkSection104Pools ukSection104Pool
 
         Table table = Style.CreateTableWithProportionedWidth(section,
             [(20, ParagraphAlignment.Left),
+            (10, ParagraphAlignment.Left),
             (10, ParagraphAlignment.Right),
             (10, ParagraphAlignment.Right)]);
 
         Row headerRow = table.AddRow();
         Style.StyleHeaderRow(headerRow);
         headerRow.Cells[0].AddParagraph("Name/Ticker");
-        headerRow.Cells[1].AddParagraph("Quantity");
-        headerRow.Cells[2].AddParagraph("Value");
+        headerRow.Cells[1].AddParagraph("Date of last change");
+        headerRow.Cells[2].AddParagraph("Quantity");
+        headerRow.Cells[3].AddParagraph("Value");
 
         foreach (var history in lastHistory)
         {
             Row row = table.AddRow();
             row.Cells[0].AddParagraph(history.Key);
-            row.Cells[1].AddParagraph(history.Value.NewQuantity.ToString());
-            row.Cells[2].AddParagraph(history.Value.NewValue.ToString());
+            row.Cells[1].AddParagraph(history.Value.Date.ToShortDateString());
+            row.Cells[2].AddParagraph(history.Value.NewQuantity.ToString());
+            row.Cells[3].AddParagraph(history.Value.NewValue.ToString());
             if (history.Value.NewContractValue.Amount != 0)
             {
                 Row contractValueRow = table.AddRow();
