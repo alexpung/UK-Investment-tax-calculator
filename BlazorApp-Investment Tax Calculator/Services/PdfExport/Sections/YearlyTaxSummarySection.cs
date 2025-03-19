@@ -81,9 +81,10 @@ public class YearlyTaxSummarySection(TradeCalculationResult tradeCalculationResu
         table.Format.SpaceAfter = Unit.FromPoint(20);
     }
 
-    private static Row? PrintAssetTypeStats(AssetCategoryType assetCategoryType, TradeCalculationResult tradeCalculationResult, Table table, int taxYear)
+    private static void PrintAssetTypeStats(AssetCategoryType assetCategoryType, TradeCalculationResult tradeCalculationResult, Table table, int taxYear)
     {
-        if (tradeCalculationResult.NumberOfDisposals[(taxYear, assetCategoryType)] == 0) return null;
+        if (!tradeCalculationResult.NumberOfDisposals.TryGetValue((taxYear, assetCategoryType), out int numOfDisposal)) return;
+        if (numOfDisposal == 0) return;
         Row row = table.AddRow();
         row.Cells[0].AddParagraph(assetCategoryType.GetDescription());
         row.Cells[1].AddParagraph(tradeCalculationResult.NumberOfDisposals[(taxYear, assetCategoryType)].ToString());
@@ -91,7 +92,6 @@ public class YearlyTaxSummarySection(TradeCalculationResult tradeCalculationResu
         row.Cells[3].AddParagraph(tradeCalculationResult.AllowableCosts[(taxYear, assetCategoryType)].ToString());
         row.Cells[4].AddParagraph(tradeCalculationResult.TotalGain[(taxYear, assetCategoryType)].ToString());
         row.Cells[5].AddParagraph(tradeCalculationResult.TotalLoss[(taxYear, assetCategoryType)].ToString());
-        return row;
     }
 
     private static void WriteTaxYearCapitalGainTable(Section section, TaxYearCgtReport taxYearCgtReport)
