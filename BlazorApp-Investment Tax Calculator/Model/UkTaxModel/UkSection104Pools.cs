@@ -1,10 +1,14 @@
-﻿using InvestmentTaxCalculator.Model.Interfaces;
+using InvestmentTaxCalculator.Model.Interfaces;
 
 namespace InvestmentTaxCalculator.Model.UkTaxModel;
 public class UkSection104Pools(ITaxYear taxYearModel)
 {
     private readonly Dictionary<string, UkSection104> _section104Pools = [];
 
+    /// <summary>
+    /// Retrieves all UkSection104 instances currently stored in the pool.
+    /// </summary>
+    /// <returns>A list containing every UkSection104 instance managed by the pool.</returns>
     public List<UkSection104> GetSection104s()
     {
         return [.. _section104Pools.Values];
@@ -14,7 +18,13 @@ public class UkSection104Pools(ITaxYear taxYearModel)
     /// Return the status of all section104s at the end of the tax year that are not empty
     /// </summary>
     /// <param name="taxYear"></param>
-    /// <returns></returns>
+    /// <summary>
+    /// Retrieves the end-of-year Section104 history entries with non-zero quantity for the specified tax year.
+    /// </summary>
+    /// <param name="taxYear">The tax year used to determine the end-of-year state of each Section104.</param>
+    /// <returns>
+    /// A dictionary mapping asset names to their respective Section104History entries for the tax year's end, including only those entries where the new quantity is non-zero.
+    /// </returns>
     public Dictionary<string, Section104History> GetEndOfYearSection104s(int taxYear)
     {
         Dictionary<string, Section104History> endOfYearSection104s = new();

@@ -1,4 +1,4 @@
-﻿using InvestmentTaxCalculator.Model;
+using InvestmentTaxCalculator.Model;
 using InvestmentTaxCalculator.Model.UkTaxModel;
 using InvestmentTaxCalculator.Services.PdfExport.Sections;
 
@@ -12,6 +12,13 @@ namespace InvestmentTaxCalculator.Services.PdfExport;
 public class PdfExportService(TaxYearReportService taxYearReportService, TradeCalculationResult tradeCalculationResult,
     UkSection104Pools uKSection104Pools)
 {
+    /// <summary>
+    /// Generates a PDF report that aggregates tax summary, section 104 history, and trade details for a given tax year.
+    /// </summary>
+    /// <param name="year">The tax year for which the PDF report is generated.</param>
+    /// <returns>
+    /// A MemoryStream containing the generated PDF document. The caller is responsible for disposing the stream.
+    /// </returns>
     public MemoryStream CreatePdf(int year)
     {
         ISection yearSummarySection = new YearlyTaxSummarySection(tradeCalculationResult, taxYearReportService);

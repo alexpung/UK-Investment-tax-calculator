@@ -1,4 +1,4 @@
-﻿using InvestmentTaxCalculator.Model.Interfaces;
+using InvestmentTaxCalculator.Model.Interfaces;
 
 namespace InvestmentTaxCalculator.Model.UkTaxModel;
 
@@ -42,6 +42,14 @@ public record UkSection104
         return newSection104History;
     }
 
+    /// <summary>
+    /// Removes a specified quantity of the asset, adjusting its acquisition cost and contract value proportionally, and logs the adjustment in the asset's history.
+    /// </summary>
+    /// <param name="removedQuantity">The quantity of the asset to remove. Must be non-negative.</param>
+    /// <returns>
+    /// A Section104History record capturing the details of the asset removal adjustment.
+    /// </returns>
+    /// <exception cref="ArgumentException">Thrown when removedQuantity is negative.</exception>
     public Section104History RemoveAssets(ITradeTaxCalculation tradeTaxCalculation, decimal removedQuantity)
     {
         if (removedQuantity < 0) throw new ArgumentException($"Invalid remove quantity for {tradeTaxCalculation.AssetName} on {tradeTaxCalculation.Date.ToShortDateString()}" +
@@ -61,7 +69,13 @@ public record UkSection104
     /// Return null if no history before the date
     /// </summary>
     /// <param name="date">The date of which you want to get the state of the S104 pool</param>
-    /// <returns></returns>
+    /// <summary>
+    /// Retrieves the most recent history entry recorded on or before the specified date.
+    /// </summary>
+    /// <param name="date">The cutoff date; only entries on or before this date are considered.</param>
+    /// <returns>
+    /// The last <see cref="Section104History"/> entry with a date on or before <paramref name="date"/>, or <c>null</c> if no such entry exists.
+    /// </returns>
     public Section104History? GetLastSection104History(DateOnly date)
     {
         return Section104HistoryList.LastOrDefault(x => DateOnly.FromDateTime(x.Date) <= date);

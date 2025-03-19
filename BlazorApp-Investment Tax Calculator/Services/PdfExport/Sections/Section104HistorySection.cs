@@ -1,4 +1,4 @@
-﻿using InvestmentTaxCalculator.Model.UkTaxModel;
+using InvestmentTaxCalculator.Model.UkTaxModel;
 
 using MigraDoc.DocumentObjectModel;
 using MigraDoc.DocumentObjectModel.Tables;
@@ -25,6 +25,16 @@ public class Section104HistorySection(UkSection104Pools ukSection104Pools) : ISe
         return section;
     }
 
+    /// <summary>
+    /// Writes a detailed table into the provided PDF section, displaying historical changes for Section 104 tax calculations.
+    /// </summary>
+    /// <remarks>
+    /// The table initially comprises columns for date, trade ID, new quantity, quantity change, new Section 104 value, and value change.
+    /// If any historical record contains a non-zero new contract value, two additional columns for contract values are appended.
+    /// Each history entry adds a main row with values and an explanation row containing supplementary details.
+    /// </remarks>
+    /// <param name="section">The PDF section where the table is added.</param>
+    /// <param name="ukSection104">An object containing historical Section 104 data used to populate the table.</param>
     private static void WriteSection104Table(Section section, UkSection104 ukSection104)
     {
         List<(int, ParagraphAlignment)> tableColumns = [(7, ParagraphAlignment.Left),

@@ -1,4 +1,4 @@
-﻿using InvestmentTaxCalculator.Enumerations;
+using InvestmentTaxCalculator.Enumerations;
 using InvestmentTaxCalculator.Model;
 
 using MigraDoc.DocumentObjectModel;
@@ -22,6 +22,18 @@ public class YearlyTaxSummarySection(TradeCalculationResult tradeCalculationResu
         return section;
     }
 
+    /// <summary>
+    /// Constructs and adds a capital gains tax table, organized by asset type, to the provided PDF section for the specified tax year.
+    /// </summary>
+    /// <param name="section">The PDF section to which the table is added.</param>
+    /// <param name="tradeCalculationResult">The tax calculation data used to extract asset disposal and gain/loss statistics.</param>
+    /// <param name="taxYear">The tax year for which the tax summary is generated.</param>
+    /// <remarks>
+    /// The table is created with predetermined column widths and a header row displaying tax-related metrics. Rows are then added
+    /// for each asset category classified as either Listed Shares or Other Assets. For each applicable asset type that has disposals,
+    /// detailed statistics are appended by invoking helper methods. After processing each asset group, a summary row is added to
+    /// display cumulative totals, and spacing is applied below the table.
+    /// </remarks>
     private static void WriteTaxYearCgtByTypeTable(Section section, TradeCalculationResult tradeCalculationResult, int taxYear)
     {
         Table table = Style.CreateTableWithProportionedWidth(section,
@@ -81,6 +93,18 @@ public class YearlyTaxSummarySection(TradeCalculationResult tradeCalculationResu
         table.Format.SpaceAfter = Unit.FromPoint(20);
     }
 
+    /// <summary>
+    /// Adds a row with tax summary statistics for the specified asset category and tax year to the table.
+    /// </summary>
+    /// <remarks>
+    /// The method checks the number of disposals for the given asset category and tax year in the trade calculation result.
+    /// If the data is missing or the number of disposals is zero, no row is added. Otherwise, a row is created displaying the asset
+    /// category's description, disposal count, disposal proceeds, allowable costs, total gain, and total loss.
+    /// </remarks>
+    /// <param name="assetCategoryType">The asset category being processed (e.g., listed shares or other assets).</param>
+    /// <param name="tradeCalculationResult">The results containing tax and trade statistics needed to build the summary.</param>
+    /// <param name="table">The table to which the new row with statistics will be added.</param>
+    /// <param name="taxYear">The tax year for which the statistics are being generated.</param>
     private static void PrintAssetTypeStats(AssetCategoryType assetCategoryType, TradeCalculationResult tradeCalculationResult, Table table, int taxYear)
     {
         if (!tradeCalculationResult.NumberOfDisposals.TryGetValue((taxYear, assetCategoryType), out int numOfDisposal)) return;
@@ -94,6 +118,16 @@ public class YearlyTaxSummarySection(TradeCalculationResult tradeCalculationResu
         row.Cells[5].AddParagraph(tradeCalculationResult.TotalLoss[(taxYear, assetCategoryType)].ToString());
     }
 
+    /// <summary>
+    /// Writes a table of capital gains tax details for the tax year into the specified PDF section.
+    /// </summary>
+    /// <remarks>
+    /// The method creates a two-column table that lists key financial figures such as total gain (excluding losses), total loss, net capital gain, 
+    /// capital gain allowance, CGT allowance brought forward and used, taxable gain after allowance and loss offset, and losses available to be brought forward. 
+    /// Monetary values are formatted as currency using the en-GB culture, and some summary rows receive additional styling.
+    /// </remarks>
+    /// <param name="section">The PDF section to which the capital gains table is added.</param>
+    /// <param name="taxYearCgtReport">A report object containing the tax year's capital gains data.</param>
     private static void WriteTaxYearCapitalGainTable(Section section, TaxYearCgtReport taxYearCgtReport)
     {
         Table table = Style.CreateTableWithProportionedWidth(section, [(250, ParagraphAlignment.Left), (200, ParagraphAlignment.Right)]);
