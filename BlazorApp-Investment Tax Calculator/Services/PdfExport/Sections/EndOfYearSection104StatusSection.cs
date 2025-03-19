@@ -17,7 +17,7 @@ public class EndOfYearSection104StatusSection(UkSection104Pools ukSection104Pool
         Paragraph paragraph = section.AddParagraph(Title);
         Style.StyleTitle(paragraph);
 
-        if (lastHistory == null)
+        if (lastHistory.Count == 0)
         {
             section.AddParagraph($"Section 104 is empty at the end of the tax year.");
             return section;
