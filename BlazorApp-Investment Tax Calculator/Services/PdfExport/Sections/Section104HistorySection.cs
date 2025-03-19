@@ -33,7 +33,7 @@ public class Section104HistorySection(UkSection104Pools ukSection104Pools) : ISe
             (7, ParagraphAlignment.Right),
             (8, ParagraphAlignment.Right),
             (8, ParagraphAlignment.Right)];
-        bool extendFutureContractValueColumn = ukSection104.Section104HistoryList.Exists(history => history.OldContractValue.Amount != 0);
+        bool extendFutureContractValueColumn = ukSection104.Section104HistoryList.Exists(history => history.NewContractValue.Amount != 0);
         if (extendFutureContractValueColumn)
         {
             tableColumns.Add((10, ParagraphAlignment.Right));
