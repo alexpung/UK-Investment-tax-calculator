@@ -11,6 +11,25 @@ public class UkSection104Pools(ITaxYear taxYearModel)
     }
 
     /// <summary>
+    /// Return the status of all section104s at the end of the tax year that are not empty
+    /// </summary>
+    /// <param name="taxYear"></param>
+    /// <returns></returns>
+    public Dictionary<string, Section104History> GetEndOfYearSection104s(int taxYear)
+    {
+        Dictionary<string, Section104History> endOfYearSection104s = new();
+        foreach (var section104 in _section104Pools)
+        {
+            Section104History? lastHistory = section104.Value.GetLastSection104History(taxYearModel.GetTaxYearEndDate(taxYear));
+            if (lastHistory is not null && lastHistory.NewQuantity != 0)
+            {
+                endOfYearSection104s[section104.Key] = lastHistory;
+            }
+        }
+        return endOfYearSection104s;
+    }
+
+    /// <summary>
     /// Return all section104s that have history in the given tax year
     /// </summary>
     /// <param name="taxYear"></param>
