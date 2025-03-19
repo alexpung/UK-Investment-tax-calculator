@@ -55,4 +55,15 @@ public record UkSection104
         AdjustValues(quantityAdjustment, costAdjustment, contractValueAdjustment);
         return newSection104History;
     }
+
+    /// <summary>
+    /// Get the last Section104History before the date
+    /// Return null if no history before the date
+    /// </summary>
+    /// <param name="date">The date of which you want to get the state of the S104 pool</param>
+    /// <returns></returns>
+    public Section104History? GetLastSection104History(DateOnly date)
+    {
+        return Section104HistoryList.LastOrDefault(x => DateOnly.FromDateTime(x.Date) <= date);
+    }
 }

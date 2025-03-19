@@ -14,4 +14,14 @@ public class UKTaxYear : ITaxYear
             ( >= 5, _) => dateTime.Year
         };
     }
+
+    public DateOnly GetTaxYearStartDate(int taxYear)
+    {
+        return new DateOnly(taxYear, 4, 6);
+    }
+
+    public DateOnly GetTaxYearEndDate(int taxYear)
+    {
+        return new DateOnly(taxYear + 1, 4, 5);
+    }
 }
