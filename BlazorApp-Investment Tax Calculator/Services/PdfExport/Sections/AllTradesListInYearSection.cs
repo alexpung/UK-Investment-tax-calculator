@@ -9,10 +9,10 @@ using MigraDoc.DocumentObjectModel.Tables;
 
 namespace InvestmentTaxCalculator.Services.PdfExport.Sections;
 
-public class AllTradesListSection(TradeCalculationResult tradeCalculationResult) : ISection
+public class AllTradesListInYearSection(TradeCalculationResult tradeCalculationResult) : ISection
 {
-    public string Name { get; set; } = "List of all trades";
-    public string Title { get; set; } = "List of all trades";
+    public string Name { get; set; } = "List of all trades (in year)";
+    public string Title { get; set; } = "List of all trades during the tax year";
 
     public Section WriteSection(Section section, int taxYear)
     {

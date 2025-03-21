@@ -15,7 +15,7 @@ public class PdfExportService(TaxYearReportService taxYearReportService, TradeCa
     public MemoryStream CreatePdf(int year)
     {
         ISection yearSummarySection = new YearlyTaxSummarySection(tradeCalculationResult, taxYearReportService);
-        ISection allTradesListSection = new AllTradesListSection(tradeCalculationResult);
+        ISection allTradesListSection = new AllTradesListInYearSection(tradeCalculationResult);
         ISection section104Section = new Section104HistorySection(uKSection104Pools);
         ISection endOfYearSection104StatusSection = new EndOfYearSection104StatusSection(uKSection104Pools);
         var document = new Document();
