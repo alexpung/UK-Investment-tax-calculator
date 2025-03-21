@@ -20,10 +20,14 @@ public class PdfExportService(TaxYearReportService taxYearReportService, TradeCa
         ISection endOfYearSection104StatusSection = new EndOfYearSection104StatusSection(uKSection104Pools);
         var document = new Document();
         List<ISection> sections = [yearSummarySection, endOfYearSection104StatusSection, section104Section, allTradesListSection];
-        foreach (var ISection in sections)
+        foreach (var section in sections)
         {
             Section pdfSection = document.AddSection();
-            ISection.WriteSection(pdfSection, year);
+            if (section == sections[0])
+            {
+                AddDocumentTitle(pdfSection, $"Investment Tax Report for year {year}");
+            }
+            section.WriteSection(pdfSection, year);
         }
         var pdfRenderer = new PdfDocumentRenderer
         {
@@ -50,5 +54,12 @@ public class PdfExportService(TaxYearReportService taxYearReportService, TradeCa
             throw;
         }
         return stream;
+    }
+
+    private static Section AddDocumentTitle(Section section, string title)
+    {
+        Paragraph paragraph = section.AddParagraph(title);
+        Style.StyleTopTitle(paragraph);
+        return section;
     }
 }
