@@ -67,10 +67,13 @@ public class Section104HistorySection(UkSection104Pools ukSection104Pools) : ISe
                 row.Cells[6].AddParagraph($"{section104History.NewContractValue}");
                 row.Cells[7].AddParagraph(section104History.ContractValueChange.ToString());
             }
-            row.KeepWith = 1;
-            Row explanationRow = table.AddRow();
-            explanationRow.Cells[0].MergeRight = 5;
-            explanationRow.Cells[0].AddParagraph(section104History.Explanation);
+            if (!string.IsNullOrEmpty(section104History.Explanation))
+            {
+                row.KeepWith = 1;
+                Row explanationRow = table.AddRow();
+                explanationRow.Cells[0].MergeRight = 5;
+                explanationRow.Cells[0].AddParagraph(section104History.Explanation);
+            }
         }
     }
 }
