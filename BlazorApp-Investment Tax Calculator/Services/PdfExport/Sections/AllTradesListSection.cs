@@ -97,6 +97,5 @@ public class AllTradesListSection(TradeCalculationResult tradeCalculationResult)
                 }
             }
         }
-        table.Format.SpaceAfter = Unit.FromPoint(20);
     }
 }

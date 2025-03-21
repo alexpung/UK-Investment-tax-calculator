@@ -78,7 +78,6 @@ public class YearlyTaxSummarySection(TradeCalculationResult tradeCalculationResu
             sumRow.Cells[4].AddParagraph(tradeCalculationResult.GetTotalGain([taxYear], AssetGroupType.OTHERASSETS).ToString());
             sumRow.Cells[5].AddParagraph(tradeCalculationResult.GetTotalLoss([taxYear], AssetGroupType.OTHERASSETS).ToString());
         }
-        table.Format.SpaceAfter = Unit.FromPoint(20);
     }
 
     private static void PrintAssetTypeStats(AssetCategoryType assetCategoryType, TradeCalculationResult tradeCalculationResult, Table table, int taxYear)
