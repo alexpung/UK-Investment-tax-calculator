@@ -5,9 +5,17 @@ namespace InvestmentTaxCalculator.Services.PdfExport;
 
 public static class Style
 {
+
+    public static Paragraph StyleTopTitle(Paragraph paragraph)
+    {
+        paragraph.Format.Font.Size = 16;
+        paragraph.Format.Font.Bold = true;
+        paragraph.Format.SpaceAfter = 6;
+        return paragraph;
+    }
     public static Paragraph StyleTitle(Paragraph paragraph)
     {
-        paragraph.Format.Font.Size = 14;
+        paragraph.Format.Font.Size = 12;
         paragraph.Format.Font.Bold = true;
         paragraph.Format.SpaceAfter = 6;
         return paragraph;
@@ -47,6 +55,10 @@ public static class Style
             Column column = table.AddColumn(Unit.FromPoint(sectionWidth * width / totalWidth));
             column.Format.Alignment = columnAlignment;
         }
+        table.LeftPadding = Unit.FromPoint(2);
+        table.RightPadding = Unit.FromPoint(2);
+        table.Borders.Bottom.Width = 0.25;
+        table.Borders.Bottom.Color = Colors.LightGray;
         return table;
     }
 
