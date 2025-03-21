@@ -50,7 +50,6 @@ public class EndOfYearSection104StatusSection(UkSection104Pools ukSection104Pool
                 contractValueRow.Cells[0].AddParagraph($"Total Contract Value: {history.Value.NewContractValue}");
             }
         }
-        table.Format.SpaceAfter = Unit.FromPoint(20);
         return section;
     }
 }

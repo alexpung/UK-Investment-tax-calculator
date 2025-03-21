@@ -51,7 +51,7 @@ public class AllTradesListSection(TradeCalculationResult tradeCalculationResult)
         Row headerRow = table.AddRow();
         headerRow.Cells[0].AddParagraph("ID");
         headerRow.Cells[1].AddParagraph("Date/Time");
-        headerRow.Cells[2].AddParagraph("Asset Ticker/Name");
+        headerRow.Cells[2].AddParagraph("Asset Name");
         headerRow.Cells[3].AddParagraph("Asset Type");
         headerRow.Cells[4].AddParagraph("Acq/Dis");
         headerRow.Cells[5].AddParagraph("Quantity");
@@ -97,6 +97,5 @@ public class AllTradesListSection(TradeCalculationResult tradeCalculationResult)
                 }
             }
         }
-        table.Format.SpaceAfter = Unit.FromPoint(20);
     }
 }
