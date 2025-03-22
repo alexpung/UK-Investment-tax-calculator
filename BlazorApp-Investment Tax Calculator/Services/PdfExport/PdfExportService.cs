@@ -10,7 +10,7 @@ using PdfSharp.Pdf;
 namespace InvestmentTaxCalculator.Services.PdfExport;
 
 public class PdfExportService(TaxYearReportService taxYearReportService, TradeCalculationResult tradeCalculationResult,
-    UkSection104Pools uKSection104Pools)
+    UkSection104Pools uKSection104Pools, DividendCalculationResult dividendCalculationResult)
 {
     public MemoryStream CreatePdf(int year)
     {
@@ -18,8 +18,9 @@ public class PdfExportService(TaxYearReportService taxYearReportService, TradeCa
         ISection allTradesListSection = new AllTradesListInYearSection(tradeCalculationResult);
         ISection section104Section = new Section104HistorySection(uKSection104Pools);
         ISection endOfYearSection104StatusSection = new EndOfYearSection104StatusSection(uKSection104Pools);
+        ISection dividendSummarySection = new DividendSummarySection(dividendCalculationResult);
         var document = new Document();
-        List<ISection> sections = [yearSummarySection, endOfYearSection104StatusSection, section104Section, allTradesListSection];
+        List<ISection> sections = [yearSummarySection, dividendSummarySection, endOfYearSection104StatusSection, section104Section, allTradesListSection];
         foreach (var section in sections)
         {
             Section pdfSection = document.AddSection();
@@ -56,10 +57,9 @@ public class PdfExportService(TaxYearReportService taxYearReportService, TradeCa
         return stream;
     }
 
-    private static Section AddDocumentTitle(Section section, string title)
+    private static void AddDocumentTitle(Section section, string title)
     {
         Paragraph paragraph = section.AddParagraph(title);
         Style.StyleTopTitle(paragraph);
-        return section;
     }
 }
