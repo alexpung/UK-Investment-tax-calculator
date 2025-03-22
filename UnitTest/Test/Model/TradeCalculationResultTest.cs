@@ -15,6 +15,16 @@ public class TradeCalculationResultTests
 {
     private class MockTaxYear : ITaxYear
     {
+        public DateOnly GetTaxYearEndDate(int taxYear)
+        {
+            return new DateOnly(taxYear + 1, 4, 5);
+        }
+
+        public DateOnly GetTaxYearStartDate(int taxYear)
+        {
+            return new DateOnly(taxYear, 4, 6);
+        }
+
         public int ToTaxYear(DateTime dateTime)
         {
             return dateTime.Year;
