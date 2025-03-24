@@ -8,6 +8,7 @@ namespace InvestmentTaxCalculator.Model.TaxEvents;
 public abstract record TaxEvent : IAssetDatedEvent
 {
     private static int _nextId = 0;
+    [JsonIgnore]
     public int Id { get; private init; }
     public virtual required string AssetName { get; set; }
     public virtual required DateTime Date { get; set; }

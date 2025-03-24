@@ -9,6 +9,15 @@ public class ToastService
         ShowToastTrigger?.Invoke(new ToastOption() { Title = title, Content = content, Type = toastOptionType });
     }
 
+    public void ShowException(Exception ex)
+    {
+        ShowError(ex.Message);
+        if (!string.IsNullOrEmpty(ex.StackTrace))
+        {
+            ShowError(ex.StackTrace);
+        }
+    }
+
     public void ShowError(string content)
     {
         ShowToastTrigger?.Invoke(new ToastOption() { Title = "Error", Content = content, Type = ToastOptionType.Error });

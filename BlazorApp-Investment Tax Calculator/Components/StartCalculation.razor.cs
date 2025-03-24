@@ -40,7 +40,7 @@ public partial class StartCalculation
         }
         catch (Exception ex)
         {
-            ToastService.ShowError($"Calculation failed: {ex.Message}");
+            ToastService.ShowException(ex);
         }
         finally
         {
