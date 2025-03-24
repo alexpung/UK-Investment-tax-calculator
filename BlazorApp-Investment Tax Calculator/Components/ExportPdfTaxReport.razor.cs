@@ -37,11 +37,7 @@ public partial class ExportPdfTaxReport
             }
             catch (Exception ex)
             {
-                ToastService.ShowError(ex.Message);
-                if (!string.IsNullOrEmpty(ex.StackTrace))
-                {
-                    ToastService.ShowError(ex.StackTrace);
-                }
+                ToastService.ShowException(ex);
             }
         }
     }

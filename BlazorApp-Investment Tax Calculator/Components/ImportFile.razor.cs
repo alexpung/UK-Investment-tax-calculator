@@ -23,11 +23,11 @@ public partial class ImportFile
             }
             catch (ParseException ex)
             {
-                toastService.ShowError(ex.Message);
+                toastService.ShowException(ex);
             }
             catch (Exception ex)
             {
-                toastService.ShowError($"An unexpected error have occurred.<br> {ex.Message}");
+                toastService.ShowException(ex);
             }
         }
         args.Files.Clear();
