@@ -11,14 +11,7 @@ public class JsonParseController(AssetTypeToLoadSetting assetTypeToLoadSetting) 
     public TaxEventLists ParseFile(string data)
     {
         TaxEventLists? result = null;
-        try
-        {
-            result = JsonSerializer.Deserialize(data, MyJsonContext.Default.TaxEventLists);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.ToString());
-        }
+        result = JsonSerializer.Deserialize(data, MyJsonContext.Default.TaxEventLists);
         TaxEventLists resultFiltered = new();
         if (result == null) return resultFiltered;
         resultFiltered = assetTypeToLoadSetting.FilterTaxEvent(result);
