@@ -9,26 +9,43 @@ using PdfSharp.Pdf;
 
 namespace InvestmentTaxCalculator.Services.PdfExport;
 
-public class PdfExportService(TaxYearReportService taxYearReportService, TradeCalculationResult tradeCalculationResult,
-    UkSection104Pools uKSection104Pools, DividendCalculationResult dividendCalculationResult)
+public class PdfExportService
 {
-    public MemoryStream CreatePdf(int year)
+    public List<ISection> AllSections { get; set; }
+    public string[]? SelectedSections { get; set; } = [];
+    public PdfExportService(TaxYearReportService taxYearReportService, TradeCalculationResult tradeCalculationResult,
+        UkSection104Pools uKSection104Pools, DividendCalculationResult dividendCalculationResult)
     {
         ISection yearSummarySection = new YearlyTaxSummarySection(tradeCalculationResult, taxYearReportService);
         ISection allTradesListSection = new AllTradesListInYearSection(tradeCalculationResult);
         ISection section104Section = new Section104HistorySection(uKSection104Pools);
         ISection endOfYearSection104StatusSection = new EndOfYearSection104StatusSection(uKSection104Pools);
         ISection dividendSummarySection = new DividendSummarySection(dividendCalculationResult);
+        AllSections = [
+            yearSummarySection,
+            dividendSummarySection,
+            endOfYearSection104StatusSection,
+            section104Section,
+            allTradesListSection
+            ];
+    }
+    public MemoryStream CreatePdf(int year)
+    {
+        if (SelectedSections is null || SelectedSections.Length == 0)
+        {
+            throw new InvalidOperationException("No sections selected for export");
+        }
+        SelectedSections = [.. SelectedSections.OrderBy(section => AllSections.FindIndex(s => s.Name == section))];
         var document = new Document();
-        List<ISection> sections = [yearSummarySection, dividendSummarySection, endOfYearSection104StatusSection, section104Section, allTradesListSection];
-        foreach (var section in sections)
+
+        foreach (var sectionName in SelectedSections)
         {
             Section pdfSection = document.AddSection();
-            if (section == sections[0])
+            if (sectionName == SelectedSections[0])
             {
                 AddDocumentTitle(pdfSection, $"Investment Tax Report for year {year}");
             }
-            section.WriteSection(pdfSection, year);
+            AllSections.Single(section => section.Name == sectionName).WriteSection(pdfSection, year);
         }
         var pdfRenderer = new PdfDocumentRenderer
         {

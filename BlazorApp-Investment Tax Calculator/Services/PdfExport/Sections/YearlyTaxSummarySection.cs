@@ -10,8 +10,8 @@ namespace InvestmentTaxCalculator.Services.PdfExport.Sections;
 
 public class YearlyTaxSummarySection(TradeCalculationResult tradeCalculationResult, TaxYearReportService taxYearReportService) : ISection
 {
-    public string Name { get; set; } = "Tax Summary";
-    public string Title { get; set; } = "Yearly Tax Summary";
+    public string Name { get; set; } = "Capital Gain Tax Summary";
+    public string Title { get; set; } = "Capital Gain Tax Summary";
     public Section WriteSection(Section section, int taxYear)
     {
         TaxYearCgtReport taxYearCgtReport = taxYearReportService.GetTaxYearReports().First(report => report.TaxYear == taxYear);
