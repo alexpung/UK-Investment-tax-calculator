@@ -9,7 +9,7 @@ namespace InvestmentTaxCalculator.Services.PdfExport.Sections;
 public class DividendSummarySection(DividendCalculationResult dividendCalculationResult) : ISection
 {
     public string Name { get; set; } = "Dividend Summary";
-    public string Title { get; set; } = "Yearly Dividend Summary";
+    public string Title { get; set; } = "Dividend Summary";
 
     public Section WriteSection(Section section, int taxYear)
     {
