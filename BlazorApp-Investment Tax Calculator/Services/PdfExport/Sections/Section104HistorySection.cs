@@ -15,6 +15,11 @@ public class Section104HistorySection(UkSection104Pools ukSection104Pools) : ISe
         Paragraph paragraph = section.AddParagraph(Title);
         Style.StyleTitle(paragraph);
         List<UkSection104> ukSection104s = ukSection104Pools.GetActiveSection104s(taxYear);
+        if (ukSection104s.Count == 0)
+        {
+            section.AddParagraph("No Section 104 change in this tax year.");
+            return section;
+        }
         foreach (var ukSection104 in ukSection104s)
         {
             Paragraph tableSubheading = section.AddParagraph(ukSection104.AssetName);
