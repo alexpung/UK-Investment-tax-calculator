@@ -140,7 +140,7 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
                 allowableCost -= exerciseAllowableCost;
                 additionalInformation += $"{OwnerExercisedQty} option exercised. ";
                 matchDisposalProceedQty -= OwnerExercisedQty;
-                AttachTradeToUnderlying(exerciseAllowableCost, $"Trade is created by option exercise of option on {Date:d}", TradeReason.OwnerExerciseOption);
+                AttachTradeToUnderlying(exerciseAllowableCost, $"Option premium adjustment due to execising option", TradeReason.OwnerExerciseOption);
             }
             if (OwnerExercisedQty > 0 && IsCashSettled) additionalInformation += $"{OwnerExercisedQty:F2} option cash settled.";
             TradeMatch tradeMatch = new()
@@ -169,6 +169,8 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
     /// <param name="tradeReason"></param>
     public void AttachTradeToUnderlying(WrappedMoney attachedPremium, string comment, TradeReason tradeReason)
     {
+        // if you are assigned a put, you buy the underlying asset and the premium you received when you wrote the put is deducted from the acquisition cost
+        // if you are execising a put, you sell the underlying asset and the premium you pay when you buy the put is deducted from the disposal proceed
         if (PUTCALL == PUTCALL.PUT) attachedPremium = attachedPremium * -1;
         OptionTrade exerciseTrade = (OptionTrade)TradeList.First(trade => ((OptionTrade)trade).ExerciseOrExercisedTrade?.TradeReason == tradeReason);
         exerciseTrade.ExerciseOrExercisedTrade!.AttachOptionTrade(attachedPremium, comment);
