@@ -164,7 +164,7 @@ public class UkTradeCalculatorOptionMixedTest
             Multiplier = 100,
             TradeReason = TradeReason.OrderedTrade,
             Quantity = 2,
-            GrossProceed = new DescribedMoney(1000, "USD", 0.78m),
+            GrossProceed = new DescribedMoney(1000, "USD", 0.78m), // net after expense 995 * 0.78 = £776.1
             Expenses = [new DescribedMoney(5, "USD", 0.78m)],
             AcquisitionDisposal = TradeType.DISPOSAL,
             Description = "Short AAPL 125 Call Option"
@@ -181,7 +181,7 @@ public class UkTradeCalculatorOptionMixedTest
             Multiplier = 100,
             TradeReason = TradeReason.OrderedTrade,
             Quantity = 4,
-            GrossProceed = new DescribedMoney(1500, "USD", 0.85m),
+            GrossProceed = new DescribedMoney(1500, "USD", 0.85m), // net after expense 1496 * 0.85 = £1271.6
             Expenses = [new DescribedMoney(4, "USD", 0.85m)],
             AcquisitionDisposal = TradeType.DISPOSAL,
             Description = "Short AAPL 125 Call Option #2"
@@ -261,6 +261,6 @@ public class UkTradeCalculatorOptionMixedTest
         disposeOptionTradeResult2.TotalProceeds.Amount.ShouldBe(847.73m, 0.01m); // 1496 * 0.85 * 4 / 6 ( 2 out of 6 option disposed is assigned and the premium goes to the underlying )
         var disposeTradeResult = result.Find(trade => trade is TradeTaxCalculation { AssetName: "AAPL", AcquisitionDisposal: TradeType.DISPOSAL, TotalQty: 200 });
         disposeTradeResult!.TotalAllowableCost.ShouldBe(new WrappedMoney(22000));
-        disposeTradeResult.TotalProceeds.Amount.ShouldBe(20423.87m, 0.01m);
+        disposeTradeResult.TotalProceeds.Amount.ShouldBe(20682.57m, 0.01m); // (776.1 + 1271.6) / 6 * 2 + 22000 = 22682.5666667
     }
 }

@@ -174,11 +174,8 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
         {
             WrappedMoney premiumCost = tradePairSorter.EarlierTrade.GetProportionedCostOrProceed(exercisedQty);
             // If there is mutiple exercise trades it doesn't matter which trade to roll up, as all trades are the same ticker and same day are treated as a sigle trade.
-            tradePairSorter.LatterTrade.AttachTradeToUnderlying(premiumCost,
-                $"Trade is created by option exercise of option with premium {premiumCost} added(subtracted) on {tradePairSorter.LatterTrade.Date:d}",
-                TradeReason.OwnerExerciseOption);
-            tradeMatch = CreateTradeMatch(tradePairSorter, exercisedQty, WrappedMoney.GetBaseCurrencyZero(), WrappedMoney.GetBaseCurrencyZero(),
-                $"{exercisedQty} option exercised.", taxMatchType);
+            tradePairSorter.LatterTrade.AttachTradeToUnderlying(premiumCost, $"Option premium adjustment due to execising option", TradeReason.OwnerExerciseOption);
+            tradeMatch = CreateTradeMatch(tradePairSorter, exercisedQty, WrappedMoney.GetBaseCurrencyZero(), WrappedMoney.GetBaseCurrencyZero(), $"{exercisedQty} option exercised.", taxMatchType);
         }
         AssignTradeMatch(tradePairSorter, exercisedQty, tradeMatch, tradeMatch);
     }
@@ -206,8 +203,7 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
         {
             WrappedMoney premiumCost = tradePairSorter.EarlierTrade.GetProportionedCostOrProceed(assignmentQty);
             // If there is mutiple exercise trades it doesn't matter which trade to roll up, as all trades are the same ticker and same day are treated as a sigle trade.
-            tradePairSorter.LatterTrade.AttachTradeToUnderlying(premiumCost, $"Trade is created by option assignment of option on {tradePairSorter.LatterTrade.Date:d}. \n" +
-                                      $"{premiumCost} is added(subtracted) to the trade amount.", TradeReason.OptionAssigned);
+            tradePairSorter.LatterTrade.AttachTradeToUnderlying(premiumCost, $"Option premium adjustment due to option assignment", TradeReason.OptionAssigned);
             if (!RefundIfNotInSameYear(tradePairSorter, taxYear, premiumCost))
             {
                 tradePairSorter.EarlierTrade.RefundDisposalQty(assignmentQty);

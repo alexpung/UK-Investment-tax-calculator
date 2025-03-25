@@ -44,28 +44,20 @@ public record Trade : TaxEvent, ITextFilePrintable
     /// <para> positive = charge: take money from you. </para>
     /// <para> negative = rebate: give you money </para>
     /// </summary>
-    public ImmutableList<DescribedMoney> Expenses { get; init; } = [];
+    public ImmutableList<DescribedMoney> Expenses { get; set; } = [];
     public TradeReason TradeReason { get; set; } = TradeReason.OrderedTrade;
     /// <summary>
-    /// indicate if the cost of the option is added to this trade already or not.
-    /// </summary>
-    public bool OptionAttached { get; set; } = false;
-    /// <summary>
-    /// If a trade is a result of an option, the cost or premium received is rolled to the trade. 
+    /// Apply the tax effect that if a trade is a result of an option, the cost or premium received is rolled to the trade. 
     /// </summary>
     /// <param name="cost"></param>
     /// <param name="description"></param>
     public void AttachOptionTrade(WrappedMoney cost, string description)
     {
-        if (!OptionAttached)
+        if (AcquisitionDisposal == TradeType.DISPOSAL)
         {
-            GrossProceed = GrossProceed with
-            {
-                Amount = GrossProceed.Amount + cost.Convert(1 / GrossProceed.FxRate, GrossProceed.Amount.Currency),
-                Description = description
-            };
-            OptionAttached = true;
+            cost *= -1;
         }
+        Expenses = Expenses.Add(new DescribedMoney(cost.Amount, cost.Currency, GrossProceed.FxRate, description));
     }
     public virtual WrappedMoney NetProceed
     {
