@@ -73,6 +73,10 @@ public static class Style
 
     private static double GetSectionWidth(Section section)
     {
-        return section.PageSetup.PageWidth.Point - section.PageSetup.LeftMargin.Point - section.PageSetup.RightMargin.Point;
+        if (section.PageSetup.Orientation == Orientation.Portrait)
+        {
+            return section.PageSetup.PageWidth.Point - section.PageSetup.LeftMargin.Point - section.PageSetup.RightMargin.Point;
+        }
+        else return section.PageSetup.PageHeight.Point - section.PageSetup.TopMargin.Point - section.PageSetup.BottomMargin.Point;
     }
 }
