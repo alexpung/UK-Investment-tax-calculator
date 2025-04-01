@@ -21,9 +21,11 @@ public class PdfExportService
         ISection section104Section = new Section104HistorySection(uKSection104Pools);
         ISection endOfYearSection104StatusSection = new EndOfYearSection104StatusSection(uKSection104Pools);
         ISection dividendSummarySection = new DividendSummarySection(dividendCalculationResult);
+        ISection disposalDetailSection = new DisposalDetailSection(tradeCalculationResult);
         AllSections = [
             yearSummarySection,
             dividendSummarySection,
+            disposalDetailSection,
             endOfYearSection104StatusSection,
             section104Section,
             allTradesListSection
