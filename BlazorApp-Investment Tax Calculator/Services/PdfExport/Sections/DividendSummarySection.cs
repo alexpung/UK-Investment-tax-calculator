@@ -40,8 +40,8 @@ public class DividendSummarySection(DividendCalculationResult dividendCalculatio
             row.Cells[1].AddParagraph(summary.TotalTaxableDividend.ToString());
             row.Cells[2].AddParagraph(summary.TotalForeignTaxPaid.ToString());
         }
-        Style.StyleBottomRowForSum((Row)table.Rows.LastObject!);
         Row totalRow = table.AddRow();
+        Style.StyleSumRow(totalRow);
         totalRow.Cells[0].AddParagraph("Total");
         totalRow.Cells[1].AddParagraph(dividendCalculationResult.GetTotalDividend([taxYear]).ToString());
         totalRow.Cells[2].AddParagraph(dividendCalculationResult.GetForeignTaxPaid([taxYear]).ToString());
@@ -72,8 +72,8 @@ public class DividendSummarySection(DividendCalculationResult dividendCalculatio
                 dividendRow.Cells[3].AddParagraph(dividend.DividendReceived.ToString());
                 dividendRow.Cells[4].AddParagraph(dividend.WithholdingTaxPaid.ToString());
             }
-            Style.StyleBottomRowForSum((Row)dividendDetailTable.Rows.LastObject!);
             totalRow = dividendDetailTable.AddRow();
+            Style.StyleSumRow(totalRow);
             totalRow.Cells[0].AddParagraph("Total");
             totalRow.Cells[3].AddParagraph(summary.TotalTaxableDividend.ToString());
             totalRow.Cells[4].AddParagraph(summary.TotalForeignTaxPaid.ToString());

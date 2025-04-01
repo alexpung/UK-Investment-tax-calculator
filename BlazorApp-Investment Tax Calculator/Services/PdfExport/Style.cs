@@ -21,10 +21,10 @@ public static class Style
         return paragraph;
     }
 
-    public static void StyleBottomRowForSum(Row row)
+    public static void StyleSumRow(Row row)
     {
-        row.Borders.Bottom.Width = 2;
-        row.Borders.Bottom.Color = Colors.Black;
+        row.Borders.Top.Width = 2;
+        row.Borders.Top.Color = Colors.Black;
     }
 
     public static void StyleHeaderRow(Row row)

@@ -50,8 +50,8 @@ public class YearlyTaxSummarySection(TradeCalculationResult tradeCalculationResu
         Row? bottomRow = table.Rows.LastObject as Row;
         if (bottomRow is not null)
         {
-            Style.StyleBottomRowForSum(bottomRow);
             Row sumRow = table.AddRow();
+            Style.StyleSumRow(sumRow);
             sumRow.Cells[0].AddParagraph("Listed Shares Total").Format.Font.Bold = true;
             sumRow.Cells[1].AddParagraph(tradeCalculationResult.GetNumberOfDisposals([taxYear], AssetGroupType.LISTEDSHARES).ToString());
             sumRow.Cells[2].AddParagraph(tradeCalculationResult.GetDisposalProceeds([taxYear], AssetGroupType.LISTEDSHARES).ToString());
@@ -69,8 +69,8 @@ public class YearlyTaxSummarySection(TradeCalculationResult tradeCalculationResu
         bottomRow = table.Rows.LastObject as Row;
         if (bottomRow is not null)
         {
-            Style.StyleBottomRowForSum(bottomRow);
             Row sumRow = table.AddRow();
+            Style.StyleSumRow(sumRow);
             sumRow.Cells[0].AddParagraph("Other Assets Total").Format.Font.Bold = true;
             sumRow.Cells[1].AddParagraph(tradeCalculationResult.GetNumberOfDisposals([taxYear], AssetGroupType.OTHERASSETS).ToString());
             sumRow.Cells[2].AddParagraph(tradeCalculationResult.GetDisposalProceeds([taxYear], AssetGroupType.OTHERASSETS).ToString());
@@ -102,8 +102,8 @@ public class YearlyTaxSummarySection(TradeCalculationResult tradeCalculationResu
         Row totalLossRow = table.AddRow();
         totalLossRow.Cells[0].AddParagraph("Total Loss");
         totalLossRow.Cells[1].AddParagraph(taxYearCgtReport.TotalLossInYear.ToString("C", CultureInfo.CreateSpecificCulture("en-GB")));
-        Style.StyleBottomRowForSum(totalLossRow);
         Row netCapitalGainRow = table.AddRow();
+        Style.StyleSumRow(netCapitalGainRow);
         netCapitalGainRow.Cells[0].AddParagraph("Net Capital Gain");
         netCapitalGainRow.Cells[1].AddParagraph(taxYearCgtReport.NetCapitalGain.ToString("C", CultureInfo.CreateSpecificCulture("en-GB")));
         Row capitalGainAllowanceRow = table.AddRow();
@@ -115,8 +115,8 @@ public class YearlyTaxSummarySection(TradeCalculationResult tradeCalculationResu
         Row taxableGainAfterAllowanceAndLossOffsetRow = table.AddRow();
         taxableGainAfterAllowanceAndLossOffsetRow.Cells[0].AddParagraph("Taxable Gain after Allowance and Loss Offset");
         taxableGainAfterAllowanceAndLossOffsetRow.Cells[1].AddParagraph(taxYearCgtReport.TaxableGainAfterAllowanceAndLossOffset.ToString("C", CultureInfo.CreateSpecificCulture("en-GB")));
-        Style.StyleBottomRowForSum(taxableGainAfterAllowanceAndLossOffsetRow);
         Row lossesAvailableToBroughtForwardRow = table.AddRow();
+        Style.StyleSumRow(lossesAvailableToBroughtForwardRow);
         lossesAvailableToBroughtForwardRow.Cells[0].AddParagraph("Losses Available to Brought Forward");
         lossesAvailableToBroughtForwardRow.Cells[1].AddParagraph(taxYearCgtReport.LossesAvailableToBroughtForward.ToString("C", CultureInfo.CreateSpecificCulture("en-GB")));
     }
