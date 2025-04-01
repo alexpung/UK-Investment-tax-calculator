@@ -71,11 +71,6 @@ public static class Style
 
     private static double GetSectionWidth(Section section)
     {
-        if (section.Document is not null)
-        {
-            section.PageSetup = section.Document.DefaultPageSetup.Clone();
-        }
-        section.PageSetup.PageFormat = PageFormat.A4;
         return section.PageSetup.PageWidth.Point - section.PageSetup.LeftMargin.Point - section.PageSetup.RightMargin.Point;
     }
 }
