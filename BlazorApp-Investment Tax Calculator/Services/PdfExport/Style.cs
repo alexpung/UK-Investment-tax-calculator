@@ -37,6 +37,8 @@ public static class Style
     public static Table CreateTableWithProportionedWidth(Section section, List<int> columnProportionedWidth)
     {
         Table table = section.AddTable();
+        table.LeftPadding = Unit.FromPoint(2);
+        table.RightPadding = Unit.FromPoint(2);
         double sectionWidth = GetSectionWidth(section);
         foreach (var width in columnProportionedWidth)
         {
