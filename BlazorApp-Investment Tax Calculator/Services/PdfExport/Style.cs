@@ -21,10 +21,10 @@ public static class Style
         return paragraph;
     }
 
-    public static void StyleBottomRowForSum(Row row)
+    public static void StyleSumRow(Row row)
     {
-        row.Borders.Bottom.Width = 2;
-        row.Borders.Bottom.Color = Colors.Black;
+        row.Borders.Top.Width = 2;
+        row.Borders.Top.Color = Colors.Black;
     }
 
     public static void StyleHeaderRow(Row row)
@@ -37,6 +37,8 @@ public static class Style
     public static Table CreateTableWithProportionedWidth(Section section, List<int> columnProportionedWidth)
     {
         Table table = section.AddTable();
+        table.LeftPadding = Unit.FromPoint(2);
+        table.RightPadding = Unit.FromPoint(2);
         double sectionWidth = GetSectionWidth(section);
         foreach (var width in columnProportionedWidth)
         {
@@ -71,11 +73,10 @@ public static class Style
 
     private static double GetSectionWidth(Section section)
     {
-        if (section.Document is not null)
+        if (section.PageSetup.Orientation == Orientation.Portrait)
         {
-            section.PageSetup = section.Document.DefaultPageSetup.Clone();
+            return section.PageSetup.PageWidth.Point - section.PageSetup.LeftMargin.Point - section.PageSetup.RightMargin.Point;
         }
-        section.PageSetup.PageFormat = PageFormat.A4;
-        return section.PageSetup.PageWidth.Point - section.PageSetup.LeftMargin.Point - section.PageSetup.RightMargin.Point;
+        else return section.PageSetup.PageHeight.Point - section.PageSetup.TopMargin.Point - section.PageSetup.BottomMargin.Point;
     }
 }

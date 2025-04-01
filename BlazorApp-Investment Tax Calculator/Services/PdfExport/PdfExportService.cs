@@ -21,9 +21,11 @@ public class PdfExportService
         ISection section104Section = new Section104HistorySection(uKSection104Pools);
         ISection endOfYearSection104StatusSection = new EndOfYearSection104StatusSection(uKSection104Pools);
         ISection dividendSummarySection = new DividendSummarySection(dividendCalculationResult);
+        ISection disposalDetailSection = new DisposalDetailSection(tradeCalculationResult);
         AllSections = [
             yearSummarySection,
             dividendSummarySection,
+            disposalDetailSection,
             endOfYearSection104StatusSection,
             section104Section,
             allTradesListSection
@@ -35,12 +37,14 @@ public class PdfExportService
         {
             throw new InvalidOperationException("No sections selected for export");
         }
+        //sort the sections in the order they appear in AllSections, as ordering of SelectedSections is not updated in sync with UI
         SelectedSections = [.. SelectedSections.OrderBy(section => AllSections.FindIndex(s => s.Name == section))];
         var document = new Document();
 
         foreach (var sectionName in SelectedSections)
         {
             Section pdfSection = document.AddSection();
+            pdfSection.PageSetup = SetPageSetup(document);
             if (sectionName == SelectedSections[0])
             {
                 AddDocumentTitle(pdfSection, $"Investment Tax Report for year {year}");
@@ -78,5 +82,16 @@ public class PdfExportService
     {
         Paragraph paragraph = section.AddParagraph(title);
         Style.StyleTopTitle(paragraph);
+    }
+
+    private PageSetup SetPageSetup(Document document)
+    {
+        PageSetup pageSetup = document.DefaultPageSetup.Clone();
+        pageSetup.Orientation = Orientation.Landscape;
+        pageSetup.BottomMargin = Unit.FromInch(1);
+        pageSetup.TopMargin = Unit.FromInch(1);
+        pageSetup.LeftMargin = Unit.FromInch(1);
+        pageSetup.RightMargin = Unit.FromInch(1);
+        return pageSetup;
     }
 }

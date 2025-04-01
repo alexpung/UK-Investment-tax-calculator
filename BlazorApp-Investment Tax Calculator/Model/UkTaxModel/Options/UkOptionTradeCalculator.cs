@@ -197,7 +197,7 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
             {
                 allowableCost = WrappedMoney.GetBaseCurrencyZero();
             }
-            tradeMatch = CreateTradeMatch(tradePairSorter, assignmentQty, allowableCost, disposalProceed, $"{assignmentQty:F2} option cash settled.", taxMatchType);
+            tradeMatch = CreateTradeMatch(tradePairSorter, assignmentQty, allowableCost, disposalProceed, $"{assignmentQty:F2} option is cash settled.", taxMatchType);
         }
         else
         {
@@ -209,7 +209,7 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
                 tradePairSorter.EarlierTrade.RefundDisposalQty(assignmentQty);
             }
             tradeMatch = CreateTradeMatch(tradePairSorter, assignmentQty, WrappedMoney.GetBaseCurrencyZero(), WrappedMoney.GetBaseCurrencyZero(),
-                $"{assignmentQty} option assigned.", taxMatchType);
+                $"{assignmentQty} option assigned. Option premium is carried over to trade of the underlying asset and no tax is assessed for this match", taxMatchType);
         }
         AssignTradeMatch(tradePairSorter, assignmentQty, tradeMatch, tradeMatch);
     }

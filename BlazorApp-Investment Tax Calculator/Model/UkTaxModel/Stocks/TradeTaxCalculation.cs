@@ -18,7 +18,13 @@ public class TradeTaxCalculation : ITradeTaxCalculation
     public int Id { get; init; }
     public List<Trade> TradeList { get; init; }
     public List<TradeMatch> MatchHistory { get; init; } = [];
+    /// <summary>
+    /// Total allowable cost of the matched acquisitions
+    /// </summary>
     public WrappedMoney TotalAllowableCost => MatchHistory.Sum(tradeMatch => tradeMatch.BaseCurrencyMatchAllowableCost);
+    /// <summary>
+    /// Total proceeds that are matched with acquisitions
+    /// </summary>
     public virtual WrappedMoney TotalProceeds => MatchHistory.Sum(tradeMatch => tradeMatch.BaseCurrencyMatchDisposalProceed);
     public WrappedMoney Gain => AcquisitionDisposal == TradeType.DISPOSAL ? TotalProceeds - TotalAllowableCost : WrappedMoney.GetBaseCurrencyZero();
     /// <summary>
