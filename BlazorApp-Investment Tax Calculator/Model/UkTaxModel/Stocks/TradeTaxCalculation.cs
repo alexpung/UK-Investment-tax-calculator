@@ -44,9 +44,9 @@ public class TradeTaxCalculation : ITradeTaxCalculation
     public decimal UnmatchedQty { get; protected set; }
     public virtual TradeType AcquisitionDisposal { get; init; }
     public bool CalculationCompleted => UnmatchedQty == 0;
-    public DateTime Date => TradeList[0].Date;
-    public AssetCategoryType AssetCategoryType => TradeList[0].AssetType;
-    public string AssetName => TradeList[0].AssetName;
+    public DateTime Date { get; init; }
+    public AssetCategoryType AssetCategoryType { get; init; }
+    public string AssetName { get; init; }
 
 
     /// <summary>
@@ -60,7 +60,7 @@ public class TradeTaxCalculation : ITradeTaxCalculation
         {
             throw new ArgumentException("Not all trades that is put in TradeTaxCalculation is on the same BUY/SELL side");
         }
-        TradeList = trades.ToList();
+        TradeList = [.. trades];
         TotalCostOrProceed = trades.Sum(trade => trade.NetProceed);
         UnmatchedCostOrProceed = TotalCostOrProceed;
         TotalQty = trades.Sum(trade => trade.Quantity);
@@ -68,6 +68,10 @@ public class TradeTaxCalculation : ITradeTaxCalculation
         UnmatchedQty = TotalQty;
         AcquisitionDisposal = trades.First().AcquisitionDisposal;
         Id = Interlocked.Increment(ref _nextId);
+        AssetName = TradeList[0].AssetName;
+        AssetCategoryType = TradeList[0].AssetType;
+        Date = TradeList[0].Date;
+
     }
 
     public virtual void MatchQty(decimal demandedQty)
