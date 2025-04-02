@@ -38,6 +38,9 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
     /// True if the option is cash settled, false if the option is settled by the underlying asset
     /// </summary>
     public bool IsCashSettled { get; init; }
+    public List<OptionTrade> SettlementTradeList { get; init; } = [];
+    public WrappedMoney GetSettlementTransactionCost => SettlementTradeList.Sum(trade => trade.NetProceed) * -1;
+
     /// <summary>
     /// When short an option, the option get "disappear" and the taxable proceed is reduced when the option is assigned. The premium get rolled to the assigned trade instead.
     /// This number indicate the amount to subtract from the full disposal proceed
@@ -88,16 +91,22 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
         OwnerExercisedQty = trades.Where(trade => trade.TradeReason == TradeReason.OwnerExerciseOption).Sum(trade => trade.Quantity);
         OrderedTradeQty = trades.Where(trade => trade.TradeReason == TradeReason.OrderedTrade).Sum(trade => trade.Quantity);
         PUTCALL = trades.First().PUTCALL;
-        IEnumerable<bool> settlementTypes = trades
-            .Where(trade => trade.TradeReason is TradeReason.OwnerExerciseOption or TradeReason.OptionAssigned)
-            .Select(trade => trade.CashSettled)
-            .Distinct();
-        if (!settlementTypes.Any()) IsCashSettled = false;
-        else if (settlementTypes.Count() > 1)
+        List<OptionTrade> settlementTrades = [.. trades.Where(trade => trade.TradeReason is TradeReason.OwnerExerciseOption or TradeReason.OptionAssigned)];
+        if (settlementTrades.TrueForAll(trade => trade.CashSettled) && settlementTrades.Count > 0)
+        {
+            IsCashSettled = true;
+        }
+        else if (settlementTrades.TrueForAll(trade => !trade.CashSettled) && settlementTrades.Count > 0)
+        {
+            IsCashSettled = false;
+            TradeList = [.. TradeList.Except(settlementTrades)];
+            SettlementTradeList.AddRange(settlementTrades);
+            TotalCostOrProceed = TradeList.Sum(trade => trade.NetProceed);
+        }
+        else if (settlementTrades.Count > 0)
         {
             throw new ArgumentException("Unexpected option that is both cash and underlying settled");
         }
-        else IsCashSettled = settlementTypes.First();
     }
 
 
@@ -138,9 +147,9 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
             {
                 WrappedMoney exerciseAllowableCost = allowableCost * OwnerExercisedQty / matchQty;
                 allowableCost -= exerciseAllowableCost;
-                additionalInformation += $"{OwnerExercisedQty} option exercised. ";
+                additionalInformation += $"{OwnerExercisedQty} option exercised. Premium carries over to the underlying trade.";
                 matchDisposalProceedQty -= OwnerExercisedQty;
-                AttachTradeToUnderlying(exerciseAllowableCost, $"Option premium adjustment due to execising option", TradeReason.OwnerExerciseOption);
+                AttachTradeToUnderlying(exerciseAllowableCost + GetSettlementTransactionCost, $"Option premium adjustment due to execising option", TradeReason.OwnerExerciseOption);
             }
             if (OwnerExercisedQty > 0 && IsCashSettled) additionalInformation += $"{OwnerExercisedQty:F2} option cash settled.";
             TradeMatch tradeMatch = new()
@@ -172,7 +181,7 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
         // if you are assigned a put, you buy the underlying asset and the premium you received when you wrote the put is deducted from the acquisition cost
         // if you are execising a put, you sell the underlying asset and the premium you pay when you buy the put is deducted from the disposal proceed
         if (PUTCALL == PUTCALL.PUT) attachedPremium = attachedPremium * -1;
-        OptionTrade exerciseTrade = (OptionTrade)TradeList.First(trade => ((OptionTrade)trade).ExerciseOrExercisedTrade?.TradeReason == tradeReason);
+        OptionTrade exerciseTrade = SettlementTradeList.First(trade => trade.ExerciseOrExercisedTrade?.TradeReason == tradeReason);
         exerciseTrade.ExerciseOrExercisedTrade!.AttachOptionTrade(attachedPremium, comment);
     }
 
