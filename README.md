@@ -8,15 +8,16 @@ To help report UK tax for dividend and capital gain.
 https://alexpung.github.io/UK-Investment-tax-calculator/
 
 ## What is so special about this project?
-1.  It is a web app so no installation required and secure.
-2. Support trades and dividends in foreign currency.
-3. Support shorting and forward split corporate action. (Reverse split I need sample)
-4. Implementation of TCGA92/S105 (1)(a): Multiple trades in the same day for the same Buy/Sell side is treated as a single trade. This affect same day/bread and breakfast calculation.
+1. It is a web app so no installation required and you don't need to worry about malware.
+2. Privacy oriented. There is no web server hosting your trade data, the entire calculation is done in your brower.
+3. Support trades and dividends in foreign currency.
+4. Support shorting and forward split corporate action. (Reverse split I need sample)
+5. Implementation of TCGA92/S105 (1)(a): Multiple trades in the same day for the same Buy/Sell side is treated as a single trade. This affect same day/bread and breakfast calculation.
 
 ## Supported import format and brokers
 1. Interactive Brokers Flex queries only for the moment.
 
-User can also add trades manually using the "Add trades" page.
+User can also add trades manually using the "Add trades" page or you can also try to mimic the data format.
 
 An example is included (see below). For other brokers I suggest copying the xml example and modifying it manually if you only have small number of trades.
 Or if you can code new parsers are welcome.
@@ -46,13 +47,14 @@ https://github.com/alexpung/UK-Investment-tax-calculator/tree/master/BlazorApp-I
 
 #### Pending implementation
 More corporate actions  
-PDF report
 Tests and feedback are welcome, bugs are to be expected.  
 
 #### Output files
 1. Dividend summary by year.
 2. Trade summary by year and trade details.
 3. Section104 histories showing changes in the pool over time.
+
+NEW: Customisable PDF export is now experimental.
 
 ## To use:
 File sample is [here](https://github.com/alexpung/UK-Investment-tax-calculator/blob/master/UnitTest/System%20Test/Interactive%20brokers/TaxExample.xml "here"), you can download it and put it in the web app to see how it works.
@@ -67,7 +69,7 @@ File sample is [here](https://github.com/alexpung/UK-Investment-tax-calculator/b
 4. Open the web application.
 5. Go to the import sections and select the files, then press the "Upload" button.
 6. Press "Start Calculation".
-7. Export the results by pressing the buttons at the export file section.
+7. Export the results by pressing the buttons at the export file section, or go to PDF export and create a report.
 
 ## Privacy concerns:
 
