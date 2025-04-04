@@ -232,7 +232,7 @@ public class UkTradeCalculatorOptionExerciseTest
     }
 
     [Theory]
-    [InlineData("01-Jan-17 09:30:00", 501, 502)]
+    [InlineData("01-Jan-17 09:30:00", 501, 501)]
     [InlineData("01-Dec-17 09:30:00", 0, 0)]
     [InlineData("01-Jan-18 09:30:00", 0, 0)]
     public void ShortCallOptionWrittenAndAssignedWithExerciseCost(string writeCallOptionDateString, decimal expectedTotalProceedAmount, decimal refundAmount)
@@ -308,9 +308,201 @@ public class UkTradeCalculatorOptionExerciseTest
 
         var stockDisposalTrade = result.Find(trade => trade is TradeTaxCalculation { AcquisitionDisposal: TradeType.DISPOSAL, TotalQty: 100 });
         stockDisposalTrade!.TotalAllowableCost.ShouldBe(new WrappedMoney(70002));
-        stockDisposalTrade.TotalProceeds.ShouldBe(new WrappedMoney(80000 + 503 - 1 - 4));
-        stockDisposalTrade.Gain.ShouldBe(new WrappedMoney(10496));
+        stockDisposalTrade.TotalProceeds.ShouldBe(new WrappedMoney(80000 + 502 - 1 - 1 - 4));
+        stockDisposalTrade.Gain.ShouldBe(new WrappedMoney(10494));
     }
 
+    [Theory]
+    [InlineData("01-Jan-17 09:30:00", 499, 499)]
+    [InlineData("01-Dec-17 09:30:00", 0, 0)]
+    [InlineData("01-Jan-18 09:30:00", 0, 0)]
+    public void ShortTwoCallOptionWrittenAndAssignedWithExerciseCost(string writeCallOptionDateString, decimal expectedTotalProceedAmount, decimal refundAmount)
+    {
+        var BuyStockTrade = new Trade
+        {
+            AssetName = "GOOG",
+            Date = DateTime.Parse("1-Jan-18 16:20:00", CultureInfo.InvariantCulture),
+            Quantity = 200,
+            GrossProceed = new DescribedMoney(140000, "USD", 1),
+            Expenses = [new DescribedMoney(2, "GBP", 1)],
+            AcquisitionDisposal = TradeType.ACQUISITION,
+            Description = "Buy 100 shares of GOOG at $700",
+            TradeReason = TradeReason.OptionAssigned
+        };
 
+        var writeCallOptionTrade = new OptionTrade
+        {
+            AssetName = "GOOG180119C00800000",
+            Date = DateTime.Parse(writeCallOptionDateString, CultureInfo.InvariantCulture),
+            Underlying = "GOOG",
+            StrikePrice = new WrappedMoney(800),
+            ExpiryDate = DateTime.Parse("19-Jan-18 16:00:00", CultureInfo.InvariantCulture),
+            PUTCALL = PUTCALL.CALL,
+            Multiplier = 100,
+            TradeReason = TradeReason.OrderedTrade,
+            Quantity = 1,
+            GrossProceed = new DescribedMoney(500, "GBP", 1),
+            Expenses = [new DescribedMoney(1, "GBP", 1)],
+            AcquisitionDisposal = TradeType.DISPOSAL,
+            Description = "Write GOOG Call Option (800 Strike Price)"
+        };
+
+        var writeCallOptionTrade2 = new OptionTrade
+        {
+            AssetName = "GOOG180119C00800000",
+            Date = DateTime.Parse(writeCallOptionDateString, CultureInfo.InvariantCulture).AddDays(1),
+            Underlying = "GOOG",
+            StrikePrice = new WrappedMoney(800),
+            ExpiryDate = DateTime.Parse("19-Jan-18 16:00:00", CultureInfo.InvariantCulture),
+            PUTCALL = PUTCALL.CALL,
+            Multiplier = 100,
+            TradeReason = TradeReason.OrderedTrade,
+            Quantity = 1,
+            GrossProceed = new DescribedMoney(700, "GBP", 1),
+            Expenses = [new DescribedMoney(1, "GBP", 1)],
+            AcquisitionDisposal = TradeType.DISPOSAL,
+            Description = "Write GOOG Call Option (800 Strike Price)"
+        };
+
+        var assignCallOptionTrade = new OptionTrade
+        {
+            AssetName = "GOOG180119C00800000",
+            Date = DateTime.Parse("19-Jan-18 16:20:00", CultureInfo.InvariantCulture),
+            Underlying = "GOOG",
+            StrikePrice = new WrappedMoney(800),
+            ExpiryDate = DateTime.Parse("19-Jan-18 16:00:00", CultureInfo.InvariantCulture),
+            PUTCALL = PUTCALL.CALL,
+            Multiplier = 100,
+            TradeReason = TradeReason.OptionAssigned,
+            Quantity = 2,
+            GrossProceed = new DescribedMoney(0, "GBP", 1),
+            Expenses = [new DescribedMoney(2, "GBP", 1)],
+            AcquisitionDisposal = TradeType.ACQUISITION,
+            Description = "GOOG Call Option Assigned",
+        };
+
+        var sellStockTrade = new Trade
+        {
+            AssetName = "GOOG",
+            Date = DateTime.Parse("19-Jan-18 16:20:00", CultureInfo.InvariantCulture),
+            Quantity = 200,
+            GrossProceed = new DescribedMoney(160000, "USD", 1),
+            Expenses = [new DescribedMoney(4, "GBP", 1)],
+            AcquisitionDisposal = TradeType.DISPOSAL,
+            Description = "Sell 200 shares of GOOG at $800",
+            TradeReason = TradeReason.OptionAssigned
+        };
+
+        List<ITradeTaxCalculation> result = TradeCalculationHelper.CalculateTrades(
+            [BuyStockTrade, writeCallOptionTrade, writeCallOptionTrade2, assignCallOptionTrade, sellStockTrade],
+            out _
+        );
+
+        var optionDisposalTrade = result.Find(trade => trade is OptionTradeTaxCalculation { AcquisitionDisposal: TradeType.DISPOSAL });
+        optionDisposalTrade!.TotalAllowableCost.ShouldBe(WrappedMoney.GetBaseCurrencyZero());
+        optionDisposalTrade.TotalProceeds.Amount.ShouldBe(expectedTotalProceedAmount);
+        optionDisposalTrade.Gain.Amount.ShouldBe(expectedTotalProceedAmount);
+        ((OptionTradeTaxCalculation)optionDisposalTrade).TaxRepayList.Sum(taxRepay => taxRepay.RefundAmount.Amount).ShouldBe(refundAmount);
+
+        var stockDisposalTrade = result.Find(trade => trade is TradeTaxCalculation { AcquisitionDisposal: TradeType.DISPOSAL, TotalQty: 200 });
+        stockDisposalTrade!.TotalAllowableCost.ShouldBe(new WrappedMoney(140002));
+        stockDisposalTrade.TotalProceeds.ShouldBe(new WrappedMoney(160000 + 500 - 1 + 700 - 1 - 2 - 4));
+        stockDisposalTrade.Gain.ShouldBe(new WrappedMoney(21190));
+    }
+
+    [Fact]
+    public void LongTwoCallOptionBoughtAndExercisedWithExeciseCost()
+    {
+        var buyCallOptionTrade = new OptionTrade
+        {
+            AssetName = "GOOG180119C00800000",
+            Date = DateTime.Parse("01-Jan-18 09:30:00", CultureInfo.InvariantCulture),
+            Underlying = "GOOG",
+            StrikePrice = new WrappedMoney(800),
+            ExpiryDate = DateTime.Parse("19-Jan-18 16:00:00", CultureInfo.InvariantCulture),
+            PUTCALL = PUTCALL.CALL,
+            Multiplier = 100,
+            TradeReason = TradeReason.OrderedTrade,
+            Quantity = 1,
+            GrossProceed = new DescribedMoney(502, "GBP", 1),
+            Expenses = [new DescribedMoney(1, "GBP", 1)],
+            AcquisitionDisposal = TradeType.ACQUISITION,
+            Description = "Buy GOOG Call Option (800 Strike Price)"
+        };
+
+        var buyCallOptionTrade2 = new OptionTrade
+        {
+            AssetName = "GOOG180119C00800000",
+            Date = DateTime.Parse("02-Jan-18 09:30:00", CultureInfo.InvariantCulture),
+            Underlying = "GOOG",
+            StrikePrice = new WrappedMoney(800),
+            ExpiryDate = DateTime.Parse("19-Jan-18 16:00:00", CultureInfo.InvariantCulture),
+            PUTCALL = PUTCALL.CALL,
+            Multiplier = 100,
+            TradeReason = TradeReason.OrderedTrade,
+            Quantity = 2,
+            GrossProceed = new DescribedMoney(1000, "GBP", 1),
+            Expenses = [new DescribedMoney(2, "GBP", 1)],
+            AcquisitionDisposal = TradeType.ACQUISITION,
+            Description = "Buy GOOG Call Option (800 Strike Price)"
+        };
+
+        var sellCallOptionTrade = new OptionTrade
+        {
+            AssetName = "GOOG180119C00800000",
+            Date = DateTime.Parse("19-Jan-18 09:30:00", CultureInfo.InvariantCulture),
+            Underlying = "GOOG",
+            StrikePrice = new WrappedMoney(800),
+            ExpiryDate = DateTime.Parse("19-Jan-18 16:00:00", CultureInfo.InvariantCulture),
+            PUTCALL = PUTCALL.CALL,
+            Multiplier = 100,
+            TradeReason = TradeReason.OrderedTrade,
+            Quantity = 1,
+            GrossProceed = new DescribedMoney(500, "GBP", 1),
+            Expenses = [],
+            AcquisitionDisposal = TradeType.DISPOSAL,
+            Description = "Sell GOOG Call Option (800 Strike Price)"
+        };
+
+        var exerciseCallOptionTrade = new OptionTrade
+        {
+            AssetName = "GOOG180119C00800000",
+            Date = DateTime.Parse("19-Jan-18 16:20:00", CultureInfo.InvariantCulture),
+            Underlying = "GOOG",
+            StrikePrice = new WrappedMoney(800),
+            ExpiryDate = DateTime.Parse("19-Jan-18 16:00:00", CultureInfo.InvariantCulture),
+            PUTCALL = PUTCALL.CALL,
+            Multiplier = 100,
+            TradeReason = TradeReason.OwnerExerciseOption,
+            Quantity = 2,
+            GrossProceed = new DescribedMoney(0, "GBP", 1),
+            Expenses = [new DescribedMoney(3, "GBP", 1)],
+            AcquisitionDisposal = TradeType.DISPOSAL,
+            Description = "GOOG Call Option Exercised",
+        };
+
+        var exerciseStockTrade = new Trade
+        {
+            AssetName = "GOOG",
+            Date = DateTime.Parse("19-Jan-18 16:20:00", CultureInfo.InvariantCulture),
+            Quantity = 200,
+            GrossProceed = new DescribedMoney(160000, "USD", 1),
+            Expenses = [],
+            AcquisitionDisposal = TradeType.ACQUISITION,
+            Description = "Exercise call to buy 100 shares at $800",
+            TradeReason = TradeReason.OwnerExerciseOption
+        };
+
+        List<ITradeTaxCalculation> result = TradeCalculationHelper.CalculateTrades(
+           [buyCallOptionTrade, buyCallOptionTrade2, sellCallOptionTrade, exerciseCallOptionTrade, exerciseStockTrade],
+           out _
+       );
+
+        var optionDisposalTrade = result.Find(trade => trade is OptionTradeTaxCalculation { AcquisitionDisposal: TradeType.DISPOSAL });
+        optionDisposalTrade!.TotalAllowableCost.Amount.ShouldBe(501.67m, 0.01m);
+        optionDisposalTrade.TotalProceeds.Amount.ShouldBe(500);
+        optionDisposalTrade.Gain.Amount.ShouldBe(-1.67m, 0.01m);
+        var tradeAcquisitionTrade = result.Find(trade => trade.AssetCategoryType is AssetCategoryType.STOCK);
+        tradeAcquisitionTrade!.TotalCostOrProceed.Amount.ShouldBe(161006.33m, 0.01m);
+    }
 }
