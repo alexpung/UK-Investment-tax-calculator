@@ -39,7 +39,17 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
     /// </summary>
     public bool IsCashSettled { get; init; }
     public List<OptionTrade> SettlementTradeList { get; init; } = [];
-    public WrappedMoney GetSettlementTransactionCost => SettlementTradeList.Sum(trade => trade.NetProceed) * -1;
+
+    /// <summary>
+    /// Cost is negative value
+    /// </summary>
+    /// <param name="qty"></param>
+    /// <returns></returns>
+    public WrappedMoney GetSettlementTransactionCost(decimal qty)
+    {
+        decimal proportion = qty / SettlementTradeList.Sum(trade => trade.Quantity);
+        return SettlementTradeList.Sum(trade => trade.NetProceed) * proportion * -1;
+    }
 
     /// <summary>
     /// When short an option, the option get "disappear" and the taxable proceed is reduced when the option is assigned. The premium get rolled to the assigned trade instead.
@@ -145,11 +155,12 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
             }
             if (OwnerExercisedQty > 0 && !IsCashSettled)
             {
-                WrappedMoney exerciseAllowableCost = allowableCost * OwnerExercisedQty / matchQty;
+                decimal matchExerciseQty = matchQty * OwnerExercisedQty / TotalQty;
+                WrappedMoney exerciseAllowableCost = allowableCost * matchExerciseQty / TotalQty;
                 allowableCost -= exerciseAllowableCost;
-                additionalInformation += $"{OwnerExercisedQty} option exercised. Premium carries over to the underlying trade.";
-                matchDisposalProceedQty -= OwnerExercisedQty;
-                AttachTradeToUnderlying(exerciseAllowableCost + GetSettlementTransactionCost, $"Option premium adjustment due to execising option", TradeReason.OwnerExerciseOption);
+                additionalInformation += $"{matchExerciseQty:F2} option exercised. Premium carries over to the underlying trade.";
+                matchDisposalProceedQty -= matchExerciseQty;
+                AttachTradeToUnderlying(exerciseAllowableCost + GetSettlementTransactionCost(matchExerciseQty), $"Option premium adjustment due to execising option", TradeReason.OwnerExerciseOption);
             }
             if (OwnerExercisedQty > 0 && IsCashSettled) additionalInformation += $"{OwnerExercisedQty:F2} option cash settled.";
             TradeMatch tradeMatch = new()
