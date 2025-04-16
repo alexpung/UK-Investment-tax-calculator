@@ -109,6 +109,9 @@ public class YearlyTaxSummarySection(TradeCalculationResult tradeCalculationResu
         Row capitalGainAllowanceRow = table.AddRow();
         capitalGainAllowanceRow.Cells[0].AddParagraph("Capital Gain Allowance");
         capitalGainAllowanceRow.Cells[1].AddParagraph(taxYearCgtReport.CapitalGainAllowance.ToString("C", CultureInfo.CreateSpecificCulture("en-GB")));
+        Row AvailableLossRow = table.AddRow();
+        AvailableLossRow.Cells[0].AddParagraph("Available Loss in previous years");
+        AvailableLossRow.Cells[1].AddParagraph(taxYearCgtReport.AvailableCapitalLossesFromPreviousYears.ToString("C", CultureInfo.CreateSpecificCulture("en-GB"));
         Row cgtAllowanceBroughtForwardAndUsedRow = table.AddRow();
         cgtAllowanceBroughtForwardAndUsedRow.Cells[0].AddParagraph("CGT Allowance Brought Forward and Used");
         cgtAllowanceBroughtForwardAndUsedRow.Cells[1].AddParagraph(taxYearCgtReport.CgtAllowanceBroughtForwardAndUsed.ToString("C", CultureInfo.CreateSpecificCulture("en-GB")));

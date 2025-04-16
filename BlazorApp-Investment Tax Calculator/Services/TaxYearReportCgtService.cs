@@ -20,16 +20,17 @@ public class TaxYearReportService(TradeCalculationResult tradeCalculationResult,
             decimal netGainInYear = totalGainInYear + totalLossInYear;
             decimal capitalGainAllowance = _ukCapitalGainAllowance.GetTaxAllowance(taxYear);
             decimal lossBroughtForward = 0m;
+            decimal lossesAvailableToBroughtForward = capitalLossInPreviousYears;
+
             if (netGainInYear < 0)
             {
-                capitalLossInPreviousYears += netGainInYear * -1;
+                lossesAvailableToBroughtForward += netGainInYear * -1;
             }
             if (netGainInYear >= capitalGainAllowance)
             {
                 lossBroughtForward = Math.Min(capitalLossInPreviousYears, netGainInYear - capitalGainAllowance);
-                capitalLossInPreviousYears -= lossBroughtForward;
+                lossesAvailableToBroughtForward -= lossBroughtForward;
             }
-
 
             yield return new TaxYearCgtReport()
             {
@@ -40,8 +41,7 @@ public class TaxYearReportService(TradeCalculationResult tradeCalculationResult,
                 NetCapitalGain = totalGainInYear + totalLossInYear,
                 CgtAllowanceBroughtForwardAndUsed = lossBroughtForward,
                 TaxableGainAfterAllowanceAndLossOffset = Math.Max(netGainInYear - capitalGainAllowance - lossBroughtForward, 0),
-                LossesAvailableToBroughtForward = capitalLossInPreviousYears
-
+                LossesAvailableToBroughtForward = lossesAvailableToBroughtForward
             };
         }
 
