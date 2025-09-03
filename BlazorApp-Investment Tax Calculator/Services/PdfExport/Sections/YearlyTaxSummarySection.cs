@@ -4,8 +4,6 @@ using InvestmentTaxCalculator.Model;
 using MigraDoc.DocumentObjectModel;
 using MigraDoc.DocumentObjectModel.Tables;
 
-using System.Globalization;
-
 namespace InvestmentTaxCalculator.Services.PdfExport.Sections;
 
 public class YearlyTaxSummarySection(TradeCalculationResult tradeCalculationResult, TaxYearReportService taxYearReportService) : ISection
@@ -98,29 +96,29 @@ public class YearlyTaxSummarySection(TradeCalculationResult tradeCalculationResu
         Table table = Style.CreateTableWithProportionedWidth(section, [(250, ParagraphAlignment.Left), (200, ParagraphAlignment.Right)]);
         Row totalGainRow = table.AddRow();
         totalGainRow.Cells[0].AddParagraph("Total Gain excluding loss");
-        totalGainRow.Cells[1].AddParagraph(taxYearCgtReport.TotalGainInYear.ToString("C", CultureInfo.CreateSpecificCulture("en-GB")));
+        totalGainRow.Cells[1].AddParagraph(taxYearCgtReport.TotalGainInYear.ToString());
         Row totalLossRow = table.AddRow();
         totalLossRow.Cells[0].AddParagraph("Total Loss");
-        totalLossRow.Cells[1].AddParagraph(taxYearCgtReport.TotalLossInYear.ToString("C", CultureInfo.CreateSpecificCulture("en-GB")));
+        totalLossRow.Cells[1].AddParagraph(taxYearCgtReport.TotalLossInYear.ToString());
         Row netCapitalGainRow = table.AddRow();
         Style.StyleSumRow(netCapitalGainRow);
         netCapitalGainRow.Cells[0].AddParagraph("Net Capital Gain");
-        netCapitalGainRow.Cells[1].AddParagraph(taxYearCgtReport.NetCapitalGain.ToString("C", CultureInfo.CreateSpecificCulture("en-GB")));
+        netCapitalGainRow.Cells[1].AddParagraph(taxYearCgtReport.NetCapitalGain.ToString());
         Row capitalGainAllowanceRow = table.AddRow();
         capitalGainAllowanceRow.Cells[0].AddParagraph("Capital Gain Allowance");
-        capitalGainAllowanceRow.Cells[1].AddParagraph(taxYearCgtReport.CapitalGainAllowance.ToString("C", CultureInfo.CreateSpecificCulture("en-GB")));
+        capitalGainAllowanceRow.Cells[1].AddParagraph(taxYearCgtReport.CapitalGainAllowance.ToString());
         Row AvailableLossRow = table.AddRow();
         AvailableLossRow.Cells[0].AddParagraph("Available Loss in previous years");
-        AvailableLossRow.Cells[1].AddParagraph(taxYearCgtReport.AvailableCapitalLossesFromPreviousYears.ToString("C", CultureInfo.CreateSpecificCulture("en-GB"));
+        AvailableLossRow.Cells[1].AddParagraph(taxYearCgtReport.AvailableCapitalLossesFromPreviousYears.ToString());
         Row cgtAllowanceBroughtForwardAndUsedRow = table.AddRow();
         cgtAllowanceBroughtForwardAndUsedRow.Cells[0].AddParagraph("CGT Allowance Brought Forward and Used");
-        cgtAllowanceBroughtForwardAndUsedRow.Cells[1].AddParagraph(taxYearCgtReport.CgtAllowanceBroughtForwardAndUsed.ToString("C", CultureInfo.CreateSpecificCulture("en-GB")));
+        cgtAllowanceBroughtForwardAndUsedRow.Cells[1].AddParagraph(taxYearCgtReport.CgtAllowanceBroughtForwardAndUsed.ToString());
         Row taxableGainAfterAllowanceAndLossOffsetRow = table.AddRow();
         taxableGainAfterAllowanceAndLossOffsetRow.Cells[0].AddParagraph("Taxable Gain after Allowance and Loss Offset");
-        taxableGainAfterAllowanceAndLossOffsetRow.Cells[1].AddParagraph(taxYearCgtReport.TaxableGainAfterAllowanceAndLossOffset.ToString("C", CultureInfo.CreateSpecificCulture("en-GB")));
+        taxableGainAfterAllowanceAndLossOffsetRow.Cells[1].AddParagraph(taxYearCgtReport.TaxableGainAfterAllowanceAndLossOffset.ToString());
         Row lossesAvailableToBroughtForwardRow = table.AddRow();
         Style.StyleSumRow(lossesAvailableToBroughtForwardRow);
         lossesAvailableToBroughtForwardRow.Cells[0].AddParagraph("Losses Available to Brought Forward");
-        lossesAvailableToBroughtForwardRow.Cells[1].AddParagraph(taxYearCgtReport.LossesAvailableToBroughtForward.ToString("C", CultureInfo.CreateSpecificCulture("en-GB")));
+        lossesAvailableToBroughtForwardRow.Cells[1].AddParagraph(taxYearCgtReport.LossesAvailableToBroughtForward.ToString());
     }
 }

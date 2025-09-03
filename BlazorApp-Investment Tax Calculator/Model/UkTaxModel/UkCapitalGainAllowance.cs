@@ -2,7 +2,6 @@
 
 public class UkCapitalGainAllowance
 {
-    private const decimal _defaultAllowance = 3000;
     public Dictionary<int, decimal> Allowances { get; } = new()
     {
         { 2015, 11100m },
@@ -17,15 +16,15 @@ public class UkCapitalGainAllowance
         { 2024, 3000m }
     };
 
-    public decimal GetTaxAllowance(int year)
+    public WrappedMoney GetTaxAllowance(int year)
     {
         if (Allowances.TryGetValue(year, out decimal allowance))
         {
-            return allowance;
+            return new WrappedMoney(allowance, "GBP");
         }
         else
         {
-            return _defaultAllowance;
+            return new WrappedMoney(3000, "GBP");
         }
     }
 }

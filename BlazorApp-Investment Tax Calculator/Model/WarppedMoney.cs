@@ -75,6 +75,26 @@ public record WrappedMoney : IComparable<WrappedMoney>, IEquatable<WrappedMoney>
         return new WrappedMoney(newMoney);
     }
 
+    public static bool operator >=(WrappedMoney money1, WrappedMoney money2)
+    {
+        return money1._nMoney >= money2._nMoney;
+    }
+
+    public static bool operator <=(WrappedMoney money1, WrappedMoney money2)
+    {
+        return money1._nMoney <= money2._nMoney;
+    }
+
+    public static bool operator >(WrappedMoney money1, WrappedMoney money2)
+    {
+        return money1._nMoney > money2._nMoney;
+    }
+
+    public static bool operator <(WrappedMoney money1, WrappedMoney money2)
+    {
+        return money1._nMoney < money2._nMoney;
+    }
+
     public WrappedMoney Floor()
     {
         return new WrappedMoney(_nMoney.Floor());
@@ -102,6 +122,20 @@ public record WrappedMoney : IComparable<WrappedMoney>, IEquatable<WrappedMoney>
     {
         if (other == null) return false;
         return Amount == other.Amount && Currency == other.Currency;
+    }
+
+    public static WrappedMoney Min(WrappedMoney wrappedMoney1, WrappedMoney wrappedMoney2)
+    {
+        if (wrappedMoney1.Currency != wrappedMoney2.Currency) throw new ArgumentException($"Cannot compare {wrappedMoney1.Currency} with {wrappedMoney2.Currency}");
+        if (wrappedMoney1 < wrappedMoney2) return wrappedMoney1;
+        return wrappedMoney2;
+    }
+
+    public static WrappedMoney Max(WrappedMoney wrappedMoney1, WrappedMoney wrappedMoney2)
+    {
+        if (wrappedMoney1.Currency != wrappedMoney2.Currency) throw new ArgumentException($"Cannot compare {wrappedMoney1.Currency} with {wrappedMoney2.Currency}");
+        if (wrappedMoney1 > wrappedMoney2) return wrappedMoney1;
+        return wrappedMoney2;
     }
 
     public override int GetHashCode()

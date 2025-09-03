@@ -32,15 +32,15 @@ public class TaxYearCgtByTypeReportService(TradeCalculationResult tradeCalculati
         {
             TaxYear = taxYear,
             ListedSecurityNumberOfDisposals = tradeCalculationResult.GetNumberOfDisposals([taxYear], AssetGroupType.LISTEDSHARES),
-            ListedSecurityDisposalProceeds = tradeCalculationResult.GetDisposalProceeds([taxYear], AssetGroupType.LISTEDSHARES).Amount,
-            ListedSecurityAllowableCosts = tradeCalculationResult.GetAllowableCosts([taxYear], AssetGroupType.LISTEDSHARES).Amount,
-            ListedSecurityGainExcludeLoss = tradeCalculationResult.GetTotalGain([taxYear], AssetGroupType.LISTEDSHARES).Amount,
-            ListedSecurityLoss = tradeCalculationResult.GetTotalLoss([taxYear], AssetGroupType.LISTEDSHARES).Amount,
+            ListedSecurityDisposalProceeds = tradeCalculationResult.GetDisposalProceeds([taxYear], AssetGroupType.LISTEDSHARES),
+            ListedSecurityAllowableCosts = tradeCalculationResult.GetAllowableCosts([taxYear], AssetGroupType.LISTEDSHARES),
+            ListedSecurityGainExcludeLoss = tradeCalculationResult.GetTotalGain([taxYear], AssetGroupType.LISTEDSHARES),
+            ListedSecurityLoss = tradeCalculationResult.GetTotalLoss([taxYear], AssetGroupType.LISTEDSHARES),
             OtherAssetsNumberOfDisposals = tradeCalculationResult.GetNumberOfDisposals([taxYear], AssetGroupType.OTHERASSETS),
-            OtherAssetsDisposalProceeds = tradeCalculationResult.GetDisposalProceeds([taxYear], AssetGroupType.OTHERASSETS).Amount,
-            OtherAssetsAllowableCosts = tradeCalculationResult.GetAllowableCosts([taxYear], AssetGroupType.OTHERASSETS).Amount,
-            OtherAssetsGainExcludeLoss = tradeCalculationResult.GetTotalGain([taxYear], AssetGroupType.OTHERASSETS).Amount,
-            OtherAssetsLoss = tradeCalculationResult.GetTotalLoss([taxYear], AssetGroupType.OTHERASSETS).Amount
+            OtherAssetsDisposalProceeds = tradeCalculationResult.GetDisposalProceeds([taxYear], AssetGroupType.OTHERASSETS),
+            OtherAssetsAllowableCosts = tradeCalculationResult.GetAllowableCosts([taxYear], AssetGroupType.OTHERASSETS),
+            OtherAssetsGainExcludeLoss = tradeCalculationResult.GetTotalGain([taxYear], AssetGroupType.OTHERASSETS),
+            OtherAssetsLoss = tradeCalculationResult.GetTotalLoss([taxYear], AssetGroupType.OTHERASSETS)
         };
     }
 }

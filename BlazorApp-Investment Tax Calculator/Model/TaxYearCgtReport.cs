@@ -3,12 +3,12 @@
 public record TaxYearCgtReport
 {
     public int TaxYear { get; set; }
-    public decimal TotalGainInYear { get; set; }
-    public decimal TotalLossInYear { get; set; }
-    public decimal NetCapitalGain { get; set; }
-    public decimal CapitalGainAllowance { get; set; }
-    public decimal AvailableCapitalLossesFromPreviousYears { get; set; }
-    public decimal CgtAllowanceBroughtForwardAndUsed { get; set; }
-    public decimal TaxableGainAfterAllowanceAndLossOffset { get; set; }
-    public decimal LossesAvailableToBroughtForward { get; set; }
+    public required WrappedMoney TotalGainInYear { get; set; }
+    public required WrappedMoney TotalLossInYear { get; set; }
+    public required WrappedMoney NetCapitalGain { get; set; }
+    public required WrappedMoney CapitalGainAllowance { get; set; }
+    public required WrappedMoney AvailableCapitalLossesFromPreviousYears { get; set; }
+    public required WrappedMoney CgtAllowanceBroughtForwardAndUsed { get; set; }
+    public required WrappedMoney TaxableGainAfterAllowanceAndLossOffset { get; set; }
+    public required WrappedMoney LossesAvailableToBroughtForward { get; set; }
 }
