@@ -12,25 +12,28 @@ public class TaxYearReportService(TradeCalculationResult tradeCalculationResult,
         List<int> taxYears = [.. tradeCalculationResult.CalculatedTrade.Select(trade => taxYearConverter.ToTaxYear(trade.Date))
                                                                                                         .Distinct()
                                                                                                         .Order()];
-        decimal capitalLossInPreviousYears = 0m;
+        WrappedMoney capitalLossRunningCount = WrappedMoney.GetBaseCurrencyZero();
         foreach (int taxYear in taxYears)
         {
-            decimal totalGainInYear = tradeCalculationResult.GetTotalGain([taxYear]).Amount;
-            decimal totalLossInYear = tradeCalculationResult.GetTotalLoss([taxYear]).Amount; // Is a negative value
-            decimal netGainInYear = totalGainInYear + totalLossInYear;
-            decimal capitalGainAllowance = _ukCapitalGainAllowance.GetTaxAllowance(taxYear);
-            decimal lossBroughtForward = 0m;
-            if (netGainInYear < 0)
-            {
-                capitalLossInPreviousYears += netGainInYear * -1;
-            }
-            if (netGainInYear >= capitalGainAllowance)
-            {
-                lossBroughtForward = Math.Min(capitalLossInPreviousYears, netGainInYear - capitalGainAllowance);
-                capitalLossInPreviousYears -= lossBroughtForward;
-            }
+            WrappedMoney totalGainInYear = tradeCalculationResult.GetTotalGain([taxYear]);
+            WrappedMoney totalLossInYear = tradeCalculationResult.GetTotalLoss([taxYear]); // Is a negative value
+            WrappedMoney netGainInYear = totalGainInYear + totalLossInYear;
+            WrappedMoney capitalGainAllowance = _ukCapitalGainAllowance.GetTaxAllowance(taxYear);
+            WrappedMoney lossBroughtForward = WrappedMoney.GetBaseCurrencyZero();
+            WrappedMoney lossesAvailableToBroughtForward = capitalLossRunningCount;
+            WrappedMoney capitalLossInPreviousYears = capitalLossRunningCount;
 
-
+            if (netGainInYear.Amount < 0)
+            {
+                lossesAvailableToBroughtForward += netGainInYear * -1;
+            }
+            else if (netGainInYear >= capitalGainAllowance)
+            {
+                lossBroughtForward = WrappedMoney.Min(capitalLossInPreviousYears, netGainInYear - capitalGainAllowance);
+                Console.WriteLine($"{capitalLossInPreviousYears}, {netGainInYear}, {capitalGainAllowance}");
+                lossesAvailableToBroughtForward -= lossBroughtForward;
+            }
+            capitalLossRunningCount = lossesAvailableToBroughtForward;
             yield return new TaxYearCgtReport()
             {
                 TaxYear = taxYear,
@@ -39,9 +42,9 @@ public class TaxYearReportService(TradeCalculationResult tradeCalculationResult,
                 TotalLossInYear = totalLossInYear,
                 NetCapitalGain = totalGainInYear + totalLossInYear,
                 CgtAllowanceBroughtForwardAndUsed = lossBroughtForward,
-                TaxableGainAfterAllowanceAndLossOffset = Math.Max(netGainInYear - capitalGainAllowance - lossBroughtForward, 0),
-                LossesAvailableToBroughtForward = capitalLossInPreviousYears
-
+                TaxableGainAfterAllowanceAndLossOffset = WrappedMoney.Max(netGainInYear - capitalGainAllowance - lossBroughtForward, WrappedMoney.GetBaseCurrencyZero()),
+                LossesAvailableToBroughtForward = lossesAvailableToBroughtForward,
+                AvailableCapitalLossesFromPreviousYears = capitalLossInPreviousYears,
             };
         }
 

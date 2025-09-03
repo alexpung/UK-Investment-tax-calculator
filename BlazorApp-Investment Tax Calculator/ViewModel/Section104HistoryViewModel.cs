@@ -1,4 +1,5 @@
-﻿using InvestmentTaxCalculator.Model.UkTaxModel;
+﻿using InvestmentTaxCalculator.Model;
+using InvestmentTaxCalculator.Model.UkTaxModel;
 
 namespace InvestmentTaxCalculator.ViewModel;
 
@@ -10,12 +11,12 @@ public class Section104HistoryViewModel(Section104History section104History, str
     public decimal OldQuantity { get; } = section104History.OldQuantity;
     public decimal QuantityChange { get; } = section104History.QuantityChange;
     public decimal NewQuantity { get; } = section104History.OldQuantity + section104History.QuantityChange;
-    public decimal OldValue { get; } = section104History.OldValue.Amount;
-    public decimal ValueChange { get; } = section104History.ValueChange.Amount;
-    public decimal NewValue { get; } = section104History.OldValue.Amount + section104History.ValueChange.Amount;
-    public decimal OldContractValue { get; } = section104History.OldContractValue.Amount;
-    public decimal ContractValueChange { get; } = section104History.ContractValueChange.Amount;
-    public decimal NewContractValue { get; } = section104History.OldContractValue.Amount + section104History.ContractValueChange.Amount;
+    public WrappedMoney OldValue { get; } = section104History.OldValue;
+    public WrappedMoney ValueChange { get; } = section104History.ValueChange;
+    public WrappedMoney NewValue { get; } = section104History.OldValue + section104History.ValueChange;
+    public WrappedMoney OldContractValue { get; } = section104History.OldContractValue;
+    public WrappedMoney ContractValueChange { get; } = section104History.ContractValueChange;
+    public WrappedMoney NewContractValue { get; } = section104History.OldContractValue + section104History.ContractValueChange;
     public string Explaination { get; } = section104History.Explanation;
 
     public static IEnumerable<Section104HistoryViewModel?> GetSection104Data(UkSection104Pools section104Pools)

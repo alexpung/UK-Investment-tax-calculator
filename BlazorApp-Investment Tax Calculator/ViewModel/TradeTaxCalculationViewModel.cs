@@ -19,11 +19,10 @@ public class TradeTaxCalculationViewModel(ITradeTaxCalculation TradeTaxCalculati
     public decimal Section104MatchQty => GetMatchQty(TaxMatchType.SECTION_104);
     public decimal CoveredShortMatchQty => GetMatchQty(TaxMatchType.SHORTCOVER);
     public decimal UnmatchedQty { get; } = TradeTaxCalculation.UnmatchedQty;
-    public decimal TotalProceed { get; } = TradeTaxCalculation.TotalProceeds.Amount;
-    public decimal TotalAllowableCost { get; } = TradeTaxCalculation.TotalAllowableCost.Amount;
+    public WrappedMoney TotalProceed { get; } = TradeTaxCalculation.TotalProceeds;
+    public WrappedMoney TotalAllowableCost { get; } = TradeTaxCalculation.TotalAllowableCost;
     public WrappedMoney? ContractValue => GetContractValue();
-    public decimal Gain { get; } = TradeTaxCalculation.Gain.Amount;
-
+    public WrappedMoney Gain { get; } = TradeTaxCalculation.Gain;
     private WrappedMoney? GetContractValue()
     {
         if (TradeTaxCalculation is not FutureTradeTaxCalculation) return null;
