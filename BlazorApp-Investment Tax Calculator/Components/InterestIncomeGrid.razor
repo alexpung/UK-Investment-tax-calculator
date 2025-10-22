@@ -1,0 +1,41 @@
+@using InvestmentTaxCalculator.Model
+@using InvestmentTaxCalculator.Model.TaxEvents
+@using Syncfusion.Blazor.Grids
+@using System.Collections.Generic
+@using System.Linq
+
+@inject TaxEventLists _taxEventLists
+<div class="bg-dark text-light">
+    <div class="row my-4">
+        <div class="col">
+            <h3>Interest Income List</h3>
+            <p class ="alert alert-warning mb-0">
+                For each Accrued Interest sold or bought, determine if the next payment date falls within this tax year (checkbox checked)
+                or the next tax year (checkbox unchecked)</p>
+        </div>
+    </div>
+    <SfGrid TValue="InterestIncome"
+            @ref="interestIncomeGrid"
+            DataSource="@InterestIncomeList"
+            AllowPaging="true"
+            AllowSorting="true"
+            Width="100%">
+        <GridPageSettings PageSizes=@(new List<int>() { 25, 50, 100 }) PageSize="25"></GridPageSettings>
+        <GridColumns>
+            <GridColumn Field="@nameof(InterestIncome.Id)" HeaderText="ID" Width="80" TextAlign="TextAlign.Right" IsPrimaryKey="true"></GridColumn>
+            <GridColumn Field="@nameof(InterestIncome.AssetName)" HeaderText="Asset" TextAlign="TextAlign.Left"></GridColumn>
+            <GridColumn Field="@nameof(InterestIncome.Date)" HeaderText="Date" Type="ColumnType.Date" Format="d"></GridColumn>
+            <GridColumn Field="@nameof(InterestIncome.InterestType)" HeaderText="Type" Template="TypeTemplate"></GridColumn>
+            <GridColumn Field="@(nameof(InterestIncome.Amount) + "." + nameof(DescribedMoney.Description))" HeaderText="Description"></GridColumn>
+            <GridColumn Field="@nameof(InterestIncome.Amount)" HeaderText="Amount" Width="140" TextAlign="TextAlign.Right" Template="@AmountTemplate"></GridColumn>
+            <GridColumn Field="@nameof(InterestIncome.IsNextPaymentInSameTaxYear)" HeaderText="Same Tax Year" Template="@CheckboxTemplate">
+            </GridColumn>
+        </GridColumns>
+    </SfGrid>
+</div>
+
+@code {
+    public IEnumerable<InterestIncome> InterestIncomeList => _taxEventLists.InterestIncomes;
+
+    private SfGrid<InterestIncome> interestIncomeGrid = new();
+}

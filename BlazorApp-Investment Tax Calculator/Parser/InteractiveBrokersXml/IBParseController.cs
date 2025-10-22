@@ -21,6 +21,7 @@ public class IBParseController(AssetTypeToLoadSetting assetTypeToLoadSetting) : 
             result.Trades.AddRange(_xmlFxParser.ParseXml(xml));
             result.OptionTrades.AddRange(IBXmlOptionTradeParser.ParseXml(xml));
             result.CashSettlements.AddRange(IBXmlCashSettlementParser.ParseXml(xml));
+            result.InterestIncomes.AddRange(IBXmlInterestIncomeParser.ParseXml(xml));
             result = assetTypeToLoadSetting.FilterTaxEvent(result);
         }
         return result;

@@ -8,6 +8,7 @@ public class AssetTypeToLoadSetting
     public bool LoadFutures { get; set; } = true;
     public bool LoadFx { get; set; } = true;
     public bool LoadDividends { get; set; } = true;
+    public bool LoadInterestIncome { get; set; } = true;
 
     public TaxEventLists FilterTaxEvent(TaxEventLists taxEventLists)
     {
@@ -19,6 +20,7 @@ public class AssetTypeToLoadSetting
         if (LoadFx) resultFiltered.Trades.AddRange(taxEventLists.Trades.Where(trade => trade.AssetType == AssetCategoryType.FX));
         if (LoadOptions) resultFiltered.OptionTrades.AddRange(taxEventLists.OptionTrades);
         if (LoadOptions) resultFiltered.CashSettlements.AddRange(taxEventLists.CashSettlements);
+        if (LoadInterestIncome) resultFiltered.InterestIncomes.AddRange(taxEventLists.InterestIncomes);
         return resultFiltered;
     }
 }
