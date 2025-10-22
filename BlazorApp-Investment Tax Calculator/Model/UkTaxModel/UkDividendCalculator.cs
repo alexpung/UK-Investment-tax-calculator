@@ -6,20 +6,28 @@ public class UkDividendCalculator(IDividendLists dividendList, ITaxYear taxYear)
 {
     public List<DividendSummary> CalculateTax()
     {
-        List<DividendSummary> result = [];
-        var GroupedDividends = from dividend in dividendList.Dividends
-                               let taxYear = taxYear.ToTaxYear(dividend.Date)
-                               group dividend by new { taxYear, dividend.CompanyLocation };
-        foreach (var group in GroupedDividends)
+        List<DividendSummary> dividendSummaries = [];
+        var groupedDividendsDict = dividendList.Dividends
+            .GroupBy(d => new { TaxYear = taxYear.ToTaxYear(d.Date), d.CompanyLocation })
+            .ToDictionary(g => (g.Key.TaxYear, g.Key.CompanyLocation), g => g.ToList());
+
+        var groupedInterestIncomesDict = dividendList.InterestIncomes
+            .GroupBy(i => (i.YearTaxable, i.IncomeLocation))
+            .ToDictionary(g => g.Key, g => g.ToList());
+
+        IEnumerable<(int, CountryCode)> combinedKeys = groupedDividendsDict.Keys.Union(groupedInterestIncomesDict.Keys);
+        foreach (var key in combinedKeys)
         {
-            DividendSummary dividendSummary = new()
+            groupedDividendsDict.TryGetValue(key, out var dividends);
+            groupedInterestIncomesDict.TryGetValue(key, out var interests);
+            dividendSummaries.Add(new DividendSummary
             {
-                CountryOfOrigin = group.Key.CompanyLocation,
-                TaxYear = group.Key.taxYear,
-                RelatedDividendsAndTaxes = [.. group]
-            };
-            result.Add(dividendSummary);
+                CountryOfOrigin = key.Item2,
+                TaxYear = key.Item1,
+                RelatedDividendsAndTaxes = dividends ?? [],
+                RelatedInterestIncome = interests ?? []
+            });
         }
-        return result;
+        return dividendSummaries;
     }
 }

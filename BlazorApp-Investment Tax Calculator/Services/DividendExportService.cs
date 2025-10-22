@@ -4,6 +4,10 @@ using System.Text;
 
 namespace InvestmentTaxCalculator.Services;
 
+/// <summary>
+/// Export dividend and interest income grouped by year and region to a text format.
+/// </summary>
+/// <param name="dividendCalculationResult"></param>
 public class DividendExportService(DividendCalculationResult dividendCalculationResult)
 {
     public string Export(IEnumerable<int> yearsToExport)
@@ -20,6 +24,10 @@ public class DividendExportService(DividendCalculationResult dividendCalculation
             foreach (var dividend in dividendSummary.RelatedDividendsAndTaxes.OrderBy(i => i.Date))
             {
                 output.AppendLine($"\t\t{dividend.PrintToTextFile()}");
+            }
+            foreach (var interestIncome in dividendSummary.RelatedInterestIncome.OrderBy(i => i.Date))
+            {
+                output.AppendLine($"\t\t{interestIncome.PrintToTextFile()}");
             }
             output.AppendLine();
         }
