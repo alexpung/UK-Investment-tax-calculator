@@ -14,6 +14,7 @@ public class UkDividendCalculatorTest
     {
         IDividendLists mockIDividendLists = Substitute.For<IDividendLists>();
         mockIDividendLists.Dividends.Returns(Dividend);
+        mockIDividendLists.InterestIncomes.Returns([]);
         return new UkDividendCalculator(mockIDividendLists, new UKTaxYear());
     }
 
