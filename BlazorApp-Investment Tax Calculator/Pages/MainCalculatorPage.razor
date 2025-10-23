@@ -1,7 +1,20 @@
 ﻿@page "/MainCalculatorPage"
 
 @using InvestmentTaxCalculator.Components
+<div class="container mt-4 mb-4 bg-dark text-light p-3">
+    <ImportFile/>
+    <StartCalculation OnCalculated="HandleCalculated"/>
+    <CalculationSummary ShouldReRender="@calculationVersion"></CalculationSummary>
+    <ExportFile/>
+</div>
 
-<ImportFile/>
-<StartCalculation/>
-<ExportFile/>
+@code {
+    private int calculationVersion = 0;
+
+    private Task HandleCalculated()
+    {
+        calculationVersion++;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+}

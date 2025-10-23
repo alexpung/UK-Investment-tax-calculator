@@ -7,6 +7,9 @@ namespace InvestmentTaxCalculator.Model.TaxEvents;
 
 public record InterestIncome : TaxEvent, ITextFilePrintable
 {
+    /// <summary>
+    /// Negative for accurred income loss
+    /// </summary>
     public required DescribedMoney Amount { get; init; }
     public required InterestType InterestType { get; init; }
     public CountryCode IncomeLocation { get; set; } = CountryCode.UnknownRegion;
