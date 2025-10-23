@@ -35,6 +35,10 @@ public class DividendSummarySection(DividendCalculationResult dividendCalculatio
 
         foreach (var summary in dividendSummaries)
         {
+            if (summary.RelatedDividendsAndTaxes.Count == 0)
+            {
+                continue;
+            }
             Row row = table.AddRow();
             row.Cells[0].AddParagraph($"{summary.CountryOfOrigin.CountryName} ({summary.CountryOfOrigin.ThreeDigitCode})");
             row.Cells[1].AddParagraph(summary.TotalTaxableDividend.ToString());
@@ -48,6 +52,10 @@ public class DividendSummarySection(DividendCalculationResult dividendCalculatio
 
         foreach (var summary in dividendSummaries)
         {
+            if (summary.RelatedDividendsAndTaxes.Count == 0)
+            {
+                continue;
+            }
             Paragraph regionTableTitle = section.AddParagraph($"Dividend detail for {summary.CountryOfOrigin.CountryName} ({summary.CountryOfOrigin.ThreeDigitCode})");
             Style.StyleTableSubheading(regionTableTitle);
             Table dividendDetailTable = Style.CreateTableWithProportionedWidth(section,

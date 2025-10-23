@@ -10,10 +10,11 @@
         <div class="col">
             <h3>Interest Income List</h3>
             <p class ="alert alert-warning mb-0">
-                For each Accrued Interest sold or bought, determine if the next payment date falls within this tax year (checkbox checked)
-                or the next tax year (checkbox unchecked)</p>
+                Accurred income profit/loss is taxable at next coupon payable date. For each Accrued Interest sold or bought, determine if the next payment date
+                falls within this tax year (checkbox checked) or the next tax year (checkbox unchecked), then rerun calculation using the button below.</p>
         </div>
     </div>
+    <StartCalculation/>
     <SfGrid TValue="InterestIncome"
             @ref="interestIncomeGrid"
             DataSource="@InterestIncomeList"
@@ -28,7 +29,7 @@
             <GridColumn Field="@nameof(InterestIncome.InterestType)" HeaderText="Type" Template="TypeTemplate"></GridColumn>
             <GridColumn Field="@(nameof(InterestIncome.Amount) + "." + nameof(DescribedMoney.Description))" HeaderText="Description"></GridColumn>
             <GridColumn Field="@nameof(InterestIncome.Amount)" HeaderText="Amount" Width="140" TextAlign="TextAlign.Right" Template="@AmountTemplate"></GridColumn>
-            <GridColumn Field="@nameof(InterestIncome.IsNextPaymentInSameTaxYear)" HeaderText="Same Tax Year" Template="@CheckboxTemplate">
+            <GridColumn Field="@nameof(InterestIncome.IsNextPaymentInSameTaxYear)" HeaderText="Next coupon payable in the same tax year" Template="@CheckboxTemplate">
             </GridColumn>
         </GridColumns>
     </SfGrid>

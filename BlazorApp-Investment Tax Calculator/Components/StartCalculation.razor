@@ -1,14 +1,9 @@
 ﻿@using Syncfusion.Blazor.Buttons
 @using System.Collections.ObjectModel
 
-<div class="container mt-4 mb-4 bg-dark text-light p-3">
+<div>
     <h3 class="mb-3">Calculation</h3>
-
     <div class="mb-4">
         <SfButton @onclick="OnStartCalculation" CssClass="btn btn-primary" Disabled=_isCalculating>Start Calculation</SfButton>
-    </div>
-
-    <div class="mb-4">
-        <CalculationSummary ShouldReRender="ShouldRender"></CalculationSummary>
     </div>
 </div>

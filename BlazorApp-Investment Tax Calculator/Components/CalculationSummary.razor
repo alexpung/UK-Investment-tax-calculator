@@ -35,5 +35,16 @@
 
 
 @code{
-    [Parameter] public Func<bool>? ShouldReRender { get; set; }
+    [Parameter] public int ShouldReRender { get; set; }
+
+    private int _lastVersion;
+
+    protected override void OnParametersSet()
+    {
+        if (ShouldReRender != _lastVersion)
+        {
+            _lastVersion = ShouldReRender;
+            StateHasChanged();
+        }
+    }
 }

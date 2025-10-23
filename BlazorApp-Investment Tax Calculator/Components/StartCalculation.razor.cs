@@ -19,6 +19,7 @@ public partial class StartCalculation
     [Inject] public required YearOptions Years { get; set; }
     [Inject] public required ITaxYear TaxYear { get; set; }
     [Inject] public required ToastService ToastService { get; set; }
+    [Parameter] public EventCallback OnCalculated { get; set; }
 
     private bool _isCalculating = false;
 
@@ -45,6 +46,7 @@ public partial class StartCalculation
         finally
         {
             _isCalculating = false;
+            await OnCalculated.InvokeAsync();
         }
     }
 

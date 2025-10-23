@@ -1,8 +1,9 @@
 ﻿using InvestmentTaxCalculator.Model.Interfaces;
+using InvestmentTaxCalculator.Services;
 
 namespace InvestmentTaxCalculator.Model.UkTaxModel;
 
-public class UkDividendCalculator(IDividendLists dividendList, ITaxYear taxYear) : IDividendCalculator
+public class UkDividendCalculator(IDividendLists dividendList, ITaxYear taxYear, ToastService toastService) : IDividendCalculator
 {
     public List<DividendSummary> CalculateTax()
     {
@@ -14,6 +15,11 @@ public class UkDividendCalculator(IDividendLists dividendList, ITaxYear taxYear)
         var groupedInterestIncomesDict = dividendList.InterestIncomes
             .GroupBy(i => (i.YearTaxable, i.IncomeLocation))
             .ToDictionary(g => g.Key, g => g.ToList());
+
+        if (dividendList.InterestIncomes.Exists(taxEvent => taxEvent.InterestType is TaxEvents.InterestType.ACCURREDINCOMEPROFIT or TaxEvents.InterestType.ACCURREDINCOMELOSS))
+        {
+            toastService.ShowWarning("Accrued income profit/loss detected. Please go to dividend/income tab and adjust taxable year and rerun calculation.");
+        }
 
         IEnumerable<(int, CountryCode)> combinedKeys = groupedDividendsDict.Keys.Union(groupedInterestIncomesDict.Keys);
         foreach (var key in combinedKeys)

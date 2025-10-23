@@ -20,10 +20,25 @@ public class DividendExportService(DividendCalculationResult dividendCalculation
             output.AppendLine($"Region: {dividendSummary.CountryOfOrigin.ThreeDigitCode} ({dividendSummary.CountryOfOrigin.CountryName})");
             output.AppendLine($"\tTotal dividends: {dividendSummary.TotalTaxableDividend}");
             output.AppendLine($"\tTotal withholding tax: {dividendSummary.TotalForeignTaxPaid}\n");
-            output.AppendLine("\t\tTransactions:");
+            output.AppendLine($"\tSavings interest: {dividendSummary.TotalTaxableSavingInterest}");
+            output.AppendLine($"\tBond interest: {dividendSummary.TotalTaxableBondInterest}");
+            output.AppendLine($"\tAccrued income profit: {dividendSummary.TotalAccurredIncomeProfit}");
+            output.AppendLine($"\tAccrued income loss: {dividendSummary.TotalAccurredIncomeLoss}");
+            output.AppendLine($"\tTotal interest income: {dividendSummary.TotalInterestIncome}\n");
+            output.AppendLine();
+            output.AppendLine("\t\tDividend Transactions:");
+            if (dividendSummary.RelatedDividendsAndTaxes.Count == 0)
+            {
+                output.AppendLine("\t\tNone");
+            }
             foreach (var dividend in dividendSummary.RelatedDividendsAndTaxes.OrderBy(i => i.Date))
             {
                 output.AppendLine($"\t\t{dividend.PrintToTextFile()}");
+            }
+            output.AppendLine("\t\tInterest Transactions:");
+            if (dividendSummary.RelatedInterestIncome.Count == 0)
+            {
+                output.AppendLine("\t\tNone");
             }
             foreach (var interestIncome in dividendSummary.RelatedInterestIncome.OrderBy(i => i.Date))
             {
