@@ -42,12 +42,13 @@ https://github.com/alexpung/UK-Investment-tax-calculator/tree/master/BlazorApp-I
 4. Options (experimental, use with verification)
     1. Stock option execise/expiration/assignment.
     2. Financial option open/close (cash settlement)
-5. View trade calculations and dividend data in a table
-6. Add dividends and trades from input of a form. (alpha: in development)
+5. Interest income
+    1. Interest income from IB
+    2. Bond coupon payment
+    3. "Dirty" price accrued profit/loss
 
 #### Pending implementation
-More corporate actions  
-Tests and feedback are welcome, bugs are to be expected.  
+More corporate actions
 
 #### Output files
 1. Dividend summary by year.
