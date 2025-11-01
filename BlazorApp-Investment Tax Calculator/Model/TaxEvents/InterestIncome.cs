@@ -37,4 +37,6 @@ public enum InterestType
     ACCURREDINCOMEPROFIT,
     [Description("Accrued Income Loss")]
     ACCURREDINCOMELOSS,
+    [Description("ETF dividend income")]
+    ETFDIVIDEND
 }

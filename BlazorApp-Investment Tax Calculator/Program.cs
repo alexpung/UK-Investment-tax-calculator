@@ -60,6 +60,7 @@ builder.Services.AddSingleton<ITaxYear, UKTaxYear>();
 
 //ViewModels
 builder.Services.AddSingleton<InputGridDatas>();
+builder.Services.AddSingleton<DividendToIncomeConvertViewModel>();
 
 builder.Services.AddSyncfusionBlazor();
 
