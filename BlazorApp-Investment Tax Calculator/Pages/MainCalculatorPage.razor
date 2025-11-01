@@ -3,6 +3,7 @@
 @using InvestmentTaxCalculator.Components
 <div class="container mt-4 mb-4 bg-dark text-light p-3">
     <ImportFile/>
+    <p class="card-text">If you have bond ETF you need to use the conversion page to indicate which tickers should be treated as income, before running the calculation.</p>
     <StartCalculation OnCalculated="HandleCalculated"/>
     <CalculationSummary ShouldReRender="@calculationVersion"></CalculationSummary>
     <ExportFile/>

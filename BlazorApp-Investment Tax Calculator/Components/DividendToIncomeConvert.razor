@@ -1,0 +1,105 @@
+@using Syncfusion.Blazor.Lists
+@using System.Linq
+@using InvestmentTaxCalculator.ViewModel
+@using InvestmentTaxCalculator.Model.TaxEvents
+@using Services
+@inject DividendToIncomeConvertViewModel _dividendToIncomeViewModel
+@inject ToastService _toastService
+
+<div class="card mb-3">
+    <div class="card-body">
+        <h5 class="card-title">Convert ETF dividends to taxable income</h5>
+        <p class="card-text">Select tickers that should be taxed as income. The resulting income type will be "ETF dividend income".</p>
+        <p class="card-text">Where an offshore fund holds more than 60% of assets in interest-bearing (or economically similar) 
+            form, any distribution or excess of reported income is treated as a payment of yearly interest</p>
+        <p class="card-text"> You will need to run calculation again after conversion</p>
+        <div class="mb-3" id="container">
+            <SfListView @ref="TickerList" TValue="Dividend" DataSource="@AvailableTickers" ShowCheckBox="true">
+                <ListViewFieldSettings TValue="Dividend" Id="Id" Text="AssetName"></ListViewFieldSettings>
+            </SfListView>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button class="btn btn-primary" @onclick="ConvertSelected">Convert selected</button>
+            <button class="btn btn-outline-secondary" @onclick="ClearSelection">Clear</button>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* make the listview responsive and allow items to flow horizontally and wrap */
+    #container .e-listview {
+        box-shadow: 0 1px 4px #ddd;
+        border-bottom: 1px solid #ddd;
+        width: 100%; /* use available width */
+    }
+
+    /* make the UL that contains items a flex container so LI items flow horizontally */
+    #container .e-listview .e-list-parent {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px; /* spacing between items */
+        padding: 8px;
+        margin: 0;
+        list-style: none;
+    }
+
+    /* each list item becomes a flex child that can grow to fill remaining space,
+        but will not shrink below the flex-basis (min size) */
+    #container .e-listview .e-list-item {
+        box-sizing: border-box;
+        flex: 1 1 220px; /* grow, shrink, base width */
+        min-width: 160px; /* smallest acceptable width before wrapping */
+        max-width: 32%; /* optional: limit overly large items on wide screens */
+        height: auto; /* let content determine height */
+        display: flex;
+        align-items: center;
+        padding: 8px 12px;
+        background: transparent;
+    }
+
+    /* item inner content: keep checkbox + label inline and aligned */
+    #container .e-listview .e-list-item .e-text-content {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+        justify-content: flex-start; /* left align text and checkbox */
+        cursor: pointer;
+    }
+
+    /* let the text flow and wrap as needed */
+    #container .e-listview .e-list-text {
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+    }
+</style>
+
+@code {
+    public SfListView<Dividend> TickerList = new();
+
+    private IEnumerable<Dividend> AvailableTickers => _dividendToIncomeViewModel.SelectableTickers;
+
+    private async Task ConvertSelected()
+    {
+        if (!_dividendToIncomeViewModel.SelectableTickers.Any()) return;
+        try
+        {
+            var items = await TickerList.GetCheckedItemsAsync();
+            HashSet<string> selectedTickers = items.Data.Select(i => i.AssetName).ToHashSet();
+            _dividendToIncomeViewModel.ConvertDividendsToIncome(selectedTickers);
+            _toastService.ShowInformation($"Converted {selectedTickers.Count()} ticker(s).");
+            await TickerList.UncheckItemsAsync();
+
+            // notify UI and other components (they bind to shared TaxEventLists)
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            _toastService.ShowError("Error converting dividends to income: " + ex.Message);
+        }
+    }
+
+    private async Task ClearSelection() => await TickerList.UncheckItemsAsync();
+}
