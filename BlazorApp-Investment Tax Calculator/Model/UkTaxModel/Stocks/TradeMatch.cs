@@ -10,6 +10,7 @@ namespace InvestmentTaxCalculator.Model.UkTaxModel.Stocks;
 /// </summary>
 public record TradeMatch : ITextFilePrintable
 {
+    public Guid PersistedId { get; init; } = Guid.NewGuid();
     public required TaxMatchType TradeMatchType { get; init; }
     public ITradeTaxCalculation? MatchedBuyTrade { get; init; }
     public ITradeTaxCalculation? MatchedSellTrade { get; init; }

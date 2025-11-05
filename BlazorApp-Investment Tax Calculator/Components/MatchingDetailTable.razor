@@ -1,5 +1,4 @@
 ﻿@using InvestmentTaxCalculator.Model
-@using InvestmentTaxCalculator.ViewModel
 @using InvestmentTaxCalculator.Model.Interfaces
 @using Syncfusion.Blazor.DropDowns
 @using Syncfusion.Blazor.Grids
@@ -20,51 +19,138 @@
             <h3>Matching Details</h3>
         </div>
     </div>
+
+    <div class="row mb-3">
+        <div class="col">
+            <div class="alert alert-secondary mb-0">
+                The additional information can be edited to add your comments.
+            </div>
+        </div>
+    </div>
+
     <div class="row me-3">
         <div class="col">
             <SfGrid ID="TradeMatchesGrid" @ref="tradeMatchesGrid" DataSource="@_tradeMatches"
                     AllowPaging="true" AllowSorting="true" AllowPdfExport="true" AllowExcelExport="true" AllowResizing="true" AllowFiltering="true" AllowTextWrap="true"
                     Toolbar="@(new List<string>() { "PdfExport", "ExcelExport", "Print" })">
+                <!-- Enable editing on the grid, but disable editing per-column except AdditionalInformation -->
+                <GridEditSettings AllowEditing="true"></GridEditSettings>
                 <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
                 <GridPageSettings PageSizes=@(new List<int>() {25, 50, 100}) PageSize="25"></GridPageSettings>
-                <GridEvents OnToolbarClick="ToolbarClickHandler" TValue="TradeMatchViewModel"></GridEvents>
+                <GridEvents OnToolbarClick="ToolbarClickHandler" TValue="TradeMatch"></GridEvents>
                 <GridColumns>
-                    <GridColumn Field=@nameof(TradeMatchViewModel.DisposalDate) HeaderText="Disposal Date"></GridColumn>
-                    <GridColumn Field=@nameof(TradeMatchViewModel.AssetType) HeaderText="Asset Type"></GridColumn>
-                    <GridColumn Field=@nameof(TradeMatchViewModel.AssetName) HeaderText="Asset Name"></GridColumn>
-                    <GridColumn Field=@nameof(TradeMatchViewModel.MatchType) HeaderText="Match Type"></GridColumn>
-                    <GridColumn Field=@nameof(TradeMatchViewModel.AcquisitionTradeId) HeaderText="Acquisition trade ID"></GridColumn>
-                    <GridColumn Field=@nameof(TradeMatchViewModel.DisposalTradeId) HeaderText="Disposal trade ID"></GridColumn>
-                    <GridColumn Field=@nameof(TradeMatchViewModel.MatchAcquisitionQty) HeaderText="Matched Acquisition Quantity"></GridColumn>
-                    <GridColumn Field=@nameof(TradeMatchViewModel.MatchDisposalQty) HeaderText="Matched Disposal Quantity"></GridColumn>
-                    <GridColumn Field=@nameof(TradeMatchViewModel.DisposalProceed) HeaderText="Disposal Proceed"></GridColumn>
-                    <GridColumn Field=@nameof(TradeMatchViewModel.AllowableCost) HeaderText="Allowable Cost"></GridColumn>
-                    <GridColumn Field=@nameof(TradeMatchViewModel.Gain) HeaderText="Gain"></GridColumn>
-                    <GridColumn Field=@nameof(TradeMatchViewModel.AdditionalInformation) HeaderText="Additional Information"></GridColumn>
+                    <GridColumn Field=@nameof(TradeMatch.PersistedId) Visible="false" IsPrimaryKey="true"></GridColumn>
+                    <GridColumn HeaderText="Disposal Date" Field=@nameof(TradeMatch.Date) AllowEditing="false"></GridColumn>
+                    <GridColumn HeaderText="Asset Type" Template="AssetTypeTemplate" AllowEditing="false"></GridColumn>
+                    <GridColumn Field=@nameof(TradeMatch.AssetName) HeaderText="Asset Name" AllowEditing="false"></GridColumn>
+                    <GridColumn HeaderText="Match Type" Template="MatchTypeTemplate" AllowEditing="false"></GridColumn>
+                    <GridColumn HeaderText="Acquisition trade ID" Template="AcquisitionIdTemplate" AllowEditing="false"></GridColumn>
+                    <GridColumn HeaderText="Disposal trade ID" Template="DisposalIdTemplate" AllowEditing="false"></GridColumn>
+                    <GridColumn Field=@nameof(TradeMatch.MatchAcquisitionQty) HeaderText="Matched Acquisition Quantity" AllowEditing="false"></GridColumn>
+                    <GridColumn Field=@nameof(TradeMatch.MatchDisposalQty) HeaderText="Matched Disposal Quantity" AllowEditing="false"></GridColumn>
+                    <GridColumn HeaderText="Disposal Proceed" Template="MoneyTemplate" AllowEditing="false"></GridColumn>
+                    <GridColumn HeaderText="Allowable Cost" Template="AllowableCostTemplate" AllowEditing="false"></GridColumn>
+                    <GridColumn HeaderText="Gain" Template="GainTemplate" AllowEditing="false"></GridColumn>
+                    <!-- Only this column is editable -->
+                    <GridColumn Field=@nameof(TradeMatch.AdditionalInformation) HeaderText="Additional Information" AllowEditing="true"></GridColumn>
                 </GridColumns>
             </SfGrid>
         </div>
     </div>
 </div>
 
-
 @code {
-    public AssetCategoryType SelectedAssetCategoryType { get; set; } = AssetCategoryType.STOCK;
-    private SfGrid<TradeMatchViewModel> tradeMatchesGrid = default!;
-    private IEnumerable<TradeMatchViewModel> _tradeMatches => GetTradeMatches();
+    private SfGrid<TradeMatch> tradeMatchesGrid = default!;
 
+    // Data source: flatten match history into TradeMatch records
+    private IEnumerable<TradeMatch> _tradeMatches => GetTradeMatches();
 
     public async Task ToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)
     {
         await _toolbarHandlingService.ToolbarClickHandler(args, tradeMatchesGrid);
     }
 
-    public IEnumerable<TradeMatchViewModel> GetTradeMatches()
+    public IEnumerable<TradeMatch> GetTradeMatches()
     {
-        return tradeCalculationResult.CalculatedTrade.Where(trade => trade.AcquisitionDisposal == TradeType.DISPOSAL)
-                                                                           .SelectMany(trade => trade.MatchHistory)
-                                                                           .Select(tradeMatch => new TradeMatchViewModel(tradeMatch)).ToList();
+        // Each calculated trade (disposal) contains zero or more TradeMatch entries in MatchHistory
+        return tradeCalculationResult.CalculatedTrade
+            .Where(trade => trade.AcquisitionDisposal == TradeType.DISPOSAL)
+            .SelectMany(trade => trade.MatchHistory)
+            .ToList();
     }
+
+    // Templates
+
+    private static RenderFragment<object> AssetTypeTemplate => context =>
+    {
+        var match = context as TradeMatch;
+        return builder =>
+        {
+            if (match == null) return;
+            var type = match.MatchedSellTrade?.AssetCategoryType ?? match.MatchedBuyTrade?.AssetCategoryType;
+            builder.AddContent(0, type != null ? type.GetDescription() : string.Empty);
+        };
+    };
+
+    private static RenderFragment<object> MatchTypeTemplate => context =>
+    {
+        var match = context as TradeMatch;
+        return builder =>
+        {
+            if (match == null) return;
+            builder.AddContent(0, match.TradeMatchType.GetDescription());
+        };
+    };
+
+    private static RenderFragment<object> AcquisitionIdTemplate => context =>
+    {
+        var match = context as TradeMatch;
+        return builder =>
+        {
+            if (match == null) return;
+            builder.AddContent(0, match.MatchedBuyTrade?.Id.ToString() ?? string.Empty);
+        };
+    };
+
+    private static RenderFragment<object> DisposalIdTemplate => context =>
+    {
+        var match = context as TradeMatch;
+        return builder =>
+        {
+            if (match == null) return;
+            builder.AddContent(0, match.MatchedSellTrade?.Id.ToString() ?? string.Empty);
+        };
+    };
+
+    private static RenderFragment<object> MoneyTemplate => context =>
+    {
+        var match = context as TradeMatch;
+        return builder =>
+        {
+            if (match == null) return;
+            builder.AddContent(0, match.BaseCurrencyMatchDisposalProceed?.ToString() ?? string.Empty);
+        };
+    };
+
+    private static RenderFragment<object> AllowableCostTemplate => context =>
+    {
+        var match = context as TradeMatch;
+        return builder =>
+        {
+            if (match == null) return;
+            builder.AddContent(0, match.BaseCurrencyMatchAllowableCost?.ToString() ?? string.Empty);
+        };
+    };
+
+    private static RenderFragment<object> GainTemplate => context =>
+    {
+        var match = context as TradeMatch;
+        return builder =>
+        {
+            if (match == null) return;
+            builder.AddContent(0, (match.BaseCurrencyMatchDisposalProceed - match.BaseCurrencyMatchAllowableCost).ToString());
+        };
+    };
 }
 
 
