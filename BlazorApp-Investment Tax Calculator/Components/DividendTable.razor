@@ -43,7 +43,7 @@
 
 
 @code {
-    public IEnumerable<DividendViewModel> DividendViewModels => _dividendList.Dividends.Select(dividend => new DividendViewModel(dividend)).DefaultIfEmpty();
+    public IEnumerable<DividendViewModel> DividendViewModels => _dividendList.Dividends.Select(dividend => new DividendViewModel(dividend)) ?? [];
 
     private SfGrid<DividendViewModel> importedDividendGrid = new();
 
