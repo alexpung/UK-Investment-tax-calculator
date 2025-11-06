@@ -14,7 +14,7 @@ public record InterestIncome : TaxEvent, ITextFilePrintable
     public required InterestType InterestType { get; init; }
     public CountryCode IncomeLocation { get; set; } = CountryCode.UnknownRegion;
     public bool IsNextPaymentInSameTaxYear { get; set; } = true;
-    public int YearTaxable => IsNextPaymentInSameTaxYear ? Date.Year : Date.Year + 1;
+    public int YearTaxable => (InterestType == InterestType.ACCURREDINCOMEPROFIT || InterestType == InterestType.ACCURREDINCOMELOSS) && !IsNextPaymentInSameTaxYear ? Date.Year + 1 : Date.Year;
     public string PrintToTextFile()
     {
         return $"Asset Name: {AssetName}, " +
