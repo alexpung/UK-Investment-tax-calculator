@@ -1,6 +1,6 @@
 ﻿namespace InvestmentTaxCalculator.Services;
 
-public class ToastService
+public class ToastService(ILogger<ToastService> logger)
 {
     public event Action<ToastOption>? ShowToastTrigger;
     public void ShowToast(string title, string content, ToastOptionType toastOptionType)
@@ -12,15 +12,19 @@ public class ToastService
     public void ShowException(Exception ex)
     {
         ShowError(ex.Message);
+        logger.LogError("{exception}", ex.Message);
         if (!string.IsNullOrEmpty(ex.StackTrace))
         {
-            ShowError(ex.StackTrace);
+            ShowError("See development console for stack trace. (Press F12)");
+            logger.LogError("Stack trace: {Stack trace}", ex.StackTrace);
         }
     }
 
     public void ShowError(string content)
     {
         ShowToastTrigger?.Invoke(new ToastOption() { Title = "Error", Content = content, Type = ToastOptionType.Error });
+        logger.LogError("An error has occurred {error}", content);
+
     }
 
     public void ShowWarning(string content)

@@ -7,15 +7,6 @@ namespace InvestmentTaxCalculator.Components;
 
 public partial class InterestIncomeGrid
 {
-    private static RenderFragment<object> AmountTemplate => context =>
-    {
-        var income = context as InterestIncome;
-        return builder =>
-        {
-            if (income == null) return;
-            builder.AddContent(0, income.Amount?.Display() ?? string.Empty);
-        };
-    };
     private static RenderFragment<object> TypeTemplate => context =>
     {
         var income = context as InterestIncome;
