@@ -23,6 +23,7 @@ public record TradeMatch : ITextFilePrintable
     public Section104History? Section104HistorySnapshot { get; init; }
     public required DateOnly Date { get; init; }
     public required string AssetName { get; init; }
+    public AssetCategoryType? AssetCategoryType => MatchedSellTrade?.AssetCategoryType ?? MatchedBuyTrade?.AssetCategoryType;
 
     public virtual string PrintToTextFile()
     {

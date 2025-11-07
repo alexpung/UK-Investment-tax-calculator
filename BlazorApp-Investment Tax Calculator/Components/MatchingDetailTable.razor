@@ -41,16 +41,31 @@
                 <GridColumns>
                     <GridColumn Field=@nameof(TradeMatch.PersistedId) Visible="false" IsPrimaryKey="true"></GridColumn>
                     <GridColumn HeaderText="Disposal Date" Field=@nameof(TradeMatch.Date) AllowEditing="false"></GridColumn>
-                    <GridColumn HeaderText="Asset Type" Template="AssetTypeTemplate" AllowEditing="false"></GridColumn>
+                    <GridColumn Field=@nameof(TradeMatch.AssetCategoryType) HeaderText="Asset Type"AllowEditing="false">
+                        <Template>
+                            @{
+                                var data = (context as TradeMatch);
+                                var type = data?.MatchedSellTrade?.AssetCategoryType ?? data?.MatchedBuyTrade?.AssetCategoryType;
+                            }
+                            <span>@type?.GetDescription()</span>
+                        </Template>
+                    </GridColumn>
                     <GridColumn Field=@nameof(TradeMatch.AssetName) HeaderText="Asset Name" AllowEditing="false"></GridColumn>
-                    <GridColumn HeaderText="Match Type" Template="MatchTypeTemplate" AllowEditing="false"></GridColumn>
-                    <GridColumn HeaderText="Acquisition trade ID" Template="AcquisitionIdTemplate" AllowEditing="false"></GridColumn>
-                    <GridColumn HeaderText="Disposal trade ID" Template="DisposalIdTemplate" AllowEditing="false"></GridColumn>
+                    <GridColumn Field=@nameof(TradeMatch.TradeMatchType) HeaderText="Match Type" AllowEditing="false">
+                        <Template>
+                            @{
+                                var data = (context as TradeMatch);
+                            }
+                            <span>@data?.TradeMatchType.GetDescription()</span>
+                        </Template>
+                    </GridColumn>
+                    <GridColumn Field="@(nameof(TradeMatch.MatchedBuyTrade) + "." + nameof(ITradeTaxCalculation.Id))" HeaderText="Acquisition trade ID" AllowEditing="false"></GridColumn>
+                    <GridColumn Field="@(nameof(TradeMatch.MatchedSellTrade) + "." + nameof(ITradeTaxCalculation.Id))" HeaderText="Disposal trade ID" AllowEditing="false"></GridColumn>
                     <GridColumn Field=@nameof(TradeMatch.MatchAcquisitionQty) HeaderText="Matched Acquisition Quantity" AllowEditing="false"></GridColumn>
                     <GridColumn Field=@nameof(TradeMatch.MatchDisposalQty) HeaderText="Matched Disposal Quantity" AllowEditing="false"></GridColumn>
-                    <GridColumn HeaderText="Disposal Proceed" Template="MoneyTemplate" AllowEditing="false"></GridColumn>
-                    <GridColumn HeaderText="Allowable Cost" Template="AllowableCostTemplate" AllowEditing="false"></GridColumn>
-                    <GridColumn HeaderText="Gain" Template="GainTemplate" AllowEditing="false"></GridColumn>
+                    <GridColumn Field=@nameof(TradeMatch.BaseCurrencyMatchDisposalProceed) HeaderText="Disposal Proceed" AllowEditing="false"></GridColumn>
+                    <GridColumn Field=@nameof(TradeMatch.BaseCurrencyMatchDisposalProceed) HeaderText="Allowable Cost" AllowEditing="false"></GridColumn>
+                    <GridColumn Field=@nameof(TradeMatch.MatchGain) HeaderText="Gain" AllowEditing="false"></GridColumn>
                     <!-- Only this column is editable -->
                     <GridColumn Field=@nameof(TradeMatch.AdditionalInformation) HeaderText="Additional Information" AllowEditing="true"></GridColumn>
                 </GridColumns>
@@ -78,79 +93,4 @@
             .SelectMany(trade => trade.MatchHistory)
             .ToList();
     }
-
-    // Templates
-
-    private static RenderFragment<object> AssetTypeTemplate => context =>
-    {
-        var match = context as TradeMatch;
-        return builder =>
-        {
-            if (match == null) return;
-            var type = match.MatchedSellTrade?.AssetCategoryType ?? match.MatchedBuyTrade?.AssetCategoryType;
-            builder.AddContent(0, type != null ? type.GetDescription() : string.Empty);
-        };
-    };
-
-    private static RenderFragment<object> MatchTypeTemplate => context =>
-    {
-        var match = context as TradeMatch;
-        return builder =>
-        {
-            if (match == null) return;
-            builder.AddContent(0, match.TradeMatchType.GetDescription());
-        };
-    };
-
-    private static RenderFragment<object> AcquisitionIdTemplate => context =>
-    {
-        var match = context as TradeMatch;
-        return builder =>
-        {
-            if (match == null) return;
-            builder.AddContent(0, match.MatchedBuyTrade?.Id.ToString() ?? string.Empty);
-        };
-    };
-
-    private static RenderFragment<object> DisposalIdTemplate => context =>
-    {
-        var match = context as TradeMatch;
-        return builder =>
-        {
-            if (match == null) return;
-            builder.AddContent(0, match.MatchedSellTrade?.Id.ToString() ?? string.Empty);
-        };
-    };
-
-    private static RenderFragment<object> MoneyTemplate => context =>
-    {
-        var match = context as TradeMatch;
-        return builder =>
-        {
-            if (match == null) return;
-            builder.AddContent(0, match.BaseCurrencyMatchDisposalProceed?.ToString() ?? string.Empty);
-        };
-    };
-
-    private static RenderFragment<object> AllowableCostTemplate => context =>
-    {
-        var match = context as TradeMatch;
-        return builder =>
-        {
-            if (match == null) return;
-            builder.AddContent(0, match.BaseCurrencyMatchAllowableCost?.ToString() ?? string.Empty);
-        };
-    };
-
-    private static RenderFragment<object> GainTemplate => context =>
-    {
-        var match = context as TradeMatch;
-        return builder =>
-        {
-            if (match == null) return;
-            builder.AddContent(0, (match.BaseCurrencyMatchDisposalProceed - match.BaseCurrencyMatchAllowableCost).ToString());
-        };
-    };
 }
-
-
