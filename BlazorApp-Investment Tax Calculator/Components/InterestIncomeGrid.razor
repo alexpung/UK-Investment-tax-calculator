@@ -28,7 +28,10 @@
             <GridColumn Field="@nameof(InterestIncome.Date)" HeaderText="Date" Type="ColumnType.Date" Format="d"></GridColumn>
             <GridColumn Field="@nameof(InterestIncome.InterestType)" HeaderText="Type" Template="TypeTemplate"></GridColumn>
             <GridColumn Field="@(nameof(InterestIncome.Amount) + "." + nameof(DescribedMoney.Description))" HeaderText="Description"></GridColumn>
-            <GridColumn Field="@nameof(InterestIncome.Amount)" HeaderText="Amount" Width="140" TextAlign="TextAlign.Right" Template="@AmountTemplate"></GridColumn>
+            <GridColumn Field="@(nameof(InterestIncome.Amount) + "." + nameof(DescribedMoney.Amount))" SortComparer="new DescribedMoneyComparer()" 
+            HeaderText="Local Currency Amount" TextAlign="TextAlign.Right"></GridColumn>
+            <GridColumn Field="@(nameof(InterestIncome.Amount) + "." + nameof(DescribedMoney.BaseCurrencyAmount))" SortComparer="new DescribedMoneyComparer()"
+            HeaderText="Sterling Amount" TextAlign="TextAlign.Right"></GridColumn>
             <GridColumn Field="@nameof(InterestIncome.IsNextPaymentInSameTaxYear)" HeaderText="Next coupon payable in the same tax year" Template="@CheckboxTemplate">
             </GridColumn>
         </GridColumns>
@@ -39,4 +42,31 @@
     public IEnumerable<InterestIncome> InterestIncomeList => _taxEventLists.InterestIncomes;
 
     private SfGrid<InterestIncome> interestIncomeGrid = new();
+
+    public class DescribedMoneyComparer : IComparer<Object>
+    {
+        public int Compare(object XRowDataToCompare, object YRowDataToCompare)
+        {
+            InterestIncome? XRowData = XRowDataToCompare as InterestIncome;
+            InterestIncome? YRowData = YRowDataToCompare as InterestIncome;
+            if (XRowData == null || YRowData == null)
+            {
+                return 1;
+            }
+            decimal XRowDataAmount = XRowData.Amount.BaseCurrencyAmount.Amount;
+            decimal YRowDataAmount = YRowData.Amount.BaseCurrencyAmount.Amount;
+            if (XRowDataAmount < YRowDataAmount)
+            {
+                return -1;
+            }
+            else if (XRowDataAmount > YRowDataAmount)
+            {
+                return 1;
+            }
+            else
+            {
+                return 0;
+            }
+        }
+    }
 }
