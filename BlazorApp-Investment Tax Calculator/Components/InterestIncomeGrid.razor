@@ -15,12 +15,7 @@
         </div>
     </div>
     <StartCalculation/>
-    <SfGrid TValue="InterestIncome"
-            @ref="interestIncomeGrid"
-            DataSource="@InterestIncomeList"
-            AllowPaging="true"
-            AllowSorting="true"
-            Width="100%">
+    <SfGrid TValue="InterestIncome" DataSource="@_taxEventLists.InterestIncomes" AllowPaging="true" AllowSorting="true" Width="100%">
         <GridPageSettings PageSizes=@(new List<int>() { 25, 50, 100 }) PageSize="25"></GridPageSettings>
         <GridColumns>
             <GridColumn Field="@nameof(InterestIncome.Id)" HeaderText="ID" Width="80" TextAlign="TextAlign.Right" IsPrimaryKey="true"></GridColumn>
@@ -28,9 +23,9 @@
             <GridColumn Field="@nameof(InterestIncome.Date)" HeaderText="Date" Type="ColumnType.Date" Format="d"></GridColumn>
             <GridColumn Field="@nameof(InterestIncome.InterestType)" HeaderText="Type" Template="TypeTemplate"></GridColumn>
             <GridColumn Field="@(nameof(InterestIncome.Amount) + "." + nameof(DescribedMoney.Description))" HeaderText="Description"></GridColumn>
-            <GridColumn Field="@(nameof(InterestIncome.Amount) + "." + nameof(DescribedMoney.Amount))" SortComparer="new DescribedMoneyComparer()" 
-            HeaderText="Local Currency Amount" TextAlign="TextAlign.Right"></GridColumn>
-            <GridColumn Field="@(nameof(InterestIncome.Amount) + "." + nameof(DescribedMoney.BaseCurrencyAmount))" SortComparer="new DescribedMoneyComparer()"
+            <GridColumn Field="@(nameof(InterestIncome.Amount) + "." + nameof(DescribedMoney.Amount))" SortComparer="new InterestIncomeComparer()"
+                        HeaderText="Local Currency Amount" TextAlign="TextAlign.Right"></GridColumn>
+            <GridColumn Field="@(nameof(InterestIncome.Amount) + "." + nameof(DescribedMoney.BaseCurrencyAmount))" SortComparer="new InterestIncomeComparer()"
             HeaderText="Sterling Amount" TextAlign="TextAlign.Right"></GridColumn>
             <GridColumn Field="@nameof(InterestIncome.IsNextPaymentInSameTaxYear)" HeaderText="Next coupon payable in the same tax year" Template="@CheckboxTemplate">
             </GridColumn>
@@ -43,9 +38,9 @@
 
     private SfGrid<InterestIncome> interestIncomeGrid = new();
 
-    public class DescribedMoneyComparer : IComparer<Object>
+    public class InterestIncomeComparer : IComparer<Object>
     {
-        public int Compare(object XRowDataToCompare, object YRowDataToCompare)
+        public int Compare(object? XRowDataToCompare, object? YRowDataToCompare)
         {
             InterestIncome? XRowData = XRowDataToCompare as InterestIncome;
             InterestIncome? YRowData = YRowDataToCompare as InterestIncome;
