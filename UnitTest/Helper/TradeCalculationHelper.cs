@@ -8,6 +8,8 @@ using InvestmentTaxCalculator.Model.UkTaxModel.Options;
 using InvestmentTaxCalculator.Model.UkTaxModel.Stocks;
 using InvestmentTaxCalculator.Services;
 
+using Microsoft.Extensions.Logging;
+
 namespace UnitTest.Helper;
 public static class TradeCalculationHelper
 {
@@ -16,7 +18,8 @@ public static class TradeCalculationHelper
         section104Pools = new UkSection104Pools(new UKTaxYear());
         TaxEventLists taxEventLists = new();
         taxEventLists.AddData(taxEvents);
-        UkOptionTradeCalculator optionTradeCalculator = new(section104Pools, taxEventLists, new UKTaxYear(), new ToastService());
+        ILogger<ToastService> logger = NSubstitute.Substitute.For<ILogger<ToastService>>();
+        UkOptionTradeCalculator optionTradeCalculator = new(section104Pools, taxEventLists, new UKTaxYear(), new ToastService(logger));
         UkTradeCalculator calculator = new(section104Pools, taxEventLists);
         UkFutureTradeCalculator futureCalculator = new(section104Pools, taxEventLists);
 

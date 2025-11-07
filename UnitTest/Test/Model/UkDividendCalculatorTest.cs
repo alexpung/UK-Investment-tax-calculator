@@ -5,6 +5,8 @@ using InvestmentTaxCalculator.Model.TaxEvents;
 using InvestmentTaxCalculator.Model.UkTaxModel;
 using InvestmentTaxCalculator.Services;
 
+using Microsoft.Extensions.Logging;
+
 using NSubstitute;
 
 namespace UnitTest.Test.Model;
@@ -14,7 +16,8 @@ public class UkDividendCalculatorTest
     private static UkDividendCalculator SetUpCalculator(List<Dividend> Dividend)
     {
         IDividendLists mockIDividendLists = Substitute.For<IDividendLists>();
-        ToastService mockToastService = Substitute.For<ToastService>();
+        ILogger<ToastService> logger = NSubstitute.Substitute.For<ILogger<ToastService>>();
+        ToastService mockToastService = Substitute.For<ToastService>(logger);
         mockIDividendLists.Dividends.Returns(Dividend);
         mockIDividendLists.InterestIncomes.Returns([]);
         return new UkDividendCalculator(mockIDividendLists, new UKTaxYear(), mockToastService);
