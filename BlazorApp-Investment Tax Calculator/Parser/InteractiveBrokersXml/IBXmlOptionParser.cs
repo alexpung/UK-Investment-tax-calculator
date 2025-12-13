@@ -10,7 +10,7 @@ public static class IBXmlOptionTradeParser
     public static IList<OptionTrade> ParseXml(XElement document)
     {
         IEnumerable<XElement> filteredElements = document.Descendants("Order").Where(row => row.GetAttribute("levelOfDetail") == "ORDER" &&
-                                                                                                             row.GetAttribute("assetCategory") == "OPT");
+                                                                                                             row.GetAttribute("assetCategory") is "OPT" or "FOP" or "FSFOP");
         return filteredElements.Select(element => XmlParserHelper.ParserExceptionManager(OptionTradeMaker, element))
                                                                                           .Where(trade => trade != null).ToList()!;
 
