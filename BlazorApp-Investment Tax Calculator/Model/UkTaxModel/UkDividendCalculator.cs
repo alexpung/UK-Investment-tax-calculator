@@ -13,7 +13,7 @@ public class UkDividendCalculator(IDividendLists dividendList, ITaxYear taxYear,
             .ToDictionary(g => (g.Key.TaxYear, g.Key.CompanyLocation), g => g.ToList());
 
         var groupedInterestIncomesDict = dividendList.InterestIncomes
-            .GroupBy(i => (i.YearTaxable, i.IncomeLocation))
+            .GroupBy(i => (taxYear.ToTaxYear(i.Date) + (i.IsTaxDeferred ? 1:0), i.IncomeLocation))
             .ToDictionary(g => g.Key, g => g.ToList());
 
         if (dividendList.InterestIncomes.Exists(taxEvent => taxEvent.InterestType is TaxEvents.InterestType.ACCURREDINCOMEPROFIT or TaxEvents.InterestType.ACCURREDINCOMELOSS))

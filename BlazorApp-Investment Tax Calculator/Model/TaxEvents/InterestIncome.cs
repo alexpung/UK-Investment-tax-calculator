@@ -15,7 +15,7 @@ public record InterestIncome : TaxEvent, ITextFilePrintable
     public CountryCode IncomeLocation { get; set; } = CountryCode.UnknownRegion;
     // In case of accrued income profit/loss, tax is deferred if next payment is in different tax year
     public bool IsNextPaymentInSameTaxYear { get; set; } = true;
-    public int YearTaxable => (InterestType == InterestType.ACCURREDINCOMEPROFIT || InterestType == InterestType.ACCURREDINCOMELOSS) && !IsNextPaymentInSameTaxYear ? Date.Year + 1 : Date.Year;
+    public bool IsTaxDeferred => (InterestType == InterestType.ACCURREDINCOMEPROFIT || InterestType == InterestType.ACCURREDINCOMELOSS) && !IsNextPaymentInSameTaxYear;
     public string PrintToTextFile()
     {
         return $"Asset Name: {AssetName}, " +
