@@ -129,7 +129,7 @@ public class DisposalDetailSection(TradeCalculationResult tradeCalculationResult
             AcquisitionCostRow.Cells[0].MergeRight = 2;
             AcquisitionCostRow.Cells[0].AddParagraph($"Acquistion value of the matching: {match.Section104HistorySnapshot!.OldValue} * " +
                 $"{match.MatchAcquisitionQty:F2} / {match.Section104HistorySnapshot!.OldQuantity:F2}");
-            AcquisitionCostRow.Cells[4].AddParagraph(ShowAcquisionCost(match));
+            AcquisitionCostRow.Cells[4].AddParagraph(ShowAcquisitionCost(match));
         }
         else
         {
@@ -157,7 +157,7 @@ public class DisposalDetailSection(TradeCalculationResult tradeCalculationResult
             MatchedPortionTotalCostRow.Cells[0].AddParagraph($"Total cost for the matched portion = " +
                 $"{match.MatchedBuyTrade.TotalCostOrProceed} * {match.MatchAcquisitionQty:F2} / {match.MatchedBuyTrade.TotalQty:F2}");
             MatchedPortionTotalCostRow.Cells[0].MergeRight = 2;
-            MatchedPortionTotalCostRow.Cells[4].AddParagraph(ShowAcquisionCost(match));
+            MatchedPortionTotalCostRow.Cells[4].AddParagraph(ShowAcquisitionCost(match));
         }
         if (!string.IsNullOrEmpty(match.AdditionalInformation))
         {
@@ -192,7 +192,7 @@ public class DisposalDetailSection(TradeCalculationResult tradeCalculationResult
             AcquisitionCostRow.Cells[0].MergeRight = 2;
             AcquisitionCostRow.Cells[0].AddParagraph($"Proportioned commission costs: {match.Section104HistorySnapshot!.OldValue} * " +
                 $"{match.MatchAcquisitionQty:F2} / {match.Section104HistorySnapshot!.OldQuantity:F2}");
-            AcquisitionCostRow.Cells[4].AddParagraph(ShowAcquisionCost(match));
+            AcquisitionCostRow.Cells[4].AddParagraph(ShowAcquisitionCost(match));
             
         }
         else
@@ -222,7 +222,7 @@ public class DisposalDetailSection(TradeCalculationResult tradeCalculationResult
             MatchedPortionTotalCostRow.Cells[0].AddParagraph($"Total cost for the matched portion = " +
                 $"{match.MatchedBuyTrade.TotalCostOrProceed} * {match.MatchAcquisitionQty:F2} / {match.MatchedBuyTrade.TotalQty:F2}");
             MatchedPortionTotalCostRow.Cells[0].MergeRight = 2;
-            MatchedPortionTotalCostRow.Cells[4].AddParagraph(ShowAcquisionCost(match));
+            MatchedPortionTotalCostRow.Cells[4].AddParagraph(ShowAcquisitionCost(match));
         }
         Row DisposalCommissionCostRow = table.AddRow();
         DisposalCommissionCostRow.Cells[0].AddParagraph("Proportioned disposal commission cost");
@@ -235,7 +235,7 @@ public class DisposalDetailSection(TradeCalculationResult tradeCalculationResult
         }
     }
 
-    private static string ShowAcquisionCost(TradeMatch match)
+    private static string ShowAcquisitionCost(TradeMatch match)
     {
         if (match is FutureTradeMatch futureTradeMatch)
         {
