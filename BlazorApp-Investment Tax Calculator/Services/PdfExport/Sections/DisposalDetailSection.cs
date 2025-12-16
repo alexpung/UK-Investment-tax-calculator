@@ -177,8 +177,7 @@ public class DisposalDetailSection(TradeCalculationResult tradeCalculationResult
             Row AcquisitionProportionedContractValueRow = table.AddRow();
             AcquisitionProportionedContractValueRow.Cells[0].MergeRight = 2;
             AcquisitionProportionedContractValueRow.Cells[0].AddParagraph($"Proportioned contract value of the matching: {match.Section104HistorySnapshot!.OldContractValue} * " +
-                $"{match.MatchAcquisitionQty:F2} / {match.Section104HistorySnapshot!.OldQuantity:F2}");
-            AcquisitionProportionedContractValueRow.Cells[2].AddParagraph(match.MatchBuyContractValue.ToString());
+                $"{match.MatchAcquisitionQty:F2} / {match.Section104HistorySnapshot!.OldQuantity:F2} = {match.MatchBuyContractValue.ToString()}");
             Row PnLCalcRow = table.AddRow();
             PnLCalcRow.Cells[0].AddParagraph($"Future contract PnL calculation {match.MatchSellContractValue} - {match.MatchBuyContractValue}");
             PnLCalcRow.Cells[0].MergeRight = 2;
