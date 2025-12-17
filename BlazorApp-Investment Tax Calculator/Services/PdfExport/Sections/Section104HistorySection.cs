@@ -7,7 +7,7 @@ namespace InvestmentTaxCalculator.Services.PdfExport.Sections;
 
 public class Section104HistorySection(UkSection104Pools ukSection104Pools) : ISection
 {
-    public string Name { get; set; } = "Section 104 History";
+    public string Name { get; set; } = "Section 104 History (within the report tax year)";
     public string Title { get; set; } = "Section 104 History change in tax year";
 
     public Section WriteSection(Section section, int taxYear)
@@ -20,17 +20,17 @@ public class Section104HistorySection(UkSection104Pools ukSection104Pools) : ISe
             section.AddParagraph("No Section 104 change in this tax year.");
             return section;
         }
-        foreach (var ukSection104 in ukSection104s)
+        foreach (string assetName in ukSection104s.Select(pool => pool.AssetName))
         {
-            Paragraph tableSubheading = section.AddParagraph(ukSection104.AssetName);
+            Paragraph tableSubheading = section.AddParagraph(assetName);
             Style.StyleTableSubheading(tableSubheading);
             tableSubheading.Format.KeepWithNext = true;
-            WriteSection104Table(section, ukSection104);
+            WriteSection104Table(section, ukSection104Pools.GetSection104HistoriesWithinTaxYear(taxYear, assetName));
         }
         return section;
     }
 
-    private static void WriteSection104Table(Section section, UkSection104 ukSection104)
+    private static void WriteSection104Table(Section section, List<Section104History> section104Histories)
     {
         List<(int, ParagraphAlignment)> tableColumns = [(7, ParagraphAlignment.Left),
             (5, ParagraphAlignment.Right),
@@ -38,7 +38,7 @@ public class Section104HistorySection(UkSection104Pools ukSection104Pools) : ISe
             (7, ParagraphAlignment.Right),
             (8, ParagraphAlignment.Right),
             (8, ParagraphAlignment.Right)];
-        bool extendFutureContractValueColumn = ukSection104.Section104HistoryList.Exists(history => history.NewContractValue.Amount != 0);
+        bool extendFutureContractValueColumn = section104Histories.Exists(history => history.NewContractValue.Amount != 0);
         if (extendFutureContractValueColumn)
         {
             tableColumns.Add((10, ParagraphAlignment.Right));
@@ -58,7 +58,7 @@ public class Section104HistorySection(UkSection104Pools ukSection104Pools) : ISe
             headerRow.Cells[6].AddParagraph("New Contract Value");
             headerRow.Cells[7].AddParagraph("ΔContract Value");
         }
-        foreach (var section104History in ukSection104.Section104HistoryList)
+        foreach (var section104History in section104Histories)
         {
             Row row = table.AddRow();
             row.Cells[0].AddParagraph(section104History.Date.ToString("dd/MM/yyyy"));

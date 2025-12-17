@@ -65,6 +65,29 @@ public class UkSection104Pools(ITaxYear taxYearModel)
         return section104;
     }
 
+    public List<Section104History> GetSection104HistoriesUntilTaxYear(int endingTaxYear, string assetName)
+    {
+        _section104Pools.TryGetValue(assetName, out UkSection104? section104);
+        if (section104 is null)
+        {
+            return [];
+        }
+        DateTime endOfTaxYear = taxYearModel.GetTaxYearEndDate(endingTaxYear).ToDateTime(TimeOnly.MaxValue);
+        return [.. section104.Section104HistoryList.Where(history => history.Date <= endOfTaxYear)];
+    }
+
+    public List<Section104History> GetSection104HistoriesWithinTaxYear(int taxYear, string assetName)
+    {
+        _section104Pools.TryGetValue(assetName, out UkSection104? section104);
+        if (section104 is null)
+        {
+            return [];
+        }
+        DateTime startOfTaxYear = taxYearModel.GetTaxYearStartDate(taxYear).ToDateTime(TimeOnly.MinValue);
+        DateTime endOfTaxYear = taxYearModel.GetTaxYearEndDate(taxYear).ToDateTime(TimeOnly.MaxValue);
+        return [.. section104.Section104HistoryList.Where(history => history.Date >= startOfTaxYear && history.Date <= endOfTaxYear)];
+    }
+
     public virtual void Clear()
     {
         _section104Pools.Clear();
