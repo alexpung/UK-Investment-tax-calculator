@@ -10,7 +10,7 @@ public static class IBXmlInterestIncomeParser
     public static List<InterestIncome> ParseXml(XElement document)
     {
         IEnumerable<XElement> filteredElements = document.Descendants("StatementOfFundsLine")
-            .Where(row => row.GetAttribute("activityCode") is "INTR" or "INTP" or "CINT");
+            .Where(row => row.GetAttribute("activityCode") is "INTR" or "INTP" or "CINT" && row.GetAttribute("levelOfDetail") == "Currency");
         return filteredElements.Select(InterestIncomeMaker).Where(interestIncome => interestIncome != null).ToList()!;
     }
 
