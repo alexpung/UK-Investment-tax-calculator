@@ -65,7 +65,7 @@ public class UkSection104Pools(ITaxYear taxYearModel)
         return section104;
     }
 
-    public List<Section104History> GetSection104HistoriesUnitlTaxYear(int endingTaxYear, string assetName)
+    public List<Section104History> GetSection104HistoriesUntilTaxYear(int endingTaxYear, string assetName)
     {
         _section104Pools.TryGetValue(assetName, out UkSection104? section104);
         if (section104 is null)

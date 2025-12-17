@@ -20,7 +20,7 @@ public class UkSection104ExportService(UkSection104Pools ukSection104Pools) : IT
         {
             output.AppendLine($"Asset Name {assetName}");
             output.AppendLine("Date\t\tNew Quantity (change)\t\tNew Value (change)\t\tContract value (for futures)");
-            foreach (var history in ukSection104Pools.GetSection104HistoriesUnitlTaxYear(endReportYear, assetName))
+            foreach (var history in ukSection104Pools.GetSection104HistoriesUntilTaxYear(endReportYear, assetName))
             {
                 output.AppendLine(history.PrintToTextFile());
             }
