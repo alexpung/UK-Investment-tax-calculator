@@ -7,7 +7,7 @@ namespace InvestmentTaxCalculator.Services.PdfExport.Sections;
 
 public class Section104HistorySection(UkSection104Pools ukSection104Pools) : ISection
 {
-    public string Name { get; set; } = "Section 104 History";
+    public string Name { get; set; } = "Section 104 History (within the report tax year)";
     public string Title { get; set; } = "Section 104 History change in tax year";
 
     public Section WriteSection(Section section, int taxYear)
