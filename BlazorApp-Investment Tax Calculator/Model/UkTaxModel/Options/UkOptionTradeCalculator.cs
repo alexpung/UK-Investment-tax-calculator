@@ -7,12 +7,12 @@ using InvestmentTaxCalculator.Services;
 
 namespace InvestmentTaxCalculator.Model.UkTaxModel.Options;
 
-public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorporateActionList tradeList, ITaxYear taxYear, ToastService toastService) : ITradeCalculator
+public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorporateActionList tradeList, ITaxYear taxYear, ToastService toastService, TradeTaxCalculationFactory tradeTaxCalculationFactory) : ITradeCalculator
 {
     public List<ITradeTaxCalculation> CalculateTax()
     {
         MatchExerciseAndAssignmentOptionTrade();
-        List<OptionTradeTaxCalculation> tradeTaxCalculations = [.. GroupTrade(tradeList.OptionTrades)];
+        List<OptionTradeTaxCalculation> tradeTaxCalculations = [.. tradeTaxCalculationFactory.GroupOptionTrade(tradeList.OptionTrades)];
         GroupedTradeContainer<OptionTradeTaxCalculation> _tradeContainer = new(tradeTaxCalculations, tradeList.CorporateActions);
         foreach (var match in UkMatchingRules.ApplySameDayMatchingRule(_tradeContainer))
         {
@@ -31,8 +31,8 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
 
     private void MatchExerciseAndAssignmentOptionTrade()
     {
-        List<OptionTrade> filteredTrades = tradeList.OptionTrades.Where(trade => trade is OptionTrade
-        { TradeReason: TradeReason.OwnerExerciseOption or TradeReason.OptionAssigned }).ToList();
+        List<OptionTrade> filteredTrades = [.. tradeList.OptionTrades.Where(trade => trade is OptionTrade
+        { TradeReason: TradeReason.OwnerExerciseOption or TradeReason.OptionAssigned })];
         foreach (var optionTrade in filteredTrades)
         {
             var underlyingTrade = tradeList.Trades.Find(trade =>
@@ -64,13 +64,6 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
                 }
             }
         }
-    }
-
-    private static List<OptionTradeTaxCalculation> GroupTrade(IEnumerable<OptionTrade> trades)
-    {
-        var groupedTrade = from trade in trades
-                           group trade by new { trade.AssetName, trade.Date.Date, trade.AcquisitionDisposal };
-        return groupedTrade.Select(group => new OptionTradeTaxCalculation(group)).ToList();
     }
 
     public void MatchTrade(OptionTradeTaxCalculation trade1, OptionTradeTaxCalculation trade2, TaxMatchType taxMatchType)

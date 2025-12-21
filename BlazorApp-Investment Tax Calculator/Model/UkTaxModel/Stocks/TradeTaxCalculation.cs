@@ -47,6 +47,7 @@ public class TradeTaxCalculation : ITradeTaxCalculation
     public DateTime Date { get; init; }
     public AssetCategoryType AssetCategoryType { get; init; }
     public string AssetName { get; init; }
+    public ResidencyStatus ResidencyStatusAtTrade { get; set; } = ResidencyStatus.Resident;
 
 
     /// <summary>

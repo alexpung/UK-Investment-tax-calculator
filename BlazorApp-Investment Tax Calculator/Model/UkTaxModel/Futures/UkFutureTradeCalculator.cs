@@ -2,15 +2,17 @@
 using InvestmentTaxCalculator.Model.Interfaces;
 using InvestmentTaxCalculator.Model.TaxEvents;
 
+using MigraDoc.DocumentObjectModel;
+
 using Syncfusion.Blazor.Data;
 
 namespace InvestmentTaxCalculator.Model.UkTaxModel.Futures;
 
-public class UkFutureTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorporateActionList tradeList) : ITradeCalculator
+public class UkFutureTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorporateActionList tradeList, TradeTaxCalculationFactory tradeTaxCalculationFactory) : ITradeCalculator
 {
     public List<ITradeTaxCalculation> CalculateTax()
     {
-        List<FutureTradeTaxCalculation> tradeTaxCalculations = [.. GroupTrade(tradeList.FutureContractTrades)];
+        List<FutureTradeTaxCalculation> tradeTaxCalculations = [.. tradeTaxCalculationFactory.GroupFutureTrade(tradeList.FutureContractTrades)];
         GroupedTradeContainer<FutureTradeTaxCalculation> _tradeContainer = new(tradeTaxCalculations, tradeList.CorporateActions);
         foreach (var match in UkMatchingRules.ApplySameDayMatchingRule(_tradeContainer))
         {
@@ -24,32 +26,7 @@ public class UkFutureTradeCalculator(UkSection104Pools section104Pools, ITradeAn
         {
             MatchTrade(match.Item1, match.Item2, TaxMatchType.SHORTCOVER);
         }
-        return tradeTaxCalculations.Cast<ITradeTaxCalculation>().ToList();
-    }
-
-    /// <summary>
-    /// A trade can be a opening a position, closing a position or closing and reopen a position in opposite direction.
-    /// For each trade calculate how much of the trade is opening and closing a position.
-    /// </summary>
-    /// <param name="trades"></param>
-    /// <returns></returns>
-    /// <exception cref="NotImplementedException"></exception>
-    private static List<FutureTradeTaxCalculation> GroupTrade(IEnumerable<FutureContractTrade> trades)
-    {
-        List<FutureTradeTaxCalculation> groupedTrade = [];
-        foreach (var tradeGroup in GroupFutureContractTradeByAssetName(trades))
-        {
-            List<FutureContractTrade> taggedTrades = UkMatchingRules.TagTradesWithOpenClose(tradeGroup);
-            // trade.AssetName grouping is required as short positions is treated as a separate asset
-            groupedTrade.AddRange(taggedTrades.GroupBy(trade => (trade.Date.Date, trade.AcquisitionDisposal, trade.AssetName)).Select(trades => new FutureTradeTaxCalculation(trades)));
-        }
-        return groupedTrade;
-    }
-
-    private static IEnumerable<IGrouping<string, FutureContractTrade>> GroupFutureContractTradeByAssetName(IEnumerable<FutureContractTrade> trades)
-    {
-        return from trade in trades
-               group trade by trade.AssetName;
+        return [.. tradeTaxCalculations.Cast<ITradeTaxCalculation>()];
     }
 
     private void MatchTrade(FutureTradeTaxCalculation trade1, FutureTradeTaxCalculation trade2, TaxMatchType taxMatchType)
