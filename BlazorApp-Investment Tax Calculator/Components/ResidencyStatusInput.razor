@@ -1,0 +1,226 @@
+﻿@using InvestmentTaxCalculator.Enumerations
+@using Syncfusion.Blazor.Calendars
+@using Syncfusion.Blazor.DropDowns
+@using Syncfusion.Blazor.Grids
+@using InvestmentTaxCalculator.Model
+@using ResidencyEnum = InvestmentTaxCalculator.Enumerations.ResidencyStatus
+@inject ResidencyStatusRecord ResidencyStatusRecord
+
+<div class="card mb-3">
+    <div class="card-body">
+        <h5 class="card-title">Residency Status Editor</h5>
+
+        <div class="row g-3 mb-3">
+            <div class="col-md-4">
+                <label class="form-label d-block">Start date</label>
+                <div class="d-flex align-items-center gap-2">
+                    <SfDatePicker TValue="DateTime" @bind-Value="StartDateTime" Format="dd-MMM-yyyy" Enabled="@( !StartUnbounded )"></SfDatePicker>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="startUnbounded" @bind="StartUnbounded" />
+                        <label class="form-check-label" for="startUnbounded">Unbounded (Min)</label>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label d-block">End date</label>
+                <div class="d-flex align-items-center gap-2">
+                    <SfDatePicker TValue="DateTime" @bind-Value="EndDateTime" Format="dd-MMM-yyyy" Enabled="@( !EndUnbounded )"></SfDatePicker>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="endUnbounded" @bind="EndUnbounded" />
+                        <label class="form-check-label" for="endUnbounded">Unbounded (Max)</label>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Residency status</label>
+                <SfDropDownList TValue="ResidencyEnum" TItem="ResidencyEnum" DataSource="ResidencyOptions"
+                                @bind-Value="SelectedStatus" Placeholder="Select status"></SfDropDownList>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <button class="btn btn-primary me-2" @onclick="ApplyRange">Set residency for range</button>
+            <button class="btn btn-outline-secondary" @onclick="ResetInputs">Reset</button>
+        </div>
+
+        <hr />
+
+        <h6>Residency timeline</h6>
+        <p class="small text-muted mb-2">Red = Resident, Yellow = Temporary Resident, Green = Non-Resident</p>
+        <div class="timeline-container" title="Residency timeline">
+            @if (!TimelineRanges().Any())
+            {
+                <div class="timeline-empty">No ranges configured</div>
+            }
+            else
+            {
+                foreach (var r in TimelineRanges())
+                {
+                    <div class="timeline-segment"
+                         style="@($"flex-basis: {r.WidthPercent:F4}%; background:{r.Color};")"
+                         title="@r.Tooltip">
+                        <div class="timeline-label">@r.Label</div>
+                    </div>
+                }
+            }
+        </div>
+
+        <hr />
+
+        <h6>Configured ranges</h6>
+        <SfGrid TValue="ResidencyStatusRecord.RangeEntry" DataSource="@GetRanges()" AllowPaging="true" Width="100%">
+            <GridPageSettings PageSize="10"></GridPageSettings>
+            <GridColumns>
+                <GridColumn Field=@nameof(ResidencyStatusRecord.RangeEntry.Start) HeaderText="Start" Format="dd-MMM-yyyy" TextAlign="TextAlign.Center" Width="150"></GridColumn>
+                <GridColumn Field=@nameof(ResidencyStatusRecord.RangeEntry.End) HeaderText="End" Format="dd-MMM-yyyy" TextAlign="TextAlign.Center" Width="150"></GridColumn>
+                <GridColumn Field=@nameof(ResidencyStatusRecord.RangeEntry.Status) HeaderText="Residency" Width="220"></GridColumn>
+            </GridColumns>
+        </SfGrid>
+    </div>
+</div>
+
+<style>
+    .timeline-container {
+        display: flex;
+        align-items: stretch;
+        gap: 2px;
+        height: 48px;
+        border: 1px solid rgba(255,255,255,0.08);
+        background: rgba(0,0,0,0.25);
+        padding: 4px;
+        border-radius: 4px;
+        overflow: hidden;
+        width: 100%;
+    }
+
+    .timeline-empty {
+        color: #bbb;
+        padding: 8px;
+    }
+
+    .timeline-segment {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 6px;
+        color: #111;
+        font-size: 12px;
+        white-space: nowrap;
+        overflow: hidden;
+    }
+
+    .timeline-label {
+        padding: 2px 6px;
+        font-size: 12px;
+        color: #fff;
+        text-shadow: 0 1px 0 rgba(0,0,0,0.6);
+    }
+</style>
+
+@code {
+    // bound DateTime values for Syncfusion pickers; convert to DateOnly when calling model
+    private DateTime StartDateTime { get; set; } = DateTime.Today;
+    private DateTime EndDateTime { get; set; } = DateTime.Today;
+
+    private bool StartUnbounded { get; set; } = false;
+    private bool EndUnbounded { get; set; } = false;
+
+    private ResidencyEnum SelectedStatus { get; set; } = ResidencyEnum.Resident;
+
+    // Residency enum options for dropdown
+    private ResidencyEnum[] ResidencyOptions => (ResidencyEnum[])Enum.GetValues(typeof(ResidencyEnum));
+
+    private void ApplyRange()
+    {
+        var start = StartUnbounded ? DateOnly.MinValue : DateOnly.FromDateTime(StartDateTime.Date);
+        var end = EndUnbounded ? DateOnly.MaxValue : DateOnly.FromDateTime(EndDateTime.Date);
+
+        if (!StartUnbounded && !EndUnbounded && start > end)
+        {
+            return;
+        }
+
+        ResidencyStatusRecord.SetResidencyStatus(start, end, SelectedStatus);
+
+        StateHasChanged();
+    }
+
+    private void ResetInputs()
+    {
+        StartDateTime = DateTime.Today;
+        EndDateTime = DateTime.Today;
+        SelectedStatus = ResidencyEnum.Resident;
+        StartUnbounded = false;
+        EndUnbounded = false;
+    }
+
+    // Return ordered ranges for grid binding (defensive null handling)
+    private IEnumerable<ResidencyStatusRecord.RangeEntry> GetRanges()
+    {
+        var ranges = ResidencyStatusRecord?.Ranges;
+        if (ranges is null)
+        {
+            return Enumerable.Empty<ResidencyStatusRecord.RangeEntry>();
+        }
+
+        return ranges.OrderBy(r => r.Start).ToList();
+    }
+
+    // Timeline data
+
+    private sealed record TimelineSeg(string Label, double WidthPercent, string Color, string Tooltip);
+
+    private IEnumerable<TimelineSeg> TimelineRanges()
+    {
+        var rangeList = (ResidencyStatusRecord?.Ranges ?? Enumerable.Empty<ResidencyStatusRecord.RangeEntry>()).OrderBy(i => i.Start).ToList();
+        if (rangeList.Count == 0) yield break;
+
+        // Use double for the divisor to ensure precision after division
+        double totalDays = GetWidthAdjustedTotalDays(rangeList);
+
+        foreach (var record in rangeList)
+        {
+            double segDays = GetDuration(record);
+            double pct = (segDays / totalDays) * 100.0;
+
+            yield return ConvertToTimelineSeg(record, pct);
+        }
+    }
+
+    private int GetDuration(ResidencyStatusRecord.RangeEntry entry)
+    {
+        if (entry.Start == DateOnly.MinValue || entry.End == DateOnly.MaxValue)
+        {
+            return 2000;
+        }
+        return (entry.End.DayNumber - entry.Start.DayNumber) + 1;
+    }
+
+    private int GetWidthAdjustedTotalDays(IEnumerable<ResidencyStatusRecord.RangeEntry> rangeEntries)
+    {
+        return rangeEntries.Sum(entry => GetDuration(entry));
+    }
+
+    private TimelineSeg ConvertToTimelineSeg(ResidencyStatusRecord.RangeEntry rangeEntry, double widthPct)
+    {
+        string colour = SetStatusColor(rangeEntry.Status);
+        string label = rangeEntry.Status.ToString();
+        string tooltip = SetTooltip(rangeEntry.Status, rangeEntry.Start, rangeEntry.End);
+        return new TimelineSeg(label, widthPct, colour, tooltip);
+
+    }
+
+    private string SetStatusColor(ResidencyEnum status) => status switch
+    {
+        ResidencyEnum.Resident => "#d9534f",           // red
+        ResidencyEnum.TemporaryResident => "#f0ad4e",  // yellow/orange
+        ResidencyEnum.NonResident => "#5cb85c",       // green
+        _ => "#6c757d"
+    };
+
+    private string SetTooltip(ResidencyEnum status, DateOnly start, DateOnly end)
+    {
+        var label = status.GetDescription();
+        return $"{label}: {start:dd-MMM-yyyy} → {end:dd-MMM-yyyy}";
+    }
+}

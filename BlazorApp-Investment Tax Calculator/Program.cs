@@ -57,6 +57,7 @@ builder.Services.AddSingleton<UkSection104Pools>();
 builder.Services.AddSingleton<TradeCalculationResult>();
 builder.Services.AddSingleton<DividendCalculationResult>();
 builder.Services.AddSingleton<ITaxYear, UKTaxYear>();
+builder.Services.AddSingleton<ResidencyStatusRecord>();
 
 //ViewModels
 builder.Services.AddSingleton<InputGridDatas>();

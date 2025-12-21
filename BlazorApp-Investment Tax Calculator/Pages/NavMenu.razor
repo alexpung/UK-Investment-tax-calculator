@@ -6,9 +6,9 @@
 <SfButton OnClick="ToggleMenu" class=open-menu-button>>></SfButton>
 <SfSidebar ref="NavBar" Width="220px" MediaQuery="(min-width:600px)" @bind-IsOpen="SidebarToggle" Type="SidebarType.Auto">
     <ChildContent>
-        <SfListView DataSource="@List" TValue="listData" CssClass="e-template-list">
-            <ListViewFieldSettings TValue="listData" Id="Id" Text="Text"></ListViewFieldSettings>
-            <ListViewEvents TValue="listData" Clicked="OnSelect"></ListViewEvents>
+        <SfListView DataSource="@List" TValue="ListData" CssClass="e-template-list">
+            <ListViewFieldSettings TValue="ListData" Id="Id" Text="Text"></ListViewFieldSettings>
+            <ListViewEvents TValue="ListData" Clicked="OnSelect"></ListViewEvents>
         </SfListView>
         <div class="sidebar-content mt-3">
             <SfButton OnClick="ToggleMenu" class="close-menu-button">Close menu</SfButton>
@@ -32,25 +32,26 @@
 </style>
 
 @code {
-    public bool SidebarToggle = true;
+    public bool SidebarToggle { get; set; } = true;
     // Specify the value of ListView component DataSource property.
-    public List<listData> List = new List<listData>
+    public List<ListData> List { get; set; } = new List<ListData>
     {
-        new listData {Id="1", Text = "Home", PageAddress = ""},
-        new listData {Id="2",Text = "Import/Export", PageAddress = "MainCalculatorPage"},
-        new listData {Id="3",Text = "CGT Yearly Summary", PageAddress = "CgtYearlyTaxSummaryPage"},
-        new listData {Id="4",Text = "Dividend/income Summary", PageAddress = "DividendYearlyTaxSummaryPage"},
-        new listData {Id="5",Text = "Disposal Summary", PageAddress = "CalculationViewPage"},
-        new listData {Id="6", Text = "Trade Matches", PageAddress = "TradeMatchPage"},
-        new listData {Id="7", Text = "Dividend/income Data", PageAddress = "DividendDataPage"},
-        new listData {Id="8", Text = "Section 104 Data", PageAddress = "Section104DataPage"},
-        new listData {Id="9", Text = "Add Trades", PageAddress = "AddTradePage"},
-        new listData {Id="10", Text = "Conversion", PageAddress = "ConvertPage"},
-        new listData {Id="11", Text = "PDF Report", PageAddress = "PdfReportPage"},
-        new listData {Id="12", Text = "Acknowledgement", PageAddress = "AcknowledgementPage"},
+        new ListData {Id="1", Text = "Home", PageAddress = ""},
+        new ListData {Id="2",Text = "Import/Export", PageAddress = "MainCalculatorPage"},
+        new ListData {Id="3",Text = "CGT Yearly Summary", PageAddress = "CgtYearlyTaxSummaryPage"},
+        new ListData {Id="4",Text = "Dividend/income Summary", PageAddress = "DividendYearlyTaxSummaryPage"},
+        new ListData {Id="5",Text = "Disposal Summary", PageAddress = "CalculationViewPage"},
+        new ListData {Id="6", Text = "Trade Matches", PageAddress = "TradeMatchPage"},
+        new ListData {Id="7", Text = "Dividend/income Data", PageAddress = "DividendDataPage"},
+        new ListData {Id="8", Text = "Section 104 Data", PageAddress = "Section104DataPage"},
+        new ListData {Id="9", Text = "Add Trades", PageAddress = "AddTradePage"},
+        new ListData {Id="10", Text = "Conversion", PageAddress = "ConvertPage"},
+        new ListData {Id="11", Text = "PDF Report", PageAddress = "PdfReportPage"},
+        new ListData {Id="12", Text = "Acknowledgement", PageAddress = "AcknowledgementPage"},
+        new ListData {Id="13", Text = "Residency Status", PageAddress = "ResidencyStatusPage"},
     };
 
-    public class listData
+    public class ListData
     {
         public required string Id { get; set; }
         public required string Text { get; set; }
@@ -58,7 +59,7 @@
     }
 
     // Specifies the event handler for Clicked event in ListView component.
-    public void OnSelect(Syncfusion.Blazor.Lists.ClickEventArgs<listData> args)
+    public void OnSelect(Syncfusion.Blazor.Lists.ClickEventArgs<ListData> args)
     {
         Navigation.NavigateTo(Navigation.BaseUri + args.ItemData.PageAddress);
     }
