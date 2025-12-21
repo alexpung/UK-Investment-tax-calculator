@@ -141,6 +141,7 @@ public static class UkMatchingRules
         foreach (var trade in trades.OrderBy(trade => trade.Date))
         {
             // run through trades chronologically and catagorise trades to one of the 4 catagories.
+            string shortPrefix = "Short ";
             switch (currentPosition, trade.RawQuantity)
             {
                 case ( >= 0, >= 0): // increase long position
@@ -153,12 +154,14 @@ public static class UkMatchingRules
                     break;
                 case ( <= 0, <= 0): // increase short position
                     trade.PositionType = PositionType.OPENSHORT;
-                    trade.AssetName = "Short " + trade.AssetName;
+                    if (!trade.AssetName.StartsWith(shortPrefix))
+                        trade.AssetName = shortPrefix + trade.AssetName;
                     resultList.Add(trade);
                     break;
                 case var (position, rawQuantity) when position <= 0 && rawQuantity <= Math.Abs(position): // closing only part or all of a short position.
                     trade.PositionType = PositionType.CLOSESHORT;
-                    trade.AssetName = "Short " + trade.AssetName;
+                    if (!trade.AssetName.StartsWith(shortPrefix))
+                        trade.AssetName = shortPrefix + trade.AssetName;
                     resultList.Add(trade);
                     break;
                 case var (position, rawQuantity) when position > 0 && rawQuantity < 0 && Math.Abs(rawQuantity) > position:
@@ -167,7 +170,8 @@ public static class UkMatchingRules
                     closingTrade.PositionType = PositionType.CLOSELONG;
                     T reopeningTrade = trade.SplitTrade(Math.Abs(rawQuantity) - Math.Abs(currentPosition));
                     reopeningTrade.PositionType = PositionType.OPENSHORT;
-                    reopeningTrade.AssetName = "Short " + trade.AssetName;
+                    if (!reopeningTrade.AssetName.StartsWith(shortPrefix))
+                        reopeningTrade.AssetName = shortPrefix + trade.AssetName;
                     resultList.Add(reopeningTrade);
                     resultList.Add(closingTrade);
                     break;
@@ -175,7 +179,8 @@ public static class UkMatchingRules
                     // closing a short position and reopen as a long
                     closingTrade = trade.SplitTrade(Math.Abs(currentPosition));
                     closingTrade.PositionType = PositionType.CLOSESHORT;
-                    closingTrade.AssetName = "Short " + trade.AssetName;
+                    if (!closingTrade.AssetName.StartsWith(shortPrefix))
+                        closingTrade.AssetName = shortPrefix + trade.AssetName;
                     reopeningTrade = trade.SplitTrade(Math.Abs(rawQuantity) - Math.Abs(currentPosition));
                     reopeningTrade.PositionType = PositionType.OPENLONG;
                     resultList.Add(reopeningTrade);

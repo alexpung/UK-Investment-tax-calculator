@@ -1,6 +1,7 @@
 ﻿using InvestmentTaxCalculator.Enumerations;
 using InvestmentTaxCalculator.Model;
 using InvestmentTaxCalculator.Model.Interfaces;
+using InvestmentTaxCalculator.Model.TaxEvents;
 using InvestmentTaxCalculator.Model.UkTaxModel.Futures;
 using InvestmentTaxCalculator.Model.UkTaxModel.Stocks;
 
@@ -30,7 +31,7 @@ public class DisposalDetailSection(TradeCalculationResult tradeCalculationResult
         foreach (var disposal in disposals)
         {
             AddDisposalDetails(section, disposal);
-            AddDisposalCalculationDetail(section, disposal);
+            AddDisposalCalculationDetailDefault(section, disposal);
             section.AddParagraph().Format.SpaceAfter = Unit.FromPoint(10);
         }
         return section;
@@ -52,7 +53,8 @@ public class DisposalDetailSection(TradeCalculationResult tradeCalculationResult
         headerRow.Cells[2].AddParagraph("Asset Category");
         headerRow.Cells[3].AddParagraph("Disposal Date");
         headerRow.Cells[4].AddParagraph("Disposal Quantity");
-        headerRow.Cells[5].AddParagraph("Net Disposal Proceed");
+        if (disposal is not FutureTradeTaxCalculation)
+            headerRow.Cells[5].AddParagraph("Net Disposal Proceed");
         headerRow.Cells[6].AddParagraph("Gain (Loss)");
         Style.StyleHeaderRow(headerRow);
 
@@ -62,19 +64,9 @@ public class DisposalDetailSection(TradeCalculationResult tradeCalculationResult
         dataRow.Cells[2].AddParagraph(disposal.AssetCategoryType.GetDescription());
         dataRow.Cells[3].AddParagraph(disposal.Date.ToShortDateString());
         dataRow.Cells[4].AddParagraph(disposal.TotalQty.ToString("F2"));
-        dataRow.Cells[5].AddParagraph(disposal.TotalCostOrProceed.ToString());
+        if (disposal is not FutureTradeTaxCalculation)
+            dataRow.Cells[5].AddParagraph(disposal.TotalCostOrProceed.ToString());
         dataRow.Cells[6].AddParagraph(disposal.Gain.ToString());
-    }
-
-    private static void AddDisposalCalculationDetail(Section section, ITradeTaxCalculation disposal)
-    {
-        switch (disposal)
-        {
-            case FutureTradeTaxCalculation futureDisposal:
-            default:
-                AddDisposalCalculationDetailDefault(section, disposal);
-                break;
-        }
     }
 
     private static void AddDisposalCalculationDetailDefault(Section section, ITradeTaxCalculation disposal)
@@ -107,24 +99,178 @@ public class DisposalDetailSection(TradeCalculationResult tradeCalculationResult
         Style.StyleHeaderRow(tradeDetailHeaderRow);
         Style.StyleHeaderRow(tradeDetailHeaderRow2);
         Style.StyleHeaderRow(tradeDetailHeaderRow3);
+        if (disposal is FutureTradeTaxCalculation)
+            ShowCalculationFutureContract(table, disposal);
+        else
+            ShowCalculationNormal(table, disposal);
+    }
+
+    private static string GetMatchQuantityDescription(TradeMatch match)
+    {
+        if (match.MatchAcquisitionQty == match.MatchDisposalQty)
+        {
+            return $"Matched {match.MatchAcquisitionQty:F2} unit(s)";
+        }
+        else
+        {
+            return $"Matched {match.MatchAcquisitionQty:F2} acquisition with {match.MatchDisposalQty:F2} disposal";
+        }
+    }
+
+    private static void AddMatchingDetail(Table table, TradeMatch match)
+    {
+        if (match.TradeMatchType == TaxMatchType.SECTION_104)
+        {
+            Row AcquisitionDescriptionRow = table.AddRow();
+            AcquisitionDescriptionRow.Cells[0].AddParagraph($"Section 104 pool quantity {match.Section104HistorySnapshot!.OldQuantity:F2}");
+            AcquisitionDescriptionRow.Cells[0].MergeRight = 1;
+            AcquisitionDescriptionRow.Cells[2].AddParagraph(match.Section104HistorySnapshot!.OldValue.ToString());
+            Row AcquisitionCostRow = table.AddRow();
+            AcquisitionCostRow.Cells[0].MergeRight = 2;
+            AcquisitionCostRow.Cells[0].AddParagraph($"Acquistion value of the matching: {match.Section104HistorySnapshot!.OldValue} * " +
+                $"{match.MatchAcquisitionQty:F2} / {match.Section104HistorySnapshot!.OldQuantity:F2}");
+            AcquisitionCostRow.Cells[4].AddParagraph(ShowAcquisitionCost(match));
+        }
+        else
+        {
+            foreach (var trade in match.MatchedBuyTrade!.TradeList)
+            {
+                Row AcquisitionDescriptionRow = table.AddRow();
+                AcquisitionDescriptionRow.Cells[0].AddParagraph($"Acquire {trade.Quantity:F2} unit(s) on {trade.Date:dd-MMM-yyyy HH:mm}");
+                AcquisitionDescriptionRow.Cells[0].MergeRight = 2;
+                Row GrossProceedRow = table.AddRow();
+                GrossProceedRow.Cells[0].AddParagraph("Acquisition cost");
+                GrossProceedRow.Cells[1].AddParagraph(trade.GrossProceed.Amount.ToString());
+                GrossProceedRow.Cells[2].AddParagraph(trade.GrossProceed.BaseCurrencyAmount.ToString());
+                foreach (var expense in trade.Expenses)
+                {
+                    Row ExpensesRow = table.AddRow();
+                    ExpensesRow.Cells[0].AddParagraph(expense.Description);
+                    ExpensesRow.Cells[1].AddParagraph(expense.Amount.ToString());
+                    ExpensesRow.Cells[2].AddParagraph(expense.BaseCurrencyAmount.ToString());
+                }
+            }
+            Row totalCostRow = table.AddRow();
+            totalCostRow.Cells[0].AddParagraph("Total cost");
+            totalCostRow.Cells[2].AddParagraph(match.MatchedBuyTrade.TotalCostOrProceed.ToString());
+            Row MatchedPortionTotalCostRow = table.AddRow();
+            MatchedPortionTotalCostRow.Cells[0].AddParagraph($"Total cost for the matched portion = " +
+                $"{match.MatchedBuyTrade.TotalCostOrProceed} * {match.MatchAcquisitionQty:F2} / {match.MatchedBuyTrade.TotalQty:F2}");
+            MatchedPortionTotalCostRow.Cells[0].MergeRight = 2;
+            MatchedPortionTotalCostRow.Cells[4].AddParagraph(ShowAcquisitionCost(match));
+        }
+        if (!string.IsNullOrEmpty(match.AdditionalInformation))
+        {
+            Row additionalInfoRow = table.AddRow();
+            additionalInfoRow.Cells[0].AddParagraph($"Note: {match.AdditionalInformation}");
+            additionalInfoRow.Cells[0].MergeRight = 4;
+        }
+    }
+
+    private static void AddFutureMatchingDetail(Table table, FutureTradeMatch match)
+    {
+        if (match.TradeMatchType == TaxMatchType.SECTION_104)
+        {
+            Row AcquisitionContractValueRow = table.AddRow();
+            AcquisitionContractValueRow.Cells[0].AddParagraph($"Total contract value for Section 104 pool: {match.Section104HistorySnapshot!.OldContractValue.ToString()}");
+            AcquisitionContractValueRow.Cells[0].MergeRight = 2;
+            Row AcquisitionProportionedContractValueRow = table.AddRow();
+            AcquisitionProportionedContractValueRow.Cells[0].MergeRight = 2;
+            AcquisitionProportionedContractValueRow.Cells[0].AddParagraph($"Proportioned contract value of the matching: {match.Section104HistorySnapshot!.OldContractValue} * " +
+                $"{match.MatchAcquisitionQty:F2} / {match.Section104HistorySnapshot!.OldQuantity:F2} = {match.MatchBuyContractValue.ToString()}");
+            Row PnLCalcRow = table.AddRow();
+            PnLCalcRow.Cells[0].AddParagraph($"Future contract PnL calculation {match.MatchSellContractValue} - {match.MatchBuyContractValue}");
+            PnLCalcRow.Cells[0].MergeRight = 2;
+            PnLCalcRow.Cells[3].AddParagraph((match.MatchSellContractValue - match.MatchBuyContractValue).ToString());
+            PnLCalcRow.Cells[4].AddParagraph(match.BaseCurrencyContractValueGain.ToString());
+            Row AcquisitionDescriptionRow = table.AddRow();
+            AcquisitionDescriptionRow.Cells[0].AddParagraph($"Total commission costs for Section 104 pool quantity {match.Section104HistorySnapshot!.OldQuantity:F2}");
+            AcquisitionDescriptionRow.Cells[0].MergeRight = 1;
+            AcquisitionDescriptionRow.Cells[2].AddParagraph(match.Section104HistorySnapshot!.OldValue.ToString());
+            Row AcquisitionCostRow = table.AddRow();
+            AcquisitionCostRow.Cells[0].MergeRight = 2;
+            AcquisitionCostRow.Cells[0].AddParagraph($"Proportioned commission costs: {match.Section104HistorySnapshot!.OldValue} * " +
+                $"{match.MatchAcquisitionQty:F2} / {match.Section104HistorySnapshot!.OldQuantity:F2}");
+            AcquisitionCostRow.Cells[4].AddParagraph(ShowAcquisitionCost(match));
+            
+        }
+        else
+        {
+            foreach (var trade in match.MatchedBuyTrade!.TradeList)
+            {
+                Row AcquisitionDescriptionRow = table.AddRow();
+                AcquisitionDescriptionRow.Cells[0].AddParagraph($"Acquire {trade.Quantity:F2} contract(s) on {trade.Date:dd-MMM-yyyy HH:mm}");
+                AcquisitionDescriptionRow.Cells[0].MergeRight = 2;
+                Row AcquisitionContractValueRow = table.AddRow();
+                AcquisitionContractValueRow.Cells[0].AddParagraph($"Total buy contract value: {match.MatchBuyContractValue}");
+                AcquisitionContractValueRow.Cells[0].MergeRight = 2;
+                Row PnLCalcRow = table.AddRow();
+                PnLCalcRow.Cells[0].AddParagraph($"Future contract PnL calculation {match.MatchSellContractValue} - {match.MatchBuyContractValue}");
+                PnLCalcRow.Cells[0].MergeRight = 2;
+                PnLCalcRow.Cells[3].AddParagraph((match.MatchSellContractValue - match.MatchBuyContractValue).ToString());
+                PnLCalcRow.Cells[4].AddParagraph(match.BaseCurrencyContractValueGain.ToString());
+                foreach (var expense in trade.Expenses)
+                {
+                    Row ExpensesRow = table.AddRow();
+                    ExpensesRow.Cells[0].AddParagraph(expense.Description);
+                    ExpensesRow.Cells[1].AddParagraph(expense.Amount.ToString());
+                    ExpensesRow.Cells[2].AddParagraph(expense.BaseCurrencyAmount.ToString());
+                }
+            }
+            Row MatchedPortionTotalCostRow = table.AddRow();
+            MatchedPortionTotalCostRow.Cells[0].AddParagraph($"Total cost for the matched portion = " +
+                $"{match.MatchedBuyTrade.TotalCostOrProceed} * {match.MatchAcquisitionQty:F2} / {match.MatchedBuyTrade.TotalQty:F2}");
+            MatchedPortionTotalCostRow.Cells[0].MergeRight = 2;
+            MatchedPortionTotalCostRow.Cells[4].AddParagraph(ShowAcquisitionCost(match));
+        }
+        Row DisposalCommissionCostRow = table.AddRow();
+        DisposalCommissionCostRow.Cells[0].AddParagraph("Proportioned disposal commission cost");
+        DisposalCommissionCostRow.Cells[4].AddParagraph((match.BaseCurrencyDisposalDealingCost * -1).ToString());
+        if (!string.IsNullOrEmpty(match.AdditionalInformation))
+        {
+            Row additionalInfoRow = table.AddRow();
+            additionalInfoRow.Cells[0].AddParagraph($"Note: {match.AdditionalInformation}");
+            additionalInfoRow.Cells[0].MergeRight = 4;
+        }
+    }
+
+    private static string ShowAcquisitionCost(TradeMatch match)
+    {
+        if (match is FutureTradeMatch futureTradeMatch)
+        {
+            return (futureTradeMatch.BaseCurrencyAcquisitionDealingCost * -1).ToString();
+        }
+        else
+        {
+            return (match.BaseCurrencyMatchAllowableCost * -1).ToString();
+        }
+    }
+
+    private static void ShowNetProceedCalculation(Table table, Trade trade)
+    {
+        Row GrossProceedRow = table.AddRow();
+        GrossProceedRow.Cells[0].AddParagraph("Gross Disposal Proceeds");
+        GrossProceedRow.Cells[0].MergeRight = 2;
+        GrossProceedRow.Cells[3].AddParagraph(trade.GrossProceed.Amount.ToString());
+        GrossProceedRow.Cells[4].AddParagraph(trade.GrossProceed.BaseCurrencyAmount.ToString());
+        foreach (var expense in trade.Expenses)
+        {
+            Row ExpensesRow = table.AddRow();
+            ExpensesRow.Cells[0].AddParagraph(expense.Description);
+            ExpensesRow.Cells[3].AddParagraph((expense.Amount * -1).ToString());
+            ExpensesRow.Cells[4].AddParagraph((expense.BaseCurrencyAmount * -1).ToString());
+
+        }
+    }
+
+    private static void ShowCalculationNormal(Table table, ITradeTaxCalculation disposal)
+    {
         foreach (var trade in disposal.TradeList)
         {
             Cell mergeCell = table.AddRow().Cells[0];
             mergeCell.MergeRight = 2;
             mergeCell.AddParagraph($"Dispose {trade.Quantity:F2} unit(s) on {trade.Date:dd-MMM-yyyy HH:mm}");
-            Row GrossProceedRow = table.AddRow();
-            GrossProceedRow.Cells[0].AddParagraph("Gross Disposal Proceeds");
-            GrossProceedRow.Cells[0].MergeRight = 2;
-            GrossProceedRow.Cells[3].AddParagraph(trade.GrossProceed.Amount.ToString());
-            GrossProceedRow.Cells[4].AddParagraph(trade.GrossProceed.BaseCurrencyAmount.ToString());
-            foreach (var expense in trade.Expenses)
-            {
-                Row ExpensesRow = table.AddRow();
-                ExpensesRow.Cells[0].AddParagraph(expense.Description);
-                ExpensesRow.Cells[3].AddParagraph((expense.Amount * -1).ToString());
-                ExpensesRow.Cells[4].AddParagraph((expense.BaseCurrencyAmount * -1).ToString());
-
-            }
+            ShowNetProceedCalculation(table, trade);
         }
         Row totalRow = table.AddRow();
         Style.StyleSumRow(totalRow);
@@ -155,73 +301,35 @@ public class DisposalDetailSection(TradeCalculationResult tradeCalculationResult
         totalRow.Cells[4].AddParagraph(disposal.Gain.ToString());
     }
 
-    private static string GetMatchQuantityDescription(TradeMatch match)
+    private static void ShowCalculationFutureContract(Table table, ITradeTaxCalculation disposal)
     {
-        if (match.MatchAcquisitionQty == match.MatchDisposalQty)
+        Cell closingValueCell = table.AddRow().Cells[0];
+        closingValueCell.MergeRight = 2;
+        FutureTradeTaxCalculation futureTradeTaxCalculation = (FutureTradeTaxCalculation)disposal;
+        closingValueCell.AddParagraph($"Closing contract value for {disposal.TotalQty} contract(s): {futureTradeTaxCalculation.TotalContractValue}");
+        if (!disposal.CalculationCompleted)
         {
-            return $"Matched {match.MatchAcquisitionQty:F2} unit(s)";
+            Row row = table.AddRow();
+            row.Cells[0].MergeRight = 2;
+            row.Cells[0].AddParagraph($"The trade is not completely matched, {futureTradeTaxCalculation.UnmatchedQty} remaining");
+            Row matchedProceedRow = table.AddRow();
+            matchedProceedRow.Cells[0].AddParagraph($"Contract value of matched portion:");
+            matchedProceedRow.Cells[0].MergeRight = 2;
+            matchedProceedRow.Cells[4].AddParagraph((futureTradeTaxCalculation.TotalContractValue - futureTradeTaxCalculation.UnmatchedContractValue).ToString());
         }
-        else
+        foreach (var match in disposal.MatchHistory)
         {
-            return $"Matched {match.MatchAcquisitionQty:F2} acquisition with {match.MatchDisposalQty:F2} disposal";
+            if (match is not FutureTradeMatch futureTradeMatch)
+                throw new InvalidOperationException("Unexpected non future match type in future trade calculation.");
+            Row row = table.AddRow();
+            row.Format.Borders.Top.Width = 1;
+            row.Cells[0].AddParagraph($"{match.TradeMatchType.GetDescription()}: Matched {match.MatchAcquisitionQty:F2} contract(s)");
+            row.Cells[0].MergeRight = 2;
+            AddFutureMatchingDetail(table, futureTradeMatch);
         }
-    }
-
-    private static void AddMatchingDetail(Table table, TradeMatch match)
-    {
-        if (match.TradeMatchType == TaxMatchType.SECTION_104)
-        {
-            Row AcquisitionDescriptionRow = table.AddRow();
-            AcquisitionDescriptionRow.Cells[0].AddParagraph($"Section 104 pool quantity {match.Section104HistorySnapshot!.OldQuantity:F2}");
-            AcquisitionDescriptionRow.Cells[0].MergeRight = 1;
-            AcquisitionDescriptionRow.Cells[2].AddParagraph(match.Section104HistorySnapshot!.OldValue.ToString());
-            Row AcquisitionCostRow = table.AddRow();
-            AcquisitionCostRow.Cells[0].MergeRight = 2;
-            AcquisitionCostRow.Cells[0].AddParagraph($"Acquistion value of the matching: {match.Section104HistorySnapshot!.OldValue} * " +
-                $"{match.MatchAcquisitionQty:F2} / {match.Section104HistorySnapshot!.OldQuantity:F2}");
-            AcquisitionCostRow.Cells[4].AddParagraph((match.BaseCurrencyMatchAllowableCost * -1).ToString());
-        }
-        else
-        {
-            foreach (var trade in match.MatchedBuyTrade!.TradeList)
-            {
-                Row AcquisitionDescriptionRow = table.AddRow();
-                AcquisitionDescriptionRow.Cells[0].AddParagraph($"Acquire {trade.Quantity:F2} unit(s) on {trade.Date:dd-MMM-yyyy HH:mm}");
-                AcquisitionDescriptionRow.Cells[0].MergeRight = 2;
-                Row GrossProceedRow = table.AddRow();
-                GrossProceedRow.Cells[0].AddParagraph("Acquisition cost");
-                GrossProceedRow.Cells[1].AddParagraph(trade.GrossProceed.Amount.ToString());
-                GrossProceedRow.Cells[2].AddParagraph(trade.GrossProceed.BaseCurrencyAmount.ToString());
-                foreach (var expense in trade.Expenses)
-                {
-                    Row ExpensesRow = table.AddRow();
-                    ExpensesRow.Cells[0].AddParagraph(expense.Description);
-                    ExpensesRow.Cells[1].AddParagraph(expense.Amount.ToString());
-                    ExpensesRow.Cells[2].AddParagraph(expense.BaseCurrencyAmount.ToString());
-                }
-            }
-            Row totalCostRow = table.AddRow();
-            totalCostRow.Cells[0].AddParagraph("Total cost");
-            totalCostRow.Cells[2].AddParagraph(match.MatchedBuyTrade.TotalCostOrProceed.ToString());
-            Row MatchedPortionTotalCostRow = table.AddRow();
-            MatchedPortionTotalCostRow.Cells[0].AddParagraph($"Total cost for the matched portion = " +
-                $"{match.MatchedBuyTrade.TotalCostOrProceed} * {match.MatchAcquisitionQty:F2} / {match.MatchedBuyTrade.TotalQty:F2}");
-            MatchedPortionTotalCostRow.Cells[0].MergeRight = 2;
-            MatchedPortionTotalCostRow.Cells[4].AddParagraph((match.BaseCurrencyMatchAllowableCost * -1).ToString());
-        }
-        if (match is FutureTradeMatch futureTradeMatch)
-        {
-            Row PnLCalcRow = table.AddRow();
-            PnLCalcRow.Cells[0].AddParagraph($"Future contract PnL calculation {futureTradeMatch.MatchSellContractValue} - {futureTradeMatch.MatchBuyContractValue}");
-            PnLCalcRow.Cells[0].MergeRight = 2;
-            PnLCalcRow.Cells[3].AddParagraph((futureTradeMatch.MatchSellContractValue - futureTradeMatch.MatchBuyContractValue).ToString());
-            PnLCalcRow.Cells[4].AddParagraph(futureTradeMatch.BaseCurrencyContractValueGain.ToString());
-        }
-        if (!string.IsNullOrEmpty(match.AdditionalInformation))
-        {
-            Row additionalInfoRow = table.AddRow();
-            additionalInfoRow.Cells[0].AddParagraph($"Note: {match.AdditionalInformation}");
-            additionalInfoRow.Cells[0].MergeRight = 4;
-        }
+        Row totalRow = table.AddRow();
+        Style.StyleSumRow(totalRow);
+        totalRow.Cells[0].AddParagraph("Net Gain (Loss)");
+        totalRow.Cells[4].AddParagraph(disposal.Gain.ToString());
     }
 }
