@@ -7,6 +7,8 @@ using InvestmentTaxCalculator.Model.UkTaxModel.Stocks;
 
 using System.Globalization;
 
+using UnitTest.Helper;
+
 namespace UnitTest.Test.TradeCalculations.Stocks;
 public class UkTradeCalculatorStockSplitTest
 {
@@ -48,7 +50,7 @@ public class UkTradeCalculatorStockSplitTest
         TaxEventLists taxEventLists = new();
         taxEventLists.AddData([initialPurchase, stockSplit, postSplitSale]);
 
-        UkTradeCalculator calculator = new(section104Pools, taxEventLists);
+        UkTradeCalculator calculator = TradeCalculationHelper.CreateUkTradeCalculator(section104Pools, taxEventLists);
         List<ITradeTaxCalculation> result = calculator.CalculateTax();
 
         // Assert the expected results
@@ -114,7 +116,7 @@ public class UkTradeCalculatorStockSplitTest
         TaxEventLists taxEventLists = new();
         taxEventLists.AddData([trade1, stockSplit, trade2, trade3]);
 
-        UkTradeCalculator calculator = new(section104Pools, taxEventLists);
+        UkTradeCalculator calculator = TradeCalculationHelper.CreateUkTradeCalculator(section104Pools, taxEventLists);
         List<ITradeTaxCalculation> result = calculator.CalculateTax();
 
         // Assert the expected results
@@ -172,7 +174,7 @@ public class UkTradeCalculatorStockSplitTest
         UkSection104Pools section104Pools = new(new UKTaxYear());
         TaxEventLists taxEventLists = new();
         taxEventLists.AddData([trade1, stockSplit, trade2, trade3]);
-        UkTradeCalculator calculator = new(section104Pools, taxEventLists);
+        UkTradeCalculator calculator = TradeCalculationHelper.CreateUkTradeCalculator(section104Pools, taxEventLists);
         List<ITradeTaxCalculation> result = calculator.CalculateTax();
 
         result[1].Gain.Amount.ShouldBe(700m, 0.01m); // Gain is the disposal value minus acquisition cost: 2500 - 1300 + 2000 * 50 * (2000 / 200) = 700
