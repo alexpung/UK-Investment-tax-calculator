@@ -49,6 +49,7 @@ public class TradeCalculationResult(ITaxYear taxYear)
             _calculatedTrade.Add(trade);
         }
         IEnumerable<IGrouping<(int, AssetCategoryType), ITradeTaxCalculation>> groupedTradeByYear = _calculatedTrade
+            .Where(trade => trade.ResidencyStatusAtTrade != ResidencyStatus.NonResident)
             .GroupBy(trade => (taxYear.ToTaxYear(trade.Date), trade.AssetCategoryType));
         foreach (var group in groupedTradeByYear)
         {
