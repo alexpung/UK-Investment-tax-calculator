@@ -9,5 +9,5 @@ public enum ResidencyStatus
     [Description("Non-resident for tax purposes")]
     NonResident,
     [Description("Temporary Non-Residence for tax purposes")]
-    TemporaryResident
+    TemporaryNonResident
 }

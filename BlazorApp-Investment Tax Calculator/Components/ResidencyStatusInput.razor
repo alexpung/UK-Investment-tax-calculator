@@ -213,7 +213,7 @@
     private string SetStatusColor(ResidencyEnum status) => status switch
     {
         ResidencyEnum.Resident => "#d9534f",           // red
-        ResidencyEnum.TemporaryResident => "#f0ad4e",  // yellow/orange
+        ResidencyEnum.TemporaryNonResident => "#f0ad4e",  // yellow/orange
         ResidencyEnum.NonResident => "#5cb85c",       // green
         _ => "#6c757d"
     };
