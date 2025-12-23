@@ -18,7 +18,7 @@ public record UkSection104
         TotalContractValue = WrappedMoney.GetBaseCurrencyZero();
     }
 
-    public void AdjustValues(decimal quantity, WrappedMoney acquisitionCostInBaseCurrency, WrappedMoney? contractValue = null)
+    private void AdjustValues(decimal quantity, WrappedMoney acquisitionCostInBaseCurrency, WrappedMoney? contractValue = null, decimal nonResidentExemptQuantity = 0)
     {
         Quantity += quantity;
         AcquisitionCostInBaseCurrency += acquisitionCostInBaseCurrency;
