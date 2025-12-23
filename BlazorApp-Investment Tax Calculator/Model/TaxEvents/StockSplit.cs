@@ -32,7 +32,7 @@ public record StockSplit : CorporateAction, IChangeSection104
     {
         if (AssetName != section104.AssetName) return;
         decimal newQuantity = section104.Quantity * SplitTo / SplitFrom;
-        section104.Section104HistoryList.Add(Section104History.ShareAdjustment(Date, section104.Quantity, newQuantity));
+        section104.Section104HistoryList.Add(Section104History.ShareAdjustment(Date, section104.Quantity, newQuantity, section104.AcquisitionCostInBaseCurrency, section104.TotalContractValue));
         section104.Quantity = newQuantity;
     }
 }

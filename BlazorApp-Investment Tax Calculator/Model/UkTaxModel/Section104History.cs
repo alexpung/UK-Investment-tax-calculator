@@ -35,14 +35,18 @@ public class Section104History : ITextFilePrintable
         };
     }
 
-    public static Section104History ShareAdjustment(DateTime date, decimal oldQuantity, decimal newQuantity)
+    public static Section104History ShareAdjustment(DateTime date, decimal oldQuantity, decimal newQuantity, WrappedMoney oldValue, WrappedMoney? oldContractValue = null)
     {
         return new Section104History
         {
-            OldQuantity = oldQuantity,
             Date = date,
             QuantityChange = newQuantity - oldQuantity,
-            Explanation = $"Share adjustment on {date.ToShortDateString()} due to corporate action."
+            ValueChange = WrappedMoney.GetBaseCurrencyZero(),
+            OldQuantity = oldQuantity,
+            OldValue = oldValue,
+            OldContractValue = oldContractValue is null ? WrappedMoney.GetBaseCurrencyZero() : oldContractValue,
+            ContractValueChange = WrappedMoney.GetBaseCurrencyZero(),
+            Explanation = $"Share adjustment on {date:d} due to corporate action."
         };
     }
 
