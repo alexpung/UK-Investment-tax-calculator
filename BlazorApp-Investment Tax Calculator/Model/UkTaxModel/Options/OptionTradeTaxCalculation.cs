@@ -11,8 +11,7 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
     /// <summary>
     /// Disposal is always taxed full premium regardless if the trade is matched
     /// </summary>
-    public override WrappedMoney TotalProceeds => AcquisitionDisposal == TradeType.DISPOSAL ? TotalCostOrProceed - _refundedDisposalProceed :
-        MatchHistory.Sum(tradeMatch => tradeMatch.BaseCurrencyMatchDisposalProceed);
+    public override WrappedMoney TotalProceeds => GetTotalProceed();
     /// <summary>
     /// If an option is written and taxed for the full premium, the tax payers can get back tax refund for the allowable cost that is not deducted from the full premium
     /// when the written option is matched with an acquisition 
@@ -119,66 +118,42 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
         }
     }
 
-
-    public override void MatchWithSection104(UkSection104 ukSection104)
+    protected override TradeMatch BuildSection104DisposalMatch(Section104History history, decimal matchQty, TaxableStatus taxableStatus)
     {
-        if (UnmatchedQty == 0m) return;
-        if (AcquisitionDisposal is TradeType.ACQUISITION)
+        string additionalInformation = string.Empty;
+        decimal matchDisposalProceedQty = matchQty; // allow owner exercise to reduce disposalProceed as exercised options are rolled to the underlying trade
+        WrappedMoney allowableCost = history.ValueChange * -1;
+
+        if (ExpiredQty > 0)
         {
-            Section104History section104History = ukSection104.AddAssets(this, UnmatchedQty, UnmatchedCostOrProceed);
-            MatchHistory.Add(
-                new TradeMatch()
-                {
-                    Date = DateOnly.FromDateTime(Date),
-                    AssetName = AssetName,
-                    TradeMatchType = TaxMatchType.SECTION_104,
-                    MatchedBuyTrade = this,
-                    MatchAcquisitionQty = UnmatchedQty,
-                    MatchDisposalQty = UnmatchedQty,
-                    BaseCurrencyMatchAllowableCost = WrappedMoney.GetBaseCurrencyZero(),
-                    BaseCurrencyMatchDisposalProceed = WrappedMoney.GetBaseCurrencyZero(),
-                    Section104HistorySnapshot = section104History
-                });
-            MatchQty(UnmatchedQty);
+            additionalInformation += $"{ExpiredQty} option expired. ";
         }
-        else if (AcquisitionDisposal is TradeType.DISPOSAL)
+        if (OwnerExercisedQty > 0 && !IsCashSettled)
         {
-            if (ukSection104.Quantity == 0m) return;
-            decimal matchQty = Math.Min(UnmatchedQty, ukSection104.Quantity);
-            Section104History section104History = ukSection104.RemoveAssets(this, matchQty);
-            string additionalInformation = string.Empty;
-            decimal matchDisposalProceedQty = matchQty; // allow owner exercise to reduce disposalProceed as exercised options are rolled to the underlying trade
-            WrappedMoney allowableCost = section104History.ValueChange * -1;
-            if (ExpiredQty > 0)
-            {
-                additionalInformation += $"{ExpiredQty} option expired. ";
-            }
-            if (OwnerExercisedQty > 0 && !IsCashSettled)
-            {
-                decimal matchExerciseQty = matchQty * OwnerExercisedQty / TotalQty;
-                WrappedMoney exerciseAllowableCost = allowableCost * matchExerciseQty / TotalQty;
-                allowableCost -= exerciseAllowableCost;
-                additionalInformation += $"{matchExerciseQty:F2} option exercised. Premium carries over to the underlying trade.";
-                matchDisposalProceedQty -= matchExerciseQty;
-                AttachTradeToUnderlying(exerciseAllowableCost + GetSettlementTransactionCost(matchExerciseQty), $"Option premium adjustment due to execising option", TradeReason.OwnerExerciseOption);
-            }
-            if (OwnerExercisedQty > 0 && IsCashSettled) additionalInformation += $"{OwnerExercisedQty:F2} option cash settled.";
-            TradeMatch tradeMatch = new()
-            {
-                Date = DateOnly.FromDateTime(Date),
-                AssetName = AssetName,
-                TradeMatchType = TaxMatchType.SECTION_104,
-                MatchedSellTrade = this,
-                MatchAcquisitionQty = matchQty,
-                MatchDisposalQty = matchQty,
-                BaseCurrencyMatchAllowableCost = allowableCost,
-                BaseCurrencyMatchDisposalProceed = GetProportionedCostOrProceed(matchDisposalProceedQty),
-                Section104HistorySnapshot = section104History,
-                AdditionalInformation = additionalInformation
-            };
-            MatchHistory.Add(tradeMatch);
-            MatchQty(matchQty);
+            decimal matchExerciseQty = matchQty * OwnerExercisedQty / TotalQty;
+            WrappedMoney exerciseAllowableCost = allowableCost * matchExerciseQty / TotalQty;
+            allowableCost -= exerciseAllowableCost;
+            additionalInformation += $"{matchExerciseQty:F2} option exercised. Premium carries over to the underlying trade.";
+            matchDisposalProceedQty -= matchExerciseQty;
+            AttachTradeToUnderlying(exerciseAllowableCost + GetSettlementTransactionCost(matchExerciseQty),
+                $"Option premium adjustment due to exercising option", TradeReason.OwnerExerciseOption);
         }
+        if (OwnerExercisedQty > 0 && IsCashSettled) additionalInformation += $"{OwnerExercisedQty:F2} option cash settled.";
+
+        return new TradeMatch()
+        {
+            Date = DateOnly.FromDateTime(Date),
+            AssetName = AssetName,
+            TradeMatchType = TaxMatchType.SECTION_104,
+            MatchedSellTrade = this,
+            MatchAcquisitionQty = matchQty,
+            MatchDisposalQty = matchQty,
+            BaseCurrencyMatchAllowableCost = allowableCost,
+            BaseCurrencyMatchDisposalProceed = GetProportionedCostOrProceed(matchDisposalProceedQty),
+            Section104HistorySnapshot = history,
+            AdditionalInformation = additionalInformation,
+            IsTaxable = taxableStatus
+        };
     }
 
     /// <summary>
@@ -227,6 +202,13 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
         }
         output.AppendLine();
         return output.ToString();
+    }
+
+    private WrappedMoney GetTotalProceed()
+    {
+        if (ResidencyStatusAtTrade == ResidencyStatus.NonResident) return WrappedMoney.GetBaseCurrencyZero();
+        if (AcquisitionDisposal == TradeType.DISPOSAL) return TotalCostOrProceed - _refundedDisposalProceed;
+        else return MatchHistory.Sum(tradeMatch => tradeMatch.BaseCurrencyMatchDisposalProceed);
     }
 }
 

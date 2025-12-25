@@ -7,32 +7,21 @@ using InvestmentTaxCalculator.Services;
 
 namespace InvestmentTaxCalculator.Model.UkTaxModel.Options;
 
-public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorporateActionList tradeList, ITaxYear taxYear, ToastService toastService) : ITradeCalculator
+public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorporateActionList tradeList, ITaxYear taxYear, ToastService toastService, TradeTaxCalculationFactory tradeTaxCalculationFactory) : ITradeCalculator
 {
     public List<ITradeTaxCalculation> CalculateTax()
     {
         MatchExerciseAndAssignmentOptionTrade();
-        List<OptionTradeTaxCalculation> tradeTaxCalculations = [.. GroupTrade(tradeList.OptionTrades)];
+        List<OptionTradeTaxCalculation> tradeTaxCalculations = [.. tradeTaxCalculationFactory.GroupOptionTrade(tradeList.OptionTrades)];
         GroupedTradeContainer<OptionTradeTaxCalculation> _tradeContainer = new(tradeTaxCalculations, tradeList.CorporateActions);
-        foreach (var match in UkMatchingRules.ApplySameDayMatchingRule(_tradeContainer))
-        {
-            MatchTrade(match.Item1, match.Item2, TaxMatchType.SAME_DAY);
-        }
-        foreach (var match in UkMatchingRules.ApplyBedAndBreakfastMatchingRule(_tradeContainer))
-        {
-            MatchTrade(match.Item1, match.Item2, TaxMatchType.BED_AND_BREAKFAST);
-        }
-        foreach (var match in UkMatchingRules.ProcessTradeInChronologicalOrder(section104Pools, _tradeContainer))
-        {
-            MatchTrade(match.Item1, match.Item2, TaxMatchType.SHORTCOVER);
-        }
-        return tradeTaxCalculations.Cast<ITradeTaxCalculation>().ToList();
+        UkMatchingRules.ApplyUkTaxRuleSequence(MatchTrade, _tradeContainer, section104Pools);
+        return [.. tradeTaxCalculations.Cast<ITradeTaxCalculation>()];
     }
 
     private void MatchExerciseAndAssignmentOptionTrade()
     {
-        List<OptionTrade> filteredTrades = tradeList.OptionTrades.Where(trade => trade is OptionTrade
-        { TradeReason: TradeReason.OwnerExerciseOption or TradeReason.OptionAssigned }).ToList();
+        List<OptionTrade> filteredTrades = [.. tradeList.OptionTrades.Where(trade => trade is OptionTrade
+        { TradeReason: TradeReason.OwnerExerciseOption or TradeReason.OptionAssigned })];
         foreach (var optionTrade in filteredTrades)
         {
             var underlyingTrade = tradeList.Trades.Find(trade =>
@@ -66,14 +55,7 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
         }
     }
 
-    private static List<OptionTradeTaxCalculation> GroupTrade(IEnumerable<OptionTrade> trades)
-    {
-        var groupedTrade = from trade in trades
-                           group trade by new { trade.AssetName, trade.Date.Date, trade.AcquisitionDisposal };
-        return groupedTrade.Select(group => new OptionTradeTaxCalculation(group)).ToList();
-    }
-
-    public void MatchTrade(OptionTradeTaxCalculation trade1, OptionTradeTaxCalculation trade2, TaxMatchType taxMatchType)
+    public void MatchTrade(OptionTradeTaxCalculation trade1, OptionTradeTaxCalculation trade2, TaxMatchType taxMatchType, TaxableStatus taxableStatus)
     {
         TradePairSorter<OptionTradeTaxCalculation> tradePairSorter = new(trade1, trade2);
         if (trade1.CalculationCompleted || trade2.CalculationCompleted) return;
@@ -94,13 +76,13 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
             exercisedQty = tradePairSorter.LatterTrade.OwnerExercisedQty * tradePairSorter.EarlierTrade.UnmatchedQty / tradePairSorter.LatterTrade.TotalQty;
         }
         if (assignmentQty > 0 && exercisedQty > 0) throw new ParseException($"{tradePairSorter.LatterTrade} has both assignment and exercise which is impossible");
-        if (expiredQty > 0) MatchExpiredOption(tradePairSorter, taxMatchType, expiredQty);
-        if (exercisedQty > 0) MatchExercisedOption(tradePairSorter, taxMatchType, exercisedQty);
-        if (assignmentQty > 0) MatchAssignedOption(tradePairSorter, taxMatchType, assignmentQty);
-        if (tradePairSorter.DisposalMatchQuantity > 0) MatchNormalTrade(tradePairSorter, taxMatchType);
+        if (expiredQty > 0) MatchExpiredOption(tradePairSorter, taxMatchType, expiredQty, taxableStatus);
+        if (exercisedQty > 0) MatchExercisedOption(tradePairSorter, taxMatchType, exercisedQty, taxableStatus);
+        if (assignmentQty > 0) MatchAssignedOption(tradePairSorter, taxMatchType, assignmentQty, taxableStatus);
+        if (tradePairSorter.DisposalMatchQuantity > 0) MatchNormalTrade(tradePairSorter, taxMatchType, taxableStatus);
     }
 
-    private void MatchNormalTrade(TradePairSorter<OptionTradeTaxCalculation> tradePairSorter, TaxMatchType taxMatchType)
+    private void MatchNormalTrade(TradePairSorter<OptionTradeTaxCalculation> tradePairSorter, TaxMatchType taxMatchType, TaxableStatus taxableStatus)
     {
         WrappedMoney allowableCost = tradePairSorter.AcquisitionTrade.GetProportionedCostOrProceedForTradeReason(TradeReason.OrderedTrade, tradePairSorter.AcquisitionMatchQuantity);
         WrappedMoney disposalProceed = tradePairSorter.DisposalTrade.GetProportionedCostOrProceedForTradeReason(TradeReason.OrderedTrade, tradePairSorter.DisposalMatchQuantity);
@@ -118,7 +100,7 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
             allowableCost = WrappedMoney.GetBaseCurrencyZero();
         }
         TradeMatch disposalTradeMatch = CreateTradeMatch(tradePairSorter, tradePairSorter.AcquisitionMatchQuantity,
-            allowableCost, disposalProceed, string.Empty, taxMatchType);
+            allowableCost, disposalProceed, string.Empty, taxMatchType, taxableStatus);
         TradeMatch AcquisitionTradeMatch = disposalTradeMatch with
         {
             BaseCurrencyMatchAllowableCost = WrappedMoney.GetBaseCurrencyZero(),
@@ -132,20 +114,20 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
     /// If you are the writer no allowable cost can be deducted as you earn the full premium.
     /// If you are the buyer full premium is counted as allowable cost.
     /// </summary>
-    private static void MatchExpiredOption(TradePairSorter<OptionTradeTaxCalculation> tradePairSorter, TaxMatchType taxMatchType, decimal expiredQty)
+    private static void MatchExpiredOption(TradePairSorter<OptionTradeTaxCalculation> tradePairSorter, TaxMatchType taxMatchType, decimal expiredQty, TaxableStatus taxableStatus)
     {
         TradeMatch disposalTradeMatch;
         // You sold an option and it expires
         if (tradePairSorter.EarlierTrade.AcquisitionDisposal == TradeType.DISPOSAL)
         {
             disposalTradeMatch = CreateTradeMatch(tradePairSorter, expiredQty, WrappedMoney.GetBaseCurrencyZero(),
-            tradePairSorter.DisposalTrade.GetProportionedCostOrProceed(expiredQty), "The granted option expired. No allowable cost is added.", taxMatchType);
+            tradePairSorter.DisposalTrade.GetProportionedCostOrProceed(expiredQty), "The granted option expired. No allowable cost is added.", taxMatchType, taxableStatus);
         }
         // You bought an option and it expires
         else
         {
             disposalTradeMatch = CreateTradeMatch(tradePairSorter, expiredQty, tradePairSorter.AcquisitionTrade.GetProportionedCostOrProceed(expiredQty),
-            tradePairSorter.DisposalTrade.GetProportionedCostOrProceedForTradeReason(TradeReason.Expired, expiredQty), "The bought option expired. Full premium is added to allowable cost.", taxMatchType);
+            tradePairSorter.DisposalTrade.GetProportionedCostOrProceedForTradeReason(TradeReason.Expired, expiredQty), "The bought option expired. Full premium is added to allowable cost.", taxMatchType, taxableStatus);
         }
         TradeMatch acquisitionTradeMatch = disposalTradeMatch with
         {
@@ -161,14 +143,14 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
     /// Call option: allowable cost = allowable cost for buying the underlying + premium paid
     /// Put option: sale proceed = sale proceed for the underlying - premium paid
     /// </summary>
-    private static void MatchExercisedOption(TradePairSorter<OptionTradeTaxCalculation> tradePairSorter, TaxMatchType taxMatchType, decimal exercisedQty)
+    private static void MatchExercisedOption(TradePairSorter<OptionTradeTaxCalculation> tradePairSorter, TaxMatchType taxMatchType, decimal exercisedQty, TaxableStatus taxableStatus)
     {
         TradeMatch tradeMatch;
         if (tradePairSorter.LatterTrade.IsCashSettled)
         {
             WrappedMoney allowableCost = tradePairSorter.AcquisitionTrade.GetProportionedCostOrProceedForTradeReason(TradeReason.OrderedTrade, exercisedQty);
             WrappedMoney disposalProceed = tradePairSorter.DisposalTrade.GetProportionedCostOrProceedForTradeReason(TradeReason.OwnerExerciseOption, exercisedQty);
-            tradeMatch = CreateTradeMatch(tradePairSorter, exercisedQty, allowableCost, disposalProceed, $"{exercisedQty:F2} option cash settled.", taxMatchType);
+            tradeMatch = CreateTradeMatch(tradePairSorter, exercisedQty, allowableCost, disposalProceed, $"{exercisedQty:F2} option cash settled.", taxMatchType, taxableStatus);
         }
         else
         {
@@ -176,7 +158,7 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
             WrappedMoney execiseCost = tradePairSorter.LatterTrade.GetSettlementTransactionCost(exercisedQty);
             // If there is mutiple exercise trades it doesn't matter which trade to roll up, as all trades are the same ticker and same day are treated as a sigle trade.
             tradePairSorter.LatterTrade.AttachTradeToUnderlying(premiumCost + execiseCost, $"Option premium adjustment due to execising option", TradeReason.OwnerExerciseOption);
-            tradeMatch = CreateTradeMatch(tradePairSorter, exercisedQty, WrappedMoney.GetBaseCurrencyZero(), WrappedMoney.GetBaseCurrencyZero(), $"{exercisedQty} option exercised.", taxMatchType);
+            tradeMatch = CreateTradeMatch(tradePairSorter, exercisedQty, WrappedMoney.GetBaseCurrencyZero(), WrappedMoney.GetBaseCurrencyZero(), $"{exercisedQty} option exercised.", taxMatchType, taxableStatus);
         }
         AssignTradeMatch(tradePairSorter, exercisedQty, tradeMatch, tradeMatch);
     }
@@ -187,7 +169,7 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
     /// Call option: sale proceed = sale proceed for the underlying + premium already received
     /// Put option: allowable cost = allowable cost for buying the underlying - premium already received
     /// </summary>
-    private void MatchAssignedOption(TradePairSorter<OptionTradeTaxCalculation> tradePairSorter, TaxMatchType taxMatchType, decimal assignmentQty)
+    private void MatchAssignedOption(TradePairSorter<OptionTradeTaxCalculation> tradePairSorter, TaxMatchType taxMatchType, decimal assignmentQty, TaxableStatus taxableStatus)
     {
         TradeMatch tradeMatch;
         if (tradePairSorter.LatterTrade.IsCashSettled)
@@ -198,7 +180,7 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
             {
                 allowableCost = WrappedMoney.GetBaseCurrencyZero();
             }
-            tradeMatch = CreateTradeMatch(tradePairSorter, assignmentQty, allowableCost, disposalProceed, $"{assignmentQty:F2} option is cash settled.", taxMatchType);
+            tradeMatch = CreateTradeMatch(tradePairSorter, assignmentQty, allowableCost, disposalProceed, $"{assignmentQty:F2} option is cash settled.", taxMatchType, taxableStatus);
         }
         else
         {
@@ -215,7 +197,7 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
                 tradePairSorter.EarlierTrade.RefundDisposalQty(assignmentQty);
             }
             tradeMatch = CreateTradeMatch(tradePairSorter, assignmentQty, WrappedMoney.GetBaseCurrencyZero(), WrappedMoney.GetBaseCurrencyZero(),
-                $"{assignmentQty} option assigned. Option premium is carried over to trade of the underlying asset and no tax is assessed for this match", taxMatchType);
+                $"{assignmentQty} option assigned. Option premium is carried over to trade of the underlying asset and no tax is assessed for this match", taxMatchType, taxableStatus);
         }
         AssignTradeMatch(tradePairSorter, assignmentQty, tradeMatch, tradeMatch);
     }
@@ -239,7 +221,7 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
     }
 
     private static TradeMatch CreateTradeMatch(TradePairSorter<OptionTradeTaxCalculation> tradePairSorter, decimal matchQty, WrappedMoney allowableCost,
-        WrappedMoney disposalProceed, string additionalInfo, TaxMatchType taxMatchType)
+        WrappedMoney disposalProceed, string additionalInfo, TaxMatchType taxMatchType, TaxableStatus taxableStatus)
     {
         return new TradeMatch
         {
@@ -252,7 +234,8 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
             BaseCurrencyMatchDisposalProceed = disposalProceed,
             MatchedBuyTrade = tradePairSorter.AcquisitionTrade,
             MatchedSellTrade = tradePairSorter.DisposalTrade,
-            AdditionalInformation = additionalInfo
+            AdditionalInformation = additionalInfo,
+            IsTaxable = taxableStatus
         };
     }
 

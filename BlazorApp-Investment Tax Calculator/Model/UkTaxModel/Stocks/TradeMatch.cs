@@ -24,10 +24,12 @@ public record TradeMatch : ITextFilePrintable
     public required DateOnly Date { get; init; }
     public required string AssetName { get; init; }
     public AssetCategoryType? AssetCategoryType => MatchedSellTrade?.AssetCategoryType ?? MatchedBuyTrade?.AssetCategoryType;
+    public TaxableStatus IsTaxable { get; init; }
 
     public virtual string PrintToTextFile()
     {
         StringBuilder output = new();
+        output.AppendLine($"Tax status: {IsTaxable.GetDescription()}");
         if (TradeMatchType == TaxMatchType.SECTION_104)
         {
             output.AppendLine($"At time of disposal, section 104 contains {Section104HistorySnapshot!.OldQuantity} units with value {Section104HistorySnapshot.OldValue}");

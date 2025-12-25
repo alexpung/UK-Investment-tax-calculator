@@ -1,6 +1,7 @@
 namespace InvestmentTaxCalculator.Components;
 using Enumerations;
 
+using InvestmentTaxCalculator.Model.UkTaxModel.Stocks;
 using InvestmentTaxCalculator.Services;
 
 using Microsoft.AspNetCore.Components;
@@ -30,6 +31,7 @@ public partial class StartCalculation
             _isCalculating = true;
             Section104Pools.Clear();
             TradeCalculationResult.Clear();
+            TradeTaxCalculation.ResetID();
             foreach (ITradeCalculator tradeCalculator in TradeCalculators)
             {
                 TradeCalculationResult.SetResult(await Task.Run(tradeCalculator.CalculateTax));

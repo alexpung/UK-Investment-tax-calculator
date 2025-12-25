@@ -1,18 +1,21 @@
-﻿using InvestmentTaxCalculator.Model.Interfaces;
+﻿using InvestmentTaxCalculator.Enumerations;
+using InvestmentTaxCalculator.Model.Interfaces;
 using InvestmentTaxCalculator.Services;
 
 namespace InvestmentTaxCalculator.Model.UkTaxModel;
 
-public class UkDividendCalculator(IDividendLists dividendList, ITaxYear taxYear, ToastService toastService) : IDividendCalculator
+public class UkDividendCalculator(IDividendLists dividendList, ITaxYear taxYear, ToastService toastService, ResidencyStatusRecord residencyStatusRecord) : IDividendCalculator
 {
     public List<DividendSummary> CalculateTax()
     {
         List<DividendSummary> dividendSummaries = [];
         var groupedDividendsDict = dividendList.Dividends
+            .Where(g => residencyStatusRecord.GetResidencyStatus(DateOnly.FromDateTime(g.Date)) == ResidencyStatus.Resident)
             .GroupBy(d => new { TaxYear = taxYear.ToTaxYear(d.Date), d.CompanyLocation })
             .ToDictionary(g => (g.Key.TaxYear, g.Key.CompanyLocation), g => g.ToList());
 
         var groupedInterestIncomesDict = dividendList.InterestIncomes
+            .Where(g => residencyStatusRecord.GetResidencyStatus(DateOnly.FromDateTime(g.Date)) == ResidencyStatus.Resident)
             .GroupBy(i => (taxYear.ToTaxYear(i.Date) + (i.IsTaxDeferred ? 1:0), i.IncomeLocation))
             .ToDictionary(g => g.Key, g => g.ToList());
 

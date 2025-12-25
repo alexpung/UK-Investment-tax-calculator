@@ -59,6 +59,7 @@
                             <span>@data?.TradeMatchType.GetDescription()</span>
                         </Template>
                     </GridColumn>
+                    <GridColumn Field=@nameof(TradeMatch.IsTaxable) HeaderText="Taxable" AllowEditing="false"></GridColumn>
                     <GridColumn Field="@(nameof(TradeMatch.MatchedBuyTrade) + "." + nameof(ITradeTaxCalculation.Id))" HeaderText="Acquisition trade ID" AllowEditing="false"></GridColumn>
                     <GridColumn Field="@(nameof(TradeMatch.MatchedSellTrade) + "." + nameof(ITradeTaxCalculation.Id))" HeaderText="Disposal trade ID" AllowEditing="false"></GridColumn>
                     <GridColumn Field=@nameof(TradeMatch.MatchAcquisitionQty) HeaderText="Matched Acquisition Quantity" AllowEditing="false"></GridColumn>

@@ -9,6 +9,9 @@ public record UkSection104
     public WrappedMoney AcquisitionCostInBaseCurrency { get; set; }
     public WrappedMoney TotalContractValue { get; private set; } // Contract value that determine profit and loss but not actually money paid or received e.g. future cotract price
     public List<Section104History> Section104HistoryList { get; set; } = [];
+    // Quantity of assets acquired while non-resident for tax purposes, used for calculating gain exempt from UK tax when returning to UK residency
+    public decimal NonResidentExemptQuantity { get; set; } = 0m;
+    public ResidencyStatusRecord? ResidencyStatusRecord { get; init; } = null;
 
     public UkSection104(string name)
     {
@@ -18,9 +21,15 @@ public record UkSection104
         TotalContractValue = WrappedMoney.GetBaseCurrencyZero();
     }
 
-    public void AdjustValues(decimal quantity, WrappedMoney acquisitionCostInBaseCurrency, WrappedMoney? contractValue = null)
+    public UkSection104(string name, ResidencyStatusRecord residencyStatusRecord) : this(name)
+    {
+        ResidencyStatusRecord = residencyStatusRecord;
+    }
+
+    private void AdjustValues(decimal quantity, WrappedMoney acquisitionCostInBaseCurrency, WrappedMoney? contractValue = null, decimal nonResidentExemptQuantity = 0)
     {
         Quantity += quantity;
+        NonResidentExemptQuantity += nonResidentExemptQuantity;
         AcquisitionCostInBaseCurrency += acquisitionCostInBaseCurrency;
         if (TotalContractValue == WrappedMoney.GetBaseCurrencyZero() && contractValue != null)
         {
@@ -33,17 +42,18 @@ public record UkSection104
     }
 
     public Section104History AddAssets(ITradeTaxCalculation tradeTaxCalculation, decimal addedQuantity, WrappedMoney addedAcquisitionCostInBaseCurrency,
-                                       WrappedMoney? addedContractValue = null)
+                                       WrappedMoney? addedContractValue = null, decimal nonResidentExemptQuantity = 0)
     {
         Section104History newSection104History = Section104History.AdjustSection104(tradeTaxCalculation, addedQuantity, addedAcquisitionCostInBaseCurrency, Quantity,
                 AcquisitionCostInBaseCurrency, TotalContractValue, addedContractValue);
         Section104HistoryList.Add(newSection104History);
-        AdjustValues(addedQuantity, addedAcquisitionCostInBaseCurrency, addedContractValue);
+        AdjustValues(addedQuantity, addedAcquisitionCostInBaseCurrency, addedContractValue, nonResidentExemptQuantity);
         return newSection104History;
     }
 
     public Section104History RemoveAssets(ITradeTaxCalculation tradeTaxCalculation, decimal removedQuantity)
     {
+        decimal removeableNonResidentExemptQuantity = Math.Min(NonResidentExemptQuantity, removedQuantity) * -1;
         if (removedQuantity < 0) throw new ArgumentException($"Invalid remove quantity for {tradeTaxCalculation.AssetName} on {tradeTaxCalculation.Date.ToShortDateString()}" +
             $"from S104 {removedQuantity}, must be greater than zero.");
         WrappedMoney costAdjustment = AcquisitionCostInBaseCurrency * removedQuantity * -1 / Quantity;
@@ -52,7 +62,7 @@ public record UkSection104
         Section104History newSection104History = Section104History.AdjustSection104(tradeTaxCalculation, quantityAdjustment, costAdjustment, Quantity,
                 AcquisitionCostInBaseCurrency, TotalContractValue, contractValueAdjustment);
         Section104HistoryList.Add(newSection104History);
-        AdjustValues(quantityAdjustment, costAdjustment, contractValueAdjustment);
+        AdjustValues(quantityAdjustment, costAdjustment, contractValueAdjustment, removeableNonResidentExemptQuantity);
         return newSection104History;
     }
 
@@ -65,5 +75,17 @@ public record UkSection104
     public Section104History? GetLastSection104History(DateOnly date)
     {
         return Section104HistoryList.LastOrDefault(x => DateOnly.FromDateTime(x.Date) <= date);
+    }
+
+    /// <summary>
+    /// Used in corporate actions like stock split to multiply the quantity in the S104 pool
+    /// </summary>
+    /// <param name="factor"></param>
+    public void MultiplyQuantity(decimal factor, DateTime date)
+    {
+        decimal newQuantity = factor * Quantity;
+        Section104HistoryList.Add(Section104History.ShareAdjustment(date, Quantity, newQuantity));
+        Quantity = newQuantity;
+        NonResidentExemptQuantity *= factor;
     }
 }

@@ -18,10 +18,9 @@ public static class TradeCalculationHelper
         section104Pools = new UkSection104Pools(new UKTaxYear());
         TaxEventLists taxEventLists = new();
         taxEventLists.AddData(taxEvents);
-        ILogger<ToastService> logger = NSubstitute.Substitute.For<ILogger<ToastService>>();
-        UkOptionTradeCalculator optionTradeCalculator = new(section104Pools, taxEventLists, new UKTaxYear(), new ToastService(logger));
-        UkTradeCalculator calculator = new(section104Pools, taxEventLists);
-        UkFutureTradeCalculator futureCalculator = new(section104Pools, taxEventLists);
+        UkOptionTradeCalculator optionTradeCalculator = CreateOptionTradeCalculator(section104Pools, taxEventLists);
+        UkTradeCalculator calculator = CreateUkTradeCalculator(section104Pools, taxEventLists);
+        UkFutureTradeCalculator futureCalculator = CreateUkFutureTradeCalculator(section104Pools, taxEventLists);
 
         List<ITradeTaxCalculation> result = optionTradeCalculator.CalculateTax();
         result.AddRange(calculator.CalculateTax());
@@ -41,5 +40,27 @@ public static class TradeCalculationHelper
             BaseCurrencyMatchAllowableCost = allowableCost,
             BaseCurrencyMatchDisposalProceed = disposalProceed
         };
+    }
+
+    public static UkOptionTradeCalculator CreateOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorporateActionList tradeList)
+    {
+        ILogger<ToastService> logger = NSubstitute.Substitute.For<ILogger<ToastService>>();
+        ResidencyStatusRecord residencyStatusRecord = new();
+        TradeTaxCalculationFactory tradeTaxCalculationFactory = new(residencyStatusRecord);
+        return new UkOptionTradeCalculator(section104Pools, tradeList, new UKTaxYear(), new ToastService(logger), tradeTaxCalculationFactory);
+    }
+
+    public static UkTradeCalculator CreateUkTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorporateActionList tradeList)
+    {
+        ResidencyStatusRecord residencyStatusRecord = new();
+        TradeTaxCalculationFactory tradeTaxCalculationFactory = new(residencyStatusRecord);
+        return new UkTradeCalculator(section104Pools, tradeList, tradeTaxCalculationFactory);
+    }
+
+    public static UkFutureTradeCalculator CreateUkFutureTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorporateActionList tradeList)
+    {
+        ResidencyStatusRecord residencyStatusRecord = new();
+        TradeTaxCalculationFactory tradeTaxCalculationFactory = new(residencyStatusRecord);
+        return new UkFutureTradeCalculator(section104Pools, tradeList, tradeTaxCalculationFactory);
     }
 }

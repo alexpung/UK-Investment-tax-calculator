@@ -23,6 +23,7 @@ public class TradeTaxCalculationViewModel(ITradeTaxCalculation TradeTaxCalculati
     public WrappedMoney TotalAllowableCost { get; } = TradeTaxCalculation.TotalAllowableCost;
     public WrappedMoney? ContractValue => GetContractValue();
     public WrappedMoney Gain { get; } = TradeTaxCalculation.Gain;
+    public string ResidencyStatusAtTrade { get; } = TradeTaxCalculation.ResidencyStatusAtTrade.GetDescription();
     private WrappedMoney? GetContractValue()
     {
         if (TradeTaxCalculation is not FutureTradeTaxCalculation) return null;

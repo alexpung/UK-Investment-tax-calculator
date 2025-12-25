@@ -41,16 +41,26 @@ public static class UkMatchingRules
     /// </summary>
     public static IEnumerable<Tuple<T, T>> ApplyBedAndBreakfastMatchingRule<T>(GroupedTradeContainer<T> tradesToBeMatched) where T : ITradeTaxCalculation
     {
+        DateOnly nonResidentAcquisitionExceptionCutoff = new(2006, 3, 22);
         foreach (var sortedTradeList in tradesToBeMatched.GetAllTradesGroupedAndSorted())
         {
             for (int i = 0; i < sortedTradeList.Count; i++)
             {
-                if (sortedTradeList[i] is { AcquisitionDisposal: TradeType.DISPOSAL })
+                if (sortedTradeList[i] is { AcquisitionDisposal: TradeType.DISPOSAL } disposal)
                 {
                     for (int j = i + 1; j < sortedTradeList.Count; j++) // Look forward 30 days to check for acquisitions after a disposal
                     {
-                        if ((sortedTradeList[j].Date.Date - sortedTradeList[i].Date.Date).Days > 30) break;
-                        if (sortedTradeList[j] is { AcquisitionDisposal: TradeType.ACQUISITION })
+                        // 1. Check 30-day window
+                        if ((sortedTradeList[j].Date.Date - disposal.Date.Date).Days > 30) break;
+
+                        // 2. Filter for Acquisitions with available quantity
+                        if (sortedTradeList[j].AcquisitionDisposal != TradeType.ACQUISITION) continue;
+
+                        // 3. APPLY NON-RESIDENT EXCEPTION
+                        // Rule applies IF (Resident) OR (Non-Resident but pre-2006)
+                        bool ruleApplies = sortedTradeList[j].ResidencyStatusAtTrade == ResidencyStatus.Resident ||
+                                           sortedTradeList[j].Date < nonResidentAcquisitionExceptionCutoff.ToDateTime(TimeOnly.MinValue);
+                        if (ruleApplies)
                         {
                             yield return Tuple.Create(sortedTradeList[i], sortedTradeList[j]);
                         }
@@ -97,6 +107,8 @@ public static class UkMatchingRules
 
     /// <summary>
     /// Process section 104 matching and shorting sale match rules
+    /// Pair the unmatched disposal with the current acquisition so the caller can process this match.
+    /// Tuple ordering is (disposal, acquisition) and preserves chronological matching (earlier disposals first).
     /// </summary>
     private static IEnumerable<Tuple<T, T>> ProcessTradeTaxCalculation<T>(T tradeTaxCalculation, UkSection104 section104, Dictionary<DateTime, T> unmatchedDisposals) where T : ITradeTaxCalculation
     {
@@ -111,8 +123,8 @@ public static class UkMatchingRules
                 if (tradeTaxCalculation.CalculationCompleted) break;
             }
         }
-
-        tradeTaxCalculation.MatchWithSection104(section104);
+        // trade is a disposal that needs to be matched with section 104 pool
+        tradeTaxCalculation.MatchWithSection104(section104, IsS104MatchTaxable(tradeTaxCalculation.ResidencyStatusAtTrade));
 
         if (!tradeTaxCalculation.CalculationCompleted && tradeTaxCalculation.AcquisitionDisposal == TradeType.DISPOSAL)
         {
@@ -186,4 +198,39 @@ public static class UkMatchingRules
         }
         return resultList;
     }
+
+    public static void ApplyUkTaxRuleSequence<T>(Action<T, T, TaxMatchType, TaxableStatus> matchExecutionFunction, GroupedTradeContainer<T> groupedTradeContainer, UkSection104Pools section104Pools)
+        where T : ITradeTaxCalculation
+    {
+        foreach (var match in ApplySameDayMatchingRule(groupedTradeContainer))
+        {
+            matchExecutionFunction(match.Item1, match.Item2, TaxMatchType.SAME_DAY, IsMatchTaxable(match.Item1.ResidencyStatusAtTrade, match.Item2.ResidencyStatusAtTrade));
+        }
+        foreach (var match in ApplyBedAndBreakfastMatchingRule(groupedTradeContainer))
+        {
+            matchExecutionFunction(match.Item1, match.Item2, TaxMatchType.BED_AND_BREAKFAST, IsMatchTaxable(match.Item1.ResidencyStatusAtTrade, match.Item2.ResidencyStatusAtTrade));
+        }
+        foreach (var match in ProcessTradeInChronologicalOrder(section104Pools, groupedTradeContainer))
+        {
+            matchExecutionFunction(match.Item1, match.Item2, TaxMatchType.SHORTCOVER, IsMatchTaxable(match.Item1.ResidencyStatusAtTrade, match.Item2.ResidencyStatusAtTrade));
+        }
+    }
+
+    private static TaxableStatus IsMatchTaxable(ResidencyStatus disposalResidencyStatus, ResidencyStatus acquisitionResidencyStatus) => (disposalResidencyStatus, acquisitionResidencyStatus) switch
+    {
+        (ResidencyStatus.Resident, _) => TaxableStatus.TAXABLE,
+        (ResidencyStatus.NonResident, _) => TaxableStatus.NON_TAXABLE,
+        (ResidencyStatus.TemporaryNonResident, ResidencyStatus.Resident) => TaxableStatus.TAXABLE_WHEN_RETURNED,
+        (ResidencyStatus.TemporaryNonResident, ResidencyStatus.TemporaryNonResident) => TaxableStatus.NON_TAXABLE,
+        (ResidencyStatus.TemporaryNonResident, ResidencyStatus.NonResident) => TaxableStatus.NON_TAXABLE,
+        _ => throw new ArgumentOutOfRangeException($"Unexpected residency status combination: Disposal - {disposalResidencyStatus}, Acquisition - {acquisitionResidencyStatus}")
+    };
+
+    private static TaxableStatus IsS104MatchTaxable(ResidencyStatus disposalResidencyStatus) => disposalResidencyStatus switch
+    {
+        (ResidencyStatus.Resident) => TaxableStatus.TAXABLE,
+        (ResidencyStatus.NonResident) => TaxableStatus.NON_TAXABLE,
+        (ResidencyStatus.TemporaryNonResident) => TaxableStatus.TAXABLE_WHEN_RETURNED, // Taxable but exempted quantity (i.e. acquired non-resident) inside S104 not taxable
+        _ => throw new ArgumentOutOfRangeException($"Unexpected residency status combination: Disposal - {disposalResidencyStatus}")
+    };
 }

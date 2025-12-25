@@ -14,42 +14,17 @@ namespace InvestmentTaxCalculator.Model.UkTaxModel.Stocks;
 /// </summary>
 /// <param name="section104Pools"></param>
 /// <param name="tradeList"></param>
-public class UkTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorporateActionList tradeList) : ITradeCalculator
+public class UkTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorporateActionList tradeList, TradeTaxCalculationFactory tradeTaxCalculationFactory) : ITradeCalculator
 {
     public List<ITradeTaxCalculation> CalculateTax()
     {
-        List<ITradeTaxCalculation> tradeTaxCalculations = [.. GroupTrade(tradeList.Trades)];
+        List<ITradeTaxCalculation> tradeTaxCalculations = [.. tradeTaxCalculationFactory.GroupTrade(tradeList.Trades)];
         GroupedTradeContainer<ITradeTaxCalculation> _tradeContainer = new(tradeTaxCalculations, tradeList.CorporateActions);
-        foreach (var match in UkMatchingRules.ApplySameDayMatchingRule(_tradeContainer))
-        {
-            MatchTrade(match.Item1, match.Item2, TaxMatchType.SAME_DAY);
-        }
-        foreach (var match in UkMatchingRules.ApplyBedAndBreakfastMatchingRule(_tradeContainer))
-        {
-            MatchTrade(match.Item1, match.Item2, TaxMatchType.BED_AND_BREAKFAST);
-        }
-        foreach (var match in UkMatchingRules.ProcessTradeInChronologicalOrder(section104Pools, _tradeContainer))
-        {
-            MatchTrade(match.Item1, match.Item2, TaxMatchType.SHORTCOVER);
-        }
-
+        UkMatchingRules.ApplyUkTaxRuleSequence(MatchTrade, _tradeContainer, section104Pools);
         return tradeTaxCalculations;
     }
 
-    private static List<TradeTaxCalculation> GroupTrade(IEnumerable<Trade> trades)
-    {
-        var groupedTrade = from trade in trades
-                           where trade.AssetType == AssetCategoryType.STOCK
-                           group trade by new { trade.AssetName, trade.Date.Date, trade.AcquisitionDisposal };
-        var groupedFxTrade = from trade in trades
-                             where trade.AssetType == AssetCategoryType.FX
-                             group trade by new { trade.AssetName, trade.Date.Date, trade.AcquisitionDisposal };
-        IEnumerable<TradeTaxCalculation> groupedTradeCalculations = groupedTrade.Select(group => new TradeTaxCalculation(group)).ToList();
-        IEnumerable<TradeTaxCalculation> groupedFxTradeCalculations = groupedFxTrade.Select(group => new FxTradeTaxCalculation(group)).ToList();
-        return groupedTradeCalculations.Concat(groupedFxTradeCalculations).ToList();
-    }
-
-    public void MatchTrade(ITradeTaxCalculation trade1, ITradeTaxCalculation trade2, TaxMatchType taxMatchType)
+    public void MatchTrade(ITradeTaxCalculation trade1, ITradeTaxCalculation trade2, TaxMatchType taxMatchType, TaxableStatus taxableStatus)
     {
         TradePairSorter<ITradeTaxCalculation> tradePairSorter = new(trade1, trade2);
         if (trade1.CalculationCompleted || trade2.CalculationCompleted) return;
@@ -67,7 +42,8 @@ public class UkTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorpo
             BaseCurrencyMatchDisposalProceed = tradePairSorter.DisposalTrade.GetProportionedCostOrProceed(tradePairSorter.DisposalMatchQuantity),
             MatchedBuyTrade = tradePairSorter.AcquisitionTrade,
             MatchedSellTrade = tradePairSorter.DisposalTrade,
-            AdditionalInformation = BuildInfoString(matchAdjustment.CorporateActions)
+            AdditionalInformation = BuildInfoString(matchAdjustment.CorporateActions),
+            IsTaxable = taxableStatus,
         };
         TradeMatch AcqusitionTradeMatch = disposalTradeMatch with
         {

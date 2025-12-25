@@ -4,6 +4,8 @@ using InvestmentTaxCalculator.Model.Interfaces;
 using InvestmentTaxCalculator.Model.TaxEvents;
 using InvestmentTaxCalculator.Model.UkTaxModel;
 
+using NSubstitute;
+
 using System.Globalization;
 
 using UnitTest.Helper;
@@ -211,5 +213,39 @@ public class UkTradeCalculatorTest3Trades
         // Ensure the Section 104 pool is updated correctly
         section104Pools.GetExistingOrInitialise("AncientArtifacts Ltd").AcquisitionCostInBaseCurrency.Amount.ShouldBe(1800m, 0.01m);
         section104Pools.GetExistingOrInitialise("AncientArtifacts Ltd").Quantity.ShouldBe(9000);
+    }
+
+
+    [Theory]
+    [InlineData("2006-3-10", "2006-3-20", ResidencyStatus.NonResident, true)]
+    [InlineData("2006-3-10", "2006-3-21", ResidencyStatus.NonResident, true)]
+    [InlineData("2006-3-10", "2006-3-22", ResidencyStatus.NonResident, false)]
+    [InlineData("2006-3-10", "2006-3-22", ResidencyStatus.Resident, true)]
+    [InlineData("2006-3-22", "2006-3-29", ResidencyStatus.TemporaryNonResident, false)]
+    public void TestBedAndBreakfastMatchingApplyWhenNonResident(string disposaldate, string acquisitiondate, ResidencyStatus residencyStatus, bool rulesApply)
+    {
+        Trade mockTrade = NSubstitute.Substitute.For<Trade>();
+        mockTrade.Quantity.Returns(100);
+        mockTrade.AssetType.Returns(AssetCategoryType.STOCK);
+        ITradeTaxCalculation disposalTradeTaxCalculation = Substitute.For<ITradeTaxCalculation>();
+        disposalTradeTaxCalculation.ResidencyStatusAtTrade.Returns(ResidencyStatus.NonResident);
+        disposalTradeTaxCalculation.AcquisitionDisposal.Returns(TradeType.DISPOSAL);
+        disposalTradeTaxCalculation.Date.Returns(DateTime.Parse(disposaldate, CultureInfo.InvariantCulture));
+        ITradeTaxCalculation acquisitionTradeTaxCalculation = Substitute.For<ITradeTaxCalculation>();
+        acquisitionTradeTaxCalculation.ResidencyStatusAtTrade.Returns(residencyStatus);
+        acquisitionTradeTaxCalculation.AcquisitionDisposal.Returns(TradeType.ACQUISITION);
+        acquisitionTradeTaxCalculation.Date.Returns(DateTime.Parse(acquisitiondate, CultureInfo.InvariantCulture));
+        GroupedTradeContainer<ITradeTaxCalculation> tradesToBeMatched = new([disposalTradeTaxCalculation, acquisitionTradeTaxCalculation], []);
+        var result = UkMatchingRules.ApplyBedAndBreakfastMatchingRule(tradesToBeMatched);
+        if (rulesApply)
+        {
+            result.ShouldNotBeEmpty();
+            result.First().Item1.ShouldBe(disposalTradeTaxCalculation);
+            result.First().Item2.ShouldBe(acquisitionTradeTaxCalculation);
+        }
+        else
+        {
+            result.ShouldBeEmpty();
+        }
     }
 }
