@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using ResidencyEnum = InvestmentTaxCalculator.Enumerations.ResidencyStatus;
+﻿using ResidencyEnum = InvestmentTaxCalculator.Enumerations.ResidencyStatus;
 
 namespace InvestmentTaxCalculator.Model;
 
@@ -32,12 +29,12 @@ public class ResidencyStatusRecord
             else
             {
                 // Left fragment
-                if (r.Start < startDate)
+                if (r.Start < startDate && startDate > DateOnly.MinValue)
                 {
                     intermediateRanges.Add(new RangeEntry(r.Start, startDate.AddDays(-1), r.Status));
                 }
                 // Right fragment
-                if (r.End > endDate)
+                if (r.End > endDate && endDate < DateOnly.MaxValue)
                 {
                     intermediateRanges.Add(new RangeEntry(endDate.AddDays(1), r.End, r.Status));
                 }
@@ -61,7 +58,8 @@ public class ResidencyStatusRecord
             var last = Ranges[^1];
 
             // Check if current can be merged into last
-            if (current.Status == last.Status && current.Start <= last.End.AddDays(1))
+            bool isAdjacent = last.End == DateOnly.MaxValue || current.Start <= last.End.AddDays(1);
+            if (current.Status == last.Status && isAdjacent)
             {
                 // Update the end date of the last range in the list
                 Ranges[^1] = new RangeEntry(last.Start, current.End > last.End ? current.End : last.End, last.Status);
@@ -88,6 +86,6 @@ public class ResidencyStatusRecord
     public DateTime GetResidencyStatusPeriodEnd(DateTime date)
     {
         var match = Ranges.FirstOrDefault(r => r.Start <= DateOnly.FromDateTime(date) && DateOnly.FromDateTime(date) <= r.End);
-        return match is not null ? match.End.ToDateTime(new TimeOnly(0,0)) : DateTime.MaxValue;
+        return match is not null ? match.End.ToDateTime(new TimeOnly(0, 0)) : DateTime.MaxValue;
     }
 }
