@@ -4,7 +4,9 @@
 @using Syncfusion.Blazor.Grids
 @using InvestmentTaxCalculator.Model
 @using ResidencyEnum = InvestmentTaxCalculator.Enumerations.ResidencyStatus
+@using InvestmentTaxCalculator.Services
 @inject ResidencyStatusRecord ResidencyStatusRecord
+@inject ToastService toastService
 
 <div class="card mb-3">
     <div class="card-body">
@@ -137,6 +139,7 @@
 
         if (!StartUnbounded && !EndUnbounded && start > end)
         {
+            toastService.ShowError("Start date cannot be after end date.");
             return;
         }
 
