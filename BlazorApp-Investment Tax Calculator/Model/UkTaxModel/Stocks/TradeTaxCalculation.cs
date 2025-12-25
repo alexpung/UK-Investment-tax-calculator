@@ -49,6 +49,13 @@ public class TradeTaxCalculation : ITradeTaxCalculation
     public string AssetName { get; init; }
     public ResidencyStatus ResidencyStatusAtTrade { get; set; } = ResidencyStatus.Resident;
 
+    /// <summary>
+    /// Reset trade IDs when start/restart a calculation
+    /// </summary>
+    public static void ResetID()
+    {
+        _nextId = 0;
+    }
 
     /// <summary>
     /// Bunch a group of trade on the same side so that they can be matched together as a group, 
