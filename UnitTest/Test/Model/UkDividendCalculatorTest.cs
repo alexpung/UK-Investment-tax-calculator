@@ -20,7 +20,8 @@ public class UkDividendCalculatorTest
         ToastService mockToastService = Substitute.For<ToastService>(logger);
         mockIDividendLists.Dividends.Returns(Dividend);
         mockIDividendLists.InterestIncomes.Returns([]);
-        return new UkDividendCalculator(mockIDividendLists, new UKTaxYear(), mockToastService);
+        ResidencyStatusRecord mockResidencyStatusRecord = Substitute.For<ResidencyStatusRecord>();
+        return new UkDividendCalculator(mockIDividendLists, new UKTaxYear(), mockToastService, mockResidencyStatusRecord);
     }
 
     [Fact]

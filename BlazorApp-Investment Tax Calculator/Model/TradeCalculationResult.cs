@@ -11,7 +11,7 @@ namespace InvestmentTaxCalculator.Model;
 /// https://www.gov.uk/hmrc-internal-manuals/self-assessment-manual/sam121370
 /// </summary>
 /// <param name="taxYear"></param>
-public class TradeCalculationResult(ITaxYear taxYear)
+public class TradeCalculationResult(ITaxYear taxYear, ResidencyStatusRecord residencyStatusRecord)
 {
     private readonly ConcurrentBag<ITradeTaxCalculation> _calculatedTrade = [];
     public ConcurrentBag<ITradeTaxCalculation> CalculatedTrade => _calculatedTrade;
@@ -46,11 +46,22 @@ public class TradeCalculationResult(ITaxYear taxYear)
     {
         foreach (var trade in tradeTaxCalculations)
         {
+            if (trade.ResidencyStatusAtTrade == ResidencyStatus.TemporaryNonResident)
+            {
+                trade.TaxableDate = residencyStatusRecord.GetResidencyStatusPeriodEnd(trade.Date).AddDays(1);
+            }
             _calculatedTrade.Add(trade);
         }
+
         IEnumerable<IGrouping<(int, AssetCategoryType), ITradeTaxCalculation>> groupedTradeByYear = _calculatedTrade
-            .Where(trade => trade.ResidencyStatusAtTrade != ResidencyStatus.NonResident)
-            .GroupBy(trade => (taxYear.ToTaxYear(trade.Date), trade.AssetCategoryType));
+            .GroupBy(trade =>
+            {
+                var taxableDate = trade.ResidencyStatusAtTrade == ResidencyStatus.TemporaryNonResident
+                    ? trade.TaxableDate
+                    : trade.Date;
+                return (taxYear.ToTaxYear(taxableDate), trade.AssetCategoryType);
+            });
+
         foreach (var group in groupedTradeByYear)
         {
             TradeByYear[group.Key] = [.. group];

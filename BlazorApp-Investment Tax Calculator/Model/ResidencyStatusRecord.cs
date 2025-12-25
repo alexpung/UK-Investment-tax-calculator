@@ -81,4 +81,13 @@ public class ResidencyStatusRecord
         var match = Ranges.FirstOrDefault(r => r.Start <= date && date <= r.End);
         return match?.Status ?? ResidencyEnum.Resident;
     }
+
+    /// <summary>
+    /// Gets the end date of the residency status period that includes the specified date. Used when calculating temporary resident status taxable date
+    /// </summary>
+    public DateTime GetResidencyStatusPeriodEnd(DateTime date)
+    {
+        var match = Ranges.FirstOrDefault(r => r.Start <= DateOnly.FromDateTime(date) && DateOnly.FromDateTime(date) <= r.End);
+        return match is not null ? match.End.ToDateTime(new TimeOnly(0,0)) : DateTime.MaxValue;
+    }
 }

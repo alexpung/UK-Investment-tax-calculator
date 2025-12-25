@@ -18,6 +18,7 @@ public record FutureTradeMatch : TradeMatch
     public override string PrintToTextFile()
     {
         StringBuilder output = new();
+        output.AppendLine($"Tax status: {IsTaxable.GetDescription()}");
         string paymentForContractGainOrLoss = BaseCurrencyContractValueGain.Amount switch
         {
             < 0 => $"Payment made to close the contract as loss is ({MatchSellContractValue} - {MatchBuyContractValue}) * {ClosingFxRate} = {BaseCurrencyContractValueGain}," +

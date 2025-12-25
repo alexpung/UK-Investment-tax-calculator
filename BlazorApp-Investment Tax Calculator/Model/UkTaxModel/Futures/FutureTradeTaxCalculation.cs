@@ -36,85 +36,75 @@ public class FutureTradeTaxCalculation : TradeTaxCalculation
         UnmatchedContractValue -= TotalContractValue * demandedQty / TotalQty;
     }
 
-    public override void MatchWithSection104(UkSection104 ukSection104)
+    protected override Section104History Section104AddAssets(UkSection104 ukSection104, decimal qty)
     {
-        if (CalculationCompleted) return;
-        if (AcquisitionDisposal is TradeType.ACQUISITION)
-        {
-            Section104History section104History = ukSection104.AddAssets(this, UnmatchedQty, UnmatchedCostOrProceed, UnmatchedContractValue);
-            FutureTradeMatch tradeMatch = new()
-            {
-                Date = DateOnly.FromDateTime(Date),
-                AssetName = AssetName,
-                TradeMatchType = TaxMatchType.SECTION_104,
-                MatchAcquisitionQty = UnmatchedQty,
-                MatchDisposalQty = 0,
-                BaseCurrencyMatchAllowableCost = UnmatchedCostOrProceed,
-                BaseCurrencyMatchDisposalProceed = WrappedMoney.GetBaseCurrencyZero(),
-                MatchedBuyTrade = this,
-                MatchedSellTrade = null,
-                AdditionalInformation = "",
-                MatchBuyContractValue = UnmatchedContractValue,
-                BaseCurrencyAcquisitionDealingCost = UnmatchedCostOrProceed,
-                BaseCurrencyDisposalDealingCost = WrappedMoney.GetBaseCurrencyZero(),
-                ClosingFxRate = 0,
-                Section104HistorySnapshot = section104History,
-            };
-            MatchHistory.Add(tradeMatch);
-            MatchQty(UnmatchedQty);
-        }
-        else if (AcquisitionDisposal is TradeType.DISPOSAL)
-        {
-            if (ukSection104.Quantity == 0m) return;
-            decimal matchQty = Math.Min(UnmatchedQty, ukSection104.Quantity);
-            Section104History section104History = ukSection104.RemoveAssets(this, UnmatchedQty);
+        // futures need to pass contract value
+        return ukSection104.AddAssets(this, qty, UnmatchedCostOrProceed, UnmatchedContractValue);
+    }
 
-            WrappedMoney buyContractValue = PositionType switch
-            {
-                PositionType.CLOSELONG => section104History.ContractValueChange * -1,
-                PositionType.CLOSESHORT => GetProportionedContractValue(matchQty),
-                _ => throw new ArgumentException($"Unexpected future position type {PositionType} for close position")
-            };
-            WrappedMoney sellContractValue = PositionType switch
-            {
-                PositionType.CLOSELONG => GetProportionedContractValue(matchQty),
-                PositionType.CLOSESHORT => section104History.ContractValueChange * -1,
-                _ => throw new ArgumentException($"Unexpected future position type {PositionType} for close position")
-            };
-            WrappedMoney contractGain = sellContractValue - buyContractValue;
-            WrappedMoney contractGainInBaseCurrency = new((contractGain * ContractFxRate).Amount);
-            WrappedMoney acquisitionValue = (section104History.ValueChange * -1) + GetProportionedCostOrProceed(matchQty);
-            WrappedMoney disposalValue = WrappedMoney.GetBaseCurrencyZero();
-            if (contractGainInBaseCurrency.Amount > 0)
-            {
-                disposalValue += contractGainInBaseCurrency;
-            }
-            else
-            {
-                acquisitionValue += contractGainInBaseCurrency * -1;
-            }
-            FutureTradeMatch tradeMatch = new()
-            {
-                Date = DateOnly.FromDateTime(Date),
-                AssetName = AssetName,
-                TradeMatchType = TaxMatchType.SECTION_104,
-                MatchAcquisitionQty = matchQty,
-                MatchDisposalQty = matchQty,
-                BaseCurrencyMatchAllowableCost = acquisitionValue,
-                BaseCurrencyMatchDisposalProceed = disposalValue,
-                MatchedBuyTrade = null,
-                MatchedSellTrade = this,
-                AdditionalInformation = "",
-                MatchBuyContractValue = buyContractValue,
-                MatchSellContractValue = sellContractValue,
-                BaseCurrencyAcquisitionDealingCost = section104History.ValueChange * -1,
-                BaseCurrencyDisposalDealingCost = GetProportionedCostOrProceed(matchQty),
-                ClosingFxRate = ContractFxRate,
-                Section104HistorySnapshot = section104History,
-            };
-            MatchHistory.Add(tradeMatch);
-            MatchQty(matchQty);
-        }
+    protected override TradeMatch BuildSection104AcquisitionMatch(Section104History history)
+    {
+        return new FutureTradeMatch()
+        {
+            Date = DateOnly.FromDateTime(Date),
+            AssetName = AssetName,
+            TradeMatchType = TaxMatchType.SECTION_104,
+            MatchAcquisitionQty = UnmatchedQty,
+            MatchDisposalQty = 0,
+            BaseCurrencyMatchAllowableCost = UnmatchedCostOrProceed,
+            BaseCurrencyMatchDisposalProceed = WrappedMoney.GetBaseCurrencyZero(),
+            MatchedBuyTrade = this,
+            MatchedSellTrade = null,
+            AdditionalInformation = "",
+            MatchBuyContractValue = UnmatchedContractValue,
+            BaseCurrencyAcquisitionDealingCost = UnmatchedCostOrProceed,
+            BaseCurrencyDisposalDealingCost = WrappedMoney.GetBaseCurrencyZero(),
+            ClosingFxRate = 0,
+            Section104HistorySnapshot = history,
+        };
+    }
+
+    protected override TradeMatch BuildSection104DisposalMatch(Section104History history, decimal matchQty, TaxableStatus taxableStatus)
+    {
+        // compute buy/sell contract values etc (same logic as before)
+        WrappedMoney buyContractValue = PositionType switch
+        {
+            PositionType.CLOSELONG => history.ContractValueChange * -1,
+            PositionType.CLOSESHORT => GetProportionedContractValue(matchQty),
+            _ => throw new ArgumentException($"Unexpected future position type {PositionType} for close position")
+        };
+        WrappedMoney sellContractValue = PositionType switch
+        {
+            PositionType.CLOSELONG => GetProportionedContractValue(matchQty),
+            PositionType.CLOSESHORT => history.ContractValueChange * -1,
+            _ => throw new ArgumentException($"Unexpected future position type {PositionType} for close position")
+        };
+        WrappedMoney contractGain = sellContractValue - buyContractValue;
+        WrappedMoney contractGainInBaseCurrency = new((contractGain * ContractFxRate).Amount);
+        WrappedMoney acquisitionValue = (history.ValueChange * -1) + GetProportionedCostOrProceed(matchQty);
+        WrappedMoney disposalValue = WrappedMoney.GetBaseCurrencyZero();
+        if (contractGainInBaseCurrency.Amount > 0) disposalValue += contractGainInBaseCurrency;
+        else acquisitionValue += contractGainInBaseCurrency * -1;
+
+        return new FutureTradeMatch()
+        {
+            Date = DateOnly.FromDateTime(Date),
+            AssetName = AssetName,
+            TradeMatchType = TaxMatchType.SECTION_104,
+            MatchAcquisitionQty = matchQty,
+            MatchDisposalQty = matchQty,
+            BaseCurrencyMatchAllowableCost = acquisitionValue,
+            BaseCurrencyMatchDisposalProceed = disposalValue,
+            MatchedSellTrade = this,
+            MatchBuyContractValue = buyContractValue,
+            MatchSellContractValue = sellContractValue,
+            Section104HistorySnapshot = history,
+            BaseCurrencyAcquisitionDealingCost = history.ValueChange * -1,
+            BaseCurrencyDisposalDealingCost = GetProportionedCostOrProceed(matchQty),
+            ClosingFxRate = ContractFxRate,
+            AdditionalInformation = string.Empty,
+            IsTaxable = taxableStatus
+        };
     }
 
     public override string PrintToTextFile()

@@ -20,23 +20,11 @@ public class UkTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorpo
     {
         List<ITradeTaxCalculation> tradeTaxCalculations = [.. tradeTaxCalculationFactory.GroupTrade(tradeList.Trades)];
         GroupedTradeContainer<ITradeTaxCalculation> _tradeContainer = new(tradeTaxCalculations, tradeList.CorporateActions);
-        foreach (var match in UkMatchingRules.ApplySameDayMatchingRule(_tradeContainer))
-        {
-            MatchTrade(match.Item1, match.Item2, TaxMatchType.SAME_DAY);
-        }
-        foreach (var match in UkMatchingRules.ApplyBedAndBreakfastMatchingRule(_tradeContainer))
-        {
-            MatchTrade(match.Item1, match.Item2, TaxMatchType.BED_AND_BREAKFAST);
-        }
-        foreach (var match in UkMatchingRules.ProcessTradeInChronologicalOrder(section104Pools, _tradeContainer))
-        {
-            MatchTrade(match.Item1, match.Item2, TaxMatchType.SHORTCOVER);
-        }
-
+        UkMatchingRules.ApplyUkTaxRuleSequence(MatchTrade, _tradeContainer, section104Pools);
         return tradeTaxCalculations;
     }
 
-    public void MatchTrade(ITradeTaxCalculation trade1, ITradeTaxCalculation trade2, TaxMatchType taxMatchType)
+    public void MatchTrade(ITradeTaxCalculation trade1, ITradeTaxCalculation trade2, TaxMatchType taxMatchType, TaxableStatus taxableStatus)
     {
         TradePairSorter<ITradeTaxCalculation> tradePairSorter = new(trade1, trade2);
         if (trade1.CalculationCompleted || trade2.CalculationCompleted) return;
@@ -54,7 +42,8 @@ public class UkTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorpo
             BaseCurrencyMatchDisposalProceed = tradePairSorter.DisposalTrade.GetProportionedCostOrProceed(tradePairSorter.DisposalMatchQuantity),
             MatchedBuyTrade = tradePairSorter.AcquisitionTrade,
             MatchedSellTrade = tradePairSorter.DisposalTrade,
-            AdditionalInformation = BuildInfoString(matchAdjustment.CorporateActions)
+            AdditionalInformation = BuildInfoString(matchAdjustment.CorporateActions),
+            IsTaxable = taxableStatus,
         };
         TradeMatch AcqusitionTradeMatch = disposalTradeMatch with
         {

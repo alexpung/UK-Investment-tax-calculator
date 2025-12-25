@@ -14,22 +14,11 @@ public class UkFutureTradeCalculator(UkSection104Pools section104Pools, ITradeAn
     {
         List<FutureTradeTaxCalculation> tradeTaxCalculations = [.. tradeTaxCalculationFactory.GroupFutureTrade(tradeList.FutureContractTrades)];
         GroupedTradeContainer<FutureTradeTaxCalculation> _tradeContainer = new(tradeTaxCalculations, tradeList.CorporateActions);
-        foreach (var match in UkMatchingRules.ApplySameDayMatchingRule(_tradeContainer))
-        {
-            MatchTrade(match.Item1, match.Item2, TaxMatchType.SAME_DAY);
-        }
-        foreach (var match in UkMatchingRules.ApplyBedAndBreakfastMatchingRule(_tradeContainer))
-        {
-            MatchTrade(match.Item1, match.Item2, TaxMatchType.BED_AND_BREAKFAST);
-        }
-        foreach (var match in UkMatchingRules.ProcessTradeInChronologicalOrder(section104Pools, _tradeContainer))
-        {
-            MatchTrade(match.Item1, match.Item2, TaxMatchType.SHORTCOVER);
-        }
+        UkMatchingRules.ApplyUkTaxRuleSequence(MatchTrade, _tradeContainer, section104Pools);
         return [.. tradeTaxCalculations.Cast<ITradeTaxCalculation>()];
     }
 
-    private void MatchTrade(FutureTradeTaxCalculation trade1, FutureTradeTaxCalculation trade2, TaxMatchType taxMatchType)
+    private void MatchTrade(FutureTradeTaxCalculation trade1, FutureTradeTaxCalculation trade2, TaxMatchType taxMatchType, TaxableStatus taxableStatus)
     {
         TradePairSorter<FutureTradeTaxCalculation> tradePairSorter = new(trade1, trade2);
         if (trade1.CalculationCompleted || trade2.CalculationCompleted) return;
@@ -67,7 +56,8 @@ public class UkFutureTradeCalculator(UkSection104Pools section104Pools, ITradeAn
             MatchSellContractValue = sellContractValue,
             BaseCurrencyAcquisitionDealingCost = tradePairSorter.AcquisitionTrade.GetProportionedCostOrProceed(tradePairSorter.AcquisitionMatchQuantity),
             BaseCurrencyDisposalDealingCost = tradePairSorter.DisposalTrade.GetProportionedCostOrProceed(tradePairSorter.DisposalMatchQuantity),
-            ClosingFxRate = tradePairSorter.DisposalTrade.ContractFxRate
+            ClosingFxRate = tradePairSorter.DisposalTrade.ContractFxRate,
+            IsTaxable = taxableStatus
         };
         tradePairSorter.DisposalTrade.MatchHistory.Add(disposalTradeMatch);
         tradePairSorter.AcquisitionTrade.MatchQty(tradePairSorter.AcquisitionMatchQuantity);

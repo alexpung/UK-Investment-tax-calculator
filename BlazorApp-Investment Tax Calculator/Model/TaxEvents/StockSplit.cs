@@ -31,8 +31,6 @@ public record StockSplit : CorporateAction, IChangeSection104
     public override void ChangeSection104(UkSection104 section104)
     {
         if (AssetName != section104.AssetName) return;
-        decimal newQuantity = section104.Quantity * SplitTo / SplitFrom;
-        section104.Section104HistoryList.Add(Section104History.ShareAdjustment(Date, section104.Quantity, newQuantity));
-        section104.Quantity = newQuantity;
+        section104.MultiplyQuantity(SplitTo / (decimal)SplitFrom, Date);
     }
 }
