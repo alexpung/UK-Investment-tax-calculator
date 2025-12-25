@@ -1,10 +1,5 @@
 ﻿using InvestmentTaxCalculator.Enumerations;
 using InvestmentTaxCalculator.Model.Interfaces;
-using InvestmentTaxCalculator.Model.TaxEvents;
-
-using MigraDoc.DocumentObjectModel;
-
-using Syncfusion.Blazor.Data;
 
 namespace InvestmentTaxCalculator.Model.UkTaxModel.Futures;
 
