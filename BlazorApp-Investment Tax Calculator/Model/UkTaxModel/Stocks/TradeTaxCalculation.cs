@@ -55,7 +55,7 @@ public class TradeTaxCalculation : ITradeTaxCalculation
     /// </summary>
     public static void ResetID()
     {
-        _nextId = 0;
+        Interlocked.Exchange(ref _nextId, 0);
     }
 
     /// <summary>
