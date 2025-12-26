@@ -13,6 +13,7 @@ using Xunit;
 
 public class TradeCalculationResultTests
 {
+    private static readonly ResidencyStatusRecord _residencyStatusRecord = new();
     private class MockTaxYear : ITaxYear
     {
         public DateOnly GetTaxYearEndDate(int taxYear)
@@ -52,7 +53,7 @@ public class TradeCalculationResultTests
         mock3.ReturnsForAll<WrappedMoney>(WrappedMoney.GetBaseCurrencyZero());
         var taxYear = new MockTaxYear();
         var tradeTaxCalculations = new List<ITradeTaxCalculation> { mock1, mock2, mock3 };
-        var result = new TradeCalculationResult(taxYear);
+        var result = new TradeCalculationResult(taxYear, _residencyStatusRecord);
         result.SetResult(tradeTaxCalculations);
 
         var taxYearsFilter = new List<int> { 2021 };
@@ -90,7 +91,7 @@ public class TradeCalculationResultTests
         mock4.ReturnsForAll<WrappedMoney>(WrappedMoney.GetBaseCurrencyZero());
         var taxYear = new MockTaxYear();
         var tradeTaxCalculations = new List<ITradeTaxCalculation> { mock1, mock2, mock3, mock4 };
-        var result = new TradeCalculationResult(taxYear);
+        var result = new TradeCalculationResult(taxYear, _residencyStatusRecord);
         result.SetResult(tradeTaxCalculations);
 
         var taxYearsFilter = new List<int> { 2021, 2023 };
@@ -128,7 +129,7 @@ public class TradeCalculationResultTests
         mock4.ReturnsForAll<WrappedMoney>(WrappedMoney.GetBaseCurrencyZero());
         var taxYear = new MockTaxYear();
         var tradeTaxCalculations = new List<ITradeTaxCalculation> { mock1, mock2, mock3, mock4 };
-        var result = new TradeCalculationResult(taxYear);
+        var result = new TradeCalculationResult(taxYear, _residencyStatusRecord);
         result.SetResult(tradeTaxCalculations);
 
         var taxYearsFilter = new List<int> { 2021, 2023 };
@@ -170,7 +171,7 @@ public class TradeCalculationResultTests
         mock4.AssetCategoryType.Returns(AssetCategoryType.STOCK);
         var taxYear = new MockTaxYear();
         var tradeTaxCalculations = new List<ITradeTaxCalculation> { mock1, mock2, mock3, mock4 };
-        var result = new TradeCalculationResult(taxYear);
+        var result = new TradeCalculationResult(taxYear, _residencyStatusRecord);
         result.SetResult(tradeTaxCalculations);
 
         var taxYearsFilter = new List<int> { 2021, 2023 };
@@ -209,13 +210,13 @@ public class TradeCalculationResultTests
         mock2.TotalProceeds.Returns(new WrappedMoney(350));
         var taxYear = new MockTaxYear();
         var tradeTaxCalculations = new List<ITradeTaxCalculation> { mock1, mock2 };
-        var result = new TradeCalculationResult(taxYear);
+        var result = new TradeCalculationResult(taxYear, _residencyStatusRecord);
         result.SetResult(tradeTaxCalculations);
         var taxYearsFilter = new List<int> { 2021 };
 
-        WrappedMoney expectedTotalGain = new WrappedMoney(400);
-        WrappedMoney expectedTotalAllowableCost = new WrappedMoney(150);
-        WrappedMoney expectedTotalProceeds = new WrappedMoney(550);
+        WrappedMoney expectedTotalGain = new(400);
+        WrappedMoney expectedTotalAllowableCost = new(150);
+        WrappedMoney expectedTotalProceeds = new(550);
 
         WrappedMoney totalGain = result.GetTotalGain(taxYearsFilter, AssetGroupType.ALL);
         WrappedMoney totalAllowableCost = result.GetAllowableCosts(taxYearsFilter, AssetGroupType.ALL);
