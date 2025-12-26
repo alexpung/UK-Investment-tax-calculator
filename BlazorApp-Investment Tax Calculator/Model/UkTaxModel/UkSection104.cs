@@ -84,7 +84,7 @@ public record UkSection104
     public void MultiplyQuantity(decimal factor, DateTime date)
     {
         decimal newQuantity = factor * Quantity;
-        Section104HistoryList.Add(Section104History.ShareAdjustment(date, Quantity, newQuantity));
+        Section104HistoryList.Add(Section104History.ShareAdjustment(date, Quantity, newQuantity, AcquisitionCostInBaseCurrency, TotalContractValue));
         Quantity = newQuantity;
         NonResidentExemptQuantity *= factor;
     }
