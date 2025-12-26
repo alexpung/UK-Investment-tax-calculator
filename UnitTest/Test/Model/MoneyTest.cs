@@ -96,7 +96,7 @@ public class MoneyTestTestData : IEnumerable<object[]>
         yield return new object[] { "Aud", 1234.56, "$1,234.56" };
         yield return new object[] { "Cad", 1234.56, "$1,234.56" };
         yield return new object[] { "Cny", 1234.56, "¥1,234.56" };
-        yield return new object[] { "Sek", 1234.56, "1.234,56 kr" };
+        yield return new object[] { "Sek", 1234.56, "1 234,56 kr" };
         yield return new object[] { "Eur", 1234.56, "1.234,56 €" };
     }
 
