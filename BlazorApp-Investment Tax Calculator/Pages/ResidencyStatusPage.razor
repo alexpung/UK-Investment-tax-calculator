@@ -2,5 +2,27 @@
 @using InvestmentTaxCalculator.Components
 
 <div class="container mt-4 mb-4">
+    <div class="mb-3">
+        <h5>How to use this tool</h5>
+        <p class="mb-1">Pick a Start and End date (use the "Unbounded" checkbox for open-ended ranges), select a residency status from the dropdown, then click 
+            <em>Set residency for range</em>. Use <em>Reset</em> to clear the inputs. The timeline visualizes all configured ranges and the grid below lists them. To remove an entry, overwrite the time period with the updated status.</p>
+
+        <h6 class="mt-2">Key terms</h6>
+        <ul class="mb-0">
+            <li><strong>Resident</strong>: the person is tax resident during the range; gains are generally subject to UK taxation for that period. This also includes the resident part of a split year treatment.</li>
+            <li><strong>Temporary non-resident</strong>: a short-term non-residence period where different or transitional tax rules may apply; some disposals might still be taxed depending on timing. This also includes the non-resident part of a split year treatment.</li>
+            <li><strong>Non-resident</strong>: the person is not tax resident during the range; UK capital gains tax may not apply to some assets or disposals while non‑resident (subject to specific rules). This also includes the non-resident part of a split year treatment.</li>
+        </ul>
+    </div>
+
+    <div class="alert alert-warning">
+        <strong>Note:</strong> Decide whether a period should be marked <strong>Non‑resident</strong> or <strong>Temporary non‑resident</strong>.
+        This tool does not determine residency status — choose the most appropriate option for your circumstances or consult a tax adviser.
+    </div>
+
+    <p class="small text-muted">
+        Reference: HMRC HS278 (2025) — <a href="https://www.gov.uk/government/publications/temporary-non-residents-and-capital-gains-tax-hs278-self-assessment-helpsheet/hs278-temporary-non-residents-and-capital-gains-tax-2025" target="_blank" rel="noopener noreferrer">Temporary non-residents and Capital Gains Tax</a>.
+    </p>
+
     <ResidencyStatusInput />
 </div>
