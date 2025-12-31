@@ -113,7 +113,6 @@ public class TradeTaxCalculation : ITradeTaxCalculation
         }
         else if (AcquisitionDisposal is TradeType.DISPOSAL)
         {
-            if (ukSection104.Quantity == 0m) return;
             if (ukSection104.Quantity == 0m || UnmatchedQty == 0) return;
             decimal matchQty = Math.Min(UnmatchedQty, ukSection104.Quantity);
             List<Section104MatchResults> section104HistoryList = Section104RemoveAssets(ukSection104, matchQty);
