@@ -101,16 +101,12 @@ public class TradeTaxCalculation : ITradeTaxCalculation
         }
     }
 
-    public virtual void MatchWithSection104(UkSection104 ukSection104, TaxableStatus taxableStatus)
+    public virtual void MatchWithSection104(UkSection104 ukSection104)
     {
         Section104History section104History;
         if (UnmatchedQty == 0m) return;
         if (AcquisitionDisposal is TradeType.ACQUISITION)
         {
-            if (ResidencyStatusAtTrade is ResidencyStatus.NonResident or ResidencyStatus.TemporaryNonResident)
-            {
-                ukSection104.NonResidentExemptQuantity += UnmatchedQty;
-            }
             section104History = Section104AddAssets(ukSection104, UnmatchedQty);
             MatchHistory.Add(BuildSection104AcquisitionMatch(section104History));
             MatchQty(UnmatchedQty);
@@ -118,23 +114,15 @@ public class TradeTaxCalculation : ITradeTaxCalculation
         else if (AcquisitionDisposal is TradeType.DISPOSAL)
         {
             if (ukSection104.Quantity == 0m) return;
-
-            // Assets acquired while non-resident are exempt from UK Capital Gains Tax even when disposed while as a temporarily non-resident.
-            if (ResidencyStatusAtTrade is ResidencyStatus.TemporaryNonResident)
-            {
-                // if all unmatched shares are acquired in non-resident/temp non-resident period, the matching is not taxable
-                decimal nonResidentExemptQty = Math.Min(UnmatchedQty, ukSection104.NonResidentExemptQuantity);
-                section104History = Section104RemoveAssets(ukSection104, nonResidentExemptQty);
-                TradeMatch taxExemptMatch = BuildSection104DisposalMatch(section104History, nonResidentExemptQty, TaxableStatus.NON_TAXABLE);
-                taxExemptMatch.AdditionalInformation = $"{nonResidentExemptQty} of this disposal is exempt from UK Capital Gains Tax as the assets were acquired while non-resident.";
-                MatchHistory.Add(taxExemptMatch);
-                MatchQty(nonResidentExemptQty);
-            }
             if (ukSection104.Quantity == 0m || UnmatchedQty == 0) return;
             decimal matchQty = Math.Min(UnmatchedQty, ukSection104.Quantity);
-            section104History = Section104RemoveAssets(ukSection104, matchQty);
-            MatchHistory.Add(BuildSection104DisposalMatch(section104History, matchQty, taxableStatus));
-            MatchQty(matchQty);
+            List<Section104MatchResults> section104HistoryList = Section104RemoveAssets(ukSection104, matchQty);
+            foreach (var section104Match in section104HistoryList)
+            {
+                TradeMatch match = BuildSection104DisposalMatch(section104Match.Section104HistoryResult, section104Match.QuantityMatched, section104Match.IsTaxable);
+                MatchHistory.Add(match);
+                MatchQty(section104Match.QuantityMatched);
+            }
         }
     }
 
@@ -143,7 +131,7 @@ public class TradeTaxCalculation : ITradeTaxCalculation
         return ukSection104.AddAssets(this, qty, UnmatchedCostOrProceed);
     }
 
-    protected virtual Section104History Section104RemoveAssets(UkSection104 ukSection104, decimal qty)
+    protected virtual List<Section104MatchResults> Section104RemoveAssets(UkSection104 ukSection104, decimal qty)
     {
         return ukSection104.RemoveAssets(this, qty);
     }

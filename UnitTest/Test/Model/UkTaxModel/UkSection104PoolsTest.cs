@@ -32,7 +32,7 @@ public class UkSection104PoolsTests
         var section104Pools = new UkSection104Pools(new UKTaxYear());
         UkSection104 testSection104 = section104Pools.GetExistingOrInitialise("Asset1");
         TradeTaxCalculation mockTrade = MockTrade.CreateTradeTaxCalculation("Asset1", new DateTime(2023, 1, 1, 0, 0, 0, DateTimeKind.Local), 100m, 2000, TradeType.ACQUISITION);
-        mockTrade.MatchWithSection104(testSection104, TaxableStatus.TAXABLE);
+        mockTrade.MatchWithSection104(testSection104);
 
         // Act
         UkSection104 result = section104Pools.GetExistingOrInitialise("Asset1");

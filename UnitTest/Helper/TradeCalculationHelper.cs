@@ -11,11 +11,12 @@ using InvestmentTaxCalculator.Services;
 using Microsoft.Extensions.Logging;
 
 namespace UnitTest.Helper;
+
 public static class TradeCalculationHelper
 {
     public static List<ITradeTaxCalculation> CalculateTrades(IEnumerable<TaxEvent> taxEvents, out UkSection104Pools section104Pools)
     {
-        section104Pools = new UkSection104Pools(new UKTaxYear());
+        section104Pools = new UkSection104Pools(new UKTaxYear(), new ResidencyStatusRecord());
         TaxEventLists taxEventLists = new();
         taxEventLists.AddData(taxEvents);
         UkOptionTradeCalculator optionTradeCalculator = CreateOptionTradeCalculator(section104Pools, taxEventLists);

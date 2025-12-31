@@ -15,7 +15,6 @@ public class TradeCalculationResult(ITaxYear taxYear, ResidencyStatusRecord resi
 {
     private readonly ConcurrentBag<ITradeTaxCalculation> _calculatedTrade = [];
     public ConcurrentBag<ITradeTaxCalculation> CalculatedTrade => _calculatedTrade;
-    public IEnumerable<ITradeTaxCalculation> GetDisposals => _calculatedTrade.Where(trade => trade.AcquisitionDisposal == TradeType.DISPOSAL);
     public ConcurrentDictionary<(int, AssetCategoryType), List<ITradeTaxCalculation>> TradeByYear { get; } = new();
     public ConcurrentDictionary<(int, AssetCategoryType), List<ITradeTaxCalculation>> DisposalByYear { get; } = new();
     public ConcurrentDictionary<(int, AssetCategoryType), int> NumberOfDisposals => _numberOfDisposals;
@@ -49,7 +48,7 @@ public class TradeCalculationResult(ITaxYear taxYear, ResidencyStatusRecord resi
             if (trade.ResidencyStatusAtTrade == ResidencyStatus.TemporaryNonResident)
             {
                 DateTime endDate = residencyStatusRecord.GetResidencyStatusPeriodEnd(trade.Date);
-                if (endDate != DateTime.MaxValue)
+                if (endDate <= DateTime.MaxValue.AddDays(-1))
                 {
                     trade.TaxableDate = endDate.AddDays(1);
                 }
@@ -73,7 +72,7 @@ public class TradeCalculationResult(ITaxYear taxYear, ResidencyStatusRecord resi
         foreach (var group in groupedTradeByYear)
         {
             TradeByYear[group.Key] = [.. group];
-            DisposalByYear[group.Key] = [.. group.Where(trade => trade.AcquisitionDisposal == TradeType.DISPOSAL)];
+            DisposalByYear[group.Key] = [.. group.Where(trade => trade.AcquisitionDisposal == TradeType.DISPOSAL && trade.MatchHistory.Exists(match => match.IsTaxable is TaxableStatus.TAXABLE))];
             _numberOfDisposals[group.Key] = DisposalByYear[group.Key].Count;
             _disposalProceeds[group.Key] = DisposalByYear[group.Key].Sum(trade => trade.TotalProceeds).Floor();
             _allowableCosts[group.Key] = DisposalByYear[group.Key].Sum(trade => trade.TotalAllowableCost).Ceiling();
@@ -84,31 +83,16 @@ public class TradeCalculationResult(ITaxYear taxYear, ResidencyStatusRecord resi
 
     public int GetNumberOfDisposals(IEnumerable<int> taxYearsFilter, AssetGroupType assetGroupType = AssetGroupType.ALL)
     {
-        int result = 0;
-        foreach (int year in taxYearsFilter)
+        if (assetGroupType == AssetGroupType.ALL)
         {
-            if (assetGroupType == AssetGroupType.ALL)
-            {
-                foreach (var group in _numberOfDisposals)
-                {
-                    if (group.Key.Item1 == year)
-                    {
-                        result += group.Value;
-                    }
-                }
-            }
-            else
-            {
-                foreach (var group in _numberOfDisposals)
-                {
-                    if (group.Key.Item1 == year && group.Key.Item2.GetHmrcAssetCategoryType() == assetGroupType)
-                    {
-                        result += group.Value;
-                    }
-                }
-            }
+            return DisposalByYear.Where(group => taxYearsFilter.Contains(group.Key.Item1))
+                                 .Sum(group => group.Value.Count);
         }
-        return result;
+        else
+        {
+            return DisposalByYear.Where(group => taxYearsFilter.Contains(group.Key.Item1) && group.Key.Item2.GetHmrcAssetCategoryType() == assetGroupType)
+                                 .Sum(group => group.Value.Count);
+        }
     }
 
     public WrappedMoney GetDisposalProceeds(IEnumerable<int> taxYearsFilter, AssetGroupType assetGroupType = AssetGroupType.ALL)

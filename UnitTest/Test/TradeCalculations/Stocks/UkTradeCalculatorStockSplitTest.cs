@@ -10,6 +10,7 @@ using System.Globalization;
 using UnitTest.Helper;
 
 namespace UnitTest.Test.TradeCalculations.Stocks;
+
 public class UkTradeCalculatorStockSplitTest
 {
     [Fact]
@@ -46,7 +47,7 @@ public class UkTradeCalculatorStockSplitTest
             GrossProceed = new() { Description = "", Amount = new(1500.0m, "USD"), FxRate = 1.0m },
         };
 
-        UkSection104Pools section104Pools = new(new UKTaxYear());
+        UkSection104Pools section104Pools = new(new UKTaxYear(), new ResidencyStatusRecord());
         TaxEventLists taxEventLists = new();
         taxEventLists.AddData([initialPurchase, stockSplit, postSplitSale]);
 
@@ -112,7 +113,7 @@ public class UkTradeCalculatorStockSplitTest
         };
 
         // Section 104 pool
-        UkSection104Pools section104Pools = new(new UKTaxYear());
+        UkSection104Pools section104Pools = new(new UKTaxYear(), new ResidencyStatusRecord());
         TaxEventLists taxEventLists = new();
         taxEventLists.AddData([trade1, stockSplit, trade2, trade3]);
 
@@ -171,7 +172,7 @@ public class UkTradeCalculatorStockSplitTest
             GrossProceed = new() { Amount = new(1300m) } // £26 per share post-split
         };
 
-        UkSection104Pools section104Pools = new(new UKTaxYear());
+        UkSection104Pools section104Pools = new(new UKTaxYear(), new ResidencyStatusRecord());
         TaxEventLists taxEventLists = new();
         taxEventLists.AddData([trade1, stockSplit, trade2, trade3]);
         UkTradeCalculator calculator = TradeCalculationHelper.CreateUkTradeCalculator(section104Pools, taxEventLists);

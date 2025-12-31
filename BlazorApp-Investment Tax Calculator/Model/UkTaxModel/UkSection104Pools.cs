@@ -1,7 +1,8 @@
 ﻿using InvestmentTaxCalculator.Model.Interfaces;
 
 namespace InvestmentTaxCalculator.Model.UkTaxModel;
-public class UkSection104Pools(ITaxYear taxYearModel)
+
+public class UkSection104Pools(ITaxYear taxYearModel, ResidencyStatusRecord residencyStatusRecord)
 {
     private readonly Dictionary<string, UkSection104> _section104Pools = [];
 
@@ -59,7 +60,7 @@ public class UkSection104Pools(ITaxYear taxYearModel)
         _section104Pools.TryGetValue(assetName, out UkSection104? section104);
         if (section104 is null)
         {
-            section104 = new(assetName);
+            section104 = new(assetName, residencyStatusRecord);
             _section104Pools[assetName] = section104;
         }
         return section104;

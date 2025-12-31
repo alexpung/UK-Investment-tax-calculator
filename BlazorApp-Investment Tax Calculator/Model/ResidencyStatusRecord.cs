@@ -81,6 +81,16 @@ public class ResidencyStatusRecord
     }
 
     /// <summary>
+    /// Get the residency period range that includes the specified date.
+    /// </summary>
+    /// <param name="date"></param>
+    /// <returns>A RangeEntry that include start date, end date and status</returns>
+    public RangeEntry? GetResidencyStatusRange(DateOnly date)
+    {
+        return Ranges.FirstOrDefault(r => r.Start <= date && date <= r.End);
+    }
+
+    /// <summary>
     /// Gets the end date of the residency status period that includes the specified date. Used when calculating temporary resident status taxable date
     /// </summary>
     public DateTime GetResidencyStatusPeriodEnd(DateTime date)

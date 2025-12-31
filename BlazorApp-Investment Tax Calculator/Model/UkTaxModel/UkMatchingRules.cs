@@ -124,7 +124,7 @@ public static class UkMatchingRules
             }
         }
         // trade is a disposal that needs to be matched with section 104 pool
-        tradeTaxCalculation.MatchWithSection104(section104, IsS104MatchTaxable(tradeTaxCalculation.ResidencyStatusAtTrade));
+        tradeTaxCalculation.MatchWithSection104(section104);
 
         if (!tradeTaxCalculation.CalculationCompleted && tradeTaxCalculation.AcquisitionDisposal == TradeType.DISPOSAL)
         {
@@ -220,17 +220,9 @@ public static class UkMatchingRules
     {
         (ResidencyStatus.Resident, _) => TaxableStatus.TAXABLE,
         (ResidencyStatus.NonResident, _) => TaxableStatus.NON_TAXABLE,
-        (ResidencyStatus.TemporaryNonResident, ResidencyStatus.Resident) => TaxableStatus.TAXABLE_WHEN_RETURNED,
-        (ResidencyStatus.TemporaryNonResident, ResidencyStatus.TemporaryNonResident) => TaxableStatus.NON_TAXABLE,
-        (ResidencyStatus.TemporaryNonResident, ResidencyStatus.NonResident) => TaxableStatus.NON_TAXABLE,
+        (ResidencyStatus.TemporaryNonResident, ResidencyStatus.Resident) => TaxableStatus.TAXABLE, // Applies when TNR B&B/short sale disposal matched to resident acquisition later
+        (ResidencyStatus.TemporaryNonResident, ResidencyStatus.TemporaryNonResident) => TaxableStatus.NON_TAXABLE, // Same day matching of TNR disposal to TNR acquisition, B&B never applies
+        (ResidencyStatus.TemporaryNonResident, ResidencyStatus.NonResident) => TaxableStatus.NON_TAXABLE, // Should never happen?
         _ => throw new ArgumentOutOfRangeException($"Unexpected residency status combination: Disposal - {disposalResidencyStatus}, Acquisition - {acquisitionResidencyStatus}")
-    };
-
-    private static TaxableStatus IsS104MatchTaxable(ResidencyStatus disposalResidencyStatus) => disposalResidencyStatus switch
-    {
-        (ResidencyStatus.Resident) => TaxableStatus.TAXABLE,
-        (ResidencyStatus.NonResident) => TaxableStatus.NON_TAXABLE,
-        (ResidencyStatus.TemporaryNonResident) => TaxableStatus.TAXABLE_WHEN_RETURNED, // Taxable but exempted quantity (i.e. acquired non-resident) inside S104 not taxable
-        _ => throw new ArgumentOutOfRangeException($"Unexpected residency status combination: Disposal - {disposalResidencyStatus}")
     };
 }
