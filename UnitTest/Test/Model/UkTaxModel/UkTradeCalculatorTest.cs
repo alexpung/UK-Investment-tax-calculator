@@ -1,10 +1,10 @@
 ﻿namespace UnitTest.Test.Model.UkTaxModel;
+
 using InvestmentTaxCalculator.Enumerations;
 using InvestmentTaxCalculator.Model;
 using InvestmentTaxCalculator.Model.Interfaces;
 using InvestmentTaxCalculator.Model.TaxEvents;
 using InvestmentTaxCalculator.Model.UkTaxModel;
-using InvestmentTaxCalculator.Model.UkTaxModel.Stocks;
 
 using NSubstitute;
 
@@ -32,7 +32,7 @@ public class UkTradeCalculatorTests
         tradeListMock.Trades.Returns([trade1Mock, trade2Mock]);
         tradeListMock.CorporateActions.Returns([]);
 
-        var section104PoolsMock = Substitute.For<UkSection104Pools>(new UKTaxYear());
+        var section104PoolsMock = Substitute.For<UkSection104Pools>(new UKTaxYear(), new ResidencyStatusRecord());
         section104PoolsMock.GetExistingOrInitialise(Arg.Any<string>()).ReturnsForAnyArgs(assetName => new UkSection104(assetName.Arg<string>()));
         var calculator = TradeCalculationHelper.CreateUkTradeCalculator(section104PoolsMock, tradeListMock);
 
@@ -58,7 +58,7 @@ public class UkTradeCalculatorTests
         tradeListMock.Trades.Returns([trade1Mock, trade2Mock, trade3Mock]);
         tradeListMock.CorporateActions.Returns([]);
 
-        var section104PoolsMock = Substitute.For<UkSection104Pools>(new UKTaxYear());
+        var section104PoolsMock = Substitute.For<UkSection104Pools>(new UKTaxYear(), new ResidencyStatusRecord());
         UkSection104 section104 = new("Asset1");
         section104PoolsMock.GetExistingOrInitialise(Arg.Any<string>()).Returns(section104);
         var calculator = TradeCalculationHelper.CreateUkTradeCalculator(section104PoolsMock, tradeListMock);
@@ -88,7 +88,7 @@ public class UkTradeCalculatorTests
         tradeListMock.Trades.Returns([trade1Mock, trade2Mock, trade3Mock, trade4Mock]);
         tradeListMock.CorporateActions.Returns([]);
 
-        var section104PoolsMock = Substitute.For<UkSection104Pools>(new UKTaxYear());
+        var section104PoolsMock = Substitute.For<UkSection104Pools>(new UKTaxYear(), new ResidencyStatusRecord());
         UkSection104 section104 = new("Asset1");
         section104PoolsMock.GetExistingOrInitialise(Arg.Any<string>()).Returns(section104);
         var calculator = TradeCalculationHelper.CreateUkTradeCalculator(section104PoolsMock, tradeListMock);
@@ -119,7 +119,7 @@ public class UkTradeCalculatorTests
         tradeListMock.Trades.Returns([trade1Mock, trade2Mock, trade3Mock, trade4Mock, trade5Mock, trade6Mock]);
         tradeListMock.CorporateActions.Returns([]);
 
-        var section104PoolsMock = Substitute.For<UkSection104Pools>(new UKTaxYear());
+        var section104PoolsMock = Substitute.For<UkSection104Pools>(new UKTaxYear(), new ResidencyStatusRecord());
         UkSection104 section104 = new("Asset1");
         section104PoolsMock.GetExistingOrInitialise(Arg.Any<string>()).Returns(section104);
         var calculator = TradeCalculationHelper.CreateUkTradeCalculator(section104PoolsMock, tradeListMock);
@@ -150,7 +150,7 @@ public class UkTradeCalculatorTests
         tradeListMock.Trades.Returns([trade1Mock, trade2Mock, trade3Mock, trade4Mock, trade5Mock, trade6Mock]);
         tradeListMock.CorporateActions.Returns([]);
 
-        var section104PoolsMock = Substitute.For<UkSection104Pools>(new UKTaxYear());
+        var section104PoolsMock = Substitute.For<UkSection104Pools>(new UKTaxYear(), new ResidencyStatusRecord());
         UkSection104 section104 = new("Asset1");
         section104PoolsMock.GetExistingOrInitialise(Arg.Any<string>()).Returns(section104);
         var calculator = TradeCalculationHelper.CreateUkTradeCalculator(section104PoolsMock, tradeListMock);
