@@ -13,7 +13,7 @@ public class UkSection104PoolsTests
     public void GetSection104s_ReturnsAllSection104s()
     {
         // Arrange
-        var section104Pools = new UkSection104Pools(new UKTaxYear());
+        var section104Pools = new UkSection104Pools(new UKTaxYear(), new ResidencyStatusRecord());
         section104Pools.GetExistingOrInitialise("Test1");
         section104Pools.GetExistingOrInitialise("Test2");
         section104Pools.GetExistingOrInitialise("Test3");
@@ -29,10 +29,10 @@ public class UkSection104PoolsTests
     public void GetExistingOrInitialise_ReturnsExistingSection104IfAvailable()
     {
         // Arrange
-        var section104Pools = new UkSection104Pools(new UKTaxYear());
+        var section104Pools = new UkSection104Pools(new UKTaxYear(), new ResidencyStatusRecord());
         UkSection104 testSection104 = section104Pools.GetExistingOrInitialise("Asset1");
         TradeTaxCalculation mockTrade = MockTrade.CreateTradeTaxCalculation("Asset1", new DateTime(2023, 1, 1, 0, 0, 0, DateTimeKind.Local), 100m, 2000, TradeType.ACQUISITION);
-        mockTrade.MatchWithSection104(testSection104, TaxableStatus.TAXABLE);
+        mockTrade.MatchWithSection104(testSection104);
 
         // Act
         UkSection104 result = section104Pools.GetExistingOrInitialise("Asset1");
@@ -46,7 +46,7 @@ public class UkSection104PoolsTests
     public void GetExistingOrInitialise_CreatesNewSection104IfNotAvailable()
     {
         // Arrange
-        var section104Pools = new UkSection104Pools(new UKTaxYear());
+        var section104Pools = new UkSection104Pools(new UKTaxYear(), new ResidencyStatusRecord());
         string assetName = "Asset1";
 
         // Act
@@ -61,7 +61,7 @@ public class UkSection104PoolsTests
     public void Clear_RemovesAllSection104Pools()
     {
         // Arrange
-        var section104Pools = new UkSection104Pools(new UKTaxYear());
+        var section104Pools = new UkSection104Pools(new UKTaxYear(), new ResidencyStatusRecord());
         section104Pools.GetExistingOrInitialise("Asset1");
         section104Pools.GetExistingOrInitialise("Asset2");
         section104Pools.GetExistingOrInitialise("Asset3");

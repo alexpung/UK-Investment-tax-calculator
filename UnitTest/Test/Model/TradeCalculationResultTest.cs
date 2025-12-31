@@ -3,6 +3,7 @@
 using InvestmentTaxCalculator.Enumerations;
 using InvestmentTaxCalculator.Model;
 using InvestmentTaxCalculator.Model.Interfaces;
+using InvestmentTaxCalculator.Model.UkTaxModel.Stocks;
 
 using NSubstitute;
 using NSubstitute.Extensions;
@@ -32,25 +33,35 @@ public class TradeCalculationResultTests
         }
     }
 
+    private static ITradeTaxCalculation SetUpMockTradeTaxCalculation(DateTime dateTime, TradeType tradeType,
+        decimal totalAllowableCost, decimal totalProceeds, AssetCategoryType assetCategoryType, decimal gain = 0)
+    {
+        TradeMatch taxableMatch = new()
+        {
+            AssetName = "Test Asset",
+            Date = DateOnly.FromDateTime(dateTime),
+            IsTaxable = TaxableStatus.TAXABLE,
+            TradeMatchType = TaxMatchType.SECTION_104
+        };
+        ITradeTaxCalculation mock = Substitute.For<ITradeTaxCalculation>();
+        mock.MatchHistory.Returns([taxableMatch]);
+        mock.AssetCategoryType.Returns(assetCategoryType);
+        mock.Date.Returns(dateTime);
+        mock.AcquisitionDisposal.Returns(tradeType);
+        mock.TotalAllowableCost.Returns(new WrappedMoney(totalAllowableCost));
+        mock.TotalProceeds.Returns(new WrappedMoney(totalProceeds));
+        mock.Gain.Returns(new WrappedMoney(gain));
+        mock.ReturnsForAll<WrappedMoney>(WrappedMoney.GetBaseCurrencyZero());
+        return mock;
+    }
+
     [Fact]
     public void NumberOfDisposals_ReturnsCorrectNumberOfDisposals()
     {
         // Arrange
-        ITradeTaxCalculation mock1 = Substitute.For<ITradeTaxCalculation>();
-        mock1.Date.Returns(new DateTime(2021, 1, 1, 0, 0, 0, DateTimeKind.Local));
-        mock1.AcquisitionDisposal.Returns(TradeType.DISPOSAL);
-        mock1.AssetCategoryType.Returns(AssetCategoryType.STOCK);
-        mock1.ReturnsForAll<WrappedMoney>(WrappedMoney.GetBaseCurrencyZero());
-        ITradeTaxCalculation mock2 = Substitute.For<ITradeTaxCalculation>();
-        mock2.Date.Returns(new DateTime(2021, 2, 1, 0, 0, 0, DateTimeKind.Local));
-        mock2.AcquisitionDisposal.Returns(TradeType.ACQUISITION);
-        mock2.AssetCategoryType.Returns(AssetCategoryType.STOCK);
-        mock2.ReturnsForAll<WrappedMoney>(WrappedMoney.GetBaseCurrencyZero());
-        ITradeTaxCalculation mock3 = Substitute.For<ITradeTaxCalculation>();
-        mock3.Date.Returns(new DateTime(2022, 3, 1, 0, 0, 0, DateTimeKind.Local));
-        mock3.AcquisitionDisposal.Returns(TradeType.DISPOSAL);
-        mock3.AssetCategoryType.Returns(AssetCategoryType.STOCK);
-        mock3.ReturnsForAll<WrappedMoney>(WrappedMoney.GetBaseCurrencyZero());
+        ITradeTaxCalculation mock1 = SetUpMockTradeTaxCalculation(new DateTime(2021, 1, 1, 0, 0, 0, DateTimeKind.Local), TradeType.DISPOSAL, 0, 0, AssetCategoryType.STOCK);
+        ITradeTaxCalculation mock2 = SetUpMockTradeTaxCalculation(new DateTime(2021, 2, 1, 0, 0, 0, DateTimeKind.Local), TradeType.ACQUISITION, 0, 0, AssetCategoryType.STOCK);
+        ITradeTaxCalculation mock3 = SetUpMockTradeTaxCalculation(new DateTime(2022, 3, 1, 0, 0, 0, DateTimeKind.Local), TradeType.DISPOSAL, 0, 0, AssetCategoryType.STOCK);
         var taxYear = new MockTaxYear();
         var tradeTaxCalculations = new List<ITradeTaxCalculation> { mock1, mock2, mock3 };
         var result = new TradeCalculationResult(taxYear, _residencyStatusRecord);
@@ -69,26 +80,10 @@ public class TradeCalculationResultTests
     public void DisposalProceeds_ReturnsCorrectDisposalProceeds()
     {
         // Arrange
-        ITradeTaxCalculation mock1 = Substitute.For<ITradeTaxCalculation>();
-        mock1.Date.Returns(new DateTime(2021, 1, 1, 0, 0, 0, DateTimeKind.Local));
-        mock1.AcquisitionDisposal.Returns(TradeType.DISPOSAL);
-        mock1.TotalProceeds.Returns(new WrappedMoney(100));
-        mock1.ReturnsForAll<WrappedMoney>(WrappedMoney.GetBaseCurrencyZero());
-        ITradeTaxCalculation mock2 = Substitute.For<ITradeTaxCalculation>();
-        mock2.Date.Returns(new DateTime(2021, 2, 1, 0, 0, 0, DateTimeKind.Local));
-        mock2.AcquisitionDisposal.Returns(TradeType.ACQUISITION);
-        mock2.TotalProceeds.Returns(new WrappedMoney(200));
-        mock2.ReturnsForAll<WrappedMoney>(WrappedMoney.GetBaseCurrencyZero());
-        ITradeTaxCalculation mock3 = Substitute.For<ITradeTaxCalculation>();
-        mock3.Date.Returns(new DateTime(2022, 3, 1, 0, 0, 0, DateTimeKind.Local));
-        mock3.AcquisitionDisposal.Returns(TradeType.DISPOSAL);
-        mock3.TotalProceeds.Returns(new WrappedMoney(300));
-        mock3.ReturnsForAll<WrappedMoney>(WrappedMoney.GetBaseCurrencyZero());
-        ITradeTaxCalculation mock4 = Substitute.For<ITradeTaxCalculation>();
-        mock4.Date.Returns(new DateTime(2023, 3, 1, 0, 0, 0, DateTimeKind.Local));
-        mock4.AcquisitionDisposal.Returns(TradeType.DISPOSAL);
-        mock4.TotalProceeds.Returns(new WrappedMoney(400));
-        mock4.ReturnsForAll<WrappedMoney>(WrappedMoney.GetBaseCurrencyZero());
+        ITradeTaxCalculation mock1 = SetUpMockTradeTaxCalculation(new DateTime(2021, 1, 1, 0, 0, 0, DateTimeKind.Local), TradeType.DISPOSAL, 0, 100, AssetCategoryType.STOCK);
+        ITradeTaxCalculation mock2 = SetUpMockTradeTaxCalculation(new DateTime(2021, 2, 1, 0, 0, 0, DateTimeKind.Local), TradeType.ACQUISITION, 0, 200, AssetCategoryType.STOCK);
+        ITradeTaxCalculation mock3 = SetUpMockTradeTaxCalculation(new DateTime(2022, 3, 1, 0, 0, 0, DateTimeKind.Local), TradeType.DISPOSAL, 0, 300, AssetCategoryType.STOCK);
+        ITradeTaxCalculation mock4 = SetUpMockTradeTaxCalculation(new DateTime(2023, 3, 1, 0, 0, 0, DateTimeKind.Local), TradeType.DISPOSAL, 0, 400, AssetCategoryType.STOCK);
         var taxYear = new MockTaxYear();
         var tradeTaxCalculations = new List<ITradeTaxCalculation> { mock1, mock2, mock3, mock4 };
         var result = new TradeCalculationResult(taxYear, _residencyStatusRecord);
@@ -107,26 +102,10 @@ public class TradeCalculationResultTests
     public void AllowableCosts_ReturnsCorrectAllowableCosts()
     {
         // Arrange
-        ITradeTaxCalculation mock1 = Substitute.For<ITradeTaxCalculation>();
-        mock1.Date.Returns(new DateTime(2021, 1, 1, 0, 0, 0, DateTimeKind.Local));
-        mock1.AcquisitionDisposal.Returns(TradeType.DISPOSAL);
-        mock1.TotalAllowableCost.Returns(new WrappedMoney(100));
-        mock1.ReturnsForAll<WrappedMoney>(WrappedMoney.GetBaseCurrencyZero());
-        ITradeTaxCalculation mock2 = Substitute.For<ITradeTaxCalculation>();
-        mock2.Date.Returns(new DateTime(2021, 2, 1, 0, 0, 0, DateTimeKind.Local));
-        mock2.AcquisitionDisposal.Returns(TradeType.ACQUISITION);
-        mock2.TotalAllowableCost.Returns(new WrappedMoney(200));
-        mock2.ReturnsForAll<WrappedMoney>(WrappedMoney.GetBaseCurrencyZero());
-        ITradeTaxCalculation mock3 = Substitute.For<ITradeTaxCalculation>();
-        mock3.Date.Returns(new DateTime(2022, 3, 1, 0, 0, 0, DateTimeKind.Local));
-        mock3.AcquisitionDisposal.Returns(TradeType.ACQUISITION);
-        mock3.TotalAllowableCost.Returns(new WrappedMoney(300));
-        mock3.ReturnsForAll<WrappedMoney>(WrappedMoney.GetBaseCurrencyZero());
-        ITradeTaxCalculation mock4 = Substitute.For<ITradeTaxCalculation>();
-        mock4.Date.Returns(new DateTime(2023, 3, 1, 0, 0, 0, DateTimeKind.Local));
-        mock4.AcquisitionDisposal.Returns(TradeType.DISPOSAL);
-        mock4.TotalAllowableCost.Returns(new WrappedMoney(400));
-        mock4.ReturnsForAll<WrappedMoney>(WrappedMoney.GetBaseCurrencyZero());
+        ITradeTaxCalculation mock1 = SetUpMockTradeTaxCalculation(new DateTime(2021, 1, 1, 0, 0, 0, DateTimeKind.Local), TradeType.DISPOSAL, 100, 0, AssetCategoryType.STOCK);
+        ITradeTaxCalculation mock2 = SetUpMockTradeTaxCalculation(new DateTime(2021, 2, 1, 0, 0, 0, DateTimeKind.Local), TradeType.ACQUISITION, 200, 0, AssetCategoryType.STOCK);
+        ITradeTaxCalculation mock3 = SetUpMockTradeTaxCalculation(new DateTime(2022, 3, 1, 0, 0, 0, DateTimeKind.Local), TradeType.ACQUISITION, 300, 0, AssetCategoryType.STOCK);
+        ITradeTaxCalculation mock4 = SetUpMockTradeTaxCalculation(new DateTime(2023, 3, 1, 0, 0, 0, DateTimeKind.Local), TradeType.DISPOSAL, 400, 0, AssetCategoryType.STOCK);
         var taxYear = new MockTaxYear();
         var tradeTaxCalculations = new List<ITradeTaxCalculation> { mock1, mock2, mock3, mock4 };
         var result = new TradeCalculationResult(taxYear, _residencyStatusRecord);
@@ -145,30 +124,10 @@ public class TradeCalculationResultTests
     public void TotalGainLoss_ReturnsCorrectTotalGainLoss()
     {
         // Arrange
-        ITradeTaxCalculation mock1 = Substitute.For<ITradeTaxCalculation>();
-        mock1.Date.Returns(new DateTime(2021, 1, 1, 0, 0, 0, DateTimeKind.Local));
-        mock1.AcquisitionDisposal.Returns(TradeType.DISPOSAL);
-        mock1.Gain.Returns(new WrappedMoney(100));
-        mock1.ReturnsForAll<WrappedMoney>(WrappedMoney.GetBaseCurrencyZero());
-        mock1.AssetCategoryType.Returns(AssetCategoryType.STOCK);
-        ITradeTaxCalculation mock2 = Substitute.For<ITradeTaxCalculation>();
-        mock2.Date.Returns(new DateTime(2021, 2, 1, 0, 0, 0, DateTimeKind.Local));
-        mock2.AcquisitionDisposal.Returns(TradeType.DISPOSAL);
-        mock2.Gain.Returns(new WrappedMoney(-200));
-        mock2.ReturnsForAll<WrappedMoney>(WrappedMoney.GetBaseCurrencyZero());
-        mock2.AssetCategoryType.Returns(AssetCategoryType.STOCK);
-        ITradeTaxCalculation mock3 = Substitute.For<ITradeTaxCalculation>();
-        mock3.Date.Returns(new DateTime(2022, 3, 1, 0, 0, 0, DateTimeKind.Local));
-        mock3.AcquisitionDisposal.Returns(TradeType.DISPOSAL);
-        mock3.Gain.Returns(new WrappedMoney(300));
-        mock3.ReturnsForAll<WrappedMoney>(WrappedMoney.GetBaseCurrencyZero());
-        mock3.AssetCategoryType.Returns(AssetCategoryType.STOCK);
-        ITradeTaxCalculation mock4 = Substitute.For<ITradeTaxCalculation>();
-        mock4.Date.Returns(new DateTime(2023, 3, 1, 0, 0, 0, DateTimeKind.Local));
-        mock4.AcquisitionDisposal.Returns(TradeType.DISPOSAL);
-        mock4.Gain.Returns(new WrappedMoney(-400));
-        mock4.ReturnsForAll<WrappedMoney>(WrappedMoney.GetBaseCurrencyZero());
-        mock4.AssetCategoryType.Returns(AssetCategoryType.STOCK);
+        ITradeTaxCalculation mock1 = SetUpMockTradeTaxCalculation(new DateTime(2021, 1, 1, 0, 0, 0, DateTimeKind.Local), TradeType.DISPOSAL, 0, 0, AssetCategoryType.STOCK, 100);
+        ITradeTaxCalculation mock2 = SetUpMockTradeTaxCalculation(new DateTime(2021, 2, 1, 0, 0, 0, DateTimeKind.Local), TradeType.DISPOSAL, 0, 0, AssetCategoryType.STOCK, -200);
+        ITradeTaxCalculation mock3 = SetUpMockTradeTaxCalculation(new DateTime(2022, 3, 1, 0, 0, 0, DateTimeKind.Local), TradeType.DISPOSAL, 0, 0, AssetCategoryType.STOCK, 300);
+        ITradeTaxCalculation mock4 = SetUpMockTradeTaxCalculation(new DateTime(2023, 3, 1, 0, 0, 0, DateTimeKind.Local), TradeType.DISPOSAL, 0, 0, AssetCategoryType.STOCK, -400);
         var taxYear = new MockTaxYear();
         var tradeTaxCalculations = new List<ITradeTaxCalculation> { mock1, mock2, mock3, mock4 };
         var result = new TradeCalculationResult(taxYear, _residencyStatusRecord);
@@ -194,20 +153,8 @@ public class TradeCalculationResultTests
     [Theory]
     public void TradeTaxCalculationResult_ReturnCorrectSubTotals(AssetCategoryType categoryType1, AssetCategoryType categoryType2)
     {
-        ITradeTaxCalculation mock1 = Substitute.For<ITradeTaxCalculation>();
-        mock1.AssetCategoryType.Returns(categoryType1);
-        mock1.Date.Returns(new DateTime(2021, 1, 1, 0, 0, 0, DateTimeKind.Local));
-        mock1.AcquisitionDisposal.Returns(TradeType.DISPOSAL);
-        mock1.Gain.Returns(new WrappedMoney(150));
-        mock1.TotalAllowableCost.Returns(new WrappedMoney(50));
-        mock1.TotalProceeds.Returns(new WrappedMoney(200));
-        ITradeTaxCalculation mock2 = Substitute.For<ITradeTaxCalculation>();
-        mock2.AssetCategoryType.Returns(categoryType2);
-        mock2.Date.Returns(new DateTime(2021, 2, 1, 0, 0, 0, DateTimeKind.Local));
-        mock2.AcquisitionDisposal.Returns(TradeType.DISPOSAL);
-        mock2.Gain.Returns(new WrappedMoney(250));
-        mock2.TotalAllowableCost.Returns(new WrappedMoney(100));
-        mock2.TotalProceeds.Returns(new WrappedMoney(350));
+        ITradeTaxCalculation mock1 = SetUpMockTradeTaxCalculation(new DateTime(2021, 1, 1, 0, 0, 0, DateTimeKind.Local), TradeType.DISPOSAL, 50, 200, categoryType1, 150);
+        ITradeTaxCalculation mock2 = SetUpMockTradeTaxCalculation(new DateTime(2021, 2, 1, 0, 0, 0, DateTimeKind.Local), TradeType.DISPOSAL, 100, 350, categoryType2, 250);
         var taxYear = new MockTaxYear();
         var tradeTaxCalculations = new List<ITradeTaxCalculation> { mock1, mock2 };
         var result = new TradeCalculationResult(taxYear, _residencyStatusRecord);

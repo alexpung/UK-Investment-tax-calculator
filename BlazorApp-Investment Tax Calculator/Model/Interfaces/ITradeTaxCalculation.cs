@@ -24,7 +24,7 @@ public interface ITradeTaxCalculation : ITextFilePrintable, ITaxMatchable
     WrappedMoney Gain { get; }
     ResidencyStatus ResidencyStatusAtTrade { get; set; }
     WrappedMoney GetProportionedCostOrProceed(decimal qty) => TotalCostOrProceed / TotalQty * qty;
-    void MatchWithSection104(UkSection104 ukSection104, TaxableStatus taxableStatus);
+    void MatchWithSection104(UkSection104 ukSection104);
     void MatchQty(decimal demandedQty);
     DateTime TaxableDate { get; set; }
 }
