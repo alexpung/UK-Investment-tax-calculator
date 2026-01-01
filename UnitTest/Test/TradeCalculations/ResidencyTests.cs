@@ -241,7 +241,7 @@ public class ResidencyTests
     public void NonResidentAcquisitionAreTaxedIfDisposedAtNextTemporaryNonResidentPeriod()
     {
         ResidencyStatusRecord ResidencyStatusList = new();
-        ResidencyStatusList.SetResidencyStatus(new DateOnly(2020, 6, 15), new DateOnly(2023, 6, 15), ResidencyStatus.NonResident);
+        ResidencyStatusList.SetResidencyStatus(new DateOnly(2020, 6, 15), new DateOnly(2020, 6, 15), ResidencyStatus.NonResident);
         ResidencyStatusList.SetResidencyStatus(new DateOnly(2020, 6, 16), new DateOnly(2022, 1, 1), ResidencyStatus.Resident);
         ResidencyStatusList.SetResidencyStatus(new DateOnly(2022, 1, 2), new DateOnly(2028, 6, 15), ResidencyStatus.TemporaryNonResident);
         Trade trade0 = new()
