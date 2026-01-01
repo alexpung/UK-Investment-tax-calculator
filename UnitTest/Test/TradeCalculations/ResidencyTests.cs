@@ -238,7 +238,7 @@ public class ResidencyTests
     }
 
     [Fact]
-    public void NonResidentAcquistionAreTaxedIfDisposedAtNextTemporaryNonResidentPeriod()
+    public void NonResidentAcquisitionAreTaxedIfDisposedAtNextTemporaryNonResidentPeriod()
     {
         ResidencyStatusRecord ResidencyStatusList = new();
         ResidencyStatusList.SetResidencyStatus(new DateOnly(2020, 6, 15), new DateOnly(2023, 6, 15), ResidencyStatus.NonResident);
