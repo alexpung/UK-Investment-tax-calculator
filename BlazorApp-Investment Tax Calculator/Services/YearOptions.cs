@@ -22,8 +22,8 @@ public class YearOptions
 
     public void SetYears(IEnumerable<int> years)
     {
-        Options = years.Select(year => new DropdownYearItems { Years = year }).ToList();
-        SelectedOptions = Options.Select(i => i.Years).ToList();
+        Options = [.. years.Select(year => new DropdownYearItems { Years = year })];
+        SelectedOptions = [.. Options.Select(i => i.Years)];
     }
 }
 
