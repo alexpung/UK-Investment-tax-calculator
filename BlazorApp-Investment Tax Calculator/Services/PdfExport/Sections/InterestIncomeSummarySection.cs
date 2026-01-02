@@ -16,7 +16,7 @@ public class InterestIncomeSummarySection(DividendCalculationResult incomeCalcul
         Paragraph paragraph = section.AddParagraph(Title);
         Style.StyleTitle(paragraph);
         IEnumerable<DividendSummary> incomeSummaries = incomeCalculationResult.DividendSummary.Where(i => i.TaxYear == taxYear);
-        if (!incomeSummaries.Any())
+        if (!incomeSummaries.Any() || incomeSummaries.First().RelatedInterestIncome.Count == 0)
         {
             section.AddParagraph($"No interest income received in the tax year {taxYear}.");
             return section;
@@ -41,10 +41,6 @@ public class InterestIncomeSummarySection(DividendCalculationResult incomeCalcul
 
         foreach (var summary in incomeSummaries)
         {
-            if (summary.RelatedInterestIncome.Count == 0)
-            {
-                continue;
-            }
             Row row = table.AddRow();
             row.Cells[0].AddParagraph($"{summary.CountryOfOrigin.CountryName} ({summary.CountryOfOrigin.ThreeDigitCode})");
             row.Cells[1].AddParagraph(summary.TotalTaxableBondInterest.ToString());
