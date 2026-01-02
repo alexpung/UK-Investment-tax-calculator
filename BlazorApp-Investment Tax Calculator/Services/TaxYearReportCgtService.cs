@@ -30,7 +30,6 @@ public class TaxYearReportService(TradeCalculationResult tradeCalculationResult,
             else if (netGainInYear >= capitalGainAllowance)
             {
                 lossBroughtForward = WrappedMoney.Min(capitalLossInPreviousYears, netGainInYear - capitalGainAllowance);
-                Console.WriteLine($"{capitalLossInPreviousYears}, {netGainInYear}, {capitalGainAllowance}");
                 lossesAvailableToBroughtForward -= lossBroughtForward;
             }
             capitalLossRunningCount = lossesAvailableToBroughtForward;
