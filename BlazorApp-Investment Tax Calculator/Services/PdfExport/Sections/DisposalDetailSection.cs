@@ -8,18 +8,31 @@ using InvestmentTaxCalculator.Model.UkTaxModel.Stocks;
 using MigraDoc.DocumentObjectModel;
 using MigraDoc.DocumentObjectModel.Tables;
 
+using System.Text;
+
 namespace InvestmentTaxCalculator.Services.PdfExport.Sections;
 
 public class DisposalDetailSection(TradeCalculationResult tradeCalculationResult) : ISection
 {
+    public static bool OnlyShowTaxableTrades { get; set; } = true;
     public string Name { get; set; } = "Trade disposals tax calculation";
     public string Title { get; set; } = "Trade Disposals Tax Calculation";
 
     public Section WriteSection(Section section, int taxYear)
     {
-        var disposals = tradeCalculationResult.DisposalByYear
+        IEnumerable<ITradeTaxCalculation> disposals;
+        if (OnlyShowTaxableTrades)
+        {
+            disposals = tradeCalculationResult.DisposalByYear
                         .Where(kvp => kvp.Key.Item1 == taxYear)
                         .SelectMany(kvp => kvp.Value);
+        }
+        else
+        {
+            disposals = tradeCalculationResult.DisposalByYearIncludeNonTaxable
+                        .Where(kvp => kvp.Key.Item1 == taxYear)
+                        .SelectMany(kvp => kvp.Value);
+        }
         Paragraph paragraph = section.AddParagraph(Title);
         Style.StyleTitle(paragraph);
 
