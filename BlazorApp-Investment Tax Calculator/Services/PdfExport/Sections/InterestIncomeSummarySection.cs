@@ -18,7 +18,7 @@ public class InterestIncomeSummarySection(DividendCalculationResult incomeCalcul
         IEnumerable<DividendSummary> incomeSummaries = incomeCalculationResult.DividendSummary.Where(i => i.TaxYear == taxYear);
         if (!incomeSummaries.Any() || incomeSummaries.First().RelatedInterestIncome.Count == 0)
         {
-            section.AddParagraph($"No interest income received in the tax year {taxYear}.");
+            section.AddParagraph($"No interest income received in the tax year {taxYear} - {taxYear + 1}.");
             return section;
         }
 
