@@ -16,7 +16,7 @@ public class DividendSummarySection(DividendCalculationResult dividendCalculatio
         Paragraph paragraph = section.AddParagraph(Title);
         Style.StyleTitle(paragraph);
         IEnumerable<DividendSummary> dividendSummaries = dividendCalculationResult.DividendSummary.Where(i => i.TaxYear == taxYear);
-        if (!dividendSummaries.Any() || dividendSummaries.First().RelatedDividendsAndTaxes.Count == 0)
+        if (!dividendSummaries.Any() || dividendSummaries.All(s => s.RelatedDividendsAndTaxes.Count == 0))
         {
             section.AddParagraph($"No dividends received in the tax year {taxYear} - {taxYear + 1}.");
             return section;
