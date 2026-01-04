@@ -4,10 +4,10 @@ namespace InvestmentTaxCalculator.Enumerations;
 
 public enum ResidencyStatus
 {
-    [Description("Resident for tax purposes")]
+    [Description("UK Resident")]
     Resident,
-    [Description("Non-resident for tax purposes")]
+    [Description("UK Non-Resident")]
     NonResident,
-    [Description("Temporary Non-Residence for tax purposes")]
+    [Description("UK Temporary Non-Residence")]
     TemporaryNonResident
 }

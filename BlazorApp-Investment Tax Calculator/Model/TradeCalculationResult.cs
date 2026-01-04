@@ -17,6 +17,7 @@ public class TradeCalculationResult(ITaxYear taxYear, ResidencyStatusRecord resi
     public ConcurrentBag<ITradeTaxCalculation> CalculatedTrade => _calculatedTrade;
     public ConcurrentDictionary<(int, AssetCategoryType), List<ITradeTaxCalculation>> TradeByYear { get; } = new();
     public ConcurrentDictionary<(int, AssetCategoryType), List<ITradeTaxCalculation>> DisposalByYear { get; } = new();
+    public ConcurrentDictionary<(int, AssetCategoryType), List<ITradeTaxCalculation>> DisposalByYearIncludeNonTaxable { get; } = new();
     public ConcurrentDictionary<(int, AssetCategoryType), int> NumberOfDisposals => _numberOfDisposals;
     public ConcurrentDictionary<(int, AssetCategoryType), WrappedMoney> DisposalProceeds => _disposalProceeds;
     public ConcurrentDictionary<(int, AssetCategoryType), WrappedMoney> AllowableCosts => _allowableCosts;
@@ -73,6 +74,7 @@ public class TradeCalculationResult(ITaxYear taxYear, ResidencyStatusRecord resi
         {
             TradeByYear[group.Key] = [.. group];
             DisposalByYear[group.Key] = [.. group.Where(trade => trade.AcquisitionDisposal == TradeType.DISPOSAL && trade.MatchHistory.Exists(match => match.IsTaxable is TaxableStatus.TAXABLE))];
+            DisposalByYearIncludeNonTaxable[group.Key] = [.. group.Where(trade => trade.AcquisitionDisposal == TradeType.DISPOSAL)];
             _numberOfDisposals[group.Key] = DisposalByYear[group.Key].Count;
             _disposalProceeds[group.Key] = DisposalByYear[group.Key].Sum(trade => trade.TotalProceeds).Floor();
             _allowableCosts[group.Key] = DisposalByYear[group.Key].Sum(trade => trade.TotalAllowableCost).Ceiling();

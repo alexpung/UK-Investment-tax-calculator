@@ -16,6 +16,7 @@ public class YearlyTaxSummarySection(TradeCalculationResult tradeCalculationResu
         Paragraph paragraph = section.AddParagraph(Title);
         Style.StyleTitle(paragraph);
         WriteTaxYearCgtByTypeTable(section, tradeCalculationResult, taxYear);
+        section.AddParagraph();
         WriteTaxYearCapitalGainTable(section, taxYearCgtReport);
         return section;
     }
@@ -37,7 +38,7 @@ public class YearlyTaxSummarySection(TradeCalculationResult tradeCalculationResu
         headerRow.Cells[3].AddParagraph("Allowable costs");
         headerRow.Cells[4].AddParagraph("Gain excluding loss");
         headerRow.Cells[5].AddParagraph("Loss");
-        foreach (AssetCategoryType assetType in Enum.GetValues(typeof(AssetCategoryType)))
+        foreach (AssetCategoryType assetType in Enum.GetValues<AssetCategoryType>())
         {
             if (assetType.GetHmrcAssetCategoryType() == AssetGroupType.LISTEDSHARES)
             {
@@ -57,7 +58,8 @@ public class YearlyTaxSummarySection(TradeCalculationResult tradeCalculationResu
             sumRow.Cells[4].AddParagraph(tradeCalculationResult.GetTotalGain([taxYear], AssetGroupType.LISTEDSHARES).ToString());
             sumRow.Cells[5].AddParagraph(tradeCalculationResult.GetTotalLoss([taxYear], AssetGroupType.LISTEDSHARES).ToString());
         }
-        foreach (AssetCategoryType assetType in Enum.GetValues(typeof(AssetCategoryType)))
+        table.AddRow(); // Empty row between sections
+        foreach (AssetCategoryType assetType in Enum.GetValues<AssetCategoryType>())
         {
             if (assetType.GetHmrcAssetCategoryType() == AssetGroupType.OTHERASSETS)
             {
@@ -93,29 +95,81 @@ public class YearlyTaxSummarySection(TradeCalculationResult tradeCalculationResu
 
     private static void WriteTaxYearCapitalGainTable(Section section, TaxYearCgtReport taxYearCgtReport)
     {
-        Table table = Style.CreateTableWithProportionedWidth(section, [(250, ParagraphAlignment.Left), (200, ParagraphAlignment.Right)]);
-        Row totalGainRow = table.AddRow();
+        Table containerTable = section.AddTable();
+        containerTable.Borders.Width = 0;
+        containerTable.AddColumn("10cm");
+        containerTable.AddColumn("1.7cm");  // The "Gutter" space
+        containerTable.AddColumn("13cm");
+        Row containerRow = containerTable.AddRow();
+
+        Table leftTable = new();
+        leftTable.AddColumn("5cm");
+        var numberRowLeft = leftTable.AddColumn("5cm");
+        numberRowLeft.Format.Alignment = ParagraphAlignment.Right;
+        Row totalGainRow = leftTable.AddRow();
         totalGainRow.Cells[0].AddParagraph("Total Gain excluding loss");
         totalGainRow.Cells[1].AddParagraph(taxYearCgtReport.TotalGainInYear.ToString());
-        Row totalLossRow = table.AddRow();
+        Row totalLossRow = leftTable.AddRow();
         totalLossRow.Cells[0].AddParagraph("Total Loss");
         totalLossRow.Cells[1].AddParagraph(taxYearCgtReport.TotalLossInYear.ToString());
-        Row netCapitalGainRow = table.AddRow();
+        Row netCapitalGainRow = leftTable.AddRow();
         Style.StyleSumRow(netCapitalGainRow);
+        netCapitalGainRow.Cells[0].AddParagraph("Net Capital Gain");
+        netCapitalGainRow.Cells[1].AddParagraph(taxYearCgtReport.NetCapitalGain.ToString());
+        containerRow.Cells[0].Elements.Add(leftTable.Clone());
+
+        Table rightTable = new();
+        rightTable.AddColumn("8cm");
+        var numberRowRight = rightTable.AddColumn("5cm");
+        numberRowRight.Format.Alignment = ParagraphAlignment.Right;
+
+        if (taxYearCgtReport.NetCapitalGain.Amount <= 0)
+        {
+            WriteCapitalLossBroughtForwardTable(rightTable, taxYearCgtReport);
+        }
+        else
+        {
+            WriteCapitalGainAllowanceTable(rightTable, taxYearCgtReport);
+        }
+        containerRow.Cells[2].Elements.Add(rightTable.Clone());
+    }
+
+    private static void WriteCapitalLossBroughtForwardTable(Table table, TaxYearCgtReport taxYearCgtReport)
+    {
+        Row AvailableLossRow = table.AddRow();
+        AvailableLossRow.Cells[0].AddParagraph("Available Loss in previous years");
+        AvailableLossRow.Cells[1].AddParagraph(taxYearCgtReport.AvailableCapitalLossesFromPreviousYears.ToString());
+        Row netCapitalGainRow = table.AddRow();
+        netCapitalGainRow.Cells[0].AddParagraph("Net Capital Loss");
+        netCapitalGainRow.Cells[1].AddParagraph((taxYearCgtReport.NetCapitalGain * -1).ToString());
+        Row lossesAvailableToBroughtForwardRow = table.AddRow();
+        Style.StyleSumRow(lossesAvailableToBroughtForwardRow);
+        lossesAvailableToBroughtForwardRow.Cells[0].AddParagraph("Losses Available to Brought Forward");
+        lossesAvailableToBroughtForwardRow.Cells[1].AddParagraph(taxYearCgtReport.LossesAvailableToBroughtForward.ToString());
+    }
+
+    private static void WriteCapitalGainAllowanceTable(Table table, TaxYearCgtReport taxYearCgtReport)
+    {
+        Row netCapitalGainRow = table.AddRow();
         netCapitalGainRow.Cells[0].AddParagraph("Net Capital Gain");
         netCapitalGainRow.Cells[1].AddParagraph(taxYearCgtReport.NetCapitalGain.ToString());
         Row capitalGainAllowanceRow = table.AddRow();
         capitalGainAllowanceRow.Cells[0].AddParagraph("Capital Gain Allowance");
         capitalGainAllowanceRow.Cells[1].AddParagraph(taxYearCgtReport.CapitalGainAllowance.ToString());
-        Row AvailableLossRow = table.AddRow();
-        AvailableLossRow.Cells[0].AddParagraph("Available Loss in previous years");
-        AvailableLossRow.Cells[1].AddParagraph(taxYearCgtReport.AvailableCapitalLossesFromPreviousYears.ToString());
         Row cgtAllowanceBroughtForwardAndUsedRow = table.AddRow();
         cgtAllowanceBroughtForwardAndUsedRow.Cells[0].AddParagraph("CGT Allowance Brought Forward and Used");
         cgtAllowanceBroughtForwardAndUsedRow.Cells[1].AddParagraph(taxYearCgtReport.CgtAllowanceBroughtForwardAndUsed.ToString());
         Row taxableGainAfterAllowanceAndLossOffsetRow = table.AddRow();
+        Style.StyleSumRow(taxableGainAfterAllowanceAndLossOffsetRow);
         taxableGainAfterAllowanceAndLossOffsetRow.Cells[0].AddParagraph("Taxable Gain after Allowance and Loss Offset");
         taxableGainAfterAllowanceAndLossOffsetRow.Cells[1].AddParagraph(taxYearCgtReport.TaxableGainAfterAllowanceAndLossOffset.ToString());
+        table.AddRow(); // Empty row
+        Row AvailableLossRow = table.AddRow();
+        AvailableLossRow.Cells[0].AddParagraph("Available Loss in previous years");
+        AvailableLossRow.Cells[1].AddParagraph(taxYearCgtReport.AvailableCapitalLossesFromPreviousYears.ToString());
+        Row cgtAllowanceBroughtForwardAndUsedRow2 = table.AddRow();
+        cgtAllowanceBroughtForwardAndUsedRow2.Cells[0].AddParagraph("CGT Allowance Brought Forward and Used");
+        cgtAllowanceBroughtForwardAndUsedRow2.Cells[1].AddParagraph(taxYearCgtReport.CgtAllowanceBroughtForwardAndUsed.ToString());
         Row lossesAvailableToBroughtForwardRow = table.AddRow();
         Style.StyleSumRow(lossesAvailableToBroughtForwardRow);
         lossesAvailableToBroughtForwardRow.Cells[0].AddParagraph("Losses Available to Brought Forward");

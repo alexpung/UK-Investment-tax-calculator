@@ -49,7 +49,7 @@ public class PdfExportService
             pdfSection.PageSetup = SetPageSetup(document);
             if (sectionName == SelectedSections[0])
             {
-                AddDocumentTitle(pdfSection, $"Investment Tax Report for year {year}");
+                AddDocumentTitle(pdfSection, $"Investment Tax Report for year {year} - {year + 1}");
             }
             AllSections.Single(section => section.Name == sectionName).WriteSection(pdfSection, year);
         }

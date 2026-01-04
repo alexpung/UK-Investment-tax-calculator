@@ -9,14 +9,17 @@
 @inject YearOptions yearOptions
 
 <div class="mt-4">
-    <h4>Select Year to display/Export:</h4>
+    <h4>Select Tax Year(s)</h4>
+    <p class="text-muted">
+        <i>For example, selecting <b>2023</b> covers the period 6 April 2023 to 5 April 2024.</i>
+    </p>
     <SfMultiSelect @bind-Value="yearOptions.SelectedOptions"
-                    Placeholder="Select Years"
-                    Mode="VisualMode.CheckBox"
-                    ShowSelectAll=true
-                    SelectAllText="Select All"
-                    UnSelectAllText="Unselect All"
-                    DataSource=@yearOptions.Options>
+                   Placeholder="Select Years"
+                   Mode="VisualMode.CheckBox"
+                   ShowSelectAll=true
+                   SelectAllText="Select All"
+                   UnSelectAllText="Unselect All"
+                   DataSource=@yearOptions.Options>
         <MultiSelectFieldSettings Text="Years" Value="Years">
         </MultiSelectFieldSettings>
     </SfMultiSelect>
