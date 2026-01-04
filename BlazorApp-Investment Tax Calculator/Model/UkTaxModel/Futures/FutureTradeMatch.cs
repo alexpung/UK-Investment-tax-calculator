@@ -19,13 +19,7 @@ public record FutureTradeMatch : TradeMatch
     {
         StringBuilder output = new();
         output.AppendLine($"Tax status: {IsTaxable.GetDescription()}");
-        string paymentForContractGainOrLoss = BaseCurrencyContractValueGain.Amount switch
-        {
-            < 0 => $"Payment made to close the contract as loss is ({MatchSellContractValue} - {MatchBuyContractValue}) * {ClosingFxRate} = {BaseCurrencyContractValueGain}," +
-            $" added to allowable cost",
-            >= 0 => $"Payment received to close the contract as gain is ({MatchSellContractValue} - {MatchBuyContractValue}) * {ClosingFxRate} = {BaseCurrencyContractValueGain}," +
-            $" added to disposal proceed."
-        };
+        string paymentForContractGainOrLoss = ShowPaymentForContractGainOrLoss(BaseCurrencyContractValueGain);
         string gainCalculationFormula = $"{BaseCurrencyContractValueGain} - {BaseCurrencyTotalDealingExpense} ";
         if (TradeMatchType == TaxMatchType.SECTION_104)
         {
@@ -48,5 +42,16 @@ public record FutureTradeMatch : TradeMatch
             output.AppendLine();
         }
         return output.ToString();
+    }
+
+    public string ShowPaymentForContractGainOrLoss(WrappedMoney contractValueGain)
+    {
+        return contractValueGain.Amount switch
+        {
+            < 0 => $"Payment made to close the contract as loss is ({MatchSellContractValue} - {MatchBuyContractValue}) * {ClosingFxRate} = {contractValueGain}," +
+            $" added to allowable cost",
+            >= 0 => $"Payment received to close the contract as gain is ({MatchSellContractValue} - {MatchBuyContractValue}) * {ClosingFxRate} = {contractValueGain}," +
+            $" added to disposal proceed."
+        };
     }
 }
