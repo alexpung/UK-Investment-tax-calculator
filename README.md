@@ -1,5 +1,5 @@
 ## UK investment tax calculator
-UK tax calculator for Interactive Broker.
+UK tax calculator for Interactive Broker (limited support for FreeTrade).
 To help report UK tax for dividend and capital gain.
 
 ## What is included
@@ -15,7 +15,25 @@ https://alexpung.github.io/UK-Investment-tax-calculator/
 5. Implementation of TCGA92/S105 (1)(a): Multiple trades in the same day for the same Buy/Sell side is treated as a single trade. This affect same day/bread and breakfast calculation.
 
 ## Supported import format and brokers
-1. Interactive Brokers Flex queries only for the moment.
++-------------------------+--------+----------------------+
+| Category                | IB XML | FreeTrade CSV        |
++-------------------------+--------+----------------------+
+| CashSettlement (Option) | O      |  X                   |
++-------------------------+--------+----------------------+
+| StockSplit              | O      |  X                   |
++-------------------------+--------+----------------------+
+| Dividend                | O      | Total in GBP         |
++-------------------------+--------+----------------------+
+| FutureContractTrade     | O      |  X                   |
++-------------------------+--------+----------------------+
+| FxTrade                 | O      |  X                   |
++-------------------------+--------+----------------------+
+| InterestIncome          | O      | Saving income in GBP |
++-------------------------+--------+----------------------+
+| OptionTrade             | O      |  X                   |
++-------------------------+--------+----------------------+
+| Trade (Stock)           | O      | Total in GBP         |
++-------------------------+--------+----------------------+
 
 User can also add trades manually using the "Add trades" page or you can also try to mimic the data format.
 

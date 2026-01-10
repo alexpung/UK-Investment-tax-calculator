@@ -1,10 +1,11 @@
 ﻿using InvestmentTaxCalculator.Model;
+using InvestmentTaxCalculator.Services;
 
 using Microsoft.AspNetCore.Components.Forms;
 
 namespace InvestmentTaxCalculator.Parser;
 
-public class FileParseController(IEnumerable<ITaxEventFileParser> taxEventFileParsers)
+public class FileParseController(IEnumerable<ITaxEventFileParser> taxEventFileParsers, ToastService toastService)
 {
     private const long _maxFileSize = 1024 * 1024 * 100; // 100 MB
 
@@ -16,7 +17,11 @@ public class FileParseController(IEnumerable<ITaxEventFileParser> taxEventFilePa
             string data = await sr.ReadToEndAsync();
             string contentType = file.ContentType;
             var parser = taxEventFileParsers.FirstOrDefault(parser => parser.CheckFileValidity(data, contentType));
-            if (parser != null)
+            if (parser is null)
+            {
+                toastService.ShowError($"Cannot find suitable parser for {file.Name}");
+            }
+            else
             {
                 taxEvents.AddData(parser.ParseFile(data));
             }
