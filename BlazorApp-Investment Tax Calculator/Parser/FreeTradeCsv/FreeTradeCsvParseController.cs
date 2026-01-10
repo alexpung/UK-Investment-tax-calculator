@@ -35,7 +35,7 @@ public class FreeTradeCsvParseController : ITaxEventFileParser
                 case "ORDER":
                     trades.Trades.Add(new Trade
                     {
-                        AssetName = csv.GetField("Ticker") ?? throw new InvalidDataException($"{csv} don't have ticker for ORDER."),
+                        AssetName = csv.GetField("Ticker") ?? throw new InvalidDataException($"Ticker field is missing for ORDER on row {csv.Context.Parser?.Row}."),
                         Quantity = csv.GetField<decimal>("Quantity"),
                         GrossProceed = new DescribedMoney(csv.GetField<decimal>("Total Amount"), WrappedMoney.BaseCurrency, 1),
                         Date = DateTimeOffset.Parse(csv.GetField("Timestamp"), CultureInfo.InvariantCulture).DateTime,
@@ -45,28 +45,24 @@ public class FreeTradeCsvParseController : ITaxEventFileParser
                     });
                     break;
                 case "DIVIDEND":
-                    string rawDate = csv.GetField("Dividend Pay Date");
-
-                    if (DateOnly.TryParse(rawDate, CultureInfo.InvariantCulture, out var dateOnly))
+                    if (!DateOnly.TryParse(csv.GetField("Dividend Pay Date"), CultureInfo.InvariantCulture, out DateOnly dateOnly)) throw new InvalidDataException($"Invalid date format for Dividend Pay Date on row {csv.Context.Parser?.Row}.");
+                    DateTime dividendDate = dateOnly.ToDateTime(TimeOnly.MinValue);
+                    trades.Dividends.Add(new Dividend
                     {
-                        DateTime dividendDate = dateOnly.ToDateTime(TimeOnly.MinValue);
-                        trades.Dividends.Add(new Dividend
-                        {
-                            AssetName = csv.GetField("Ticker") ?? throw new InvalidDataException($"{csv} don't have ticker for DIVIDEND."),
-                            Proceed = new DescribedMoney(csv.GetField<decimal>("Total Amount"), WrappedMoney.BaseCurrency, 1, $"{csv.GetField("Title")} dividend: {csv.GetField("Dividend Amount Per Share")} per share."),
-                            Date = dividendDate,
-                            DividendType = DividendType.DIVIDEND,
-                            CompanyLocation = CountryCode.GetRegionByTwoDigitCode(csv.GetField("ISIN")[..2])
-                        });
-                        trades.Dividends.Add(new Dividend
-                        {
-                            AssetName = csv.GetField("Ticker") ?? throw new InvalidDataException($"{csv} don't have ticker for DIVIDEND."),
-                            Proceed = new DescribedMoney(csv.GetField<decimal>("Dividend Withheld Tax Amount"), WrappedMoney.BaseCurrency, 1, $"{csv.GetField("Title")} withholding tax"),
-                            Date = dividendDate,
-                            DividendType = DividendType.WITHHOLDING,
-                            CompanyLocation = CountryCode.GetRegionByTwoDigitCode(csv.GetField("ISIN")[..2])
-                        });
-                    }
+                        AssetName = csv.GetField("Ticker") ?? throw new InvalidDataException($"Ticker field is missing for DIVIDEND on row {csv.Context.Parser?.Row}."),
+                        Proceed = new DescribedMoney(csv.GetField<decimal>("Total Amount"), WrappedMoney.BaseCurrency, 1, $"{csv.GetField("Title")} dividend: {csv.GetField("Dividend Amount Per Share")} per share."),
+                        Date = dividendDate,
+                        DividendType = DividendType.DIVIDEND,
+                        CompanyLocation = CountryCode.GetRegionByTwoDigitCode(csv.GetField("ISIN")[..2])
+                    });
+                    trades.Dividends.Add(new Dividend
+                    {
+                        AssetName = csv.GetField("Ticker") ?? throw new InvalidDataException($"Ticker field is missing for DIVIDEND on row {csv.Context.Parser?.Row}."),
+                        Proceed = new DescribedMoney(csv.GetField<decimal>("Dividend Withheld Tax Amount"), WrappedMoney.BaseCurrency, 1, $"{csv.GetField("Title")} withholding tax"),
+                        Date = dividendDate,
+                        DividendType = DividendType.WITHHOLDING,
+                        CompanyLocation = CountryCode.GetRegionByTwoDigitCode(csv.GetField("ISIN")[..2])
+                    });
 
                     break;
                 case "INTEREST_FROM_CASH":
