@@ -11,6 +11,13 @@ namespace InvestmentTaxCalculator.Parser.FreeTradeCsv;
 
 public class FreeTradeCsvParseController : ITaxEventFileParser
 {
+    private const string _totalAmountName = "Total Amount";
+    private const string _tickerName = "Ticker";
+    private const string _IsinName = "ISIN";
+    private const string _titleName = "Title";
+    private const string _typeName = "Type";
+    private const string _timeStampName = "Timestamp";
+    private const string _quantityName = "Quantity";
 
     public TaxEventLists ParseFile(string data)
     {
@@ -28,40 +35,39 @@ public class FreeTradeCsvParseController : ITaxEventFileParser
 
         while (csv.Read())
         {
-            // Get the row type (Column Index 1: "Type")
-            string rowType = csv.GetField("Type");
+            string rowType = csv.GetFieldSafe(_typeName);
             switch (rowType)
             {
                 case "ORDER":
                     trades.Trades.Add(new Trade
                     {
-                        AssetName = csv.GetField("Ticker") ?? throw new InvalidDataException($"Ticker field is missing for ORDER on row {csv.Context.Parser?.Row}."),
-                        Quantity = csv.GetField<decimal>("Quantity"),
-                        GrossProceed = new DescribedMoney(csv.GetField<decimal>("Total Amount"), WrappedMoney.BaseCurrency, 1),
-                        Date = DateTimeOffset.Parse(csv.GetField("Timestamp"), CultureInfo.InvariantCulture).DateTime,
-                        AcquisitionDisposal = csv.GetField("Buy / Sell").Equals("BUY", StringComparison.CurrentCultureIgnoreCase)
+                        AssetName = csv.GetFieldSafe(_tickerName) ?? throw new InvalidDataException($"Ticker field is missing for ORDER on row {csv.Context.Parser?.Row}."),
+                        Quantity = csv.GetFieldSafe<decimal>(_quantityName),
+                        GrossProceed = new DescribedMoney(csv.GetField<decimal>(_totalAmountName), WrappedMoney.BaseCurrency, 1),
+                        Date = DateTimeOffset.Parse(csv.GetFieldSafe(_timeStampName), CultureInfo.InvariantCulture).DateTime,
+                        AcquisitionDisposal = csv.GetFieldSafe("Buy / Sell").Equals("BUY", StringComparison.CurrentCultureIgnoreCase)
                                ? TradeType.ACQUISITION
                                : TradeType.DISPOSAL
                     });
                     break;
                 case "DIVIDEND":
-                    if (!DateOnly.TryParse(csv.GetField("Dividend Pay Date"), CultureInfo.InvariantCulture, out DateOnly dateOnly)) throw new InvalidDataException($"Invalid date format for Dividend Pay Date on row {csv.Context.Parser?.Row}.");
+                    if (!DateOnly.TryParse(csv.GetFieldSafe("Dividend Pay Date"), CultureInfo.InvariantCulture, out DateOnly dateOnly)) throw new InvalidDataException($"Invalid date format for Dividend Pay Date on row {csv.Context.Parser?.Row}.");
                     DateTime dividendDate = dateOnly.ToDateTime(TimeOnly.MinValue);
                     trades.Dividends.Add(new Dividend
                     {
-                        AssetName = csv.GetField("Ticker") ?? throw new InvalidDataException($"Ticker field is missing for DIVIDEND on row {csv.Context.Parser?.Row}."),
-                        Proceed = new DescribedMoney(csv.GetField<decimal>("Total Amount"), WrappedMoney.BaseCurrency, 1, $"{csv.GetField("Title")} dividend: {csv.GetField("Dividend Amount Per Share")} per share."),
+                        AssetName = csv.GetFieldSafe(_tickerName) ?? throw new InvalidDataException($"Ticker field is missing for DIVIDEND on row {csv.Context.Parser?.Row}."),
+                        Proceed = new DescribedMoney(csv.GetField<decimal>(_totalAmountName), WrappedMoney.BaseCurrency, 1, $"{csv.GetField(_titleName)} dividend: {csv.GetField("Dividend Amount Per Share")} per share."),
                         Date = dividendDate,
                         DividendType = DividendType.DIVIDEND,
-                        CompanyLocation = CountryCode.GetRegionByTwoDigitCode(csv.GetField("ISIN")[..2])
+                        CompanyLocation = CountryCode.GetRegionByTwoDigitCode(csv.GetFieldSafe(_IsinName)[..2])
                     });
                     trades.Dividends.Add(new Dividend
                     {
-                        AssetName = csv.GetField("Ticker") ?? throw new InvalidDataException($"Ticker field is missing for DIVIDEND on row {csv.Context.Parser?.Row}."),
-                        Proceed = new DescribedMoney(csv.GetField<decimal>("Dividend Withheld Tax Amount"), WrappedMoney.BaseCurrency, 1, $"{csv.GetField("Title")} withholding tax"),
+                        AssetName = csv.GetFieldSafe(_tickerName) ?? throw new InvalidDataException($"Ticker field is missing for DIVIDEND on row {csv.Context.Parser?.Row}."),
+                        Proceed = new DescribedMoney(csv.GetField<decimal>("Dividend Withheld Tax Amount"), WrappedMoney.BaseCurrency, 1, $"{csv.GetField(_titleName)} withholding tax"),
                         Date = dividendDate,
                         DividendType = DividendType.WITHHOLDING,
-                        CompanyLocation = CountryCode.GetRegionByTwoDigitCode(csv.GetField("ISIN")[..2])
+                        CompanyLocation = CountryCode.GetRegionByTwoDigitCode(csv.GetFieldSafe(_IsinName)[..2])
                     });
 
                     break;
@@ -69,9 +75,9 @@ public class FreeTradeCsvParseController : ITaxEventFileParser
                     trades.InterestIncomes.Add(new InterestIncome
                     {
                         AssetName = "Broker interest",
-                        Amount = new DescribedMoney(csv.GetField<decimal>("Total Amount"), WrappedMoney.BaseCurrency, 1, "Interest from cash account."),
+                        Amount = new DescribedMoney(csv.GetFieldSafe<decimal>(_totalAmountName), WrappedMoney.BaseCurrency, 1, "Interest from cash account."),
                         InterestType = InterestType.SAVINGS,
-                        Date = DateTimeOffset.Parse(csv.GetField("Timestamp"), CultureInfo.InvariantCulture).DateTime,
+                        Date = DateTimeOffset.Parse(csv.GetFieldSafe(_timeStampName), CultureInfo.InvariantCulture).DateTime,
                     });
                     break;
                 default:
@@ -93,8 +99,8 @@ public class FreeTradeCsvParseController : ITaxEventFileParser
         using var csv = new CsvReader(reader, config);
         csv.Read();
         csv.ReadHeader();
-        string[] headers = csv.HeaderRecord;
-        string[] requiredFields = { "Type", "Timestamp", "Ticker", "Quantity", "Total Amount" };
+        string[] headers = csv.HeaderRecord ?? [];
+        string[] requiredFields = { _typeName, _timeStampName, _tickerName, _quantityName, _totalAmountName };
         if (requiredFields.All(field => headers.Contains(field)))
         {
             return true;
@@ -104,5 +110,4 @@ public class FreeTradeCsvParseController : ITaxEventFileParser
             return false;
         }
     }
-
 }
