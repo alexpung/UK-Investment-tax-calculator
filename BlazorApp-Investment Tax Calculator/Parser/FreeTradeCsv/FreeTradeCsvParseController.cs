@@ -19,17 +19,17 @@ public class FreeTradeCsvParseController : ITaxEventFileParser
     private const string _timeStampName = "Timestamp";
     private const string _quantityName = "Quantity";
 
+    private readonly CsvConfiguration _config = new(CultureInfo.InvariantCulture)
+    {
+        HeaderValidated = null,
+        MissingFieldFound = args => throw new InvalidDataException($"Field missing at index {args.Index} on row {args.Context.Parser?.Row}")
+    };
+
     public TaxEventLists ParseFile(string data)
     {
         var trades = new TaxEventLists();
         using var reader = new StringReader(data);
-        var config = new CsvConfiguration(CultureInfo.InvariantCulture)
-        {
-            HeaderValidated = null,
-            MissingFieldFound = args => throw new InvalidDataException($"Field missing at index {args.Index} on row {args.Context.Parser?.Row}")
-        };
-        using var csv = new CsvReader(reader, config);
-        // Read the header first
+        using var csv = new CsvReader(reader, _config);
         csv.Read();
         csv.ReadHeader();
 
@@ -41,7 +41,7 @@ public class FreeTradeCsvParseController : ITaxEventFileParser
                 case "ORDER":
                     trades.Trades.Add(new Trade
                     {
-                        AssetName = csv.GetFieldSafe(_tickerName) ?? throw new InvalidDataException($"Ticker field is missing for ORDER on row {csv.Context.Parser?.Row}."),
+                        AssetName = csv.GetFieldSafe(_tickerName),
                         Quantity = csv.GetFieldSafe<decimal>(_quantityName),
                         GrossProceed = new DescribedMoney(csv.GetField<decimal>(_totalAmountName), WrappedMoney.BaseCurrency, 1),
                         Date = DateTimeOffset.Parse(csv.GetFieldSafe(_timeStampName), CultureInfo.InvariantCulture).DateTime,
@@ -51,11 +51,10 @@ public class FreeTradeCsvParseController : ITaxEventFileParser
                     });
                     break;
                 case "DIVIDEND":
-                    if (!DateOnly.TryParse(csv.GetFieldSafe("Dividend Pay Date"), CultureInfo.InvariantCulture, out DateOnly dateOnly)) throw new InvalidDataException($"Invalid date format for Dividend Pay Date on row {csv.Context.Parser?.Row}.");
-                    DateTime dividendDate = dateOnly.ToDateTime(TimeOnly.MinValue);
+                    DateTime dividendDate = csv.ParseDateStringToDateTime("Dividend Pay Date");
                     trades.Dividends.Add(new Dividend
                     {
-                        AssetName = csv.GetFieldSafe(_tickerName) ?? throw new InvalidDataException($"Ticker field is missing for DIVIDEND on row {csv.Context.Parser?.Row}."),
+                        AssetName = csv.GetFieldSafe(_tickerName),
                         Proceed = new DescribedMoney(csv.GetField<decimal>(_totalAmountName), WrappedMoney.BaseCurrency, 1, $"{csv.GetField(_titleName)} dividend: {csv.GetField("Dividend Amount Per Share")} per share."),
                         Date = dividendDate,
                         DividendType = DividendType.DIVIDEND,
@@ -63,7 +62,7 @@ public class FreeTradeCsvParseController : ITaxEventFileParser
                     });
                     trades.Dividends.Add(new Dividend
                     {
-                        AssetName = csv.GetFieldSafe(_tickerName) ?? throw new InvalidDataException($"Ticker field is missing for DIVIDEND on row {csv.Context.Parser?.Row}."),
+                        AssetName = csv.GetFieldSafe(_tickerName),
                         Proceed = new DescribedMoney(csv.GetField<decimal>("Dividend Withheld Tax Amount"), WrappedMoney.BaseCurrency, 1, $"{csv.GetField(_titleName)} withholding tax"),
                         Date = dividendDate,
                         DividendType = DividendType.WITHHOLDING,
@@ -91,23 +90,11 @@ public class FreeTradeCsvParseController : ITaxEventFileParser
     {
         if (contentType != "text/csv") return false;
         using var reader = new StringReader(data);
-        var config = new CsvConfiguration(CultureInfo.InvariantCulture)
-        {
-            HeaderValidated = null,
-            MissingFieldFound = args => throw new InvalidDataException($"Field missing at index {args.Index} on row {args.Context.Parser?.Row}")
-        };
-        using var csv = new CsvReader(reader, config);
+        using var csv = new CsvReader(reader, _config);
         csv.Read();
         csv.ReadHeader();
         string[] headers = csv.HeaderRecord ?? [];
         string[] requiredFields = { _typeName, _timeStampName, _tickerName, _quantityName, _totalAmountName };
-        if (requiredFields.All(field => headers.Contains(field)))
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        return requiredFields.All(field => headers.Contains(field));
     }
 }
