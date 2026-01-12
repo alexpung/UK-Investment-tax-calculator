@@ -13,7 +13,7 @@ public class FreeTradeCsvParseController : ITaxEventFileParser
 {
     private const string _totalAmountName = "Total Amount";
     private const string _tickerName = "Ticker";
-    private const string _IsinName = "ISIN";
+    private const string _isinName = "ISIN";
     private const string _titleName = "Title";
     private const string _typeName = "Type";
     private const string _timeStampName = "Timestamp";
@@ -58,7 +58,7 @@ public class FreeTradeCsvParseController : ITaxEventFileParser
                         Proceed = new DescribedMoney(csv.GetField<decimal>(_totalAmountName), WrappedMoney.BaseCurrency, 1, $"{csv.GetField(_titleName)} dividend: {csv.GetField("Dividend Amount Per Share")} per share."),
                         Date = dividendDate,
                         DividendType = DividendType.DIVIDEND,
-                        CompanyLocation = CountryCode.GetRegionByTwoDigitCode(csv.GetFieldSafe(_IsinName)[..2])
+                        CompanyLocation = CountryCode.GetRegionByTwoDigitCode(csv.GetFieldSafe(_isinName)[..2])
                     });
                     trades.Dividends.Add(new Dividend
                     {
@@ -66,7 +66,7 @@ public class FreeTradeCsvParseController : ITaxEventFileParser
                         Proceed = new DescribedMoney(csv.GetField<decimal>("Dividend Withheld Tax Amount"), WrappedMoney.BaseCurrency, 1, $"{csv.GetField(_titleName)} withholding tax"),
                         Date = dividendDate,
                         DividendType = DividendType.WITHHOLDING,
-                        CompanyLocation = CountryCode.GetRegionByTwoDigitCode(csv.GetFieldSafe(_IsinName)[..2])
+                        CompanyLocation = CountryCode.GetRegionByTwoDigitCode(csv.GetFieldSafe(_isinName)[..2])
                     });
 
                     break;
