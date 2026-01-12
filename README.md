@@ -35,6 +35,7 @@ https://alexpung.github.io/UK-Investment-tax-calculator/
 | Trade (Stock)           | O      | Total in GBP         |  Total in GBP        |
 +-------------------------+--------+----------------------+----------------------+
 
+
 User can also add trades manually using the "Add trades" page or you can also try to mimic the data format.
 
 An example is included (see below). For other brokers I suggest copying the xml example and modifying it manually if you only have small number of trades.
