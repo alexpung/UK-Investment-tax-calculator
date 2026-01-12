@@ -15,25 +15,16 @@ https://alexpung.github.io/UK-Investment-tax-calculator/
 5. Implementation of TCGA92/S105 (1)(a): Multiple trades in the same day for the same Buy/Sell side is treated as a single trade. This affect same day/bread and breakfast calculation.
 
 ## Supported import format and brokers
-+-------------------------+--------+----------------------+----------------------+
-| Category                | IB XML | FreeTrade CSV        | Trading 212 CSV      |
-+-------------------------+--------+----------------------+----------------------+
-| CashSettlement (Option) | O      |  X                   |  X                   |
-+-------------------------+--------+----------------------+----------------------+
-| StockSplit              | O      |  X                   |  X                   |
-+-------------------------+--------+----------------------+----------------------+
+| Category                | IB XML | FreeTrade CSV        | Trading212 CSV       |
+|-------------------------|--------|----------------------|----------------------|
+| CashSettlement (Option) | O      |                      |                      |
+| StockSplit              | O      |                      |                      |
 | Dividend                | O      | Total in GBP         | Total in GBP         |
-+-------------------------+--------+----------------------+----------------------+ 
-| FutureContractTrade     | O      |  X                   |  X                   |
-+-------------------------+--------+----------------------+----------------------+
-| FxTrade                 | O      |  X                   |  X                   |
-+-------------------------+--------+----------------------+----------------------+
+| FutureContractTrade     | O      |                      |                      |
+| FxTrade                 | O      |                      |                      |
 | InterestIncome          | O      | Saving income in GBP | Saving income in GBP |
-+-------------------------+--------+----------------------+----------------------+
-| OptionTrade             | O      |  X                   |  X                   |
-+-------------------------+--------+----------------------+----------------------+
-| Trade (Stock)           | O      | Total in GBP         |  Total in GBP        |
-+-------------------------+--------+----------------------+----------------------+
+| OptionTrade             | O      |                      |                      |
+| Trade (Stock)           | O      | Total in GBP         | Total in GBP         |
 
 
 User can also add trades manually using the "Add trades" page or you can also try to mimic the data format.
