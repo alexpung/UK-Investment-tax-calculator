@@ -1,5 +1,5 @@
 ## UK investment tax calculator
-UK tax calculator for Interactive Broker (limited support for FreeTrade).
+UK tax calculator for Interactive Broker (limited support for FreeTrade/Trading212).
 To help report UK tax for dividend and capital gain.
 
 ## What is included
