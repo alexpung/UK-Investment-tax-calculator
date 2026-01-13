@@ -4,6 +4,6 @@
 <div>
     <h3 class="mb-3">Calculation</h3>
     <div class="mb-4">
-        <SfButton @onclick="OnStartCalculation" CssClass="btn btn-primary" Disabled=_isCalculating>Start Calculation</SfButton>
+        <SfButton @onclick="OnStartCalculation" CssClass="btn btn-primary" Disabled="TaxCalculationService.IsCalculating">Start Calculation</SfButton>
     </div>
 </div>

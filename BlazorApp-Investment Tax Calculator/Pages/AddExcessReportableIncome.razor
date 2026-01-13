@@ -9,20 +9,44 @@
 @using Syncfusion.Blazor.DropDowns
 @using Syncfusion.Blazor.Inputs
 @using Syncfusion.Blazor.Buttons
+@using Syncfusion.Blazor.Grids
 
+@implements IDisposable
 @inject UkSection104Pools Section104Pools
 @inject TaxEventLists TaxEventLists
 @inject ToastService ToastService
 @inject ITaxYear TaxYear
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@inject TaxCalculationService TaxCalculationService
 
-<div class="bg-dark text-light p-4">
+<div class="bg-dark text-light p-4 position-relative">
     <div class="container-fluid">
+        @if (TaxCalculationService.IsCalculating)
+        {
+            <div class="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center bg-dark" style="opacity: 0.8; z-index: 1000;">
+                <div class="text-center">
+                    <div class="spinner-border text-info" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <h3 class="mt-3 text-info">Recalculating Tax Results...</h3>
+                </div>
+            </div>
+        }
         <!-- Page Title -->
         <div class="row mb-5">
             <div class="col text-center">
-                <h1 class="display-4">Add Excess Reportable Income</h1>
+                <h1 class="display-4">ERI and Equalisation</h1>
             </div>
         </div>
+
+        @if (_isCalculationMissing)
+        {
+            <div class="alert alert-danger" role="alert">
+                <h4 class="alert-heading">Calculations Required</h4>
+                <p>No Section 104 pools found. Please run the calculation first in the <a href="MainCalculatorPage" class="alert-link">Import/Export page</a> before adding Excess Reportable Income, so that available tickers and quantities can be populated.</p>
+            </div>
+        }
 
         <!-- User Instruction Section -->
         <div class="alert alert-info" role="alert">
@@ -41,7 +65,7 @@
                 <div class="row g-3">
                     <div class="col-md-6 col-lg-4">
                         <label class="form-label">Accounting Period End Date</label>
-                        <SfDatePicker TValue="DateTime?" Value="@PeriodEndDate" ValueChanged="@OnDateChanged" Placeholder="Pick period end date" CssClass="e-outline"></SfDatePicker>
+                        <SfDatePicker TValue="DateTime?" Value="@PeriodEndDate" ValueChanged="@OnDateChanged" Placeholder="Pick period end date" CssClass="e-outline" Enabled="@(!_isCalculationMissing)"></SfDatePicker>
                     </div>
 
                     @if (PeriodEndDate.HasValue)
@@ -80,6 +104,37 @@
                 </div>
             </div>
         </div>
+
+        <!-- ERI History Table -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <h3 class="mb-3">Added Excess Reportable Income History</h3>
+                <SfGrid TValue="ExcessReportableIncome" DataSource="@EriHistory" AllowPaging="true">
+                    <GridPageSettings PageSize="10"></GridPageSettings>
+                    <GridColumns>
+                        <GridColumn Field="@nameof(ExcessReportableIncome.AssetName)" HeaderText="Ticker" Width="120"></GridColumn>
+                        <GridColumn Field="@nameof(ExcessReportableIncome.Date)" HeaderText="Distribution Date" Format="d" Type="ColumnType.Date" Width="150"></GridColumn>
+                        <GridColumn Field="@nameof(ExcessReportableIncome.IncomeType)" HeaderText="Income Type" Width="120">
+                            <Template Context="eriContext">
+                                @{
+                                    var eriType = (eriContext as ExcessReportableIncome);
+                                    <span>@eriType?.IncomeType.GetDescription()</span>
+                                }
+                            </Template>
+                        </GridColumn>
+                        <GridColumn HeaderText="Amount (GBP)" Width="150">
+                            <Template Context="eriAmountContext">
+                                @{
+                                    var eriAmount = (eriAmountContext as ExcessReportableIncome);
+                                    <span>@eriAmount?.Amount.BaseCurrencyAmount.Amount.ToString("N2")</span>
+                                }
+                            </Template>
+                        </GridColumn>
+                        <GridColumn Field="@nameof(ExcessReportableIncome.Reason)" HeaderText="Details"></GridColumn>
+                    </GridColumns>
+                </SfGrid>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -98,10 +153,35 @@
     private decimal IncomePerShare { get; set; }
     private ExcessReportableIncomeType SelectedIncomeType { get; set; } = ExcessReportableIncomeType.DIVIDEND;
     private List<EnumDescriptionPair<ExcessReportableIncomeType>> IncomeTypes { get; set; } = new();
+    private List<ExcessReportableIncome> EriHistory { get; set; } = new();
+    
+    private bool _isCalculationMissing = false;
+    private bool _dataChanged = false;
+    private IDisposable? _registration;
 
     protected override void OnInitialized()
     {
         IncomeTypes = EnumExtensions.GetEnumDescriptionPair<ExcessReportableIncomeType>(typeof(ExcessReportableIncomeType));
+        _isCalculationMissing = !Section104Pools.GetSection104s().Any();
+        RefreshEriHistory();
+
+        _registration = NavigationManager.RegisterLocationChangingHandler(OnLocationChanging);
+    }
+
+    private void RefreshEriHistory()
+    {
+        EriHistory = TaxEventLists.CorporateActions.OfType<ExcessReportableIncome>().OrderByDescending(e => e.Date).ToList();
+    }
+
+    private async ValueTask OnLocationChanging(LocationChangingContext context)
+    {
+        if (_dataChanged)
+        {
+            // Instead of asking, we force recalculation as per user request.
+            // We need to trigger recalculation and wait for it.
+            _dataChanged = false; // Reset so we don't loop if recalculation triggers another navigation (though it shouldn't)
+            await TaxCalculationService.CalculateAsync();
+        }
     }
 
     private void OnDateChanged(DateTime? date)
@@ -184,8 +264,16 @@
 
         ToastService.ShowInformation($"Successfully added ERI of {totalAmountBase:N2} for {SelectedTicker}. Distribution date: {distributionDate:d}");
         
+        _dataChanged = true;
+        RefreshEriHistory();
+
         // Reset inputs but keep date
         SelectedTicker = string.Empty;
         IncomePerShare = 0;
+    }
+
+    public void Dispose()
+    {
+        _registration?.Dispose();
     }
 }
