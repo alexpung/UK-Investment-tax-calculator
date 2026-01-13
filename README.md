@@ -13,6 +13,8 @@ https://alexpung.github.io/UK-Investment-tax-calculator/
 3. Support trades and dividends in foreign currency.
 4. Support shorting and forward split corporate action. (Reverse split I need sample)
 5. Implementation of TCGA92/S105 (1)(a): Multiple trades in the same day for the same Buy/Sell side is treated as a single trade. This affect same day/bread and breakfast calculation.
+6. Support for **Excess Reportable Income (ERI)** for offshore funds/ETFs, including automatic cost base adjustment and region-based income reporting.
+7. **ISIN Support**: Automatically extracts ISIN for all trades and dividends to improve region detection and reporting accuracy.
 
 ## Supported import format and brokers
 | Category                | IB XML | FreeTrade CSV        | Trading212 CSV       |
@@ -56,6 +58,10 @@ https://github.com/alexpung/UK-Investment-tax-calculator/tree/master/BlazorApp-I
     1. Interest income from IB
     2. Bond coupon payment
     3. "Dirty" price accrued profit/loss
+6. Excess Reportable Income (ERI)
+    1. Automatic calculation based on holdings at accounting period end.
+    2. Integrated into Dividend/Interest income summaries with residency filtering.
+    3. Automatic Section 104 cost base adjustment.
 
 #### Pending implementation
 More corporate actions
@@ -80,7 +86,8 @@ File sample is [here](https://github.com/alexpung/UK-Investment-tax-calculator/b
 4. Open the web application.
 5. Go to the import sections and select the files, then press the "Upload" button.
 6. Press "Start Calculation".
-7. Export the results by pressing the buttons at the export file section, or go to PDF export and create a report.
+7. If you hold offshore reporting funds (ETFs), go to the **ERI and Equalisation** page to add any Excess Reportable Income. The system will automatically detect the region from the ISIN and calculate the total adjustment based on your holdings.
+8. Export the results by pressing the buttons at the export file section, or go to PDF export and create a report.
 
 ## Privacy concerns:
 

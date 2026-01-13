@@ -23,6 +23,7 @@ public class IBXmlParseTest
         IEnumerable<Dividend> dividends = parsedData.Where(dataPoint => dataPoint.DividendType == DividendType.DIVIDEND);
         dividends.Count().ShouldBe(1);
         dividends.Select(i => i.Proceed.Amount.Amount * i.Proceed.FxRate).Sum().ShouldBe(499.5m);
+        dividends.First().Isin.ShouldBe("JP12345");
         IEnumerable<Dividend> dividendsInLieu = parsedData.Where(dataPoint => dataPoint.DividendType == DividendType.DIVIDEND_IN_LIEU);
         dividendsInLieu.Count().ShouldBe(1);
         dividendsInLieu.Select(i => i.Proceed.Amount.Amount * i.Proceed.FxRate).Sum().ShouldBe(55.5m);
@@ -34,7 +35,8 @@ public class IBXmlParseTest
         IList<Trade> parsedData = IBXmlStockTradeParser.ParseXml(_xmlDoc);
         parsedData.Count(trade => trade.AcquisitionDisposal == TradeType.ACQUISITION).ShouldBe(6);
         parsedData.Count(trade => trade.AcquisitionDisposal == TradeType.DISPOSAL).ShouldBe(3);
-
+        parsedData.First(t => t.AssetName == "ABC").Isin.ShouldBe("US9999999999");
+        parsedData.First(t => t.AssetName == "DEF").Isin.ShouldBe("GB0000000000");
     }
 
     [Fact]

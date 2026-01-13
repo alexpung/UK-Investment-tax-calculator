@@ -128,12 +128,22 @@ public record UkSection104
     /// Used in corporate actions like stock split to multiply the quantity in the S104 pool
     /// </summary>
     /// <param name="factor"></param>
-    public void MultiplyQuantity(decimal factor, DateTime date)
+    public void MultiplyQuantity(decimal factor, DateTime date, string explanation)
     {
         decimal newQuantity = factor * Quantity;
-        Section104HistoryList.Add(Section104History.ShareAdjustment(date, Quantity, newQuantity, AcquisitionCostInBaseCurrency, TotalContractValue));
+        Section104HistoryList.Add(Section104History.ShareAdjustment(date, Quantity, newQuantity, AcquisitionCostInBaseCurrency, explanation, TotalContractValue));
         Quantity = newQuantity;
         AcquiredQuantityByResidencyRange = AcquiredQuantityByResidencyRange.ToDictionary(kvp => kvp.Key, kvp => kvp.Value * factor);
+    }
+
+    public void AdjustAcquisitionCost(WrappedMoney adjustmentAmount, DateTime date, string explanation, WrappedMoney? adjustContractValue = null)
+    {
+        Section104HistoryList.Add(Section104History.ValueAdjustment(date, Quantity, AcquisitionCostInBaseCurrency, adjustmentAmount, explanation, TotalContractValue, adjustContractValue));
+        AcquisitionCostInBaseCurrency += adjustmentAmount;
+        if (adjustContractValue is not null)
+        {
+            TotalContractValue += adjustContractValue;
+        }
     }
 
     private Section104History RemoveAssetsPrivate(decimal removedQuantity, ITradeTaxCalculation tradeTaxCalculation)

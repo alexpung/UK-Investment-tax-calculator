@@ -43,7 +43,8 @@ public static class IBXmlOptionTradeParser
                 string s when s.Split(";").Contains("A") => TradeReason.OptionAssigned,
                 string s when s.Split(";").Contains("Ep") => TradeReason.Expired,
                 _ => TradeReason.OrderedTrade
-            }
+            },
+            Isin = element.GetAttribute("isin")
         };
     }
 }
