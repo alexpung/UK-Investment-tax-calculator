@@ -11,5 +11,7 @@ public enum DividendType
     [Description("Payment in lieu of dividend")]
     DIVIDEND_IN_LIEU,
     [Description("Not a dividend")]
-    NOT_DIVIDEND
+    NOT_DIVIDEND,
+    [Description("Excess Reportable Income (Dividend)")]
+    EXCESS_REPORTABLE_INCOME
 }

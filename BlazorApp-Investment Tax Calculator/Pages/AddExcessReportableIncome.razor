@@ -1,0 +1,191 @@
+@page "/AddExcessReportableIncome"
+@using InvestmentTaxCalculator.Model
+@using InvestmentTaxCalculator.Model.TaxEvents
+@using InvestmentTaxCalculator.Model.UkTaxModel
+@using InvestmentTaxCalculator.Model.Interfaces
+@using InvestmentTaxCalculator.Services
+@using InvestmentTaxCalculator.Enumerations
+@using Syncfusion.Blazor.Calendars
+@using Syncfusion.Blazor.DropDowns
+@using Syncfusion.Blazor.Inputs
+@using Syncfusion.Blazor.Buttons
+
+@inject UkSection104Pools Section104Pools
+@inject TaxEventLists TaxEventLists
+@inject ToastService ToastService
+@inject ITaxYear TaxYear
+
+<div class="bg-dark text-light p-4">
+    <div class="container-fluid">
+        <!-- Page Title -->
+        <div class="row mb-5">
+            <div class="col text-center">
+                <h1 class="display-4">Add Excess Reportable Income</h1>
+            </div>
+        </div>
+
+        <!-- User Instruction Section -->
+        <div class="alert alert-info" role="alert">
+            <h4 class="alert-heading">How to Use:</h4>
+            <ul>
+                <li><strong>Step 1:</strong> Select the end date of the fund's accounting period.</li>
+                <li><strong>Step 2:</strong> Choose the ticker from the dropdown. Only tickers with holdings at the selected date will appear.</li>
+                <li><strong>Step 3:</strong> Select whether the income is a Dividend or Interest based on income source of the fund.</li>
+                <li><strong>Step 4:</strong> Enter the income per share (in GBP).</li>
+                <li><strong>Step 5:</strong> Click 'Add ERI'. The system will calculate the total amount based on your holdings at that time and set the distribution date to 6 months after the period end.</li>
+            </ul>
+        </div>
+
+        <div class="card bg-secondary text-white mt-4">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6 col-lg-4">
+                        <label class="form-label">Accounting Period End Date</label>
+                        <SfDatePicker TValue="DateTime?" Value="@PeriodEndDate" ValueChanged="@OnDateChanged" Placeholder="Pick period end date" CssClass="e-outline"></SfDatePicker>
+                    </div>
+
+                    @if (PeriodEndDate.HasValue)
+                    {
+                        <div class="col-md-6 col-lg-4">
+                            <label class="form-label">Ticker</label>
+                            <SfDropDownList TValue="string" TItem="string" DataSource="@AvailableTickers" @bind-Value="@SelectedTicker" Placeholder="Select a ticker" CssClass="e-outline">
+                                <DropDownListEvents TValue="string" TItem="string" ValueChange="OnTickerChanged"></DropDownListEvents>
+                            </SfDropDownList>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(SelectedTicker))
+                        {
+                            <div class="col-md-6 col-lg-4">
+                                <label class="form-label">Quantity at Period End</label>
+                                <div class="form-control bg-dark text-info border-info">@Quantity.ToString("N4")</div>
+                            </div>
+
+                            <div class="col-md-6 col-lg-4">
+                                <label class="form-label">Income Type</label>
+                                <SfDropDownList TValue="ExcessReportableIncomeType" TItem="EnumDescriptionPair<ExcessReportableIncomeType>" DataSource="@IncomeTypes" @bind-Value="@SelectedIncomeType" CssClass="e-outline">
+                                    <DropDownListFieldSettings Text="Description" Value="EnumValue"></DropDownListFieldSettings>
+                                </SfDropDownList>
+                            </div>
+
+                            <div class="col-md-6 col-lg-4">
+                                <label class="form-label">Income Per Share (Base Currency)</label>
+                                <SfNumericTextBox TValue="decimal" @bind-Value="@IncomePerShare" Decimals="8" Format="N8" CssClass="e-outline"></SfNumericTextBox>
+                            </div>
+
+                            <div class="col-12 mt-4 d-flex justify-content-center">
+                                <SfButton IsPrimary="true" OnClick="OnSubmit" CssClass="e-info e-large">Add ERI Entry</SfButton>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control-plaintext {
+        font-weight: bold;
+        color: #17a2b8;
+    }
+</style>
+
+@code {
+    private DateTime? PeriodEndDate { get; set; }
+    private List<string> AvailableTickers { get; set; } = new();
+    private string SelectedTicker { get; set; } = string.Empty;
+    private decimal Quantity { get; set; }
+    private decimal IncomePerShare { get; set; }
+    private ExcessReportableIncomeType SelectedIncomeType { get; set; } = ExcessReportableIncomeType.DIVIDEND;
+    private List<EnumDescriptionPair<ExcessReportableIncomeType>> IncomeTypes { get; set; } = new();
+
+    protected override void OnInitialized()
+    {
+        IncomeTypes = EnumExtensions.GetEnumDescriptionPair<ExcessReportableIncomeType>(typeof(ExcessReportableIncomeType));
+    }
+
+    private void OnDateChanged(DateTime? date)
+    {
+        PeriodEndDate = date;
+        SelectedTicker = string.Empty;
+        AvailableTickers.Clear();
+        if (date.HasValue)
+        {
+            var dateOnly = DateOnly.FromDateTime(date.Value);
+            var pools = Section104Pools.GetSection104s();
+            foreach (var pool in pools)
+            {
+                var history = pool.GetLastSection104History(dateOnly);
+                if (history != null && history.NewQuantity > 0)
+                {
+                    // Only show assets that have at least one trade categorized as STOCK
+                    if (TaxEventLists.Trades.Any(t => t.AssetName == pool.AssetName && t.AssetType == AssetCategoryType.STOCK))
+                    {
+                        AvailableTickers.Add(pool.AssetName);
+                    }
+                }
+            }
+        }
+    }
+
+    private void OnTickerChanged(ChangeEventArgs<string, string> args)
+    {
+        SelectedTicker = args.Value;
+        if (!string.IsNullOrEmpty(SelectedTicker) && PeriodEndDate.HasValue)
+        {
+            var pool = Section104Pools.GetExistingOrInitialise(SelectedTicker);
+            var history = pool.GetLastSection104History(DateOnly.FromDateTime(PeriodEndDate.Value));
+            Quantity = history?.NewQuantity ?? 0;
+        }
+    }
+
+    private void OnSubmit()
+    {
+        if (!PeriodEndDate.HasValue || string.IsNullOrEmpty(SelectedTicker) || IncomePerShare <= 0)
+        {
+            ToastService.ShowError("Please fill in all fields correctly.");
+            return;
+        }
+
+        DateTime distributionDate = PeriodEndDate.Value.AddMonths(6);
+        decimal totalAmountBase = Quantity * IncomePerShare;
+
+        // ERI Adjustment is treated as happening on the distribution date for tax purposes
+        var eri = new ExcessReportableIncome
+        {
+            AssetName = SelectedTicker,
+            Date = distributionDate,
+            IncomeType = SelectedIncomeType,
+            Amount = new DescribedMoney(totalAmountBase, "GBP", 1, $"ERI for {Quantity:N4} shares (Period End: {PeriodEndDate.Value:d})")
+        };
+
+        TaxEventLists.CorporateActions.Add(eri);
+
+        if (SelectedIncomeType == ExcessReportableIncomeType.DIVIDEND)
+        {
+            TaxEventLists.Dividends.Add(new Dividend
+            {
+                AssetName = SelectedTicker,
+                Date = distributionDate,
+                DividendType = DividendType.EXCESS_REPORTABLE_INCOME,
+                Proceed = new DescribedMoney(totalAmountBase, "GBP", 1, $"Excess Reportable Income (Dividend) from {SelectedTicker}"),
+            });
+        }
+        else
+        {
+            TaxEventLists.InterestIncomes.Add(new InterestIncome
+            {
+                AssetName = SelectedTicker,
+                Date = distributionDate,
+                InterestType = InterestType.EXCESSREPORTABLEINCOME,
+                Amount = new DescribedMoney(totalAmountBase, "GBP", 1, $"Excess Reportable Income (Interest) from {SelectedTicker}"),
+            });
+        }
+
+        ToastService.ShowInformation($"Successfully added ERI of {totalAmountBase:N2} for {SelectedTicker}. Distribution date: {distributionDate:d}");
+        
+        // Reset inputs but keep date
+        SelectedTicker = string.Empty;
+        IncomePerShare = 0;
+    }
+}

@@ -4,6 +4,7 @@ using InvestmentTaxCalculator.Services;
 using System.Text;
 
 namespace InvestmentTaxCalculator.Model.UkTaxModel;
+
 public class Section104History : ITextFilePrintable
 {
     public ITradeTaxCalculation? TradeTaxCalculation { get; set; }
@@ -35,7 +36,7 @@ public class Section104History : ITextFilePrintable
         };
     }
 
-    public static Section104History ShareAdjustment(DateTime date, decimal oldQuantity, decimal newQuantity, WrappedMoney oldValue, WrappedMoney? oldContractValue = null)
+    public static Section104History ShareAdjustment(DateTime date, decimal oldQuantity, decimal newQuantity, WrappedMoney oldValue, string explanation, WrappedMoney? oldContractValue = null)
     {
         return new Section104History
         {
@@ -46,7 +47,22 @@ public class Section104History : ITextFilePrintable
             OldValue = oldValue,
             OldContractValue = oldContractValue is null ? WrappedMoney.GetBaseCurrencyZero() : oldContractValue,
             ContractValueChange = WrappedMoney.GetBaseCurrencyZero(),
-            Explanation = $"Share adjustment on {date:d} due to corporate action."
+            Explanation = explanation
+        };
+    }
+
+    public static Section104History ValueAdjustment(DateTime date, decimal oldQuantity, WrappedMoney oldValue, WrappedMoney valueChange, string explanation, WrappedMoney? oldContractValue = null, WrappedMoney? contractValueChange = null)
+    {
+        return new Section104History
+        {
+            Date = date,
+            QuantityChange = 0,
+            ValueChange = valueChange,
+            OldQuantity = oldQuantity,
+            OldValue = oldValue,
+            OldContractValue = oldContractValue is null ? WrappedMoney.GetBaseCurrencyZero() : oldContractValue,
+            ContractValueChange = contractValueChange is null ? WrappedMoney.GetBaseCurrencyZero() : contractValueChange,
+            Explanation = explanation
         };
     }
 
