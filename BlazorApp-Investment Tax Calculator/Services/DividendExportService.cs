@@ -19,11 +19,14 @@ public class DividendExportService(DividendCalculationResult dividendCalculation
             output.AppendLine($"Tax Year: {dividendSummary.TaxYear}");
             output.AppendLine($"Region: {dividendSummary.CountryOfOrigin.ThreeDigitCode} ({dividendSummary.CountryOfOrigin.CountryName})");
             output.AppendLine($"\tTotal dividends: {dividendSummary.TotalTaxableDividend}");
+            output.AppendLine($"\t\t(Ordinary: {dividendSummary.TotalTaxableDividend - dividendSummary.TotalExcessReportableIncomeDividend})");
+            output.AppendLine($"\t\t(ERI: {dividendSummary.TotalExcessReportableIncomeDividend})");
             output.AppendLine($"\tTotal withholding tax: {dividendSummary.TotalForeignTaxPaid}\n");
             output.AppendLine($"\tSavings interest: {dividendSummary.TotalTaxableSavingInterest}");
             output.AppendLine($"\tBond interest: {dividendSummary.TotalTaxableBondInterest}");
             output.AppendLine($"\tAccrued income profit: {dividendSummary.TotalAccurredIncomeProfit}");
             output.AppendLine($"\tAccrued income loss: {dividendSummary.TotalAccurredIncomeLoss}");
+            output.AppendLine($"\tExcess Reportable Income (Interest): {dividendSummary.TotalExcessReportableIncomeInterest}");
             output.AppendLine($"\tTotal interest income: {dividendSummary.TotalInterestIncome}\n");
             output.AppendLine();
             output.AppendLine("\t\tDividend Transactions:");

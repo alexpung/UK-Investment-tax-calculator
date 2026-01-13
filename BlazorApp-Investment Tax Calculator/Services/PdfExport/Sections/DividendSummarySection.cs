@@ -25,26 +25,34 @@ public class DividendSummarySection(DividendCalculationResult dividendCalculatio
         Table table = Style.CreateTableWithProportionedWidth(section,
             [(20, ParagraphAlignment.Left),
             (20, ParagraphAlignment.Right),
+            (20, ParagraphAlignment.Right),
             (20, ParagraphAlignment.Right)]);
 
         Row headerRow = table.AddRow();
         Style.StyleHeaderRow(headerRow);
         headerRow.Cells[0].AddParagraph("Region");
-        headerRow.Cells[1].AddParagraph("Gross Dividend Received");
-        headerRow.Cells[2].AddParagraph("Withholding Tax Paid");
+        headerRow.Cells[1].AddParagraph("Gross Ordinary Dividend");
+        headerRow.Cells[2].AddParagraph("Gross ERI Dividend");
+        headerRow.Cells[3].AddParagraph("Withholding Tax Paid");
 
         foreach (var summary in dividendSummaries)
         {
             Row row = table.AddRow();
             row.Cells[0].AddParagraph($"{summary.CountryOfOrigin.CountryName} ({summary.CountryOfOrigin.ThreeDigitCode})");
-            row.Cells[1].AddParagraph(summary.TotalTaxableDividend.ToString());
-            row.Cells[2].AddParagraph(summary.TotalForeignTaxPaid.ToString());
+            row.Cells[1].AddParagraph((summary.TotalTaxableDividend - summary.TotalExcessReportableIncomeDividend).ToString());
+            row.Cells[2].AddParagraph(summary.TotalExcessReportableIncomeDividend.ToString());
+            row.Cells[3].AddParagraph(summary.TotalForeignTaxPaid.ToString());
         }
         Row totalRow = table.AddRow();
         Style.StyleSumRow(totalRow);
         totalRow.Cells[0].AddParagraph("Total");
-        totalRow.Cells[1].AddParagraph(dividendCalculationResult.GetTotalDividend([taxYear]).ToString());
-        totalRow.Cells[2].AddParagraph(dividendCalculationResult.GetForeignTaxPaid([taxYear]).ToString());
+        
+        var totalDiv = dividendCalculationResult.GetTotalDividend([taxYear]);
+        var totalEriDiv = dividendSummaries.Sum(s => s.TotalExcessReportableIncomeDividend);
+        
+        totalRow.Cells[1].AddParagraph((totalDiv - totalEriDiv).ToString());
+        totalRow.Cells[2].AddParagraph(totalEriDiv.ToString());
+        totalRow.Cells[3].AddParagraph(dividendCalculationResult.GetForeignTaxPaid([taxYear]).ToString());
 
         foreach (var summary in dividendSummaries)
         {

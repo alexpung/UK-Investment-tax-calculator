@@ -24,11 +24,12 @@ public class InterestIncomeSummarySection(DividendCalculationResult incomeCalcul
 
         Table table = Style.CreateTableWithProportionedWidth(section,
             [(20, ParagraphAlignment.Left),
-            (20, ParagraphAlignment.Right),
-            (20, ParagraphAlignment.Right),
-            (20, ParagraphAlignment.Right),
-            (20, ParagraphAlignment.Right),
-            (20, ParagraphAlignment.Right)]);
+            (15, ParagraphAlignment.Right),
+            (15, ParagraphAlignment.Right),
+            (15, ParagraphAlignment.Right),
+            (15, ParagraphAlignment.Right),
+            (15, ParagraphAlignment.Right),
+            (15, ParagraphAlignment.Right)]);
 
         Row headerRow = table.AddRow();
         Style.StyleHeaderRow(headerRow);
@@ -37,7 +38,8 @@ public class InterestIncomeSummarySection(DividendCalculationResult incomeCalcul
         headerRow.Cells[2].AddParagraph("Saving interest received");
         headerRow.Cells[3].AddParagraph("Income profit accurred");
         headerRow.Cells[4].AddParagraph("Income loss accurred");
-        headerRow.Cells[5].AddParagraph("Total interest income taxible");
+        headerRow.Cells[5].AddParagraph("ERI interest");
+        headerRow.Cells[6].AddParagraph("Total interest income taxible");
 
         foreach (var summary in incomeSummaries)
         {
@@ -47,7 +49,8 @@ public class InterestIncomeSummarySection(DividendCalculationResult incomeCalcul
             row.Cells[2].AddParagraph(summary.TotalTaxableSavingInterest.ToString());
             row.Cells[3].AddParagraph(summary.TotalAccurredIncomeProfit.ToString());
             row.Cells[4].AddParagraph(summary.TotalAccurredIncomeLoss.ToString());
-            row.Cells[5].AddParagraph(summary.TotalInterestIncome.ToString());
+            row.Cells[5].AddParagraph(summary.TotalExcessReportableIncomeInterest.ToString());
+            row.Cells[6].AddParagraph(summary.TotalInterestIncome.ToString());
         }
 
         foreach (var summary in incomeSummaries)

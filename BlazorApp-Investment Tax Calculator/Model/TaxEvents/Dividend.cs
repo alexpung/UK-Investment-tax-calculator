@@ -9,7 +9,7 @@ public record Dividend : TaxEvent, ITextFilePrintable
     public CountryCode CompanyLocation { get; set; } = CountryCode.UnknownRegion;
     public required DescribedMoney Proceed { get; set; }
     public WrappedMoney WithholdingTaxPaid => DividendType is DividendType.WITHHOLDING ? Proceed.BaseCurrencyAmount : WrappedMoney.GetBaseCurrencyZero();
-    public WrappedMoney DividendReceived => DividendType is DividendType.DIVIDEND_IN_LIEU or DividendType.DIVIDEND ? Proceed.BaseCurrencyAmount : WrappedMoney.GetBaseCurrencyZero();
+    public WrappedMoney DividendReceived => DividendType is DividendType.DIVIDEND_IN_LIEU or DividendType.DIVIDEND or DividendType.EXCESS_REPORTABLE_INCOME ? Proceed.BaseCurrencyAmount : WrappedMoney.GetBaseCurrencyZero();
 
     public string PrintToTextFile()
     {

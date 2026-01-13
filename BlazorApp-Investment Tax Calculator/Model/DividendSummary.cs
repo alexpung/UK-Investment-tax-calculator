@@ -10,11 +10,15 @@ public record DividendSummary
     public required List<Dividend> RelatedDividendsAndTaxes { get; set; }
     public required List<InterestIncome> RelatedInterestIncome { get; set; }
     public virtual WrappedMoney TotalTaxableDividend => (from dividend in RelatedDividendsAndTaxes
-                                                         where dividend.DividendType is DividendType.DIVIDEND_IN_LIEU or DividendType.DIVIDEND
+                                                         where dividend.DividendType is DividendType.DIVIDEND_IN_LIEU or DividendType.DIVIDEND or DividendType.EXCESS_REPORTABLE_INCOME
                                                          select dividend.Proceed.BaseCurrencyAmount).Sum();
     public virtual WrappedMoney TotalForeignTaxPaid => (from dividend in RelatedDividendsAndTaxes
                                                         where dividend.DividendType is DividendType.WITHHOLDING
                                                         select dividend.Proceed.BaseCurrencyAmount).Sum();
+
+    public virtual WrappedMoney TotalExcessReportableIncomeDividend => (from dividend in RelatedDividendsAndTaxes
+                                                                        where dividend.DividendType is DividendType.EXCESS_REPORTABLE_INCOME
+                                                                        select dividend.Proceed.BaseCurrencyAmount).Sum();
 
     public virtual WrappedMoney TotalTaxableSavingInterest => (from interest in RelatedInterestIncome
                                                                where interest.InterestType is InterestType.SAVINGS
@@ -33,6 +37,11 @@ public record DividendSummary
     public virtual WrappedMoney TotalAccurredIncomeLoss => (from interest in RelatedInterestIncome
                                                             where interest.InterestType is InterestType.ACCURREDINCOMELOSS
                                                             select interest.Amount.BaseCurrencyAmount).Sum();
-    public virtual WrappedMoney TotalInterestIncome => TotalTaxableSavingInterest + TotalTaxableBondInterest + TotalAccurredIncomeProfit + TotalAccurredIncomeLoss;
+
+    public virtual WrappedMoney TotalExcessReportableIncomeInterest => (from interest in RelatedInterestIncome
+                                                                        where interest.InterestType is InterestType.EXCESSREPORTABLEINCOME
+                                                                        select interest.Amount.BaseCurrencyAmount).Sum();
+
+    public virtual WrappedMoney TotalInterestIncome => TotalTaxableSavingInterest + TotalTaxableBondInterest + TotalAccurredIncomeProfit + TotalAccurredIncomeLoss + TotalExcessReportableIncomeInterest;
 
 }
