@@ -12,6 +12,7 @@ public abstract record TaxEvent : IAssetDatedEvent
     public int Id { get; private init; }
     public virtual required string AssetName { get; set; }
     public virtual required DateTime Date { get; set; }
+    public string Isin { get; set; } = string.Empty;
 
     protected TaxEvent()
     {

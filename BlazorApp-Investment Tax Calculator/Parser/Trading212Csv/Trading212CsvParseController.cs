@@ -76,6 +76,7 @@ public class Trading212CsvParseController : ITaxEventFileParser
         // Total (GBP) is negative for buys, positive for sells in Trading212 CSV
         // We need absolute value for GrossProceed
         decimal grossProceedAmount = Math.Abs(totalGbp);
+        string isin = csv.GetFieldSafe(_isinName);
 
         return new Trade
         {
@@ -84,6 +85,7 @@ public class Trading212CsvParseController : ITaxEventFileParser
             GrossProceed = new DescribedMoney(grossProceedAmount, WrappedMoney.BaseCurrency, 1),
             Date = date,
             AcquisitionDisposal = tradeType,
+            Isin = isin
         };
     }
 
@@ -102,7 +104,8 @@ public class Trading212CsvParseController : ITaxEventFileParser
             Proceed = new DescribedMoney(totalGbp, WrappedMoney.BaseCurrency, 1, $"{name} dividend"),
             Date = date,
             DividendType = DividendType.DIVIDEND,
-            CompanyLocation = CountryCode.GetRegionByTwoDigitCode(isin[..2])
+            CompanyLocation = CountryCode.GetRegionByTwoDigitCode(isin[..2]),
+            Isin = isin
         });
 
         // Parse withholding tax if present
@@ -114,7 +117,8 @@ public class Trading212CsvParseController : ITaxEventFileParser
                 Proceed = new DescribedMoney(Math.Abs(withholdingTax), WrappedMoney.BaseCurrency, 1, $"{name} withholding tax"),
                 Date = date,
                 DividendType = DividendType.WITHHOLDING,
-                CompanyLocation = CountryCode.GetRegionByTwoDigitCode(isin[..2])
+                CompanyLocation = CountryCode.GetRegionByTwoDigitCode(isin[..2]),
+                Isin = isin
             });
         }
     }

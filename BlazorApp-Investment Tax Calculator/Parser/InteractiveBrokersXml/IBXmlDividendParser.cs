@@ -25,7 +25,8 @@ public static class IBXmlDividendParser
                 AssetName = element.GetAttribute("symbol"),
                 Date = XmlParserHelper.ParseDate(element.GetAttribute("settleDate")),
                 CompanyLocation = GetCompanyLocation(element),
-                Proceed = element.BuildDescribedMoney("amount", "currency", "fxRateToBase", element.GetAttribute("description"))
+                Proceed = element.BuildDescribedMoney("amount", "currency", "fxRateToBase", element.GetAttribute("description")),
+                Isin = element.GetAttribute("isin")
             };
         }
         catch (Exception ex)

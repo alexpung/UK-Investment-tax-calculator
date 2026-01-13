@@ -96,6 +96,17 @@
                                 <SfNumericTextBox TValue="decimal" @bind-Value="@IncomePerShare" Decimals="8" Format="N8" CssClass="e-outline"></SfNumericTextBox>
                             </div>
 
+                            @if (!string.IsNullOrEmpty(GetIsinForTicker(SelectedTicker)))
+                            {
+                                string isin = GetIsinForTicker(SelectedTicker);
+                                <div class="col-md-6 col-lg-4">
+                                    <label class="form-label">Detected Region (from ISIN: @isin)</label>
+                                    <div class="form-control bg-dark text-info border-info">
+                                        @CountryCode.GetRegionByTwoDigitCode(isin[..2]).CountryName (@isin[..2])
+                                    </div>
+                                </div>
+                            }
+
                             <div class="col-12 mt-4 d-flex justify-content-center">
                                 <SfButton IsPrimary="true" OnClick="OnSubmit" CssClass="e-info e-large">Add ERI Entry</SfButton>
                             </div>
@@ -173,6 +184,17 @@
         EriHistory = TaxEventLists.CorporateActions.OfType<ExcessReportableIncome>().OrderByDescending(e => e.Date).ToList();
     }
 
+    private string GetIsinForTicker(string ticker)
+    {
+        var trade = TaxEventLists.Trades.FirstOrDefault(t => t.AssetName == ticker && !string.IsNullOrEmpty(t.Isin));
+        if (trade != null) return trade.Isin;
+
+        var dividend = TaxEventLists.Dividends.FirstOrDefault(d => d.AssetName == ticker && !string.IsNullOrEmpty(d.Isin));
+        if (dividend != null) return dividend.Isin;
+
+        return string.Empty;
+    }
+
     private async ValueTask OnLocationChanging(LocationChangingContext context)
     {
         if (_dataChanged)
@@ -227,6 +249,11 @@
             return;
         }
 
+        string isin = GetIsinForTicker(SelectedTicker);
+        CountryCode region = string.IsNullOrEmpty(isin) || isin.Length < 2 
+            ? CountryCode.UnknownRegion 
+            : CountryCode.GetRegionByTwoDigitCode(isin[..2]);
+
         DateTime distributionDate = PeriodEndDate.Value.AddMonths(6);
         decimal totalAmountBase = Quantity * IncomePerShare;
 
@@ -236,7 +263,9 @@
             AssetName = SelectedTicker,
             Date = distributionDate,
             IncomeType = SelectedIncomeType,
-            Amount = new DescribedMoney(totalAmountBase, "GBP", 1, $"ERI for {Quantity:N4} shares (Period End: {PeriodEndDate.Value:d})")
+            Amount = new DescribedMoney(totalAmountBase, "GBP", 1, $"ERI for {Quantity:N4} shares (Period End: {PeriodEndDate.Value:d})"),
+            Isin = isin,
+            IncomeLocation = region
         };
 
         TaxEventLists.CorporateActions.Add(eri);
@@ -249,6 +278,8 @@
                 Date = distributionDate,
                 DividendType = DividendType.EXCESS_REPORTABLE_INCOME,
                 Proceed = new DescribedMoney(totalAmountBase, "GBP", 1, $"Excess Reportable Income (Dividend) from {SelectedTicker}"),
+                Isin = isin,
+                CompanyLocation = region
             });
         }
         else
@@ -259,6 +290,8 @@
                 Date = distributionDate,
                 InterestType = InterestType.EXCESSREPORTABLEINCOME,
                 Amount = new DescribedMoney(totalAmountBase, "GBP", 1, $"Excess Reportable Income (Interest) from {SelectedTicker}"),
+                Isin = isin,
+                IncomeLocation = region
             });
         }
 

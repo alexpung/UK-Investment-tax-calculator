@@ -47,7 +47,8 @@ public class FreeTradeCsvParseController : ITaxEventFileParser
                         Date = DateTimeOffset.Parse(csv.GetFieldSafe(_timeStampName), CultureInfo.InvariantCulture).DateTime,
                         AcquisitionDisposal = csv.GetFieldSafe("Buy / Sell").Equals("BUY", StringComparison.CurrentCultureIgnoreCase)
                                ? TradeType.ACQUISITION
-                               : TradeType.DISPOSAL
+                               : TradeType.DISPOSAL,
+                        Isin = csv.GetFieldSafe(_isinName)
                     });
                     break;
                 case "DIVIDEND":
@@ -58,7 +59,8 @@ public class FreeTradeCsvParseController : ITaxEventFileParser
                         Proceed = new DescribedMoney(csv.GetField<decimal>(_totalAmountName), WrappedMoney.BaseCurrency, 1, $"{csv.GetField(_titleName)} dividend: {csv.GetField("Dividend Amount Per Share")} per share."),
                         Date = dividendDate,
                         DividendType = DividendType.DIVIDEND,
-                        CompanyLocation = CountryCode.GetRegionByTwoDigitCode(csv.GetFieldSafe(_isinName)[..2])
+                        CompanyLocation = CountryCode.GetRegionByTwoDigitCode(csv.GetFieldSafe(_isinName)[..2]),
+                        Isin = csv.GetFieldSafe(_isinName)
                     });
                     trades.Dividends.Add(new Dividend
                     {
@@ -66,7 +68,8 @@ public class FreeTradeCsvParseController : ITaxEventFileParser
                         Proceed = new DescribedMoney(csv.GetField<decimal>("Dividend Withheld Tax Amount"), WrappedMoney.BaseCurrency, 1, $"{csv.GetField(_titleName)} withholding tax"),
                         Date = dividendDate,
                         DividendType = DividendType.WITHHOLDING,
-                        CompanyLocation = CountryCode.GetRegionByTwoDigitCode(csv.GetFieldSafe(_isinName)[..2])
+                        CompanyLocation = CountryCode.GetRegionByTwoDigitCode(csv.GetFieldSafe(_isinName)[..2]),
+                        Isin = csv.GetFieldSafe(_isinName)
                     });
 
                     break;
