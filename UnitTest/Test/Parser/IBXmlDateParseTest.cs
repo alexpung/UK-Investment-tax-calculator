@@ -51,7 +51,7 @@ public class IBXmlDateParseTest
     {
         string xmlContent = @$"
              <Trades>
-                <Order currency=""USD"" fxRateToBase=""0.8"" assetCategory=""STK"" symbol=""ABC"" 
+                <Order currency=""USD"" fxRateToBase=""0.8"" assetCategory=""STK"" symbol=""ABC"" isin=""""
                 description=""ABC Example Stock"" dateTime=""{dateString}"" quantity=""200"" proceeds=""-2000"" taxes=""-20"" ibCommission=""-1.5"" 
                 ibCommissionCurrency=""USD"" notes=""O"" buySell=""BUY"" levelOfDetail=""ORDER"" />
              </Trades>";

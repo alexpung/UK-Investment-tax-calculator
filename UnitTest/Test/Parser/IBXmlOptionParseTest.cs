@@ -17,7 +17,7 @@ public class IBXmlOptionTradeParserTests
                     <FlexStatements count='1'>
                         <FlexStatement accountId='TestAccount' fromDate='04-Jan-21' toDate='31-Dec-21' period='Last365CalendarDays' whenGenerated='01-Jan-22 00:00:00'>
                             <Trades>
-                                <Order currency='USD' fxRateToBase='0.72153' assetCategory='OPT' symbol='GOOG  180119C00800000' 
+                                <Order currency='USD' fxRateToBase='0.72153' assetCategory='OPT' symbol='GOOG  180119C00800000' isin=''
                                        description='GOOG 19JAN18 800.0 C' underlyingSymbol='GOOG' multiplier='100' strike='800' expiry='19-Jan-18' 
                                        putCall='C' dateTime='19-Jan-18 16:20:00' quantity='-1' tradePrice='0' tradeMoney='0' proceeds='0' 
                                        taxes='0' ibCommission='0' ibCommissionCurrency='USD' openCloseIndicator='C' notes='C;Ex' buySell='SELL' 

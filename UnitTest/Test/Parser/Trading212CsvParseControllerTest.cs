@@ -26,6 +26,7 @@ public class Trading212CsvParseControllerTest
         trade.Date.Year.ShouldBe(2024);
         trade.Date.Month.ShouldBe(1);
         trade.Date.Day.ShouldBe(15);
+        trade.Isin.ShouldBe("US0378331005");
     }
 
     [Fact]
@@ -43,6 +44,7 @@ public class Trading212CsvParseControllerTest
         trade.Quantity.ShouldBe(5);
         trade.AcquisitionDisposal.ShouldBe(TradeType.DISPOSAL);
         trade.GrossProceed.Amount.Amount.ShouldBe(640.00m);
+        trade.Isin.ShouldBe("US0378331005");
         trade.Expenses.Count.ShouldBe(0); // No fees
     }
 
@@ -61,11 +63,13 @@ public class Trading212CsvParseControllerTest
         dividend.AssetName.ShouldBe("AAPL");
         dividend.Proceed.Amount.Amount.ShouldBe(25.00m);
         dividend.CompanyLocation.ThreeDigitCode.ShouldBe("USA");
+        dividend.Isin.ShouldBe("US0378331005");
 
 
         var withholding = result.Dividends.First(d => d.DividendType == DividendType.WITHHOLDING);
         withholding.AssetName.ShouldBe("AAPL");
         withholding.Proceed.Amount.Amount.ShouldBe(3.75m);
+        withholding.Isin.ShouldBe("US0378331005");
     }
 
     [Fact]
