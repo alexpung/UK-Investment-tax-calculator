@@ -13,8 +13,7 @@ https://alexpung.github.io/UK-Investment-tax-calculator/
 3. Support trades and dividends in foreign currency.
 4. Support shorting and forward split corporate action. (Reverse split I need sample)
 5. Implementation of TCGA92/S105 (1)(a): Multiple trades in the same day for the same Buy/Sell side is treated as a single trade. This affect same day/bread and breakfast calculation.
-6. Support for **Excess Reportable Income (ERI)** for offshore funds/ETFs, including automatic cost base adjustment and region-based income reporting.
-7. **ISIN Support**: Automatically extracts ISIN for all trades and dividends to improve region detection and reporting accuracy.
+6. Support for **Excess Reportable Income (ERI) and Equalisation** for offshore funds/ETFs, including automatic cost base adjustment and region-based income reporting by detecting the ISIN country code.
 
 ## Supported import format and brokers
 | Category                | IB XML | FreeTrade CSV        | Trading212 CSV       |
