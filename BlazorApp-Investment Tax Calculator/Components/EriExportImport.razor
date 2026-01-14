@@ -77,12 +77,18 @@
                 return;
             }
 
-            string json = JsonSerializer.Serialize(exportLists, new JsonSerializerOptions { WriteIndented = true });
+            if (_module == null)
+            {
+                ToastService.ShowError("Export module is not yet loaded. Please try again in a moment.");
+                return;
+            }
+
+            string json = JsonSerializer.Serialize(exportLists, MyJsonContext.Default.TaxEventLists);
             byte[] file = System.Text.Encoding.UTF8.GetBytes(json);
             using var streamRef = new DotNetStreamReference(new MemoryStream(file));
             
             string fileName = $"ERI_Equalisation_Backup_{DateTime.Now:yyyyMMdd_HHmm}.json";
-            await _module!.InvokeVoidAsync("BlazorDownloadFile", fileName, streamRef);
+            await _module.InvokeVoidAsync("BlazorDownloadFile", fileName, streamRef);
             
             ToastService.ShowSuccess($"Exported {exportLists.GetTotalNumberOfEvents()} events.");
         }
