@@ -21,4 +21,8 @@ public record Dividend : TaxEvent, ITextFilePrintable
                 $"Sterling Amount: {Proceed.BaseCurrencyAmount}, " +
                 $"Description: {Proceed.Description}";
     }
+    public override string GetDuplicateSignature()
+    {
+        return $"DIV|{base.GetDuplicateSignature()}|{DividendType}|{Proceed.Amount.Amount}|{Proceed.Amount.Currency}";
+    }
 }

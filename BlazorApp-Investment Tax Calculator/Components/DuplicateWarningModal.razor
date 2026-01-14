@@ -1,0 +1,63 @@
+@using InvestmentTaxCalculator.Model
+@using Microsoft.AspNetCore.Components
+
+@if (IsVisible)
+{
+    <div class="modal fade show d-block" tabindex="-1" role="dialog" style="background-color: rgba(0,0,0,0.5);">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content bg-dark text-white">
+          <div class="modal-header">
+            <h5 class="modal-title">Duplicate Import Warning</h5>
+          </div>
+          <div class="modal-body">
+            <div class="alert alert-warning">
+                Found @Duplicates.GetTotalNumberOfEvents() duplicate(s) in the import file.
+            </div>
+            <p>The following duplicates were detected:</p>
+            <ul>
+                @foreach (var trade in Duplicates.Trades)
+                {
+                    <li>Trade: @trade.AssetName (@trade.Date.ToShortDateString()) - @trade.Quantity @trade.AcquisitionDisposal</li>
+                }
+                @foreach (var div in Duplicates.Dividends)
+                {
+                    <li>Dividend: @div.AssetName (@div.Date.ToShortDateString()) - @div.Proceed.Amount</li>
+                }
+                @foreach (var inc in Duplicates.InterestIncomes)
+                {
+                    <li>Income: @inc.InterestType (@inc.Date.ToShortDateString()) - @inc.Amount.Amount</li>
+                }
+            </ul>
+            <p>Do you want to skip these duplicates or import them anyway?</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" @onclick="() => Close(null)">Cancel Import</button>
+            <button type="button" class="btn btn-success" @onclick="() => Close(true)">Skip Duplicates (Recommended)</button>
+            <button type="button" class="btn btn-danger" @onclick="() => Close(false)">Import All (Create Duplicates)</button>
+          </div>
+        </div>
+      </div>
+    </div>
+}
+
+@code {
+    public bool IsVisible { get; private set; }
+    public TaxEventLists Duplicates { get; private set; } = new();
+    private TaskCompletionSource<bool?>? _tcs;
+
+    public Task<bool?> ShowAsync(TaxEventLists duplicates)
+    {
+        Duplicates = duplicates;
+        IsVisible = true;
+        _tcs = new TaskCompletionSource<bool?>();
+        StateHasChanged();
+        return _tcs.Task;
+    }
+
+    private void Close(bool? result)
+    {
+        IsVisible = false;
+        StateHasChanged();
+        _tcs?.SetResult(result);
+    }
+}
