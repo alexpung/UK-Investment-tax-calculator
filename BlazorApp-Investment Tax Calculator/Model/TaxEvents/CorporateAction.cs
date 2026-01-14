@@ -5,7 +5,10 @@ using System.Text.Json.Serialization;
 
 namespace InvestmentTaxCalculator.Model.TaxEvents;
 
+[JsonPolymorphic()]
 [JsonDerivedType(typeof(StockSplit), "stockSplit")]
+[JsonDerivedType(typeof(ExcessReportableIncome), "eri")]
+[JsonDerivedType(typeof(FundEqualisation), "fundEqualisation")]
 public abstract record CorporateAction : TaxEvent
 {
     public abstract MatchAdjustment TradeMatching(ITradeTaxCalculation trade1, ITradeTaxCalculation trade2, MatchAdjustment matchAdjustment);
