@@ -1,15 +1,17 @@
-using System;
 using InvestmentTaxCalculator.Model;
 using InvestmentTaxCalculator.Model.TaxEvents;
-using Xunit;
 
 namespace InvestmentTaxCalculator.UnitTest.Test.Model.TaxEvents;
+
+using Shouldly;
+using Xunit;
 
 public class FundEqualisationTest
 {
     [Fact]
     public void Reason_WithRelatedEvent_FormatsCorrectly()
     {
+
         var equalisation = new FundEqualisation
         {
             AssetName = "Test Fund",
@@ -21,14 +23,16 @@ public class FundEqualisationTest
         var reason = equalisation.Reason;
 
         // WrappedMoney uses NMoneys which formats GBP with £ symbol and 2 decimals by default.
-        Assert.Contains("Test Fund fund equalisation of £100.00 on 01/01/2023 (Related Dividend)", reason);
-        Assert.EndsWith("\n", reason);
-        Assert.DoesNotContain("..", reason); 
+        var dateString = new DateTime(2023, 1, 1).ToString("d");
+        reason.ShouldContain($"Test Fund fund equalisation of £100.00 on {dateString} (Related Dividend)");
+        reason.ShouldEndWith("\n");
+        reason.ShouldNotContain("..");
     }
 
     [Fact]
     public void Reason_WithoutRelatedEvent_FormatsCorrectly()
     {
+
         var equalisation = new FundEqualisation
         {
             AssetName = "Test Fund",
@@ -39,9 +43,10 @@ public class FundEqualisationTest
 
         var reason = equalisation.Reason;
 
-        Assert.Contains("Test Fund fund equalisation of £100.00 on 01/01/2023", reason);
-        Assert.EndsWith("\n", reason);
-        Assert.DoesNotContain("()", reason); 
-        Assert.DoesNotContain(" .", reason); 
+        var dateString = new DateTime(2023, 1, 1).ToString("d");
+        reason.ShouldContain($"Test Fund fund equalisation of £100.00 on {dateString}");
+        reason.ShouldEndWith("\n");
+        reason.ShouldNotContain("()");
+        reason.ShouldNotContain(" .");
     }
 }
