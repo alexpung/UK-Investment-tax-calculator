@@ -17,4 +17,8 @@ public abstract record TaxEvent : IAssetDatedEvent
     {
         Id = Interlocked.Increment(ref _nextId);
     }
+    public virtual string GetDuplicateSignature()
+    {
+        return $"{AssetName}|{Date.Ticks}|{Isin}";
+    }
 }

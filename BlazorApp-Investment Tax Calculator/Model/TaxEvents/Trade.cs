@@ -108,5 +108,10 @@ public record Trade : TaxEvent, ITextFilePrintable
             $"with total expense {Expenses.Sum(expenses => expenses.BaseCurrencyAmount)}, {netExplanation}"
             + GetExpensesExplanation();
     }
+    public override string GetDuplicateSignature()
+    {
+        // GrossProceed.Amount.Amount is the decimal amount. Note: Description in DescribedMoney might differ so we skip it.
+        return $"TRADE|{base.GetDuplicateSignature()}|{AcquisitionDisposal}|{Quantity}|{GrossProceed.Amount.Amount}|{GrossProceed.Amount.Currency}";
+    }
 }
 

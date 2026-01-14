@@ -26,6 +26,10 @@ public record InterestIncome : TaxEvent, ITextFilePrintable
                 $"Sterling Amount: {Amount.BaseCurrencyAmount}, " +
                 $"Description: {Amount.Description}";
     }
+    public override string GetDuplicateSignature()
+    {
+        return $"INT|{base.GetDuplicateSignature()}|{InterestType}|{Amount.Amount.Amount}|{Amount.Amount.Currency}";
+    }
 }
 
 public enum InterestType
