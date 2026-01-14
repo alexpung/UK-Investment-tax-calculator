@@ -81,4 +81,22 @@ public class UkSection104Test
         ukSection104.Quantity.ShouldBe(30); // bought 100, 150 after split - 120 sold = 30
         ukSection104.AcquisitionCostInBaseCurrency.ShouldBe(new WrappedMoney(200m)); // bought shares worth 1000, remaining shares worth = 30*1000/150 = 200
     }
+
+    [Fact]
+    public void TestGetLastSection104History_OnLastReportingDate()
+    {
+        // 1. Arrange: Buy shares on the last reporting date
+        DateTime reportingDate = new(2023, 12, 31, 10, 0, 0, DateTimeKind.Local);
+        TradeTaxCalculation tradeAtReportingDate = MockTrade.CreateTradeTaxCalculation("ETF1", reportingDate, 100m, 1000m, TradeType.ACQUISITION);
+        UkSection104 ukSection104 = new("ETF1");
+        tradeAtReportingDate.MatchWithSection104(ukSection104);
+
+        // 2. Act: Simulate ERI logic (getting quantity at reporting date)
+        var history = ukSection104.GetLastSection104History(DateOnly.FromDateTime(reportingDate));
+
+        // 3. Assert: Verify the acquisition on the reporting date is included
+        history.ShouldNotBeNull();
+        history.NewQuantity.ShouldBe(100m);
+        history.Date.ShouldBe(reportingDate);
+    }
 }

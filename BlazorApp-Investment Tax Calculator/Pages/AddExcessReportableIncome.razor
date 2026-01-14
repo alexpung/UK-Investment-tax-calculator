@@ -5,6 +5,7 @@
 @using InvestmentTaxCalculator.Model.Interfaces
 @using InvestmentTaxCalculator.Services
 @using InvestmentTaxCalculator.Enumerations
+@using InvestmentTaxCalculator.Components
 @using Syncfusion.Blazor.Calendars
 @using Syncfusion.Blazor.DropDowns
 @using Syncfusion.Blazor.Inputs
@@ -36,7 +37,34 @@
         <!-- Page Title -->
         <div class="row mb-5">
             <div class="col text-center">
-                <h1 class="display-4">ERI and Equalisation</h1>
+                <h1 class="display-4">ERI and Fund Equalisation</h1>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="alert alert-info border-info bg-dark text-light shadow-sm" role="alert">
+                    <h5 class="alert-heading text-info"><i class="bi bi-info-circle-fill me-2"></i>Guidance & How to Use</h5>
+                    <hr class="border-info opacity-25">
+                    
+                    <div class="mb-3">
+                        <h6 class="text-info fw-bold">How to Use:</h6>
+                        <ol class="mb-2">
+                            <li><strong>Add ERI:</strong> Enter the fund's accounting period end date, ticker, and income per share. This calculates the total ERI based on your holdings at that date.</li>
+                            <li><strong>Add Equalisation:</strong> Select the fund ticker and the specific income event (Dividend or ERI) to be reduced by the equalisation amount.</li>
+                        </ol>
+                    </div>
+
+                    <div class="mb-3">
+                        <h6 class="text-info fw-bold">Important Workflow Notes:</h6>
+                        <ul class="mb-0">
+                            <li><strong>Accumulating Funds:</strong> For accumulating funds with equalisation, you must <strong>add the Excess Reportable Income (ERI) first</strong>. Once added, you can then select that ERI entry in the Equalisation section to reduce it.</li>
+                            <li><strong>Ticker Selection:</strong> Some available tickers may be standard stocks (non-funds). Ensure you only apply ERI or Equalisation to appropriate offshore fund assets.</li>
+                            <li><strong>Manual Matching:</strong> You are responsible for matching equalisation payments to the correct corresponding income event as per your broker's tax reports.</li>
+                            <li><strong>Export & Backup:</strong> All manual entries are saved automatically to the session. You can export the entire session (including ERI and Equalisation) for future use from the <a href="MainCalculatorPage" class="alert-link">Main Import/Export page</a>.</li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -44,104 +72,78 @@
         {
             <div class="alert alert-danger" role="alert">
                 <h4 class="alert-heading">Calculations Required</h4>
-                <p>No Section 104 pools found. Please run the calculation first in the <a href="MainCalculatorPage" class="alert-link">Import/Export page</a> before adding Excess Reportable Income, so that available tickers and quantities can be populated.</p>
+                <p>No Section 104 pools found. Please run the calculation first in the <a href="MainCalculatorPage" class="alert-link">Import/Export page</a> before adding entries, so that available tickers and quantities can be populated.</p>
             </div>
         }
 
-        <!-- User Instruction Section -->
-        <div class="alert alert-info" role="alert">
-            <h4 class="alert-heading">How to Use:</h4>
-            <ul>
-                <li><strong>Step 1:</strong> Select the end date of the fund's accounting period.</li>
-                <li><strong>Step 2:</strong> Choose the ticker from the dropdown. Only tickers with holdings at the selected date will appear.</li>
-                <li><strong>Step 3:</strong> Select whether the income is a Dividend or Interest based on income source of the fund.</li>
-                <li><strong>Step 4:</strong> Enter the income per share (in GBP).</li>
-                <li><strong>Step 5:</strong> Click 'Add ERI'. The system will calculate the total amount based on your holdings at that time and set the distribution date to 6 months after the period end.</li>
-            </ul>
-        </div>
-
-        <div class="card bg-secondary text-white mt-4">
-            <div class="card-body">
-                <div class="row g-3">
-                    <div class="col-md-6 col-lg-4">
-                        <label class="form-label">Accounting Period End Date</label>
-                        <SfDatePicker TValue="DateTime?" Value="@PeriodEndDate" ValueChanged="@OnDateChanged" Placeholder="Pick period end date" CssClass="e-outline" Enabled="@(!_isCalculationMissing)"></SfDatePicker>
-                    </div>
-
-                    @if (PeriodEndDate.HasValue)
-                    {
-                        <div class="col-md-6 col-lg-4">
-                            <label class="form-label">Ticker</label>
-                            <SfDropDownList TValue="string" TItem="string" DataSource="@AvailableTickers" @bind-Value="@SelectedTicker" Placeholder="Select a ticker" CssClass="e-outline">
-                                <DropDownListEvents TValue="string" TItem="string" ValueChange="OnTickerChanged"></DropDownListEvents>
-                            </SfDropDownList>
-                        </div>
-
-                        @if (!string.IsNullOrEmpty(SelectedTicker))
-                        {
-                            <div class="col-md-6 col-lg-4">
-                                <label class="form-label">Quantity at Period End</label>
-                                <div class="form-control bg-dark text-info border-info">@Quantity.ToString("N4")</div>
-                            </div>
-
-                            <div class="col-md-6 col-lg-4">
-                                <label class="form-label">Income Type</label>
-                                <SfDropDownList TValue="ExcessReportableIncomeType" TItem="EnumDescriptionPair<ExcessReportableIncomeType>" DataSource="@IncomeTypes" @bind-Value="@SelectedIncomeType" CssClass="e-outline">
-                                    <DropDownListFieldSettings Text="Description" Value="EnumValue"></DropDownListFieldSettings>
-                                </SfDropDownList>
-                            </div>
-
-                            <div class="col-md-6 col-lg-4">
-                                <label class="form-label">Income Per Share (Base Currency)</label>
-                                <SfNumericTextBox TValue="decimal" @bind-Value="@IncomePerShare" Decimals="8" Format="N8" CssClass="e-outline"></SfNumericTextBox>
-                            </div>
-
-                            @if (!string.IsNullOrEmpty(GetIsinForTicker(SelectedTicker)))
-                            {
-                                string isin = GetIsinForTicker(SelectedTicker);
-                                <div class="col-md-6 col-lg-4">
-                                    <label class="form-label">Detected Region (from ISIN: @isin)</label>
-                                    <div class="form-control bg-dark text-info border-info">
-                                        @CountryCode.GetRegionByTwoDigitCode(isin[..2]).CountryName (@isin[..2])
-                                    </div>
-                                </div>
-                            }
-
-                            <div class="col-12 mt-4 d-flex justify-content-center">
-                                <SfButton IsPrimary="true" OnClick="OnSubmit" CssClass="e-info e-large">Add ERI Entry</SfButton>
-                            </div>
-                        }
-                    }
-                </div>
+        <div class="row g-4">
+            <div class="col-xl-6">
+                <EriControl IsCalculationMissing="@_isCalculationMissing" OnDataChanged="RefreshAll" />
+            </div>
+            <div class="col-xl-6">
+                <EqualisationControl IsCalculationMissing="@_isCalculationMissing" OnDataChanged="RefreshAll" />
             </div>
         </div>
 
-        <!-- ERI History Table -->
+        <!-- Corporate Action History Table -->
         <div class="row mt-5">
             <div class="col-12">
-                <h3 class="mb-3">Added Excess Reportable Income History</h3>
-                <SfGrid TValue="ExcessReportableIncome" DataSource="@EriHistory" AllowPaging="true">
+                <h3 class="mb-3">Corporate Action History (ERI & Equalisation)</h3>
+                <SfGrid TValue="CorporateAction" DataSource="@History" AllowPaging="true">
                     <GridPageSettings PageSize="10"></GridPageSettings>
                     <GridColumns>
-                        <GridColumn Field="@nameof(ExcessReportableIncome.AssetName)" HeaderText="Ticker" Width="120"></GridColumn>
-                        <GridColumn Field="@nameof(ExcessReportableIncome.Date)" HeaderText="Distribution Date" Format="d" Type="ColumnType.Date" Width="150"></GridColumn>
-                        <GridColumn Field="@nameof(ExcessReportableIncome.IncomeType)" HeaderText="Income Type" Width="120">
-                            <Template Context="eriContext">
+                        <GridColumn Field="@nameof(CorporateAction.AssetName)" HeaderText="Ticker" Width="120"></GridColumn>
+                        <GridColumn Field="@nameof(CorporateAction.Date)" HeaderText="Date" Format="d" Type="ColumnType.Date" Width="150"></GridColumn>
+                        <GridColumn HeaderText="Type" Width="150">
+                            <Template>
                                 @{
-                                    var eriType = (eriContext as ExcessReportableIncome);
-                                    <span>@eriType?.IncomeType.GetDescription()</span>
+                                    var ca = context as CorporateAction;
+                                    if (ca is ExcessReportableIncome eri)
+                                    {
+                                        <span>ERI (@eri.IncomeType.GetDescription())</span>
+                                    }
+                                    else if (ca is FundEqualisation)
+                                    {
+                                        <span>Equalisation</span>
+                                    }
+                                    else
+                                    {
+                                        <span>@ca?.GetType().Name</span>
+                                    }
+                                }
+                            </Template>
+                        </GridColumn>
+                        <GridColumn HeaderText="Amount (Local)" Width="150">
+                            <Template>
+                                @{
+                                    var ca = context as CorporateAction;
+                                    if (ca is ExcessReportableIncome eri)
+                                    {
+                                        <span>@eri.Amount.Amount.ToString()</span>
+                                    }
+                                    else if (ca is FundEqualisation fe)
+                                    {
+                                        <span>@fe.Amount.Amount.ToString()</span>
+                                    }
                                 }
                             </Template>
                         </GridColumn>
                         <GridColumn HeaderText="Amount (GBP)" Width="150">
-                            <Template Context="eriAmountContext">
+                            <Template>
                                 @{
-                                    var eriAmount = (eriAmountContext as ExcessReportableIncome);
-                                    <span>@eriAmount?.Amount.BaseCurrencyAmount.Amount.ToString("N2")</span>
+                                    var ca = context as CorporateAction;
+                                    if (ca is ExcessReportableIncome eri)
+                                    {
+                                        <span>@eri.Amount.BaseCurrencyAmount.Amount.ToString("N2")</span>
+                                    }
+                                    else if (ca is FundEqualisation fe)
+                                    {
+                                        <span>@fe.Amount.BaseCurrencyAmount.Amount.ToString("N2")</span>
+                                    }
                                 }
                             </Template>
                         </GridColumn>
-                        <GridColumn Field="@nameof(ExcessReportableIncome.Reason)" HeaderText="Details"></GridColumn>
+                        <GridColumn Field="@nameof(CorporateAction.Reason)" HeaderText="Details"></GridColumn>
                     </GridColumns>
                 </SfGrid>
             </div>
@@ -157,14 +159,7 @@
 </style>
 
 @code {
-    private DateTime? PeriodEndDate { get; set; }
-    private List<string> AvailableTickers { get; set; } = new();
-    private string SelectedTicker { get; set; } = string.Empty;
-    private decimal Quantity { get; set; }
-    private decimal IncomePerShare { get; set; }
-    private ExcessReportableIncomeType SelectedIncomeType { get; set; } = ExcessReportableIncomeType.DIVIDEND;
-    private List<EnumDescriptionPair<ExcessReportableIncomeType>> IncomeTypes { get; set; } = new();
-    private List<ExcessReportableIncome> EriHistory { get; set; } = new();
+    private List<CorporateAction> History { get; set; } = new();
     
     private bool _isCalculationMissing = false;
     private bool _dataChanged = false;
@@ -172,137 +167,34 @@
 
     protected override void OnInitialized()
     {
-        IncomeTypes = EnumExtensions.GetEnumDescriptionPair<ExcessReportableIncomeType>(typeof(ExcessReportableIncomeType));
         _isCalculationMissing = !Section104Pools.GetSection104s().Any();
-        RefreshEriHistory();
+        RefreshHistory();
 
         _registration = NavigationManager.RegisterLocationChangingHandler(OnLocationChanging);
     }
 
-    private void RefreshEriHistory()
+    private void RefreshHistory()
     {
-        EriHistory = TaxEventLists.CorporateActions.OfType<ExcessReportableIncome>().OrderByDescending(e => e.Date).ToList();
+        History = TaxEventLists.CorporateActions
+            .Where(e => e is ExcessReportableIncome or FundEqualisation)
+            .OrderByDescending(e => e.Date)
+            .ToList();
+        StateHasChanged();
     }
 
-    private string GetIsinForTicker(string ticker)
+    private void RefreshAll()
     {
-        var trade = TaxEventLists.Trades.FirstOrDefault(t => t.AssetName == ticker && !string.IsNullOrEmpty(t.Isin));
-        if (trade != null) return trade.Isin;
-
-        var dividend = TaxEventLists.Dividends.FirstOrDefault(d => d.AssetName == ticker && !string.IsNullOrEmpty(d.Isin));
-        if (dividend != null) return dividend.Isin;
-
-        return string.Empty;
+        _dataChanged = true;
+        RefreshHistory();
     }
 
     private async ValueTask OnLocationChanging(LocationChangingContext context)
     {
         if (_dataChanged)
         {
-            // Instead of asking, we force recalculation as per user request.
-            // We need to trigger recalculation and wait for it.
-            _dataChanged = false; // Reset so we don't loop if recalculation triggers another navigation (though it shouldn't)
+            _dataChanged = false;
             await TaxCalculationService.CalculateAsync();
         }
-    }
-
-    private void OnDateChanged(DateTime? date)
-    {
-        PeriodEndDate = date;
-        SelectedTicker = string.Empty;
-        AvailableTickers.Clear();
-        if (date.HasValue)
-        {
-            var dateOnly = DateOnly.FromDateTime(date.Value);
-            var pools = Section104Pools.GetSection104s();
-            foreach (var pool in pools)
-            {
-                var history = pool.GetLastSection104History(dateOnly);
-                if (history != null && history.NewQuantity > 0)
-                {
-                    // Only show assets that have at least one trade categorized as STOCK
-                    if (TaxEventLists.Trades.Any(t => t.AssetName == pool.AssetName && t.AssetType == AssetCategoryType.STOCK))
-                    {
-                        AvailableTickers.Add(pool.AssetName);
-                    }
-                }
-            }
-        }
-    }
-
-    private void OnTickerChanged(ChangeEventArgs<string, string> args)
-    {
-        SelectedTicker = args.Value;
-        if (!string.IsNullOrEmpty(SelectedTicker) && PeriodEndDate.HasValue)
-        {
-            var pool = Section104Pools.GetExistingOrInitialise(SelectedTicker);
-            var history = pool.GetLastSection104History(DateOnly.FromDateTime(PeriodEndDate.Value));
-            Quantity = history?.NewQuantity ?? 0;
-        }
-    }
-
-    private void OnSubmit()
-    {
-        if (!PeriodEndDate.HasValue || string.IsNullOrEmpty(SelectedTicker) || IncomePerShare <= 0)
-        {
-            ToastService.ShowError("Please fill in all fields correctly.");
-            return;
-        }
-
-        string isin = GetIsinForTicker(SelectedTicker);
-        CountryCode region = string.IsNullOrEmpty(isin) || isin.Length < 2 
-            ? CountryCode.UnknownRegion 
-            : CountryCode.GetRegionByTwoDigitCode(isin[..2]);
-
-        DateTime distributionDate = PeriodEndDate.Value.AddMonths(6);
-        decimal totalAmountBase = Quantity * IncomePerShare;
-
-        // ERI Adjustment is treated as happening on the distribution date for tax purposes
-        var eri = new ExcessReportableIncome
-        {
-            AssetName = SelectedTicker,
-            Date = distributionDate,
-            IncomeType = SelectedIncomeType,
-            Amount = new DescribedMoney(totalAmountBase, "GBP", 1, $"ERI for {Quantity:N4} shares (Period End: {PeriodEndDate.Value:d})"),
-            Isin = isin,
-            IncomeLocation = region
-        };
-
-        TaxEventLists.CorporateActions.Add(eri);
-
-        if (SelectedIncomeType == ExcessReportableIncomeType.DIVIDEND)
-        {
-            TaxEventLists.Dividends.Add(new Dividend
-            {
-                AssetName = SelectedTicker,
-                Date = distributionDate,
-                DividendType = DividendType.EXCESS_REPORTABLE_INCOME,
-                Proceed = new DescribedMoney(totalAmountBase, "GBP", 1, $"Excess Reportable Income (Dividend) from {SelectedTicker}"),
-                Isin = isin,
-                CompanyLocation = region
-            });
-        }
-        else
-        {
-            TaxEventLists.InterestIncomes.Add(new InterestIncome
-            {
-                AssetName = SelectedTicker,
-                Date = distributionDate,
-                InterestType = InterestType.EXCESSREPORTABLEINCOME,
-                Amount = new DescribedMoney(totalAmountBase, "GBP", 1, $"Excess Reportable Income (Interest) from {SelectedTicker}"),
-                Isin = isin,
-                IncomeLocation = region
-            });
-        }
-
-        ToastService.ShowInformation($"Successfully added ERI of {totalAmountBase:N2} for {SelectedTicker}. Distribution date: {distributionDate:d}");
-        
-        _dataChanged = true;
-        RefreshEriHistory();
-
-        // Reset inputs but keep date
-        SelectedTicker = string.Empty;
-        IncomePerShare = 0;
     }
 
     public void Dispose()

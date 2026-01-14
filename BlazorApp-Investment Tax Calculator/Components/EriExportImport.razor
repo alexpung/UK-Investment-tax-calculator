@@ -1,0 +1,124 @@
+@using InvestmentTaxCalculator.Model
+@using InvestmentTaxCalculator.Model.TaxEvents
+@using InvestmentTaxCalculator.Services
+@using InvestmentTaxCalculator.Parser.Json
+@using Microsoft.AspNetCore.Components.Forms
+@using System.Text.Json
+@using Microsoft.JSInterop
+
+@inject TaxEventLists TaxEventLists
+@inject ExportTaxEventService ExportService
+@inject ToastService ToastService
+@inject IJSRuntime JS
+
+<div class="card bg-dark border-info text-white mt-4">
+    <div class="card-header bg-info text-dark d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Backup & Restore ERI/Equalisation Data</h5>
+        <i class="bi bi-cloud-arrow-up-fill"></i>
+    </div>
+    <div class="card-body">
+        <p class="card-text small text-info mb-4">
+            Use these tools to save your manually entered ERI and Fund Equalisation work to a file, or restore it later. It is also possible to import via the Import page.
+            <strong>Note:</strong> Importing will append data to your current list.
+        </p>
+        
+        <div class="row g-3">
+            <div class="col-md-6">
+                <button class="btn btn-outline-info w-100 py-2" @onclick="ExportEriData">
+                    <i class="bi bi-download me-2"></i>Export ERI Work
+                </button>
+            </div>
+            <div class="col-md-6">
+                <div class="position-relative">
+                    <InputFile OnChange="OnImportFileChange" class="form-control bg-dark text-info border-info" accept=".json" id="importEriFile" style="opacity: 0; position: absolute; z-index: -1;" />
+                    <label for="importEriFile" class="btn btn-outline-warning w-100 py-2 mb-0">
+                        <i class="bi bi-upload me-2"></i>Restore ERI Work
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public EventCallback OnDataImported { get; set; }
+
+    private IJSObjectReference? _module;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _module = await JS.InvokeAsync<IJSObjectReference>("import", "./Components/EriExportImport.razor.js");
+        }
+    }
+
+    private async Task ExportEriData()
+    {
+        try
+        {
+            // Create a filtered list to only export ERI and Equalisation data
+            var exportLists = new TaxEventLists
+            {
+                CorporateActions = TaxEventLists.CorporateActions
+                    .Where(ca => ca is ExcessReportableIncome or FundEqualisation)
+                    .ToList(),
+                Dividends = TaxEventLists.Dividends
+                    .Where(d => d.Proceed.Description.Contains("Excess Reportable Income") || d.Proceed.Description.Contains("Reduced by equalisation"))
+                    .ToList(),
+                InterestIncomes = TaxEventLists.InterestIncomes
+                    .Where(i => i.Amount.Description.Contains("Excess Reportable Income") || i.Amount.Description.Contains("Reduced by equalisation"))
+                    .ToList()
+            };
+
+            if (exportLists.GetTotalNumberOfEvents() == 0)
+            {
+                ToastService.ShowError("No ERI or Equalisation data found to export.");
+                return;
+            }
+
+            if (_module == null)
+            {
+                ToastService.ShowError("Export module is not yet loaded. Please try again in a moment.");
+                return;
+            }
+
+            string json = JsonSerializer.Serialize(exportLists, MyJsonContext.Default.TaxEventLists);
+            byte[] file = System.Text.Encoding.UTF8.GetBytes(json);
+            using var streamRef = new DotNetStreamReference(new MemoryStream(file));
+            
+            string fileName = $"ERI_Equalisation_Backup_{DateTime.Now:yyyyMMdd_HHmm}.json";
+            await _module.InvokeVoidAsync("BlazorDownloadFile", fileName, streamRef);
+            
+            ToastService.ShowSuccess($"Exported {exportLists.GetTotalNumberOfEvents()} events.");
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Export failed: {ex.Message}");
+        }
+    }
+
+    private async Task OnImportFileChange(InputFileChangeEventArgs e)
+    {
+        try
+        {
+            var file = e.File;
+            using var reader = new StreamReader(file.OpenReadStream());
+            string json = await reader.ReadToEndAsync();
+
+            var importedData = JsonSerializer.Deserialize(json, MyJsonContext.Default.TaxEventLists);
+            
+            if (importedData != null)
+            {
+                TaxEventLists.AddData(importedData);
+                
+                ToastService.ShowSuccess($"Successfully imported {importedData.GetTotalNumberOfEvents()} ERI/Equalisation events.");
+                await OnDataImported.InvokeAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Import failed: Is this a valid ERI backup file? {ex.Message}");
+        }
+    }
+}

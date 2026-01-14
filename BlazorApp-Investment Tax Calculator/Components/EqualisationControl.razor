@@ -1,0 +1,243 @@
+@using InvestmentTaxCalculator.Model
+@using InvestmentTaxCalculator.Model.TaxEvents
+@using InvestmentTaxCalculator.Model.UkTaxModel
+@using InvestmentTaxCalculator.Model.Interfaces
+@using InvestmentTaxCalculator.Services
+@using InvestmentTaxCalculator.Enumerations
+@using Syncfusion.Blazor.Calendars
+@using Syncfusion.Blazor.DropDowns
+@using Syncfusion.Blazor.Inputs
+@using Syncfusion.Blazor.Buttons
+
+@inject UkSection104Pools Section104Pools
+@inject TaxEventLists TaxEventLists
+@inject ToastService ToastService
+@inject CurrencyService CurrencyService
+
+<div class="card bg-secondary text-white">
+    <div class="card-header bg-warning text-dark">
+        <h5 class="mb-0">Add Fund Equalisation</h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6 col-lg-4">
+                <label class="form-label">Ticker</label>
+                <SfDropDownList TValue="string" TItem="string" DataSource="@AvailableTickers" @bind-Value="@SelectedTicker" Placeholder="Select a ticker" CssClass="e-outline" Enabled="@(!IsCalculationMissing)">
+                    <DropDownListEvents TValue="string" TItem="string" ValueChange="OnTickerChanged"></DropDownListEvents>
+                </SfDropDownList>
+            </div>
+
+            @if (!string.IsNullOrEmpty(SelectedTicker))
+            {
+                <div class="col-md-6 col-lg-4">
+                    <label class="form-label">Select Income Event to Reduce</label>
+                    <SfDropDownList TValue="int?" TItem="IncomeEventVM" DataSource="@AvailableIncomeEvents" Value="@SelectedEventId" Placeholder="Select dividend/ERI" CssClass="e-outline">
+                        <DropDownListFieldSettings Text="DisplayText" Value="EventId"></DropDownListFieldSettings>
+                        <DropDownListEvents TValue="int?" TItem="IncomeEventVM" ValueChange="OnEventSelected"></DropDownListEvents>
+                    </SfDropDownList>
+                </div>
+
+                @if (SelectedEventId.HasValue)
+                {
+                    var selectedEvent = AvailableIncomeEvents.FirstOrDefault(e => e.EventId == SelectedEventId)?.Event;
+                    @if (selectedEvent != null)
+                    {
+                        <div class="col-md-6 col-lg-3">
+                            <label class="form-label">Equalisation Amount (@Currency)</label>
+                            <SfNumericTextBox TValue="decimal" @bind-Value="@EqualisationAmount" Decimals="2" Format="N2" CssClass="e-outline" ShowSpinButton="false" Min="0"></SfNumericTextBox>
+                        </div>
+
+                        <div class="col-md-6 col-lg-2">
+                            <label class="form-label">Currency</label>
+                            <div class="form-control bg-dark text-info border-info">@Currency</div>
+                        </div>
+
+                        <div class="col-md-6 col-lg-2">
+                            <label class="form-label">Exchange Rate</label>
+                            <div class="form-control bg-dark text-info border-info">@FxRate.ToString("N8")</div>
+                        </div>
+
+                        <div class="col-12 mt-4 d-flex justify-content-center">
+                            <SfButton IsPrimary="true" OnClick="() => OnSubmit(selectedEvent)" CssClass="e-warning e-large text-dark">Add Equalisation</SfButton>
+                        </div>
+                    }
+                }
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public bool IsCalculationMissing { get; set; }
+    [Parameter] public EventCallback OnDataChanged { get; set; }
+
+    private List<string> AvailableTickers { get; set; } = new();
+    private string SelectedTicker { get; set; } = string.Empty;
+    private List<IncomeEventVM> AvailableIncomeEvents { get; set; } = new();
+    private int? SelectedEventId { get; set; }
+    private decimal EqualisationAmount { get; set; }
+    private string Currency { get; set; } = "GBP";
+    private List<CurrencyViewModel> Currencies { get; set; } = new();
+    private decimal FxRate { get; set; } = 1.0m;
+
+    public class IncomeEventVM
+    {
+        public TaxEvent Event { get; set; } = null!;
+        public int EventId => Event.Id;
+        public string DisplayText { get; set; } = string.Empty;
+    }
+
+    protected override void OnInitialized()
+    {
+        var tickersWithIncome = TaxEventLists.Dividends.Where(d => d.DividendType != DividendType.WITHHOLDING).Select(d => d.AssetName)
+            .Union(TaxEventLists.InterestIncomes.Select(i => i.AssetName))
+            .ToHashSet();
+
+        AvailableTickers = Section104Pools.GetSection104s()
+            .Where(p => TaxEventLists.Trades.Any(t => t.AssetName == p.AssetName && t.AssetType == AssetCategoryType.STOCK))
+            .Select(p => p.AssetName)
+            .Where(name => tickersWithIncome.Contains(name))
+            .Distinct()
+            .OrderBy(a => a)
+            .ToList();
+        
+        Currencies = CurrencyService.GetCurrencies();
+    }
+
+    private void OnTickerChanged(ChangeEventArgs<string, string> args)
+    {
+        SelectedTicker = args.Value;
+        SelectedEventId = null;
+        Currency = "GBP";
+        FxRate = 1.0m;
+        RefreshAvailableEvents();
+    }
+
+    private void OnEventSelected(ChangeEventArgs<int?, IncomeEventVM> args)
+    {
+        SelectedEventId = args.Value;
+        var selectedEvent = args.ItemData?.Event;
+        if (selectedEvent != null)
+        {
+            if (selectedEvent is Dividend d)
+            {
+                Currency = d.Proceed.Amount.Currency;
+                FxRate = d.Proceed.FxRate;
+            }
+            else if (selectedEvent is InterestIncome i)
+            {
+                Currency = i.Amount.Amount.Currency;
+                FxRate = i.Amount.FxRate;
+            }
+        }
+        else
+        {
+            Currency = "GBP";
+            FxRate = 1.0m;
+        }
+    }
+
+    private void RefreshAvailableEvents()
+    {
+        AvailableIncomeEvents.Clear();
+        if (string.IsNullOrEmpty(SelectedTicker)) return;
+
+        var dividends = TaxEventLists.Dividends.Where(d => d.AssetName == SelectedTicker && d.DividendType != DividendType.WITHHOLDING);
+        var interest = TaxEventLists.InterestIncomes.Where(i => i.AssetName == SelectedTicker);
+        
+        foreach(var d in dividends) 
+        {
+            AvailableIncomeEvents.Add(new IncomeEventVM { 
+                Event = d, 
+                DisplayText = $"{d.Date:d} - {d.Proceed.Display()} ({d.DividendType.GetDescription()})" 
+            });
+        }
+        foreach(var i in interest) 
+        {
+            AvailableIncomeEvents.Add(new IncomeEventVM { 
+                Event = i, 
+                DisplayText = $"{i.Date:d} - {i.Amount.Display()} ({i.InterestType.GetDescription()})" 
+            });
+        }
+        
+        AvailableIncomeEvents = AvailableIncomeEvents.OrderByDescending(e => e.Event.Date).ToList();
+    }
+
+    private async Task OnSubmit(TaxEvent selectedEvent)
+    {
+        if (selectedEvent == null || EqualisationAmount <= 0 || FxRate <= 0)
+        {
+            ToastService.ShowError("Please select an event and enter a valid amount and exchange rate.");
+            return;
+        }
+
+        decimal availableBaseAmount = selectedEvent is Dividend d_guard ? d_guard.Proceed.BaseCurrencyAmount.Amount 
+                                   : (selectedEvent is InterestIncome i_guard ? i_guard.Amount.BaseCurrencyAmount.Amount : 0m);
+
+        decimal inputBaseAmount = EqualisationAmount * FxRate;
+
+        if (inputBaseAmount > availableBaseAmount)
+        {
+            ToastService.ShowError($"Equalisation amount ({inputBaseAmount:N2} GBP) cannot exceed the income amount ({availableBaseAmount:N2} GBP).");
+            return;
+        }
+
+        string eventTypeDesc = selectedEvent is Dividend d_ev ? d_ev.DividendType.GetDescription() : (selectedEvent is InterestIncome i_ev ? i_ev.InterestType.GetDescription() : "Income event");
+
+        var desMoney = new DescribedMoney(EqualisationAmount, Currency, FxRate, $"{eventTypeDesc} on {selectedEvent.Date:d}");
+
+        // 1. Create FundEqualisation Corporate Action
+        var equalisation = new FundEqualisation
+        {
+            AssetName = SelectedTicker,
+            Date = selectedEvent.Date,
+            Amount = desMoney,
+            RelatedEventDescription = desMoney.Description
+        };
+
+        TaxEventLists.CorporateActions.Add(equalisation);
+
+        // 2. Reduce the income event
+        if (selectedEvent is Dividend d)
+        {
+            var oldProceed = d.Proceed;
+            var reductionBase = desMoney.BaseCurrencyAmount;
+            
+            // Create reduction in local currency
+            var reductionLocal = new WrappedMoney(reductionBase.Amount / oldProceed.FxRate, oldProceed.Amount.Currency);
+            
+            // We need to create a new DescribedMoney because properties are init
+            d.Proceed = new DescribedMoney
+            {
+                Amount = oldProceed.Amount - reductionLocal,
+                FxRate = oldProceed.FxRate,
+                Description = oldProceed.Description + $" (Reduced by equalisation of {reductionBase})"
+            };
+        }
+        else if (selectedEvent is InterestIncome i)
+        {
+            var oldAmount = i.Amount;
+            var reductionBase = desMoney.BaseCurrencyAmount;
+            
+            // Create reduction in local currency
+            var reductionLocal = new WrappedMoney(reductionBase.Amount / oldAmount.FxRate, oldAmount.Amount.Currency);
+
+            int index = TaxEventLists.InterestIncomes.IndexOf(i);
+            TaxEventLists.InterestIncomes[index] = i with {
+                Amount = new DescribedMoney {
+                    Amount = oldAmount.Amount - reductionLocal,
+                    FxRate = oldAmount.FxRate,
+                    Description = oldAmount.Description + $" (Reduced by equalisation of {reductionBase})"
+                }
+            };
+        }
+
+        ToastService.ShowInformation($"Successfully added equalisation of {desMoney.BaseCurrencyAmount} and reduced income.");
+
+        SelectedEventId = null;
+        EqualisationAmount = 0;
+        RefreshAvailableEvents();
+
+        await OnDataChanged.InvokeAsync();
+    }
+}

@@ -16,7 +16,7 @@ using InvestmentTaxCalculator.ViewModel;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
-using Parser.InteractiveBrokersXml;
+using InvestmentTaxCalculator.Parser.Json;
 
 using PdfSharp.Fonts;
 
@@ -36,6 +36,7 @@ builder.Services.AddSingleton<TaxYearReportService>();
 builder.Services.AddSingleton<TaxYearCgtByTypeReportService>();
 builder.Services.AddSingleton<PdfExportService>();
 builder.Services.AddSingleton<TaxCalculationService>();
+builder.Services.AddSingleton<CurrencyService>();
 
 // UK tax specific components - replace if you want to calculate some other countries.
 builder.Services.AddSingleton<UkCalculationResultExportService>();
