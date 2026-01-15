@@ -41,6 +41,10 @@ public record ExcessReportableIncome : CorporateAction, IChangeSection104
         string explanation = $"Excess reportable income ({IncomeType.GetDescription()}) of {Amount.BaseCurrencyAmount} on {Date:d}";
         section104.AdjustAcquisitionCost(Amount.BaseCurrencyAmount, Date, explanation);
     }
+    public override string GetDuplicateSignature()
+    {
+        return $"ERI|{base.GetDuplicateSignature()}|{Amount.Amount.Amount}|{Amount.Amount.Currency}|{IncomeType}";
+    }
 }
 
 public enum ExcessReportableIncomeType

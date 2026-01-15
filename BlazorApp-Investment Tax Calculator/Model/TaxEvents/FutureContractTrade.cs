@@ -44,4 +44,8 @@ public record FutureContractTrade : Trade, ISplittableToLongAndShort<FutureContr
             $"with total expense {Expenses.Sum(expenses => expenses.BaseCurrencyAmount)}"
             + GetExpensesExplanation();
     }
+    public override string GetDuplicateSignature()
+    {
+        return $"FUTURE|{base.GetDuplicateSignature()}|{ContractValue.Amount.Amount}|{ContractValue.Amount.Currency}|{PositionType}";
+    }
 }

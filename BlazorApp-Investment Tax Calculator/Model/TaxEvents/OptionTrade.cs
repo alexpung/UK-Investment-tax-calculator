@@ -35,6 +35,10 @@ public record OptionTrade : Trade
 
         return output.ToString();
     }
+    public override string GetDuplicateSignature()
+    {
+        return $"OPTION|{base.GetDuplicateSignature()}|{Underlying}|{StrikePrice.Amount}|{StrikePrice.Currency}|{ExpiryDate.Ticks}|{PUTCALL}|{Multiplier}";
+    }
 }
 
 public enum PUTCALL
