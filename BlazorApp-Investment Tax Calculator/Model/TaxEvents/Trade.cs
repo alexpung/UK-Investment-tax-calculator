@@ -48,8 +48,9 @@ public record Trade : TaxEvent, ITextFilePrintable
     public TradeReason TradeReason { get; set; } = TradeReason.OrderedTrade;
     /// <summary>
     /// Apply the tax effect that if a trade is a result of an option, the cost or premium received is rolled to the trade. 
+    /// Fix: corrected double application of option cost/proceed
     /// </summary>
-    /// <param name="cost"></param>
+    /// <param name="cost">Cost in base currency GBP</param>
     /// <param name="description"></param>
     public void AttachOptionTrade(WrappedMoney cost, string description)
     {
@@ -57,7 +58,7 @@ public record Trade : TaxEvent, ITextFilePrintable
         {
             cost *= -1;
         }
-        Expenses = Expenses.Add(new DescribedMoney(cost.Amount, cost.Currency, GrossProceed.FxRate, description));
+        Expenses = Expenses.Add(new DescribedMoney(cost.Amount, cost.Currency, 1, description));
     }
     public virtual WrappedMoney NetProceed
     {
