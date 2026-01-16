@@ -14,15 +14,14 @@ public class IBParseController(AssetTypeToLoadSetting assetTypeToLoadSetting) : 
         XElement? xml = XDocument.Parse(data).Root;
         if (xml is not null)
         {
-            result.Dividends.AddRange(IBXmlDividendParser.ParseXml(xml));
+            if (assetTypeToLoadSetting.LoadDividends) result.Dividends.AddRange(IBXmlDividendParser.ParseXml(xml));
             result.CorporateActions.AddRange(IBXmlStockSplitParser.ParseXml(xml));
-            result.Trades.AddRange(IBXmlStockTradeParser.ParseXml(xml));
-            result.FutureContractTrades.AddRange(IBXmlFutureTradeParser.ParseXml(xml));
-            result.Trades.AddRange(_xmlFxParser.ParseXml(xml));
-            result.OptionTrades.AddRange(IBXmlOptionTradeParser.ParseXml(xml));
-            result.CashSettlements.AddRange(IBXmlCashSettlementParser.ParseXml(xml));
-            result.InterestIncomes.AddRange(IBXmlInterestIncomeParser.ParseXml(xml));
-            result = assetTypeToLoadSetting.FilterTaxEvent(result);
+            if (assetTypeToLoadSetting.LoadStocks) result.Trades.AddRange(IBXmlStockTradeParser.ParseXml(xml));
+            if (assetTypeToLoadSetting.LoadFutures) result.FutureContractTrades.AddRange(IBXmlFutureTradeParser.ParseXml(xml));
+            if (assetTypeToLoadSetting.LoadFx) result.Trades.AddRange(_xmlFxParser.ParseXml(xml));
+            if (assetTypeToLoadSetting.LoadOptions) result.OptionTrades.AddRange(IBXmlOptionTradeParser.ParseXml(xml));
+            if (assetTypeToLoadSetting.LoadOptions) result.CashSettlements.AddRange(IBXmlCashSettlementParser.ParseXml(xml));
+            if (assetTypeToLoadSetting.LoadInterestIncome) result.InterestIncomes.AddRange(IBXmlInterestIncomeParser.ParseXml(xml));
         }
         return result;
     }

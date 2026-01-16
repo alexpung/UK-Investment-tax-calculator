@@ -1,0 +1,15 @@
+<FlexQueryResponse queryName="Tax" type="AF">
+	<FlexStatements count="1">
+		<FlexStatement accountId="TestAccount" fromDate="04-Jan-21" toDate="31-Dec-21" period="Last365CalendarDays" whenGenerated="01-Jan-22 00:00:00">
+			<Trades>
+				<Order currency="USD" isin="US123" fxRateToBase="0.8" assetCategory="OPT" symbol="TSLA  210320P00650000" description="TSLA 20MAR21 650.0 P" underlyingSymbol="TSLA" multiplier="100" strike="650" expiry="20-Mar-21" putCall="P" dateTime="05-Mar-21 16:00:00" quantity="-1"  proceeds="1500" taxes="0" ibCommission="-7" ibCommissionCurrency="USD" notes="O" buySell="SELL" levelOfDetail="ORDER" />
+				<Order currency="USD" isin="US123" fxRateToBase="0.75" assetCategory="OPT" symbol="TSLA  210320P00650000" description="TSLA 20MAR21 650.0 P" underlyingSymbol="TSLA" multiplier="100" strike="650" expiry="20-Mar-21" putCall="P" dateTime="20-Mar-21 16:00:00" quantity="1"  proceeds="0" taxes="0" ibCommission="0" ibCommissionCurrency="USD" notes="C;A" buySell="BUY" levelOfDetail="ORDER" />
+				<Order currency="USD" isin="US123" fxRateToBase="0.75" assetCategory="STK" symbol="TSLA" description="Tesla" dateTime="20-Mar-21 16:20:00" quantity="100" proceeds="-65000" taxes="0" ibCommission="-2" ibCommissionCurrency="USD" notes="O;A" buySell="BUY" levelOfDetail="ORDER"/>
+				<Order currency="USD" isin="US123" fxRateToBase="0.8" assetCategory="STK" symbol="TSLA" description="Tesla" dateTime="30-Mar-21 16:20:00" quantity="-100" proceeds="80000" taxes="0" ibCommission="-1" ibCommissionCurrency="USD" notes="C" buySell="SELL" levelOfDetail="ORDER"/>
+			</Trades>
+			<ConversionRates>
+				<ConversionRate reportDate="20-Mar-21" fromCurrency="USD" toCurrency="GBP" rate="0.75" />
+			</ConversionRates>
+		</FlexStatement>
+	</FlexStatements>
+</FlexQueryResponse>

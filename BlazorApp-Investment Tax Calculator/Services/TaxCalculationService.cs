@@ -3,7 +3,6 @@ using InvestmentTaxCalculator.Model;
 using InvestmentTaxCalculator.Model.Interfaces;
 using InvestmentTaxCalculator.Model.UkTaxModel;
 using InvestmentTaxCalculator.Model.UkTaxModel.Stocks;
-using Microsoft.AspNetCore.Components;
 
 namespace InvestmentTaxCalculator.Services;
 
@@ -38,13 +37,12 @@ public class TaxCalculationService(
 
             dividendCalculationResult.SetResult(await Task.Run(dividendCalculator.CalculateTax));
             years.SetYears(GetSelectableYears());
-            
+
             toastService.ShowInformation("Calculation completed.");
         }
         catch (Exception ex)
         {
             toastService.ShowException(ex);
-            throw; // Re-throw so callers can handle it if needed
         }
         finally
         {

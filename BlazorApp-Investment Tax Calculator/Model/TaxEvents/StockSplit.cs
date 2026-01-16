@@ -34,4 +34,8 @@ public record StockSplit : CorporateAction, IChangeSection104
         string explanation = $"Stock split {SplitTo} for {SplitFrom} on {Date:d}";
         section104.MultiplyQuantity(SplitTo / (decimal)SplitFrom, Date, explanation);
     }
+    public override string GetDuplicateSignature()
+    {
+        return $"STOCKSPLIT|{base.GetDuplicateSignature()}|{SplitTo}|{SplitFrom}";
+    }
 }

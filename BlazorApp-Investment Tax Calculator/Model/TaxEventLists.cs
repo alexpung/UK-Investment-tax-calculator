@@ -25,16 +25,18 @@ public record TaxEventLists : IDividendLists, ITradeAndCorporateActionList
             var existingTradeSigs = Trades.Select(t => t.GetDuplicateSignature()).ToHashSet();
             var existingDivSigs = Dividends.Select(d => d.GetDuplicateSignature()).ToHashSet();
             var existingIntSigs = InterestIncomes.Select(i => i.GetDuplicateSignature()).ToHashSet();
+            var existingCorpActionSigs = CorporateActions.Select(c => c.GetDuplicateSignature()).ToHashSet();
+            var existingOptionSigs = OptionTrades.Select(o => o.GetDuplicateSignature()).ToHashSet();
+            var existingFutureSigs = FutureContractTrades.Select(f => f.GetDuplicateSignature()).ToHashSet();
+            var existingCashSigs = CashSettlements.Select(c => c.GetDuplicateSignature()).ToHashSet();
 
             Trades.AddRange(taxEventLists.Trades.Where(t => !existingTradeSigs.Contains(t.GetDuplicateSignature())));
             Dividends.AddRange(taxEventLists.Dividends.Where(d => !existingDivSigs.Contains(d.GetDuplicateSignature())));
             InterestIncomes.AddRange(taxEventLists.InterestIncomes.Where(i => !existingIntSigs.Contains(i.GetDuplicateSignature())));
-            
-            // For other types, see initial implementation
-            CorporateActions.AddRange(taxEventLists.CorporateActions);
-            OptionTrades.AddRange(taxEventLists.OptionTrades);
-            FutureContractTrades.AddRange(taxEventLists.FutureContractTrades);
-            CashSettlements.AddRange(taxEventLists.CashSettlements);
+            CorporateActions.AddRange(taxEventLists.CorporateActions.Where(c => !existingCorpActionSigs.Contains(c.GetDuplicateSignature())));
+            OptionTrades.AddRange(taxEventLists.OptionTrades.Where(o => !existingOptionSigs.Contains(o.GetDuplicateSignature())));
+            FutureContractTrades.AddRange(taxEventLists.FutureContractTrades.Where(f => !existingFutureSigs.Contains(f.GetDuplicateSignature())));
+            CashSettlements.AddRange(taxEventLists.CashSettlements.Where(c => !existingCashSigs.Contains(c.GetDuplicateSignature())));
         }
         else
         {
@@ -53,12 +55,20 @@ public record TaxEventLists : IDividendLists, ITradeAndCorporateActionList
         var existingTradeSigs = Trades.Select(t => t.GetDuplicateSignature()).ToHashSet();
         var existingDivSigs = Dividends.Select(d => d.GetDuplicateSignature()).ToHashSet();
         var existingIntSigs = InterestIncomes.Select(i => i.GetDuplicateSignature()).ToHashSet();
+        var existingCorpActionSigs = CorporateActions.Select(c => c.GetDuplicateSignature()).ToHashSet();
+        var existingOptionSigs = OptionTrades.Select(o => o.GetDuplicateSignature()).ToHashSet();
+        var existingFutureSigs = FutureContractTrades.Select(f => f.GetDuplicateSignature()).ToHashSet();
+        var existingCashSigs = CashSettlements.Select(c => c.GetDuplicateSignature()).ToHashSet();
 
         return new TaxEventLists
         {
             Trades = other.Trades.Where(t => existingTradeSigs.Contains(t.GetDuplicateSignature())).ToList(),
             Dividends = other.Dividends.Where(d => existingDivSigs.Contains(d.GetDuplicateSignature())).ToList(),
-            InterestIncomes = other.InterestIncomes.Where(i => existingIntSigs.Contains(i.GetDuplicateSignature())).ToList()
+            InterestIncomes = other.InterestIncomes.Where(i => existingIntSigs.Contains(i.GetDuplicateSignature())).ToList(),
+            CorporateActions = other.CorporateActions.Where(c => existingCorpActionSigs.Contains(c.GetDuplicateSignature())).ToList(),
+            OptionTrades = other.OptionTrades.Where(o => existingOptionSigs.Contains(o.GetDuplicateSignature())).ToList(),
+            FutureContractTrades = other.FutureContractTrades.Where(f => existingFutureSigs.Contains(f.GetDuplicateSignature())).ToList(),
+            CashSettlements = other.CashSettlements.Where(c => existingCashSigs.Contains(c.GetDuplicateSignature())).ToList()
         };
     }
 

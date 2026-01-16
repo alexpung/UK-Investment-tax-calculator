@@ -48,7 +48,7 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
                 }
                 else
                 {
-                    toastService.ShowError($"No corresponding {optionTrade.TradeReason} trade found for option (Underlying: {optionTrade.Underlying}, " +
+                    throw new InvalidOperationException($"No corresponding {optionTrade.TradeReason} trade found for option (Underlying: {optionTrade.Underlying}, " +
                     $"Quantity: {optionTrade.Quantity * optionTrade.Multiplier}, date: {optionTrade.Date.Date}, there is likely an omission of trade(s) in the input)");
                 }
             }

@@ -38,4 +38,8 @@ public record FundEqualisation : CorporateAction, IChangeSection104
         // Equalisation reduces the cost base, so we pass a negative adjustment
         section104.AdjustAcquisitionCost(-Amount.BaseCurrencyAmount, Date, explanation);
     }
+    public override string GetDuplicateSignature()
+    {
+        return $"EQUALISATION|{base.GetDuplicateSignature()}|{Amount.Amount.Amount}|{Amount.Amount.Currency}|{RelatedEventDescription}";
+    }
 }
