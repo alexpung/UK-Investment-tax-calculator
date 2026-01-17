@@ -13,7 +13,7 @@ public record OptionTrade : Trade
     public required PUTCALL PUTCALL { get; set; }
     public required decimal Multiplier { get; set; }
     public Trade? ExerciseOrExercisedTrade { get; set; }
-    public bool CashSettled { get; set; } = false;
+    public SettlementMethods SettlementMethod { get; set; } = SettlementMethods.UNKNOWN;
 
     public override string PrintToTextFile()
     {
@@ -45,4 +45,12 @@ public enum PUTCALL
 {
     PUT,
     CALL
+}
+
+public enum SettlementMethods
+{
+    UNKNOWN,
+    CASH,
+    // Settled by delivery of the underlying asset
+    DELIVERY
 }

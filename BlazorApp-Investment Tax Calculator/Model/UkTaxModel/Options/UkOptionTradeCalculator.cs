@@ -11,48 +11,10 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
 {
     public List<ITradeTaxCalculation> CalculateTax()
     {
-        MatchExerciseAndAssignmentOptionTrade();
         List<OptionTradeTaxCalculation> tradeTaxCalculations = [.. tradeTaxCalculationFactory.GroupOptionTrade(tradeList.OptionTrades)];
         GroupedTradeContainer<OptionTradeTaxCalculation> _tradeContainer = new(tradeTaxCalculations, tradeList.CorporateActions);
         UkMatchingRules.ApplyUkTaxRuleSequence(MatchTrade, _tradeContainer, section104Pools);
         return [.. tradeTaxCalculations.Cast<ITradeTaxCalculation>()];
-    }
-
-    private void MatchExerciseAndAssignmentOptionTrade()
-    {
-        List<OptionTrade> filteredTrades = [.. tradeList.OptionTrades.Where(trade => trade is OptionTrade
-        { TradeReason: TradeReason.OwnerExerciseOption or TradeReason.OptionAssigned })];
-        foreach (var optionTrade in filteredTrades)
-        {
-            var underlyingTrade = tradeList.Trades.Find(trade =>
-                                                        trade.AssetName == optionTrade.Underlying &&
-                                                        trade.TradeReason == optionTrade.TradeReason &&
-                                                        Math.Abs(trade.Quantity) == Math.Abs(optionTrade.Quantity * optionTrade.Multiplier) &&
-                                                        trade.Date.Date == optionTrade.Date.Date);
-            if (underlyingTrade is not null)
-            {
-                optionTrade.ExerciseOrExercisedTrade = underlyingTrade;
-            }
-            else
-            {
-                var matchingCashSettlement = tradeList.CashSettlements.Find(trade => trade.AssetName == optionTrade.AssetName &&
-                                                                                     trade.Date.Date == optionTrade.Date.Date &&
-                                                                                     trade.TradeReason == optionTrade.TradeReason);
-                if (matchingCashSettlement is not null)
-                {
-                    optionTrade.CashSettled = true;
-                    WrappedMoney tradeValue;
-                    if (matchingCashSettlement.TradeReason == TradeReason.OptionAssigned) tradeValue = matchingCashSettlement.Amount * -1;
-                    else tradeValue = matchingCashSettlement.Amount;
-                    optionTrade.GrossProceed = optionTrade.GrossProceed with { Amount = tradeValue, Description = matchingCashSettlement.Description };
-                }
-                else
-                {
-                    throw new InvalidOperationException($"No corresponding {optionTrade.TradeReason} trade found for option (Underlying: {optionTrade.Underlying}, " +
-                    $"Quantity: {optionTrade.Quantity * optionTrade.Multiplier}, date: {optionTrade.Date.Date}, there is likely an omission of trade(s) in the input)");
-                }
-            }
-        }
     }
 
     public void MatchTrade(OptionTradeTaxCalculation trade1, OptionTradeTaxCalculation trade2, TaxMatchType taxMatchType, TaxableStatus taxableStatus)
@@ -146,13 +108,13 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
     private static void MatchExercisedOption(TradePairSorter<OptionTradeTaxCalculation> tradePairSorter, TaxMatchType taxMatchType, decimal exercisedQty, TaxableStatus taxableStatus)
     {
         TradeMatch tradeMatch;
-        if (tradePairSorter.LatterTrade.IsCashSettled)
+        if (tradePairSorter.LatterTrade.SettlementMethod is SettlementMethods.CASH)
         {
             WrappedMoney allowableCost = tradePairSorter.AcquisitionTrade.GetProportionedCostOrProceedForTradeReason(TradeReason.OrderedTrade, exercisedQty);
             WrappedMoney disposalProceed = tradePairSorter.DisposalTrade.GetProportionedCostOrProceedForTradeReason(TradeReason.OwnerExerciseOption, exercisedQty);
             tradeMatch = CreateTradeMatch(tradePairSorter, exercisedQty, allowableCost, disposalProceed, $"{exercisedQty:F2} option cash settled.", taxMatchType, taxableStatus);
         }
-        else
+        else if (tradePairSorter.LatterTrade.SettlementMethod is SettlementMethods.DELIVERY)
         {
             WrappedMoney premiumCost = tradePairSorter.EarlierTrade.GetProportionedCostOrProceed(exercisedQty);
             WrappedMoney execiseCost = tradePairSorter.LatterTrade.GetSettlementTransactionCost(exercisedQty);
@@ -160,6 +122,7 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
             tradePairSorter.LatterTrade.AttachTradeToUnderlying(premiumCost + execiseCost, $"Option premium adjustment due to execising option", TradeReason.OwnerExerciseOption);
             tradeMatch = CreateTradeMatch(tradePairSorter, exercisedQty, WrappedMoney.GetBaseCurrencyZero(), WrappedMoney.GetBaseCurrencyZero(), $"{exercisedQty} option exercised.", taxMatchType, taxableStatus);
         }
+        else throw new InvalidDataException($"Unexpected settlement method {tradePairSorter.LatterTrade.SettlementMethod}");
         AssignTradeMatch(tradePairSorter, exercisedQty, tradeMatch, tradeMatch);
     }
 
@@ -172,7 +135,7 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
     private void MatchAssignedOption(TradePairSorter<OptionTradeTaxCalculation> tradePairSorter, TaxMatchType taxMatchType, decimal assignmentQty, TaxableStatus taxableStatus)
     {
         TradeMatch tradeMatch;
-        if (tradePairSorter.LatterTrade.IsCashSettled)
+        if (tradePairSorter.LatterTrade.SettlementMethod is SettlementMethods.CASH)
         {
             WrappedMoney allowableCost = tradePairSorter.AcquisitionTrade.GetProportionedCostOrProceedForTradeReason(TradeReason.OptionAssigned, assignmentQty);
             WrappedMoney disposalProceed = tradePairSorter.DisposalTrade.GetProportionedCostOrProceedForTradeReason(TradeReason.OrderedTrade, assignmentQty);

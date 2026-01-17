@@ -36,8 +36,8 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
     /// <summary>
     /// True if the option is cash settled, false if the option is settled by the underlying asset
     /// </summary>
-    public bool IsCashSettled { get; init; }
-    public List<OptionTrade> SettlementTradeList { get; init; } = [];
+    public SettlementMethods SettlementMethod => ((OptionTrade)TradeList[0]).SettlementMethod;
+    public IEnumerable<OptionTrade> SettlementTradeList => TradeList.Cast<OptionTrade>().Where(trade => trade.TradeReason is TradeReason.OwnerExerciseOption or TradeReason.OptionAssigned);
 
     /// <summary>
     /// Cost is negative value
@@ -100,23 +100,7 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
         OwnerExercisedQty = trades.Where(trade => trade.TradeReason == TradeReason.OwnerExerciseOption).Sum(trade => trade.Quantity);
         OrderedTradeQty = trades.Where(trade => trade.TradeReason == TradeReason.OrderedTrade).Sum(trade => trade.Quantity);
         PUTCALL = trades.First().PUTCALL;
-        List<OptionTrade> settlementTrades = [.. trades.Where(trade => trade.TradeReason is TradeReason.OwnerExerciseOption or TradeReason.OptionAssigned)];
-        if (settlementTrades.TrueForAll(trade => trade.CashSettled) && settlementTrades.Count > 0)
-        {
-            IsCashSettled = true;
         }
-        else if (settlementTrades.TrueForAll(trade => !trade.CashSettled) && settlementTrades.Count > 0)
-        {
-            IsCashSettled = false;
-            TradeList = [.. TradeList.Except(settlementTrades)];
-            SettlementTradeList.AddRange(settlementTrades);
-            TotalCostOrProceed = TradeList.Sum(trade => trade.NetProceed);
-        }
-        else if (settlementTrades.Count > 0)
-        {
-            throw new ArgumentException("Unexpected option that is both cash and underlying settled");
-        }
-    }
 
     protected override TradeMatch BuildSection104DisposalMatch(Section104History history, decimal matchQty, TaxableStatus taxableStatus)
     {
@@ -128,7 +112,7 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
         {
             additionalInformation += $"{ExpiredQty} option expired. ";
         }
-        if (OwnerExercisedQty > 0 && !IsCashSettled)
+        if (OwnerExercisedQty > 0 && SettlementMethod is SettlementMethods.DELIVERY)
         {
             decimal matchExerciseQty = matchQty * OwnerExercisedQty / TotalQty;
             WrappedMoney exerciseAllowableCost = allowableCost * matchExerciseQty / TotalQty;
@@ -138,7 +122,7 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
             AttachTradeToUnderlying(exerciseAllowableCost + GetSettlementTransactionCost(matchExerciseQty),
                 $"Option premium adjustment due to exercising option", TradeReason.OwnerExerciseOption);
         }
-        if (OwnerExercisedQty > 0 && IsCashSettled) additionalInformation += $"{OwnerExercisedQty:F2} option cash settled.";
+        if (OwnerExercisedQty > 0 && SettlementMethod is SettlementMethods.CASH) additionalInformation += $"{OwnerExercisedQty:F2} option cash settled.";
 
         return new TradeMatch()
         {
