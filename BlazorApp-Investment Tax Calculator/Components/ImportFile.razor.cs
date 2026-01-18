@@ -19,7 +19,6 @@ public partial class ImportFile
                 ShowDividendRegionUnknownWarning(events);
                 ExecutionState executionState = await CheckDuplicateAndConfirm(events);
                 if (executionState is ExecutionState.SKIP_FILE) continue;
-                if (executionState is ExecutionState.ABORT) break;
                 if (executionState is ExecutionState.SKIP_DUPLICATE) taxEventLists.AddData(events, true);
                 if (executionState is ExecutionState.INCLUDE_DUPLICATE) taxEventLists.AddData(events, false);
                 OptionHelper.CheckOptions(taxEventLists);
@@ -54,9 +53,8 @@ public partial class ImportFile
         }
         if (duplicateCount > 0)
         {
-            bool? skipDuplicates = await duplicateModal.ShowAsync(duplicates);
-            if (skipDuplicates is null) return ExecutionState.ABORT;
-            if ((bool)skipDuplicates) return ExecutionState.SKIP_DUPLICATE;
+            bool skipDuplicates = await duplicateModal.ShowAsync(duplicates);
+            if (skipDuplicates) return ExecutionState.SKIP_DUPLICATE;
         }
         return ExecutionState.INCLUDE_DUPLICATE;
     }
@@ -64,7 +62,6 @@ public partial class ImportFile
     private enum ExecutionState
     {
         SKIP_FILE,
-        ABORT,
         INCLUDE_DUPLICATE,
         SKIP_DUPLICATE
     }

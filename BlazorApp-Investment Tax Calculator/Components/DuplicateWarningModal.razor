@@ -42,18 +42,18 @@
 @code {
     public bool IsVisible { get; private set; }
     public TaxEventLists Duplicates { get; private set; } = new();
-    private TaskCompletionSource<bool?>? _tcs;
+    private TaskCompletionSource<bool>? _tcs;
 
-    public Task<bool?> ShowAsync(TaxEventLists duplicates)
+    public Task<bool> ShowAsync(TaxEventLists duplicates)
     {
         Duplicates = duplicates;
         IsVisible = true;
-        _tcs = new TaskCompletionSource<bool?>();
+        _tcs = new TaskCompletionSource<bool>();
         StateHasChanged();
         return _tcs.Task;
     }
 
-    private void Close(bool? result)
+    private void Close(bool result)
     {
         IsVisible = false;
         StateHasChanged();
