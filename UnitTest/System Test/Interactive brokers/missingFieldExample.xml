@@ -2,7 +2,7 @@
 <FlexStatements count="1">
 <FlexStatement accountId="TestAccount" fromDate="04-Jan-21" toDate="31-Dec-21" period="Last365CalendarDays" whenGenerated="01-Jan-22 00:00:00">
 <Trades>
-<Order currency="USD" fxRateToBase="0.8" assetCategory="STK" description="ABC Example Stock" dateTime="01-May-21 12:34:56" quantity="200" proceeds="-2000" taxes="-20" ibCommission="-1.5" ibCommissionCurrency="USD" buySell="BUY" levelOfDetail="ORDER" />
+<Order currency="USD" fxRateToBase="0.8" assetCategory="STK" isin="US12345" description="ABC Example Stock" dateTime="01-May-21 12:34:56" quantity="200" proceeds="-2000" taxes="-20" ibCommission="-1.5" ibCommissionCurrency="USD" buySell="BUY" levelOfDetail="ORDER" />
 </Trades>
 </FlexStatement>
 </FlexStatements>

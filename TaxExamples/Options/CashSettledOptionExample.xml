@@ -2,12 +2,12 @@
 	<FlexStatements count="1">
 		<FlexStatement accountId="TestAccount" fromDate="04-Jan-21" toDate="31-Dec-21" period="Last365CalendarDays" whenGenerated="01-Jan-22 00:00:00">
 		<StatementOfFunds>
-			<StatementOfFundsLine assetCategory="OPT" symbol="TSLA  210320P00650000" description="TSLA  210320P00650000" date="20-Mar-21" activityDescription="Option Cash Settlement for: Assignment" amount="-1200.00" currency="USD" fxRateToBase="0.75" levelOfDetail="Currency" reportDate="20-Mar-21" activityCode="ADJ"/>
+			<StatementOfFundsLine assetCategory="OPT" symbol="TSLA  210320P00650000" isin="US12348" description="TSLA  210320P00650000" date="20-Mar-21" activityDescription="Option Cash Settlement for: Assignment" amount="-1200.00" currency="USD" fxRateToBase="0.75" levelOfDetail="Currency" reportDate="20-Mar-21" activityCode="ADJ"/>
 			</StatementOfFunds>
 			<Trades>
 				<!-- Open Option Trade for Assignment (Put Option) -->
-				<Order currency="USD" fxRateToBase="0.8" assetCategory="OPT" isin="US12345" symbol="TSLA  210320P00650000" description="TSLA 20MAR21 650.0 P" underlyingSymbol="TSLA" multiplier="100" strike="650" expiry="20-Mar-21" putCall="P" dateTime="05-Jan-21 16:00:00" quantity="-1"  proceeds="1500" taxes="0" ibCommission="-7" ibCommissionCurrency="USD" notes="O" buySell="SELL" levelOfDetail="ORDER" />
-				<Order currency="USD" fxRateToBase="0.75" assetCategory="OPT" isin="US12345" symbol="TSLA  210320P00650000" description="TSLA 20MAR21 650.0 P" underlyingSymbol="TSLA" multiplier="100" strike="650" expiry="20-Mar-21" putCall="P" dateTime="20-Mar-21 16:00:00" quantity="1"  proceeds="0" taxes="0" ibCommission="0" ibCommissionCurrency="USD" notes="C;A" buySell="BUY" levelOfDetail="ORDER" />
+				<Order currency="USD" fxRateToBase="0.8" assetCategory="OPT" isin="US12348" symbol="TSLA  210320P00650000" description="TSLA 20MAR21 650.0 P" underlyingSymbol="TSLA" multiplier="100" strike="650" expiry="20-Mar-21" putCall="P" dateTime="05-Jan-21 16:00:00" quantity="-1"  proceeds="1500" taxes="0" ibCommission="-7" ibCommissionCurrency="USD" notes="O" buySell="SELL" levelOfDetail="ORDER" />
+				<Order currency="USD" fxRateToBase="0.75" assetCategory="OPT" isin="US12348" symbol="TSLA  210320P00650000" description="TSLA 20MAR21 650.0 P" underlyingSymbol="TSLA" multiplier="100" strike="650" expiry="20-Mar-21" putCall="P" dateTime="20-Mar-21 16:00:00" quantity="1"  proceeds="0" taxes="0" ibCommission="0" ibCommissionCurrency="USD" notes="C;A" buySell="BUY" levelOfDetail="ORDER" />
 			</Trades>
 			<ConversionRates>
 				<ConversionRate reportDate="20-Mar-21" fromCurrency="USD" toCurrency="GBP" rate="0.75" />
