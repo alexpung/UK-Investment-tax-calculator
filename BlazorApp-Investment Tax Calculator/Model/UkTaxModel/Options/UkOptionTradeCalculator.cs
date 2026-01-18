@@ -3,11 +3,10 @@ using InvestmentTaxCalculator.Model.Interfaces;
 using InvestmentTaxCalculator.Model.TaxEvents;
 using InvestmentTaxCalculator.Model.UkTaxModel.Stocks;
 using InvestmentTaxCalculator.Parser;
-using InvestmentTaxCalculator.Services;
 
 namespace InvestmentTaxCalculator.Model.UkTaxModel.Options;
 
-public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorporateActionList tradeList, ITaxYear taxYear, ToastService toastService, TradeTaxCalculationFactory tradeTaxCalculationFactory) : ITradeCalculator
+public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorporateActionList tradeList, ITaxYear taxYear, TradeTaxCalculationFactory tradeTaxCalculationFactory) : ITradeCalculator
 {
     public List<ITradeTaxCalculation> CalculateTax()
     {
