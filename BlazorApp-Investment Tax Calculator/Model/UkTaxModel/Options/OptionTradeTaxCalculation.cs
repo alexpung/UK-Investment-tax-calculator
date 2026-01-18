@@ -150,7 +150,7 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
     public void AttachTradeToUnderlying(WrappedMoney attachedPremium, string comment, TradeReason tradeReason)
     {
         // if you are assigned a put, you buy the underlying asset and the premium you received when you wrote the put is deducted from the acquisition cost
-        // if you are execising a put, you sell the underlying asset and the premium you pay when you buy the put is deducted from the disposal proceed
+        // if you are exercising a put, you sell the underlying asset and the premium you pay when you buy the put is deducted from the disposal proceed
         if (PUTCALL == PUTCALL.PUT) attachedPremium = attachedPremium * -1;
         OptionTrade exerciseTrade = SettlementTradeList.First(trade => trade.ExerciseOrExercisedTrade?.TradeReason == tradeReason);
         ExerciseOrAssignmentRollover rolloverEvent = new(attachedPremium, comment);
