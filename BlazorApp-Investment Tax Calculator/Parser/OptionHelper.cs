@@ -10,9 +10,15 @@ public static class OptionHelper
     {
         List<OptionTrade> tradesToCheck = [.. taxEventLists.OptionTrades.Where(trade => trade is OptionTrade
         { TradeReason: TradeReason.OwnerExerciseOption or TradeReason.OptionAssigned, SettlementMethod: SettlementMethods.UNKNOWN  })];
+
+        // Create candidates pools
+        var availableTrades = new List<Trade>(taxEventLists.Trades);
+        var availableCashSettlements = new List<CashSettlement>(taxEventLists.CashSettlements);
+
         foreach (var optionTrade in tradesToCheck)
         {
-            bool isSettled = CheckIfOptionIsDeliverySettled(optionTrade, taxEventLists) || CheckIfOptionIsCashSettled(optionTrade, taxEventLists);
+            bool isSettled = CheckIfOptionIsDeliverySettled(optionTrade, availableTrades, taxEventLists.OptionTrades) || 
+                             CheckIfOptionIsCashSettled(optionTrade, availableCashSettlements, taxEventLists.OptionTrades);
             if (!isSettled)
             {
                 throw new InvalidOperationException($"No corresponding {optionTrade.TradeReason} trade found for option (Underlying: {optionTrade.Underlying}, " +
@@ -21,36 +27,42 @@ public static class OptionHelper
         }
     }
 
-    private static bool CheckIfOptionIsDeliverySettled(OptionTrade optionTrade, TaxEventLists taxEventLists)
+    private static bool CheckIfOptionIsDeliverySettled(OptionTrade optionTrade, List<Trade> availableTrades, List<OptionTrade> allOptions)
     {
-        var underlyingTrade = taxEventLists.Trades.Find(trade =>
+        var underlyingTrade = availableTrades.Find(trade =>
                                                         trade.AssetName == optionTrade.Underlying &&
                                                         trade.TradeReason == optionTrade.TradeReason &&
                                                         Math.Abs(trade.Quantity) == Math.Abs(optionTrade.Quantity * optionTrade.Multiplier) &&
                                                         trade.Date.Date == optionTrade.Date.Date);
         if (underlyingTrade is not null)
         {
+            availableTrades.Remove(underlyingTrade); // Consume the trade
             optionTrade.ExerciseOrExercisedTrade = underlyingTrade;
-            foreach (var item in taxEventLists.OptionTrades.Where(trade => trade.AssetName == optionTrade.AssetName))
+            
+            foreach (var item in allOptions.Where(trade => trade.AssetName == optionTrade.AssetName))
             {
                 item.SettlementMethod = SettlementMethods.DELIVERY;
             }
+            
             return true;
         }
         return false;
     }
 
-    private static bool CheckIfOptionIsCashSettled(OptionTrade optionTrade, TaxEventLists taxEventLists)
+    private static bool CheckIfOptionIsCashSettled(OptionTrade optionTrade, List<CashSettlement> availableSettlements, List<OptionTrade> allOptions)
     {
-        var matchingCashSettlement = taxEventLists.CashSettlements.Find(trade => trade.AssetName == optionTrade.AssetName &&
+        var matchingCashSettlement = availableSettlements.Find(trade => trade.AssetName == optionTrade.AssetName &&
                                                                                      trade.Date.Date == optionTrade.Date.Date &&
                                                                                      trade.TradeReason == optionTrade.TradeReason);
         if (matchingCashSettlement is not null)
         {
-            foreach (var item in taxEventLists.OptionTrades.Where(i => i.AssetName == optionTrade.AssetName))
+            availableSettlements.Remove(matchingCashSettlement); // Consume the settlement
+            
+            foreach (var item in allOptions.Where(i => i.AssetName == optionTrade.AssetName))
             {
                 item.SettlementMethod = SettlementMethods.CASH;
             }
+
             WrappedMoney tradeValue;
             if (matchingCashSettlement.TradeReason == TradeReason.OptionAssigned) tradeValue = matchingCashSettlement.Amount * -1;
             else tradeValue = matchingCashSettlement.Amount;
