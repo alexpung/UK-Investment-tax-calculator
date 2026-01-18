@@ -6,6 +6,7 @@ using InvestmentTaxCalculator.Model.UkTaxModel;
 using InvestmentTaxCalculator.Model.UkTaxModel.Futures;
 using InvestmentTaxCalculator.Model.UkTaxModel.Options;
 using InvestmentTaxCalculator.Model.UkTaxModel.Stocks;
+using InvestmentTaxCalculator.Parser;
 using InvestmentTaxCalculator.Services;
 
 using Microsoft.Extensions.Logging;
@@ -20,6 +21,7 @@ public static class TradeCalculationHelper
         section104Pools = new UkSection104Pools(new UKTaxYear(), residencyStatusRecord);
         TaxEventLists taxEventLists = new();
         taxEventLists.AddData(taxEvents);
+        OptionHelper.CheckOptions(taxEventLists);
         UkOptionTradeCalculator optionTradeCalculator = CreateOptionTradeCalculator(section104Pools, taxEventLists, residencyStatusRecord);
         UkTradeCalculator calculator = CreateUkTradeCalculator(section104Pools, taxEventLists, residencyStatusRecord);
         UkFutureTradeCalculator futureCalculator = CreateUkFutureTradeCalculator(section104Pools, taxEventLists, residencyStatusRecord);
