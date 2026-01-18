@@ -54,7 +54,7 @@ public static class OptionHelper
             WrappedMoney tradeValue;
             if (matchingCashSettlement.TradeReason == TradeReason.OptionAssigned) tradeValue = matchingCashSettlement.Amount * -1;
             else tradeValue = matchingCashSettlement.Amount;
-            optionTrade.GrossProceed = optionTrade.GrossProceed with { Amount = tradeValue, Description = matchingCashSettlement.Description };
+            optionTrade.GrossProceed = optionTrade.GrossProceed with { Amount = tradeValue, Description = matchingCashSettlement.Description, FxRate = 1 };
             return true;
         }
         return false;

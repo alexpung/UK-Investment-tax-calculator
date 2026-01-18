@@ -26,7 +26,8 @@ public static class TradeCalculationHelper
         UkTradeCalculator calculator = CreateUkTradeCalculator(section104Pools, taxEventLists, residencyStatusRecord);
         UkFutureTradeCalculator futureCalculator = CreateUkFutureTradeCalculator(section104Pools, taxEventLists, residencyStatusRecord);
 
-        List<ITradeTaxCalculation> result = optionTradeCalculator.CalculateTax();
+        _ = optionTradeCalculator.CalculateTax();
+        List<ITradeTaxCalculation> result = optionTradeCalculator.CalculateTax(); // intentionally calculate option twice to test test results are the same even if calculated twice
         result.AddRange(calculator.CalculateTax());
         result.AddRange(futureCalculator.CalculateTax());
         return result;

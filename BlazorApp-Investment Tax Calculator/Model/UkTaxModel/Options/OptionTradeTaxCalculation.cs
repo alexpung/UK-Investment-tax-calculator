@@ -100,7 +100,7 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
         OwnerExercisedQty = trades.Where(trade => trade.TradeReason == TradeReason.OwnerExerciseOption).Sum(trade => trade.Quantity);
         OrderedTradeQty = trades.Where(trade => trade.TradeReason == TradeReason.OrderedTrade).Sum(trade => trade.Quantity);
         PUTCALL = trades.First().PUTCALL;
-        }
+    }
 
     protected override TradeMatch BuildSection104DisposalMatch(Section104History history, decimal matchQty, TaxableStatus taxableStatus)
     {
@@ -121,6 +121,7 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
             matchDisposalProceedQty -= matchExerciseQty;
             AttachTradeToUnderlying(exerciseAllowableCost + GetSettlementTransactionCost(matchExerciseQty),
                 $"Option premium adjustment due to exercising option", TradeReason.OwnerExerciseOption);
+            _refundedDisposalProceed -= GetSettlementTransactionCost(matchExerciseQty);
         }
         if (OwnerExercisedQty > 0 && SettlementMethod is SettlementMethods.CASH) additionalInformation += $"{OwnerExercisedQty:F2} option cash settled.";
 
@@ -152,7 +153,11 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
         // if you are execising a put, you sell the underlying asset and the premium you pay when you buy the put is deducted from the disposal proceed
         if (PUTCALL == PUTCALL.PUT) attachedPremium = attachedPremium * -1;
         OptionTrade exerciseTrade = SettlementTradeList.First(trade => trade.ExerciseOrExercisedTrade?.TradeReason == tradeReason);
-        exerciseTrade.ExerciseOrExercisedTrade!.AttachOptionTrade(attachedPremium, comment);
+        ExerciseOrAssignmentRollover rolloverEvent = new(attachedPremium, comment);
+        if (!exerciseTrade.ExerciseOrExercisedTrade!.TradeEvents.Contains(rolloverEvent))
+        {
+            exerciseTrade.ExerciseOrExercisedTrade!.TradeEvents.Add(rolloverEvent);
+        }
     }
 
     public override string PrintToTextFile()

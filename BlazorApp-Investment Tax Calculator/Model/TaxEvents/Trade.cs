@@ -39,36 +39,27 @@ public record Trade : TaxEvent, ITextFilePrintable
             _grossProceed = value;
         }
     }
-    public string Description { get; set; } = string.Empty;
+    private string _description = string.Empty;
+    public string Description { get => GetDescription(); set { _description = value; } }
     /// <summary>
     /// <para> positive = charge: take money from you. </para>
     /// <para> negative = rebate: give you money </para>
     /// </summary>
     public ImmutableList<DescribedMoney> Expenses { get; set; } = [];
     public TradeReason TradeReason { get; set; } = TradeReason.OrderedTrade;
-    /// <summary>
-    /// Apply the tax effect that if a trade is a result of an option, the cost or premium received is rolled to the trade. 
-    /// Fix: corrected double application of option cost/proceed
-    /// </summary>
-    /// <param name="cost">Cost in base currency GBP</param>
-    /// <param name="description"></param>
-    public void AttachOptionTrade(WrappedMoney cost, string description)
-    {
-        if (AcquisitionDisposal == TradeType.DISPOSAL)
-        {
-            cost *= -1;
-        }
-        Expenses = Expenses.Add(new DescribedMoney(cost.Amount, cost.Currency, 1, description));
-    }
+
     public virtual WrappedMoney NetProceed
     {
         get
         {
-            if (Expenses.IsEmpty) return GrossProceed.BaseCurrencyAmount;
-            if (AcquisitionDisposal == TradeType.ACQUISITION) return GrossProceed.BaseCurrencyAmount + Expenses.Select(i => i.BaseCurrencyAmount).Sum();
-            else return GrossProceed.BaseCurrencyAmount - Expenses.Select(i => i.BaseCurrencyAmount).Sum();
+            WrappedMoney result;
+            if (AcquisitionDisposal == TradeType.ACQUISITION) result = GrossProceed.BaseCurrencyAmount + Expenses.Select(i => i.BaseCurrencyAmount).Sum();
+            else result = GrossProceed.BaseCurrencyAmount - Expenses.Select(i => i.BaseCurrencyAmount).Sum();
+            foreach (ITradeEvent tradeevent in TradeEvents) result += tradeevent.NetProceedsAdjustment;
+            return result;
         }
     }
+
     /// <summary>
     /// Quantity but positive for an acquisition but negative for a disposal.
     /// </summary>
@@ -79,6 +70,7 @@ public record Trade : TaxEvent, ITextFilePrintable
         _ => throw new NotImplementedException($"Unknown trade type {AcquisitionDisposal}"),
     };
 
+    public List<ITradeEvent> TradeEvents { get; set; } = [];
     protected string GetExpensesExplanation()
     {
         if (Expenses.IsEmpty) return string.Empty;
@@ -114,5 +106,14 @@ public record Trade : TaxEvent, ITextFilePrintable
         // GrossProceed.Amount.Amount is the decimal amount. Note: Description in DescribedMoney might differ so we skip it.
         return $"TRADE|{base.GetDuplicateSignature()}|{AcquisitionDisposal}|{Quantity}|{GrossProceed.Amount.Amount}|{GrossProceed.Amount.Currency}";
     }
-}
 
+    private string GetDescription()
+    {
+        if (TradeEvents.Count == 0) return _description;
+
+        StringBuilder sb = new();
+        sb.AppendLine(_description);
+        foreach (ITradeEvent tradeEvent in TradeEvents) sb.AppendLine(tradeEvent.Description);
+        return sb.ToString();
+    }
+}
