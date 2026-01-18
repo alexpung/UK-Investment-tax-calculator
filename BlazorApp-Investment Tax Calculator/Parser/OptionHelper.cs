@@ -63,10 +63,10 @@ public static class OptionHelper
                 item.SettlementMethod = SettlementMethods.CASH;
             }
 
-            WrappedMoney tradeValue;
-            if (matchingCashSettlement.TradeReason == TradeReason.OptionAssigned) tradeValue = matchingCashSettlement.Amount * -1;
+            DescribedMoney tradeValue;
+            if (matchingCashSettlement.TradeReason == TradeReason.OptionAssigned) tradeValue = matchingCashSettlement.Amount with { Amount = -matchingCashSettlement.Amount.Amount };
             else tradeValue = matchingCashSettlement.Amount;
-            optionTrade.GrossProceed = optionTrade.GrossProceed with { Amount = tradeValue, Description = matchingCashSettlement.Description, FxRate = 1 };
+            optionTrade.GrossProceed = tradeValue;
             return true;
         }
         return false;

@@ -57,7 +57,7 @@ public class UkTradeCalculatorOptionCashSettleTest
             Date = DateTime.Parse("25-Jan-23 16:00:00", CultureInfo.InvariantCulture),
             Description = "Option exercise cash settlement",
             TradeReason = TradeReason.OwnerExerciseOption,
-            Amount = new WrappedMoney(30000)
+            Amount = new DescribedMoney(30000, "GBP", 1)
         };
 
         List<ITradeTaxCalculation> result = TradeCalculationHelper.CalculateTrades(
@@ -117,7 +117,7 @@ public class UkTradeCalculatorOptionCashSettleTest
             Date = DateTime.Parse("25-Jan-23 16:00:00", CultureInfo.InvariantCulture),
             Description = "Option exercise cash settlement",
             TradeReason = TradeReason.OptionAssigned,
-            Amount = new WrappedMoney(-30000)
+            Amount = new DescribedMoney(-30000, "GBP", 1)
         };
 
         List<ITradeTaxCalculation> result = TradeCalculationHelper.CalculateTrades(
@@ -234,7 +234,7 @@ public class UkTradeCalculatorOptionCashSettleTest
             Date = DateTime.Parse("25-Jan-23 16:00:00", CultureInfo.InvariantCulture),
             Description = "Option exercise cash settlement",
             TradeReason = TradeReason.OptionAssigned,
-            Amount = new WrappedMoney(-90000)
+            Amount = new DescribedMoney(-90000, "GBP", 1)
         };
 
         List<ITradeTaxCalculation> result = TradeCalculationHelper.CalculateTrades(
@@ -347,7 +347,7 @@ public class UkTradeCalculatorOptionCashSettleTest
             Date = DateTime.Parse("25-Jan-23 16:00:00", CultureInfo.InvariantCulture),
             Description = "Option exercise cash settlement",
             TradeReason = TradeReason.OwnerExerciseOption,
-            Amount = new WrappedMoney(90000)
+            Amount = new DescribedMoney(90000, "GBP", 1)
         };
 
         List<ITradeTaxCalculation> result = TradeCalculationHelper.CalculateTrades(

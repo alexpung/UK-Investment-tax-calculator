@@ -108,7 +108,7 @@ public class TaxEventListsDuplicateTest
         {
             AssetName = "CASH",
             Date = date,
-            Amount = new WrappedMoney(100, "USD"),
+            Amount = new DescribedMoney(100, "USD", 1),
             Description = "Settlement",
             TradeReason = TradeReason.OrderedTrade
         };

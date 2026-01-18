@@ -23,7 +23,7 @@ public static class IBXmlCashSettlementParser
             AssetName = element.GetAttribute("symbol"),
             Description = element.GetAttribute("activityDescription"),
             Date = XmlParserHelper.ParseDate(element.GetAttribute("date")),
-            Amount = element.BuildMoney("amount", "currency"),
+            Amount = element.BuildDescribedMoney("amount", "currency", "fxRateToBase", element.GetAttribute("activityDescription")),
             TradeReason = element.GetAttribute("activityDescription") switch
             {
                 string s when s.Contains("Option Cash Settlement for: Exercise") => TradeReason.OwnerExerciseOption,
