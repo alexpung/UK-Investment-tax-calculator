@@ -37,8 +37,13 @@ public record OptionTrade : Trade
     }
     public override string GetDuplicateSignature()
     {
-        return $"OPTION|{base.GetDuplicateSignature()}|{Underlying}|{StrikePrice.Amount}|{StrikePrice.Currency}|{ExpiryDate.Ticks}|{PUTCALL}|{Multiplier}";
+        // We skip base.GetDuplicateSignature() because that is Trade's signature which includes GrossProceed.
+        // GrossProceed for options can be modified by OptionHelper (e.g. from 0 to a cash settlement amount),
+        // which would cause duplicate detection to fail on subsequent imports.
+        return $"OPTION|{AssetName}|{Date.Ticks}|{Isin}|{AcquisitionDisposal}|{Quantity}|{Underlying}|{StrikePrice.Amount}|{StrikePrice.Currency}|{ExpiryDate.Ticks}|{PUTCALL}|{Multiplier}";
     }
+
+    public override string ToSummaryString() => $"Option: {AssetName} ({Date.ToShortDateString()}) - {Quantity} {AcquisitionDisposal}";
 }
 
 public enum PUTCALL

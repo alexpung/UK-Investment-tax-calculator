@@ -70,7 +70,9 @@ public record Trade : TaxEvent, ITextFilePrintable
         _ => throw new NotImplementedException($"Unknown trade type {AcquisitionDisposal}"),
     };
 
-    public List<ITradeEvent> TradeEvents { get; set; } = [];
+    public override string ToSummaryString() => $"Trade: {AssetName} ({Date.ToShortDateString()}) - {Quantity} {AcquisitionDisposal}";
+
+    public List<ITradeEvent> TradeEvents { get; private set; } = [];
     protected string GetExpensesExplanation()
     {
         if (Expenses.IsEmpty) return string.Empty;

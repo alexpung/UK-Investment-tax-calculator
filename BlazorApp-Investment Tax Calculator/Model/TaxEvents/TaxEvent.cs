@@ -21,4 +21,6 @@ public abstract record TaxEvent : IAssetDatedEvent
     {
         return $"{AssetName}|{Date.Ticks}|{Isin}";
     }
+
+    public abstract string ToSummaryString();
 }

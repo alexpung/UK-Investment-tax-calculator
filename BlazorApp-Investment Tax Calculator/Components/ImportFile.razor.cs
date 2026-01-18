@@ -36,14 +36,17 @@ public partial class ImportFile
         var dividendWithUnknownRegions = events.Dividends.Where(x => x.CompanyLocation == CountryCode.UnknownRegion);
         foreach (var dividend in dividendWithUnknownRegions)
         {
-            toastService.ShowWarning($"Unknown region detected with dividend data with:<br> date: {dividend.Date.Date.ToShortDateString()}<br>" +
-                $"company: {dividend.AssetName}<br>description: {dividend.Proceed.Description}<br> Please check the country for the company manually.");
+            string encodedAssetName = System.Net.WebUtility.HtmlEncode(dividend.AssetName);
+            string encodedDescription = System.Net.WebUtility.HtmlEncode(dividend.Proceed.Description);
+
+            toastService.ShowWarning($"Unknown region detected with dividend data with:<br> date: {dividend.Date.Date:d}<br>" +
+                $"company: {encodedAssetName}<br>description: {encodedDescription}<br> Please check the country for the company manually.");
         }
     }
 
-    private async Task<ExecutionState> CheckDuplicateAndConfirm(TaxEventLists events)
+    private async Task<ExecutionState> CheckDuplicateAndConfirm(TaxEventLists newEvents)
     {
-        var duplicates = taxEventLists.GetDuplicates(events);
+        var duplicates = taxEventLists.GetDuplicates(newEvents);
         int duplicateCount = duplicates.GetTotalNumberOfEvents();
 
         if (duplicateCount > 10)

@@ -11,4 +11,6 @@ public record CashSettlement : TaxEvent
     {
         return $"CASH|{base.GetDuplicateSignature()}|{Amount.Amount}|{Amount.Currency}|{Description}|{TradeReason}";
     }
+
+    public override string ToSummaryString() => $"Cash Settlement: {AssetName} ({Date.ToShortDateString()}) - {Amount}";
 }

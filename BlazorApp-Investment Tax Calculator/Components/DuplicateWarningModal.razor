@@ -14,20 +14,14 @@
                 Found @Duplicates.GetTotalNumberOfEvents() duplicate(s) in the import file.
             </div>
             <p>The following duplicates were detected:</p>
-            <ul>
-                @foreach (var trade in Duplicates.Trades)
-                {
-                    <li>Trade: @trade.AssetName (@trade.Date.ToShortDateString()) - @trade.Quantity @trade.AcquisitionDisposal</li>
-                }
-                @foreach (var div in Duplicates.Dividends)
-                {
-                    <li>Dividend: @div.AssetName (@div.Date.ToShortDateString()) - @div.Proceed.Amount</li>
-                }
-                @foreach (var inc in Duplicates.InterestIncomes)
-                {
-                    <li>Income: @inc.InterestType (@inc.Date.ToShortDateString()) - @inc.Amount.Amount</li>
-                }
-            </ul>
+            <div style="max-height: 300px; overflow-y: auto;">
+                <ul>
+                    @foreach (var ev in Duplicates.AllEvents)
+                    {
+                        <li>@ev.ToSummaryString()</li>
+                    }
+                </ul>
+            </div>
             <p>Do you want to skip these duplicates or import them anyway?</p>
           </div>
           <div class="modal-footer">
@@ -57,6 +51,7 @@
     {
         IsVisible = false;
         StateHasChanged();
-        _tcs?.SetResult(result);
+        _tcs?.TrySetResult(result);
+        _tcs = null;
     }
 }

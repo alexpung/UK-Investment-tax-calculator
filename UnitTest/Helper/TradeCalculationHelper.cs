@@ -27,7 +27,7 @@ public static class TradeCalculationHelper
         UkFutureTradeCalculator futureCalculator = CreateUkFutureTradeCalculator(section104Pools, taxEventLists, residencyStatusRecord);
 
         _ = optionTradeCalculator.CalculateTax();
-        List<ITradeTaxCalculation> result = optionTradeCalculator.CalculateTax(); // intentionally calculate option twice to test test results are the same even if calculated twice
+        List<ITradeTaxCalculation> result = optionTradeCalculator.CalculateTax(); // intentionally calculate option twice to confirm results are the same even if calculated twice
         result.AddRange(calculator.CalculateTax());
         result.AddRange(futureCalculator.CalculateTax());
         return result;
@@ -49,10 +49,9 @@ public static class TradeCalculationHelper
 
     public static UkOptionTradeCalculator CreateOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorporateActionList tradeList, ResidencyStatusRecord? residencyStatusRecord = null)
     {
-        ILogger<ToastService> logger = NSubstitute.Substitute.For<ILogger<ToastService>>();
         residencyStatusRecord ??= new();
         TradeTaxCalculationFactory tradeTaxCalculationFactory = new(residencyStatusRecord);
-        return new UkOptionTradeCalculator(section104Pools, tradeList, new UKTaxYear(), new ToastService(logger), tradeTaxCalculationFactory);
+        return new UkOptionTradeCalculator(section104Pools, tradeList, new UKTaxYear(), tradeTaxCalculationFactory);
     }
 
     public static UkTradeCalculator CreateUkTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorporateActionList tradeList, ResidencyStatusRecord? residencyStatusRecord = null)

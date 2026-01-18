@@ -297,10 +297,6 @@ public class UkTradeCalculatorOptionExerciseTest
             TradeReason = TradeReason.OptionAssigned
         };
 
-        _ = TradeCalculationHelper.CalculateTrades(
-            [BuyStockTrade, writeCallOptionTrade, assignCallOptionTrade, sellStockTrade],
-            out _
-        );
         List<ITradeTaxCalculation> result = TradeCalculationHelper.CalculateTrades(
             [BuyStockTrade, writeCallOptionTrade, assignCallOptionTrade, sellStockTrade],
             out _

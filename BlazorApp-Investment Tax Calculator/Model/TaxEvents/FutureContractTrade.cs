@@ -48,4 +48,6 @@ public record FutureContractTrade : Trade, ISplittableToLongAndShort<FutureContr
     {
         return $"FUTURE|{base.GetDuplicateSignature()}|{ContractValue.Amount.Amount}|{ContractValue.Amount.Currency}|{PositionType}";
     }
+
+    public override string ToSummaryString() => $"Future: {AssetName} ({Date.ToShortDateString()}) - {Quantity} {AcquisitionDisposal}";
 }

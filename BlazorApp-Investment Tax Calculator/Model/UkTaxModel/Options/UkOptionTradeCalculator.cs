@@ -116,9 +116,9 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
         else if (tradePairSorter.LatterTrade.SettlementMethod is SettlementMethods.DELIVERY)
         {
             WrappedMoney premiumCost = tradePairSorter.EarlierTrade.GetProportionedCostOrProceed(exercisedQty);
-            WrappedMoney execiseCost = tradePairSorter.LatterTrade.GetSettlementTransactionCost(exercisedQty);
-            // If there is mutiple exercise trades it doesn't matter which trade to roll up, as all trades are the same ticker and same day are treated as a sigle trade.
-            tradePairSorter.LatterTrade.AttachTradeToUnderlying(premiumCost + execiseCost, $"Option premium adjustment due to execising option", TradeReason.OwnerExerciseOption);
+            WrappedMoney exerciseCost = tradePairSorter.LatterTrade.GetSettlementTransactionCost(exercisedQty);
+            // If there is multiple exercise trades it doesn't matter which trade to roll up, as all trades are the same ticker and same day are treated as a single trade.
+            tradePairSorter.LatterTrade.AttachTradeToUnderlying(premiumCost + exerciseCost, $"Option premium adjustment due to exercising option", TradeReason.OwnerExerciseOption);
             tradeMatch = CreateTradeMatch(tradePairSorter, exercisedQty, WrappedMoney.GetBaseCurrencyZero(), WrappedMoney.GetBaseCurrencyZero(), $"{exercisedQty} option exercised.", taxMatchType, taxableStatus);
         }
         else throw new InvalidDataException($"Unexpected settlement method {tradePairSorter.LatterTrade.SettlementMethod}");
@@ -144,12 +144,12 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
             }
             tradeMatch = CreateTradeMatch(tradePairSorter, assignmentQty, allowableCost, disposalProceed, $"{assignmentQty:F2} option is cash settled.", taxMatchType, taxableStatus);
         }
-        else
+        else if (tradePairSorter.LatterTrade.SettlementMethod is SettlementMethods.DELIVERY)
         {
             WrappedMoney premiumReceived = tradePairSorter.EarlierTrade.GetProportionedCostOrProceed(assignmentQty);
             WrappedMoney assignmentCost = tradePairSorter.LatterTrade.GetSettlementTransactionCost(assignmentQty);
             WrappedMoney netPremiumReceived = premiumReceived + assignmentCost;
-            // If there is mutiple exercise trades it doesn't matter which trade to roll up, as all trades are the same ticker and same day are treated as a sigle trade.
+            // If there is multiple exercise trades it doesn't matter which trade to roll up, as all trades are the same ticker and same day are treated as a single trade.
             tradePairSorter.LatterTrade.AttachTradeToUnderlying(netPremiumReceived, $"Option premium adjustment due to option assignment. " +
                 $"Premium received {premiumReceived}, assignment cost {assignmentCost}", TradeReason.OptionAssigned);
             // The trade is as if not happened when an option is assigned, so in previous year you are assessed premiumReceived, so that is refunded,
@@ -161,6 +161,7 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
             tradeMatch = CreateTradeMatch(tradePairSorter, assignmentQty, WrappedMoney.GetBaseCurrencyZero(), WrappedMoney.GetBaseCurrencyZero(),
                 $"{assignmentQty} option assigned. Option premium is carried over to trade of the underlying asset and no tax is assessed for this match", taxMatchType, taxableStatus);
         }
+        else throw new InvalidDataException($"Unexpected settlement method {tradePairSorter.LatterTrade.SettlementMethod}");
         AssignTradeMatch(tradePairSorter, assignmentQty, tradeMatch, tradeMatch);
     }
 

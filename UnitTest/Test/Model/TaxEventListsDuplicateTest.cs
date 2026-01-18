@@ -36,7 +36,6 @@ public class TaxEventListsDuplicateTest
         list1.AddData(list2, skipDuplicates: true);
 
         // Assert
-        // CURRENTLY FAILS: Adds duplicate because check is missing
         list1.CorporateActions.Count.ShouldBe(1);
     }
 

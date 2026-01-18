@@ -46,7 +46,9 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
     /// <returns></returns>
     public WrappedMoney GetSettlementTransactionCost(decimal qty)
     {
-        decimal proportion = qty / SettlementTradeList.Sum(trade => trade.Quantity);
+        decimal totalQty = SettlementTradeList.Sum(trade => trade.Quantity);
+        if (totalQty == 0) return WrappedMoney.GetBaseCurrencyZero();
+        decimal proportion = qty / totalQty;
         return SettlementTradeList.Sum(trade => trade.NetProceed) * proportion * -1;
     }
 
