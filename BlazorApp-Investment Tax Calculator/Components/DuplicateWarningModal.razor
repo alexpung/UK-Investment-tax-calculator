@@ -31,7 +31,6 @@
             <p>Do you want to skip these duplicates or import them anyway?</p>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" @onclick="() => Close(null)">Cancel Import</button>
             <button type="button" class="btn btn-success" @onclick="() => Close(true)">Skip Duplicates (Recommended)</button>
             <button type="button" class="btn btn-danger" @onclick="() => Close(false)">Import All (Create Duplicates)</button>
           </div>

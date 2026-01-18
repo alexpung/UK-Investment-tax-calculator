@@ -17,7 +17,7 @@ public partial class ImportFile
             {
                 TaxEventLists events = await fileParseController.ReadFile(file.File);
                 ShowDividendRegionUnknownWarning(events);
-                ExecutionState executionState = await CheckDuplicateAndConfirm(taxEventLists);
+                ExecutionState executionState = await CheckDuplicateAndConfirm(events);
                 if (executionState is ExecutionState.SKIP_FILE) continue;
                 if (executionState is ExecutionState.ABORT) break;
                 if (executionState is ExecutionState.SKIP_DUPLICATE) taxEventLists.AddData(events, true);
