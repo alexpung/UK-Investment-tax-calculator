@@ -10,6 +10,7 @@ using System.Globalization;
 using UnitTest.Helper;
 
 namespace UnitTest.Test.TradeCalculations.Options;
+
 public class UkTradeCalculatorOptionExerciseTest
 {
     [Theory]
@@ -231,6 +232,7 @@ public class UkTradeCalculatorOptionExerciseTest
         tradeAcquisitionTrade!.TotalCostOrProceed.Amount.ShouldBe(80504);
     }
 
+    // Also test recalculate twice yield same result
     [Theory]
     [InlineData("01-Jan-17 09:30:00", 501, 501)]
     [InlineData("01-Dec-17 09:30:00", 0, 0)]

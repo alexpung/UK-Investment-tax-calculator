@@ -17,13 +17,13 @@ public class IBXmlCashSettlementParserTests
             <root>
                 <StatementOfFundsLine assetCategory='OPT' symbol='SPX 180316C01000000' 
                     activityDescription='Option Cash Settlement for: Assignment' 
-                    date='16-Mar-18' amount='-700732' currency='USD' />
+                    date='16-Mar-18' amount='-700732' currency='USD' fxRateToBase='1.4' />
                 <StatementOfFundsLine assetCategory='STK' symbol='AAPL' 
                     activityDescription='Option Cash Settlement for: Exercise' 
-                    date='16-Mar-18' amount='5000' currency='USD' />
+                    date='16-Mar-18' amount='5000' currency='USD' fxRateToBase='1.0' />
                 <StatementOfFundsLine assetCategory='OPT' symbol='SPX 180316P01000000' 
                     activityDescription='Option Cash Settlement for: Exercise' 
-                    date='16-Mar-18' amount='-12345' currency='USD' />
+                    date='16-Mar-18' amount='-12345' currency='USD' fxRateToBase='1.41' />
             </root>";
 
         var document = XElement.Parse(xml);
@@ -38,14 +38,16 @@ public class IBXmlCashSettlementParserTests
         firstSettlement.AssetName.ShouldBe("SPX 180316C01000000");
         firstSettlement.Description.ShouldBe("Option Cash Settlement for: Assignment");
         firstSettlement.Date.ShouldBe(new DateTime(2018, 3, 16));
-        firstSettlement.Amount.ShouldBe(new WrappedMoney(-700732, "USD"));
+        firstSettlement.Amount.Amount.ShouldBe(new WrappedMoney(-700732, "USD"));
+        firstSettlement.Amount.FxRate.ShouldBe(1.4m);
         firstSettlement.TradeReason.ShouldBe(TradeReason.OptionAssigned);
 
         var secondSettlement = result[1];
         secondSettlement.AssetName.ShouldBe("SPX 180316P01000000");
         secondSettlement.Description.ShouldBe("Option Cash Settlement for: Exercise");
         secondSettlement.Date.ShouldBe(new DateTime(2018, 3, 16));
-        secondSettlement.Amount.ShouldBe(new WrappedMoney(-12345, "USD"));
+        secondSettlement.Amount.Amount.ShouldBe(new WrappedMoney(-12345, "USD"));
+        secondSettlement.Amount.FxRate.ShouldBe(1.41m);
         secondSettlement.TradeReason.ShouldBe(TradeReason.OwnerExerciseOption);
     }
 
@@ -56,7 +58,7 @@ public class IBXmlCashSettlementParserTests
             <root>
                 <StatementOfFundsLine assetCategory='OPT' symbol='SPX 180316C01000000' 
                     activityDescription='Option Cash Settlement for: UnknownActivity' 
-                    date='16-Mar-18' amount='-700732' currency='USD' />
+                    date='16-Mar-18' amount='-700732' currency='USD' fxRateToBase='1.0' />
             </root>";
         var document = XElement.Parse(xml);
         var ex = Should.Throw<ParseException>(() => IBXmlCashSettlementParser.ParseXml(document));

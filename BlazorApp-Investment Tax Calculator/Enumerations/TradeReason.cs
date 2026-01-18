@@ -4,9 +4,9 @@ namespace InvestmentTaxCalculator.Enumerations;
 
 public enum TradeReason
 {
-    [Description("Owner exercised the option")]
+    [Description("Option exercised")]
     OwnerExerciseOption,
-    [Description("Option assigned to the owner")]
+    [Description("Option assigned")]
     OptionAssigned,
     [Description("Option expired")]
     Expired,

@@ -12,6 +12,13 @@ public record TaxEventLists : IDividendLists, ITradeAndCorporateActionList
     public List<FutureContractTrade> FutureContractTrades { get; set; } = [];
     public List<CashSettlement> CashSettlements { get; set; } = [];
     public List<InterestIncome> InterestIncomes { get; set; } = [];
+    public IEnumerable<TaxEvent> AllEvents => Trades.Cast<TaxEvent>()
+        .Concat(CorporateActions.Cast<TaxEvent>())
+        .Concat(Dividends.Cast<TaxEvent>())
+        .Concat(OptionTrades.Cast<TaxEvent>())
+        .Concat(FutureContractTrades.Cast<TaxEvent>())
+        .Concat(CashSettlements.Cast<TaxEvent>())
+        .Concat(InterestIncomes.Cast<TaxEvent>());
 
     public void AddData(TaxEventLists taxEventLists)
     {

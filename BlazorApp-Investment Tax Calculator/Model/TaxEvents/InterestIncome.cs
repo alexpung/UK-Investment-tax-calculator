@@ -30,6 +30,8 @@ public record InterestIncome : TaxEvent, ITextFilePrintable
     {
         return $"INT|{base.GetDuplicateSignature()}|{InterestType}|{Amount.Amount.Amount}|{Amount.Amount.Currency}";
     }
+
+    public override string ToSummaryString() => $"Income: {InterestType} ({Date.ToShortDateString()}) - {Amount.Amount}";
 }
 
 public enum InterestType

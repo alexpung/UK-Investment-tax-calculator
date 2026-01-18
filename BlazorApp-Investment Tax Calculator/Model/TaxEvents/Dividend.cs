@@ -25,4 +25,5 @@ public record Dividend : TaxEvent, ITextFilePrintable
     {
         return $"DIV|{base.GetDuplicateSignature()}|{DividendType}|{Proceed.Amount.Amount}|{Proceed.Amount.Currency}";
     }
+    public override string ToSummaryString() => $"Dividend: {AssetName} ({Date.ToShortDateString()}) - {Proceed.Amount}";
 }
