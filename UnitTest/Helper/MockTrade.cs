@@ -24,13 +24,14 @@ public static class MockTrade
 
     public static Trade CreateMockTrade(string assetName, DateTime dateTime, TradeType tradeType, decimal quantity, decimal baseCurrencyAmount)
     {
-        Trade mockTrade = Substitute.For<Trade>();
-        mockTrade.AssetName.Returns(assetName);
-        mockTrade.Date.Returns(dateTime);
-        mockTrade.AcquisitionDisposal.Returns(tradeType);
-        mockTrade.Quantity.Returns(quantity);
-        mockTrade.NetProceed.Returns(new WrappedMoney(baseCurrencyAmount));
-        return mockTrade;
+        return new Trade
+        {
+            AssetName = assetName,
+            Date = dateTime,
+            AcquisitionDisposal = tradeType,
+            Quantity = quantity,
+            GrossProceed = new DescribedMoney { Amount = new WrappedMoney(baseCurrencyAmount), FxRate = 1 }
+        };
     }
 
     public static TradeTaxCalculation CreateTradeTaxCalculation(string assetName, DateTime dateTime, decimal quantity, decimal value, TradeType tradeType)

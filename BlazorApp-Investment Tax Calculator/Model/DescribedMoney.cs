@@ -33,12 +33,14 @@ public record DescribedMoney : ITextFilePrintable
         else return $"{outputString} = {BaseCurrencyAmount} Fx rate = {FxRate}";
     }
 
-    public string Display()
+    public string Display(decimal multiplier = 1)
     {
+        WrappedMoney proportionedBaseAmount = BaseCurrencyAmount * multiplier;
+        WrappedMoney proportionedOriginalAmount = Amount * multiplier;
         if (FxRate == 1)
         {
-            return BaseCurrencyAmount.ToString();
+            return proportionedBaseAmount.ToString();
         }
-        else return $"{BaseCurrencyAmount} ({Amount})";
+        else return $"{proportionedBaseAmount} ({proportionedOriginalAmount})";
     }
 }

@@ -73,7 +73,7 @@ public record Trade : TaxEvent, ITextFilePrintable
     public override string ToSummaryString() => $"Trade: {AssetName} ({Date.ToShortDateString()}) - {Quantity} {AcquisitionDisposal}";
 
     public List<ITradeEvent> TradeEvents { get; private set; } = [];
-    protected string GetExpensesExplanation()
+    public string GetExpensesExplanation()
     {
         if (Expenses.IsEmpty) return string.Empty;
         StringBuilder stringBuilder = new();

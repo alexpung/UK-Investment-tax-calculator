@@ -1,5 +1,8 @@
 ﻿using InvestmentTaxCalculator.Enumerations;
 using InvestmentTaxCalculator.Model.Interfaces;
+using InvestmentTaxCalculator.Model.TaxEvents;
+
+using System.Text;
 
 using static InvestmentTaxCalculator.Model.ResidencyStatusRecord;
 
@@ -46,8 +49,11 @@ public record UkSection104
     public Section104History AddAssets(ITradeTaxCalculation tradeTaxCalculation, decimal addedQuantity, WrappedMoney addedAcquisitionCostInBaseCurrency,
                                        WrappedMoney? addedContractValue = null)
     {
+        string explanation = GenerateAcquisitionExplanation(tradeTaxCalculation, addedQuantity, addedContractValue).Trim();
+
         Section104History newSection104History = Section104History.AdjustSection104(tradeTaxCalculation, addedQuantity, addedAcquisitionCostInBaseCurrency, Quantity,
                 AcquisitionCostInBaseCurrency, TotalContractValue, addedContractValue);
+        newSection104History.Explanation = explanation;
         Section104HistoryList.Add(newSection104History);
         AdjustValues(addedQuantity, addedAcquisitionCostInBaseCurrency, addedContractValue);
         if (ResidencyStatusRecord is not null)
@@ -60,6 +66,63 @@ public record UkSection104
             }
         }
         return newSection104History;
+    }
+
+    private static string GenerateAcquisitionExplanation(ITradeTaxCalculation tradeTaxCalculation, decimal addedQuantity, WrappedMoney? addedContractValue)
+    {
+        if (tradeTaxCalculation.TradeList is null || tradeTaxCalculation.TradeList.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        decimal proportion = addedQuantity / tradeTaxCalculation.TotalQty;
+        StringBuilder sb = new();
+
+        if (tradeTaxCalculation.TradeList.Count > 1)
+        {
+            AppendSummaryLine(sb, tradeTaxCalculation, proportion, addedContractValue);
+        }
+
+        for (int i = 0; i < tradeTaxCalculation.TradeList.Count; i++)
+        {
+            AppendTradeLine(sb, tradeTaxCalculation.TradeList[i], i, tradeTaxCalculation.TradeList.Count, proportion, addedContractValue);
+        }
+
+        return sb.ToString();
+    }
+
+    private static void AppendSummaryLine(StringBuilder sb, ITradeTaxCalculation tradeTaxCalculation, decimal proportion, WrappedMoney? addedContractValue)
+    {
+        var baseCost = tradeTaxCalculation.TradeList.Sum(t => t.GrossProceed?.BaseCurrencyAmount ?? WrappedMoney.GetBaseCurrencyZero()) * proportion;
+        var expenses = tradeTaxCalculation.TradeList.SelectMany(t => t.Expenses ?? []).Select(e => e.BaseCurrencyAmount).Sum() * proportion;
+        sb.Append($"Total proportioned base cost: {baseCost}. Total proportioned expenses: {expenses}.");
+        if (addedContractValue is not null && addedContractValue.Amount != 0)
+        {
+            sb.Append($" Total proportioned contract value: {addedContractValue}.");
+        }
+        sb.AppendLine();
+    }
+
+    private static void AppendTradeLine(StringBuilder sb, Trade trade, int index, int totalCount, decimal proportion, WrappedMoney? addedContractValue)
+    {
+        string label = totalCount > 1 ? $"Trade {index + 1}: " : string.Empty;
+        sb.Append($"{label}Base cost: {trade.GrossProceed?.Display(proportion) ?? "0"}");
+
+        if (trade is FutureContractTrade futureTrade && addedContractValue is not null)
+        {
+            decimal scaledContractValue = futureTrade.ContractValue.Amount.Amount * proportion;
+            WrappedMoney proportionedContractValue = new(scaledContractValue, futureTrade.ContractValue.Amount.Currency);
+            sb.Append($", Contract Value: {proportionedContractValue}");
+        }
+
+        if (trade.Expenses != null && trade.Expenses.Count > 0)
+        {
+            foreach (var expense in trade.Expenses)
+            {
+                sb.Append($", {expense.Description}: {expense.Display(proportion)}");
+            }
+        }
+        sb.AppendLine();
     }
 
     public List<Section104MatchResults> RemoveAssets(ITradeTaxCalculation tradeTaxCalculation, decimal removedQuantity)

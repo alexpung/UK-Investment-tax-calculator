@@ -99,4 +99,152 @@ public class UkSection104Test
         history.NewQuantity.ShouldBe(100m);
         history.Date.ShouldBe(reportingDate);
     }
+    [Fact]
+    public void TestSection104AcquisitionExplanationWithExpenses()
+    {
+        // Arrange
+        var assetName = "EXPN";
+        var date = new DateTime(2023, 1, 1);
+        var quantity = 100m;
+        var grossProceedAmount = 1000m;
+        var expenseAmount = 5m;
+
+        var trade = new Trade
+        {
+            AssetName = assetName,
+            Date = date,
+            AcquisitionDisposal = TradeType.ACQUISITION,
+            Quantity = quantity,
+            GrossProceed = new DescribedMoney { Amount = new WrappedMoney(grossProceedAmount), FxRate = 1 },
+            Expenses = [new DescribedMoney { Amount = new WrappedMoney(expenseAmount), FxRate = 1, Description = "Commission" }]
+        };
+
+        var tradeTaxCalculation = new TradeTaxCalculation([trade]);
+        var ukSection104 = new UkSection104(assetName);
+
+        // Act
+        tradeTaxCalculation.MatchWithSection104(ukSection104);
+
+        // Assert
+        var history = ukSection104.Section104HistoryList[0];
+        history.Explanation.ShouldNotContain("Total base cost");
+        history.Explanation.ShouldNotContain("Total expenses");
+        history.Explanation.ShouldNotContain("Trade 1: ");
+        history.Explanation.ShouldContain("Base cost: £1,000.00");
+        history.Explanation.ShouldContain("Commission: £5.00");
+    }
+
+    [Fact]
+    public void TestSection104MultipleAcquisitionsExplanation()
+    {
+        // Arrange
+        var assetName = "MULTI";
+        var date = new DateTime(2023, 1, 1);
+        
+        var trade1 = new Trade
+        {
+            AssetName = assetName,
+            Date = date,
+            AcquisitionDisposal = TradeType.ACQUISITION,
+            Quantity = 100m,
+            GrossProceed = new DescribedMoney { Amount = new WrappedMoney(1000m), FxRate = 1 },
+            Expenses = [new DescribedMoney { Amount = new WrappedMoney(1m), FxRate = 1, Description = "Fee1" }]
+        };
+        
+        var trade2 = new Trade
+        {
+            AssetName = assetName,
+            Date = date,
+            AcquisitionDisposal = TradeType.ACQUISITION,
+            Quantity = 200m,
+            GrossProceed = new DescribedMoney { Amount = new WrappedMoney(2000m), FxRate = 1 },
+            Expenses = [new DescribedMoney { Amount = new WrappedMoney(2m), FxRate = 1, Description = "Fee2" }]
+        };
+
+        var tradeTaxCalculation = new TradeTaxCalculation([trade1, trade2]);
+        var ukSection104 = new UkSection104(assetName);
+
+        // Act
+        tradeTaxCalculation.MatchWithSection104(ukSection104);
+
+        // Assert
+        var history = ukSection104.Section104HistoryList[0];
+        history.Explanation.ShouldContain("Total proportioned base cost: £3,000.00");
+        history.Explanation.ShouldContain("Total proportioned expenses: £3.00");
+        history.Explanation.ShouldContain("Trade 1: Base cost: £1,000.00");
+        history.Explanation.ShouldContain("Fee1: £1.00");
+        history.Explanation.ShouldContain("Trade 2: Base cost: £2,000.00");
+        history.Explanation.ShouldContain("Fee2: £2.00");
+    }
+
+    [Fact]
+    public void TestSection104ProportionedAcquisitionExplanation()
+    {
+        // Arrange
+        var assetName = "PROP";
+        var date = new DateTime(2023, 1, 1);
+        var totalQuantity = 200m;
+        var matchedQuantity = 100m; // Match only half
+        var grossProceedAmount = 2000m;
+        var expenseAmount = 20m;
+
+        var trade = new Trade
+        {
+            AssetName = assetName,
+            Date = date,
+            AcquisitionDisposal = TradeType.ACQUISITION,
+            Quantity = totalQuantity,
+            GrossProceed = new DescribedMoney { Amount = new WrappedMoney(grossProceedAmount), FxRate = 1 },
+            Expenses = [new DescribedMoney { Amount = new WrappedMoney(expenseAmount), FxRate = 1, Description = "Tax" }]
+        };
+
+        var tradeTaxCalculation = new TradeTaxCalculation([trade]);
+        var ukSection104 = new UkSection104(assetName);
+
+        // Act
+        // Manually match only half the quantity with Section 104
+        ukSection104.AddAssets(tradeTaxCalculation, matchedQuantity, tradeTaxCalculation.TotalCostOrProceed * (matchedQuantity / totalQuantity));
+
+        // Assert
+        var history = ukSection104.Section104HistoryList[0];
+        // Proportioned base cost: 2000 * (100/200) = 1000
+        // Proportioned expense: 20 * (100/200) = 10
+        history.Explanation.ShouldNotContain("Total proportioned base cost"); // Only 1 trade
+        history.Explanation.ShouldContain("Base cost: £1,000.00");
+        history.Explanation.ShouldContain("Tax: £10.00");
+    }
+
+    [Fact]
+    public void TestSection104FutureAcquisitionExplanation()
+    {
+        // Arrange
+        var assetName = "FUTURE";
+        var date = new DateTime(2023, 1, 1);
+        var quantity = 1m;
+        var contractValueAmount = 50000m;
+        var currency = "Usd";
+        var fxRate = 0.8m; // Usd to Gbp
+
+        var futureTrade = new FutureContractTrade
+        {
+            AssetName = assetName,
+            Date = date,
+            AcquisitionDisposal = TradeType.ACQUISITION,
+            Quantity = quantity,
+            GrossProceed = new DescribedMoney { Amount = new WrappedMoney(0, currency), FxRate = fxRate },
+            ContractValue = new DescribedMoney { Amount = new WrappedMoney(contractValueAmount, currency), FxRate = fxRate },
+            PositionType = PositionType.OPENLONG
+        };
+
+        var tradeTaxCalculation = new TradeTaxCalculation([futureTrade]);
+        var ukSection104 = new UkSection104(assetName);
+        var proportionedContractValue = new WrappedMoney(contractValueAmount, currency);
+
+        // Act
+        ukSection104.AddAssets(tradeTaxCalculation, quantity, WrappedMoney.GetBaseCurrencyZero(), proportionedContractValue);
+
+        // Assert
+        var history = ukSection104.Section104HistoryList[0];
+        history.Explanation.ShouldContain("Contract Value: $50,000.00");
+    }
 }
