@@ -7,12 +7,12 @@ namespace InvestmentTaxCalculator.Parser;
 
 public class FileParseController(IEnumerable<ITaxEventFileParser> taxEventFileParsers, ToastService? toastService = null)
 {
-    private const long _maxFileSize = 1024 * 1024 * 100; // 100 MB
+    public const long MaxFileSize = 1024 * 1024 * 1000; // 1000 MB
 
     public async Task<TaxEventLists> ReadFile(IBrowserFile file)
     {
         TaxEventLists taxEvents = new();
-        using (StreamReader sr = new(file.OpenReadStream(_maxFileSize)))
+        using (StreamReader sr = new(file.OpenReadStream(MaxFileSize)))
         {
             string data = await sr.ReadToEndAsync();
             string contentType = file.ContentType;

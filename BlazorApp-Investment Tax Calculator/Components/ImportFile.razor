@@ -20,7 +20,7 @@
     <div class="mb-4">
         <h4>Import Files</h4>
         <div class="p-2">
-            <SfUploader AutoUpload="false">
+            <SfUploader AutoUpload="false" MaxFileSize="@FileParseController.MaxFileSize">
                 <UploaderEvents ValueChange="LoadFiles"></UploaderEvents>
             </SfUploader>
         </div>
@@ -29,7 +29,7 @@
     <div class="mb-4">
         <h4>Import Folders</h4>
         <div class="p-2">
-            <SfUploader ID="UploadFiles" AutoUpload=false DirectoryUpload=true>
+            <SfUploader ID="UploadFiles" AutoUpload="false" DirectoryUpload="true" MaxFileSize="@FileParseController.MaxFileSize">
                 <UploaderEvents ValueChange="LoadFiles"></UploaderEvents>
             </SfUploader>
         </div>
