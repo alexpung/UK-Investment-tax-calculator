@@ -13,5 +13,7 @@ public enum DividendType
     [Description("Not a dividend")]
     NOT_DIVIDEND,
     [Description("Excess Reportable Income (Dividend)")]
-    EXCESS_REPORTABLE_INCOME
+    EXCESS_REPORTABLE_INCOME,
+    [Description("Return of Capital")]
+    RETURN_OF_CAPITAL
 }

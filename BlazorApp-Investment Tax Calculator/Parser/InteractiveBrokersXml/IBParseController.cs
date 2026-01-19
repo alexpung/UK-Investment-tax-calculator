@@ -15,6 +15,7 @@ public class IBParseController(AssetTypeToLoadSetting assetTypeToLoadSetting) : 
         if (xml is not null)
         {
             if (assetTypeToLoadSetting.LoadDividends) result.Dividends.AddRange(IBXmlDividendParser.ParseXml(xml));
+            if (assetTypeToLoadSetting.LoadDividends) result.CorporateActions.AddRange(IBXmlDividendParser.ParseReturnOfCapital(xml));
             result.CorporateActions.AddRange(IBXmlStockSplitParser.ParseXml(xml));
             if (assetTypeToLoadSetting.LoadStocks) result.Trades.AddRange(IBXmlStockTradeParser.ParseXml(xml));
             if (assetTypeToLoadSetting.LoadFutures) result.FutureContractTrades.AddRange(IBXmlFutureTradeParser.ParseXml(xml));

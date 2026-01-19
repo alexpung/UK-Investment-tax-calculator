@@ -15,10 +15,36 @@ public static class IBXmlDividendParser
         return filteredElements.Select(DividendMaker).Where(dividend => dividend != null).ToList()!;
     }
 
+    public static IList<CorporateAction> ParseReturnOfCapital(XElement document)
+    {
+        IEnumerable<XElement> filteredElements = document.Descendants("CashTransaction")
+            .Where(row => GetDividendType(row) == DividendType.RETURN_OF_CAPITAL && row.GetAttribute("levelOfDetail") == "DETAIL");
+
+        return [.. filteredElements.Select(element =>
+        {
+            try
+            {
+                return (CorporateAction)new ReturnOfCapitalCorporateAction
+                {
+                    AssetName = element.GetAttribute("symbol"),
+                    Date = XmlParserHelper.ParseDate(element.GetAttribute("settleDate")),
+                    Amount = element.BuildDescribedMoney("amount", "currency", "fxRateToBase", element.GetAttribute("description")),
+                    Isin = element.GetAttribute("isin")
+                };
+            }
+            catch (Exception ex)
+            {
+                string exceptionMessage = $"Exception occurred processing XElement: {element} - Original Exception: {ex.Message}";
+                throw new ParseException(exceptionMessage, ex);
+            }
+        })];
+    }
+
     private static Dividend? DividendMaker(XElement element)
     {
         try
         {
+
             return new Dividend
             {
                 DividendType = GetDividendType(element),
@@ -49,11 +75,15 @@ public static class IBXmlDividendParser
         return CountryCode.GetRegionByTwoDigitCode(dividendElement.GetAttribute("isin")[..2]);
     }
 
-    private static DividendType GetDividendType(XElement dividendElement) => dividendElement.GetAttribute("type") switch
+    private static DividendType GetDividendType(XElement dividendElement)
     {
-        "Withholding Tax" => DividendType.WITHHOLDING,
-        "Dividends" => DividendType.DIVIDEND,
-        "Payment In Lieu Of Dividends" => DividendType.DIVIDEND_IN_LIEU,
-        _ => DividendType.NOT_DIVIDEND
-    };
+        if (dividendElement.GetAttribute("description").Contains("Return of Capital")) return DividendType.RETURN_OF_CAPITAL;
+        else return dividendElement.GetAttribute("type") switch
+        {
+            "Withholding Tax" => DividendType.WITHHOLDING,
+            "Dividends" => DividendType.DIVIDEND,
+            "Payment In Lieu Of Dividends" => DividendType.DIVIDEND_IN_LIEU,
+            _ => DividendType.NOT_DIVIDEND
+        };
+    }
 }
