@@ -15,7 +15,7 @@ public record StockSplit : CorporateAction, IChangeSection104
     /// For example, in a 2:1 stock split, where 2 shares are given for every 1 share, this is 1.
     /// </summary>
     public required int SplitFrom { get; init; }
-    public override string Reason => $"{AssetName} undergo a stock split {SplitTo} for {SplitFrom} on {Date:d}\n";
+    public override string Reason => $"{AssetName} undergo a stock split {SplitTo} for {SplitFrom} on {Date:d}";
 
     public override MatchAdjustment TradeMatching(ITradeTaxCalculation trade1, ITradeTaxCalculation trade2, MatchAdjustment matchAdjustment)
     {

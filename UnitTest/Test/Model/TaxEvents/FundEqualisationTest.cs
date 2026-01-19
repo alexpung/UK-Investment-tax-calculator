@@ -4,6 +4,7 @@ using InvestmentTaxCalculator.Model.TaxEvents;
 namespace InvestmentTaxCalculator.UnitTest.Test.Model.TaxEvents;
 
 using Shouldly;
+
 using Xunit;
 
 public class FundEqualisationTest
@@ -25,7 +26,6 @@ public class FundEqualisationTest
         // WrappedMoney uses NMoneys which formats GBP with £ symbol and 2 decimals by default.
         var dateString = new DateTime(2023, 1, 1).ToString("d");
         reason.ShouldContain($"Test Fund fund equalisation of £100.00 on {dateString} (Related Dividend)");
-        reason.ShouldEndWith("\n");
         reason.ShouldNotContain("..");
     }
 
@@ -45,7 +45,6 @@ public class FundEqualisationTest
 
         var dateString = new DateTime(2023, 1, 1).ToString("d");
         reason.ShouldContain($"Test Fund fund equalisation of £100.00 on {dateString}");
-        reason.ShouldEndWith("\n");
         reason.ShouldNotContain("()");
         reason.ShouldNotContain(" .");
     }

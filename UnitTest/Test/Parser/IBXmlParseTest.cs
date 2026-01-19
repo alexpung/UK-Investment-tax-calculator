@@ -68,4 +68,27 @@ public class IBXmlParseTest
         var result = IBXmlDividendParser.ParseXml(xmlDoc);
         result[0].CompanyLocation.ShouldBe(CountryCode.UnknownRegion);
     }
+    [Fact]
+    public void TestReadingIBXmlReturnOfCapital()
+    {
+        XElement xmlDoc = XElement.Parse(@"<CashTransactions>
+            <CashTransaction settleDate=""20-Oct-21"" symbol=""VGS"" isin=""AU000000VGS7"" 
+                description=""VGS(AU000000VGS7) CASH DIVIDEND USD 0.123 - Return of Capital"" 
+                amount=""123.45"" type=""Dividends"" currency=""USD"" fxRateToBase=""0.75"" levelOfDetail=""DETAIL""/>
+        </CashTransactions>");
+
+        IList<Dividend> dividends = IBXmlDividendParser.ParseXml(xmlDoc);
+        IList<CorporateAction> corporateActions = IBXmlDividendParser.ParseReturnOfCapital(xmlDoc);
+
+        dividends.Count.ShouldBe(1);
+        dividends[0].DividendType.ShouldBe(DividendType.RETURN_OF_CAPITAL);
+        dividends[0].DividendReceived.Amount.ShouldBe(123.45m * 0.75m);
+        dividends[0].Proceed.BaseCurrencyAmount.Amount.ShouldBe(123.45m * 0.75m);
+
+        corporateActions.Count.ShouldBe(1);
+        var roc = corporateActions[0].ShouldBeOfType<ReturnOfCapitalCorporateAction>();
+        roc.AssetName.ShouldBe("VGS");
+        roc.Amount.Amount.Amount.ShouldBe(123.45m);
+        roc.Amount.FxRate.ShouldBe(0.75m);
+    }
 }

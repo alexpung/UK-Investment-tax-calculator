@@ -19,7 +19,7 @@ public record FundEqualisation : CorporateAction, IChangeSection104
     /// </summary>
     public string? RelatedEventDescription { get; init; }
 
-    public override string Reason => $"{AssetName} fund equalisation of {Amount.BaseCurrencyAmount} on {Date:d}" + (string.IsNullOrEmpty(RelatedEventDescription) ? "" : $" ({RelatedEventDescription})") + "\n";
+    public override string Reason => $"{AssetName} fund equalisation of {Amount.BaseCurrencyAmount} on {Date:d}" + (string.IsNullOrEmpty(RelatedEventDescription) ? "" : $" ({RelatedEventDescription})");
 
     public override MatchAdjustment TradeMatching(ITradeTaxCalculation trade1, ITradeTaxCalculation trade2, MatchAdjustment matchAdjustment)
     {
