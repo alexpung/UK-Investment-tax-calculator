@@ -70,7 +70,7 @@ public record UkSection104
 
     private static string GenerateAcquisitionExplanation(ITradeTaxCalculation tradeTaxCalculation, decimal addedQuantity, WrappedMoney? addedContractValue)
     {
-        if (tradeTaxCalculation.TradeList is null || tradeTaxCalculation.TradeList.Count == 0)
+        if (tradeTaxCalculation.TradeList is null || tradeTaxCalculation.TradeList.Count == 0 || tradeTaxCalculation.TotalQty == 0)
         {
             return string.Empty;
         }
