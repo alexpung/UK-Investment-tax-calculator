@@ -95,7 +95,13 @@ public record UkSection104
     {
         var baseCost = tradeTaxCalculation.TradeList.Sum(t => t.GrossProceed?.BaseCurrencyAmount ?? WrappedMoney.GetBaseCurrencyZero()) * proportion;
         var expenses = tradeTaxCalculation.TradeList.SelectMany(t => t.Expenses ?? []).Select(e => e.BaseCurrencyAmount).Sum() * proportion;
+        var eventAdjustments = tradeTaxCalculation.TradeList.SelectMany(t => t.TradeEvents).Sum(e => e.NetProceedsAdjustment) * proportion;
+
         sb.Append($"Total proportioned base cost: {baseCost}. Total proportioned expenses: {expenses}.");
+        if (eventAdjustments.Amount != 0)
+        {
+            sb.Append($" Total proportioned adjustments: {eventAdjustments}.");
+        }
         if (addedContractValue is not null && addedContractValue.Amount != 0)
         {
             sb.Append($" Total proportioned contract value: {addedContractValue}.");
@@ -120,6 +126,14 @@ public record UkSection104
             foreach (var expense in trade.Expenses)
             {
                 sb.Append($", {expense.Description}: {expense.Display(proportion)}");
+            }
+        }
+
+        if (trade.TradeEvents != null && trade.TradeEvents.Count > 0)
+        {
+            foreach (var tradeEvent in trade.TradeEvents)
+            {
+                sb.Append($", {tradeEvent.Description}: {(tradeEvent.NetProceedsAdjustment * proportion).ToString()}");
             }
         }
         sb.AppendLine();
