@@ -8,9 +8,9 @@ public record ReturnOfCapitalCorporateAction : CorporateAction, IChangeSection10
     // Amount of return of capital (with fx / base currency info)
     public required DescribedMoney Amount { get; init; }
 
-    public override string Reason => $"{AssetName} return of capital of {Amount.BaseCurrencyAmount} on {Date:d}\n";
+    public override string Reason => $"{AssetName} return of capital of {Amount.BaseCurrencyAmount} on {Date:d}";
 
-    // Return of capital increases the acquisition cost (adjust Section 104 pool)
+    // Return of capital reduces the acquisition cost (adjust Section 104 pool)
     public override void ChangeSection104(UkSection104 section104)
     {
         if (AssetName != section104.AssetName) return;

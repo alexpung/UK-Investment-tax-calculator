@@ -1,6 +1,7 @@
 ﻿using InvestmentTaxCalculator.Enumerations;
 using InvestmentTaxCalculator.Model.Interfaces;
 using InvestmentTaxCalculator.Model.UkTaxModel;
+
 using System.ComponentModel;
 
 namespace InvestmentTaxCalculator.Model.TaxEvents;
@@ -16,18 +17,18 @@ public record ExcessReportableIncome : CorporateAction, IChangeSection104
     /// The amount of excess reportable income received
     /// </summary>
     public required DescribedMoney Amount { get; init; }
-    
+
     /// <summary>
     /// Whether this is treated as dividend or interest income for tax purposes
     /// </summary>
     public required ExcessReportableIncomeType IncomeType { get; init; }
-    
+
     /// <summary>
     /// The country where the income is sourced from
     /// </summary>
     public CountryCode IncomeLocation { get; set; } = CountryCode.UnknownRegion;
 
-    public override string Reason => $"{AssetName} excess reportable income ({IncomeType.GetDescription()}) of {Amount.BaseCurrencyAmount} on {Date:d}\n";
+    public override string Reason => $"{AssetName} excess reportable income ({IncomeType.GetDescription()}) of {Amount.BaseCurrencyAmount} on {Date:d}";
 
     public override MatchAdjustment TradeMatching(ITradeTaxCalculation trade1, ITradeTaxCalculation trade2, MatchAdjustment matchAdjustment)
     {
