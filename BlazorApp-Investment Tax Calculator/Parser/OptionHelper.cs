@@ -8,6 +8,17 @@ public static class OptionHelper
 {
     public static void CheckOptions(TaxEventLists taxEventLists)
     {
+        // 0. Validate multiplier consistency across all trades for the same option
+        var multiplierGroups = taxEventLists.OptionTrades
+            .GroupBy(o => o.AssetName)
+            .Where(g => g.Select(o => o.Multiplier).Distinct().Count() > 1);
+
+        if (multiplierGroups.Any())
+        {
+            string failedTickers = string.Join(", ", multiplierGroups.Select(g => g.Key));
+            throw new InvalidOperationException($"Inconsistent multipliers found for the same option asset {failedTickers}");
+        }
+
         List<OptionTrade> tradesToCheck = [.. taxEventLists.OptionTrades.Where(trade => trade is OptionTrade
         { TradeReason: TradeReason.OwnerExerciseOption or TradeReason.OptionAssigned, SettlementMethod: SettlementMethods.UNKNOWN  })];
 
@@ -17,7 +28,7 @@ public static class OptionHelper
 
         foreach (var optionTrade in tradesToCheck)
         {
-            bool isSettled = CheckIfOptionIsDeliverySettled(optionTrade, availableTrades, taxEventLists.OptionTrades) || 
+            bool isSettled = CheckIfOptionIsDeliverySettled(optionTrade, availableTrades, taxEventLists.OptionTrades) ||
                              CheckIfOptionIsCashSettled(optionTrade, availableCashSettlements, taxEventLists.OptionTrades);
             if (!isSettled)
             {
@@ -38,12 +49,12 @@ public static class OptionHelper
         {
             availableTrades.Remove(underlyingTrade); // Consume the trade
             optionTrade.ExerciseOrExercisedTrade = underlyingTrade;
-            
+
             foreach (var item in allOptions.Where(trade => trade.AssetName == optionTrade.AssetName))
             {
                 item.SettlementMethod = SettlementMethods.DELIVERY;
             }
-            
+
             return true;
         }
         return false;
@@ -57,7 +68,7 @@ public static class OptionHelper
         if (matchingCashSettlement is not null)
         {
             availableSettlements.Remove(matchingCashSettlement); // Consume the settlement
-            
+
             foreach (var item in allOptions.Where(i => i.AssetName == optionTrade.AssetName))
             {
                 item.SettlementMethod = SettlementMethods.CASH;
