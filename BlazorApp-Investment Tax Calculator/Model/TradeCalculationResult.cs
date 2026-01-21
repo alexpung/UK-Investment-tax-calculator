@@ -1,5 +1,6 @@
 ﻿using InvestmentTaxCalculator.Enumerations;
 using InvestmentTaxCalculator.Model.Interfaces;
+using InvestmentTaxCalculator.Model.UkTaxModel.Options;
 
 using System.Collections.Concurrent;
 namespace InvestmentTaxCalculator.Model;
@@ -73,7 +74,7 @@ public class TradeCalculationResult(ITaxYear taxYear, ResidencyStatusRecord resi
         foreach (var group in groupedTradeByYear)
         {
             TradeByYear[group.Key] = [.. group];
-            DisposalByYear[group.Key] = [.. group.Where(trade => trade.AcquisitionDisposal == TradeType.DISPOSAL && trade.MatchHistory.Exists(match => match.IsTaxable is TaxableStatus.TAXABLE))];
+            DisposalByYear[group.Key] = [.. group.Where(trade => trade.AcquisitionDisposal == TradeType.DISPOSAL && (trade.MatchHistory.Exists(match => match.IsTaxable is TaxableStatus.TAXABLE) || (trade is OptionTradeTaxCalculation && trade.ResidencyStatusAtTrade != ResidencyStatus.NonResident)))];
             DisposalByYearIncludeNonTaxable[group.Key] = [.. group.Where(trade => trade.AcquisitionDisposal == TradeType.DISPOSAL)];
             _numberOfDisposals[group.Key] = DisposalByYear[group.Key].Count;
             _disposalProceeds[group.Key] = DisposalByYear[group.Key].Sum(trade => trade.TotalProceeds).Floor();

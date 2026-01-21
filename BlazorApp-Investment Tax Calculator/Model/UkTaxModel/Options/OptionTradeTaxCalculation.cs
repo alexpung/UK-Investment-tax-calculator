@@ -198,8 +198,15 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
     private WrappedMoney GetTotalProceed()
     {
         if (ResidencyStatusAtTrade == ResidencyStatus.NonResident) return WrappedMoney.GetBaseCurrencyZero();
-        if (AcquisitionDisposal == TradeType.DISPOSAL) return TotalCostOrProceed - _refundedDisposalProceed;
-        else return MatchHistory.Sum(tradeMatch => tradeMatch.BaseCurrencyMatchDisposalProceed);
+        if (AcquisitionDisposal == TradeType.DISPOSAL)
+        {
+            WrappedMoney nonTaxableMatchProceeds = MatchHistory
+                .Where(m => m.IsTaxable == TaxableStatus.NON_TAXABLE)
+                .Sum(m => GetProportionedCostOrProceed(m.MatchDisposalQty));
+
+            return TotalCostOrProceed - _refundedDisposalProceed - nonTaxableMatchProceeds;
+        }
+        else return WrappedMoney.GetBaseCurrencyZero();
     }
 }
 
