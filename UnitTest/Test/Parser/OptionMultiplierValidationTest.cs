@@ -50,8 +50,6 @@ public class OptionMultiplierValidationTest
 
         // Act & Assert
         var exception = Should.Throw<InvalidOperationException>(() => OptionHelper.CheckOptions(taxEventLists));
-        exception.Message.ShouldContain("Inconsistent multipliers found for option AAPL230131C00150000");
-        exception.Message.ShouldContain("100");
-        exception.Message.ShouldContain("10");
+        exception.Message.ShouldContain("Inconsistent multipliers found for the same option asset AAPL230131C00150000");
     }
 }
