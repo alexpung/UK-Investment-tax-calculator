@@ -2,30 +2,70 @@
 @using InvestmentTaxCalculator.Components
 
 <div class="container mt-4 mb-4">
-    <div class="mb-3">
+    <div class="mb-4">
         <h5>How to use this tool</h5>
-        <p class="mb-1">Pick a Start and End date (use the "Unbounded" checkbox for open-ended ranges), select a residency status from the dropdown, then click 
-            <em>Set residency for range</em>. Use <em>Reset</em> to clear the inputs. The timeline visualizes all configured ranges and the grid below lists them. To remove an entry, overwrite the time period with the updated status.</p>
-
-        <h6 class="mt-2">The following describes how this software handles each residency status, please seek professional tax advice for specific situations.</h6>
-        <ul class="mb-0">
-            <li><strong>Resident</strong>: Capital gains tax is chargeable when disposing of an asset. Dividends and interests are also taxable. This also includes the resident part of a split year treatment.</li>
-            <li>
-                <strong>Temporary non-resident</strong>: Capital gains tax is chargeable when disposing of an asset unless that asset is acquired during the same temporary non-resident
-                period. The tax is charged when returning to residency. Dividends and interests are not taxable. This also includes the non-resident part of a split year treatment.
-            </li>
-            <li><strong>Non-resident</strong>: Disposals, dividends and interests are not taxable. This also includes the non-resident part of a split year treatment.</li>
-        </ul>
+        <ol class="small">
+            <li>Select a <strong>Start date</strong> and <strong>End date</strong> (or use "Unbounded" for open-ended ranges)</li>
+            <li>Choose a <strong>residency status</strong> from the dropdown</li>
+            <li>Click <strong>Set residency for range</strong> to record the period</li>
+            <li>Use <strong>Reset</strong> to clear the current inputs</li>
+            <li>To remove or modify an entry, simply set a new range that overwrites the previous one</li>
+        </ol>
+        <p class="small text-muted mt-2">The timeline above visualizes your configured ranges; the grid below lists all entries.</p>
     </div>
 
-    <div class="alert alert-warning">
-        <strong>Note:</strong> Decide whether a period should be marked <strong>Non‑resident</strong> or <strong>Temporary non‑resident</strong>.
-        This tool does not determine residency status — choose the most appropriate option for your circumstances or consult a tax adviser.
+    <div class="mb-4">
+        <h6>Residency Status Definitions</h6>
+        <p class="small text-muted mb-2"><em>This describes how the software treats each status. Please seek professional tax advice for your specific circumstances.</em></p>
+        
+        <div class="card mb-3">
+            <div class="card-body">
+                <h6 class="card-title mb-2">
+                    <span class="badge bg-danger">Resident</span>
+                </h6>
+                <p class="card-text small">
+                    Capital gains, dividends, and interest are all taxable. Includes the resident part of split-year treatment.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-body">
+                <h6 class="card-title mb-2">
+                    <span class="badge bg-warning text-dark">Temporary Non-Resident</span>
+                </h6>
+                <p class="card-text small">
+                    Capital gains are taxable <strong>unless</strong> the asset was acquired during the same temporary non-resident period. Tax is charged when you return to residency. 
+                    Dividends and interest are <strong>not taxable</strong>. Includes the non-resident part of split-year treatment.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-body">
+                <h6 class="card-title mb-2">
+                    <span class="badge bg-success">Non-Resident</span>
+                </h6>
+                <p class="card-text small">
+                    Disposals, dividends, and interest are <strong>not taxable</strong>. Includes the non-resident part of split-year treatment.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="alert alert-info">
+        <strong>⚠️ Important:</strong> You must decide whether each period is <strong>Non-Resident</strong> or <strong>Temporary Non-Resident</strong>. 
+        This tool does not automatically determine residency status. Consult a tax adviser if you're unsure.
     </div>
 
     <p class="small text-muted">
-        Reference: HMRC HS278 (2025) — <a href="https://www.gov.uk/government/publications/temporary-non-residents-and-capital-gains-tax-hs278-self-assessment-helpsheet/hs278-temporary-non-residents-and-capital-gains-tax-2025" target="_blank" rel="noopener noreferrer">Temporary non-residents and Capital Gains Tax</a>.
+        <strong>Reference:</strong> HMRC HS278 (2025) — 
+        <a href="https://www.gov.uk/government/publications/temporary-non-residents-and-capital-gains-tax-hs278-self-assessment-helpsheet/hs278-temporary-non-residents-and-capital-gains-tax-2025" target="_blank" rel="noopener noreferrer">
+            Temporary non-residents and Capital Gains Tax
+        </a>
     </p>
+
+    <hr class="my-4" />
 
     <ResidencyStatusInput />
 </div>
