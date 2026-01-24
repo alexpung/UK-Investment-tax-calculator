@@ -28,13 +28,14 @@
         </div>
         <div class="col-md-12 mb-2">
             <div class="note">
-                <p class="text-info">Note: The export trade button give you a .json file, allowing you to import this file instead of your broker statements in the future.
-                    This can also be used to export your manually entered trade in the "Add Trade" page.
+                <p class="text-info">Note: The export data button give you a .json file, allowing you to import this file instead of your broker statements in the future.
+                    The export includes imported data, manually added trades, ERI/equalisation payment and other manual corporate action adjustments.
                 </p>
+                <p class="text-info">Importing this file instead of the broker statements would also be much faster.</p>
             </div>
         </div>
         <div class="col-md-4 mb-2">
-            <SfButton @onclick="InvokeExportTaxEvents" CssClass="btn btn-primary w-100">Export trade data for future import</SfButton>
+            <SfButton @onclick="InvokeExportTaxEvents" CssClass="btn btn-primary w-100">Export data for future import</SfButton>
         </div>
     </div>
 </div>
