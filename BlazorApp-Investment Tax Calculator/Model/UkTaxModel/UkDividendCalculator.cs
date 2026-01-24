@@ -1,6 +1,8 @@
 ﻿using InvestmentTaxCalculator.Enumerations;
 using InvestmentTaxCalculator.Model.Interfaces;
+using InvestmentTaxCalculator.Model.TaxEvents;
 using InvestmentTaxCalculator.Services;
+using System.Linq;
 
 namespace InvestmentTaxCalculator.Model.UkTaxModel;
 
@@ -19,9 +21,35 @@ public class UkDividendCalculator(IDividendLists dividendList, ITaxYear taxYear,
             .GroupBy(i => (taxYear.ToTaxYear(i.Date) + (i.IsTaxDeferred ? 1:0), i.IncomeLocation))
             .ToDictionary(g => g.Key, g => g.ToList());
 
-        if (dividendList.InterestIncomes.Exists(taxEvent => taxEvent.InterestType is TaxEvents.InterestType.ACCURREDINCOMEPROFIT or TaxEvents.InterestType.ACCURREDINCOMELOSS))
+        // Logic to determine if the next payment is in the same tax year
+        var interestIncomesByAsset = dividendList.InterestIncomes
+            .GroupBy(i => i.AssetName)
+            .ToDictionary(g => g.Key, g => g.OrderBy(i => i.Date).ToList());
+
+        foreach (var interest in dividendList.InterestIncomes)
         {
-            toastService.ShowWarning("Accrued income profit/loss detected. Please go to dividend/income tab and adjust taxable year and rerun calculation.");
+            if (interest.InterestType is InterestType.ACCURREDINCOMEPROFIT or InterestType.ACCURREDINCOMELOSS)
+            {
+                if (interestIncomesByAsset.TryGetValue(interest.AssetName, out List<InterestIncome>? assetEvents))
+                {
+                    // Find the BOND event with the smallest Date that is strictly greater than the accrued interest event's Date
+                    var nextBondPayment = assetEvents
+                       .Where(i => i.InterestType == InterestType.BOND && i.Date > interest.Date)
+                       .FirstOrDefault(); 
+
+                    if (nextBondPayment != null)
+                    {
+                        int accruedTaxYear = taxYear.ToTaxYear(interest.Date);
+                        int paymentTaxYear = taxYear.ToTaxYear(nextBondPayment.Date);
+                        interest.IsNextPaymentInSameTaxYear = (accruedTaxYear == paymentTaxYear);
+                    }
+                    else
+                    {
+                        // If there is no bond payment of the same ticker afterwards assume the accurred interest is taxable in the next year
+                        interest.IsNextPaymentInSameTaxYear = false;
+                    }
+                }
+            }
         }
 
         IEnumerable<(int, CountryCode)> combinedKeys = groupedDividendsDict.Keys.Union(groupedInterestIncomesDict.Keys);
