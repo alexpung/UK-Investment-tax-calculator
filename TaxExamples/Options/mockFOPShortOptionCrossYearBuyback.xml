@@ -1,0 +1,57 @@
+<FlexQueryResponse queryName="Tax" type="AF">
+	<FlexStatements count="1">
+		<FlexStatement accountId="TestAccount" fromDate="01-Jan-21" toDate="31-Dec-21" period="Custom" whenGenerated="01-Jan-22 00:00:00">
+
+			<Trades>
+				<Order 
+					currency="USD" 
+					fxRateToBase="0.78" 
+					assetCategory="FOP" 
+					isin="US12572Q1058" 
+					symbol="ES   210618P03900000" 
+					description="ES 18JUN21 3900.0 P" 
+					underlyingSymbol="ES" 
+					multiplier="50" 
+					strike="3900" 
+					expiry="18-Jun-21" 
+					putCall="P" 
+					dateTime="10-Dec-20 14:25:00" 
+					quantity="-2"  
+					proceeds="7000"
+					taxes="0" 
+					ibCommission="-2.01" 
+					ibCommissionCurrency="USD" 
+					notes="O" 
+					buySell="SELL" 
+					levelOfDetail="ORDER" />
+
+				<Order 
+					currency="USD" 
+					fxRateToBase="0.75" 
+					assetCategory="FOP" 
+					isin="US12572Q1058" 
+					symbol="ES   210618P03900000" 
+					description="ES 18JUN21 3900.0 P" 
+					underlyingSymbol="ES" 
+					multiplier="50" 
+					strike="3900" 
+					expiry="18-Jun-21" 
+					putCall="P" 
+					dateTime="17-Jun-21 16:00:00" 
+					quantity="1"  
+					proceeds="-1250" 
+					taxes="0" 
+					ibCommission="-2.01" 
+					ibCommissionCurrency="USD" 
+					notes="C" 
+					buySell="BUY" 
+					levelOfDetail="ORDER" />
+			</Trades>
+
+			<ConversionRates>
+				<ConversionRate reportDate="18-Jun-21" fromCurrency="USD" toCurrency="GBP" rate="0.75" />
+			</ConversionRates>
+			
+		</FlexStatement>
+	</FlexStatements>
+</FlexQueryResponse>
