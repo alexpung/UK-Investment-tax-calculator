@@ -1,7 +1,6 @@
 ﻿using InvestmentTaxCalculator.Enumerations;
 using InvestmentTaxCalculator.Model.Interfaces;
 using InvestmentTaxCalculator.Model.TaxEvents;
-using InvestmentTaxCalculator.Model.UkTaxModel.Fx;
 
 using Syncfusion.Blazor.Data;
 
@@ -16,11 +15,27 @@ namespace InvestmentTaxCalculator.Model.UkTaxModel.Stocks;
 /// <param name="tradeList"></param>
 public class UkTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorporateActionList tradeList, TradeTaxCalculationFactory tradeTaxCalculationFactory) : ITradeCalculator
 {
+    /// <summary>
+    /// Corporate actions filtered to only those applicable to stock and FX trading.
+    /// This ensures each calculator processes only its relevant corporate actions, preventing duplicate application.
+    /// </summary>
+    private List<CorporateAction> StockRelevantCorporateActions => [.. tradeList.CorporateActions.Where(ca => ca.AppliesToAssetCategoryType is AssetCategoryType.STOCK)];
+
     public List<ITradeTaxCalculation> CalculateTax()
     {
         List<ITradeTaxCalculation> tradeTaxCalculations = [.. tradeTaxCalculationFactory.GroupTrade(tradeList.Trades)];
-        GroupedTradeContainer<ITradeTaxCalculation> _tradeContainer = new(tradeTaxCalculations, tradeList.CorporateActions);
+        GroupedTradeContainer<ITradeTaxCalculation> _tradeContainer = new(tradeTaxCalculations, StockRelevantCorporateActions);
         UkMatchingRules.ApplyUkTaxRuleSequence(MatchTrade, _tradeContainer, section104Pools);
+
+        // Collect generated disposals from corporate actions (e.g., cash from takeovers)
+        var generatedDisposals = StockRelevantCorporateActions
+            .OfType<TakeoverCorporateAction>()
+            .Where(t => t.CashDisposal != null)
+            .Select(t => t.CashDisposal!)
+            .Cast<ITradeTaxCalculation>();
+
+        tradeTaxCalculations.AddRange(generatedDisposals);
+
         return tradeTaxCalculations;
     }
 
@@ -28,7 +43,7 @@ public class UkTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorpo
     {
         TradePairSorter<ITradeTaxCalculation> tradePairSorter = new(trade1, trade2);
         if (trade1.CalculationCompleted || trade2.CalculationCompleted) return;
-        MatchAdjustment matchAdjustment = tradeList.CorporateActions
+        MatchAdjustment matchAdjustment = StockRelevantCorporateActions
             .Aggregate(new MatchAdjustment(), (matchAdjustment, corporateAction) => corporateAction.TradeMatching(trade1, trade2, matchAdjustment));
         tradePairSorter.SetQuantityAdjustmentFactor(matchAdjustment.MatchAdjustmentFactor);
         TradeMatch disposalTradeMatch = new()

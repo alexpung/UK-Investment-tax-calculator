@@ -10,6 +10,10 @@ namespace InvestmentTaxCalculator.Model.Interfaces;
 /// </summary>
 public interface ITradeTaxCalculation : ITextFilePrintable, ITaxMatchable
 {
+    private static int _nextId = 0;
+    public static int GetNextId() => Interlocked.Increment(ref _nextId);
+    public static void ResetID() => Interlocked.Exchange(ref _nextId, 0);
+
     int Id { get; }
     AssetCategoryType AssetCategoryType { get; }
     bool CalculationCompleted { get; }

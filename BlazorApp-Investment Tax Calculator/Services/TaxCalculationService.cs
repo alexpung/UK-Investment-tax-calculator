@@ -28,7 +28,7 @@ public class TaxCalculationService(
             _isCalculating = true;
             section104Pools.Clear();
             tradeCalculationResult.Clear();
-            TradeTaxCalculation.ResetID();
+            ITradeTaxCalculation.ResetID();
 
             foreach (ITradeCalculator tradeCalculator in tradeCalculators)
             {

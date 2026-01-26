@@ -1,4 +1,5 @@
-﻿using InvestmentTaxCalculator.Model.Interfaces;
+﻿using InvestmentTaxCalculator.Enumerations;
+using InvestmentTaxCalculator.Model.Interfaces;
 using InvestmentTaxCalculator.Model.UkTaxModel;
 
 namespace InvestmentTaxCalculator.Model.TaxEvents;
@@ -16,6 +17,8 @@ public record StockSplit : CorporateAction, IChangeSection104
     /// </summary>
     public required int SplitFrom { get; init; }
     public override string Reason => $"{AssetName} undergo a stock split {SplitTo} for {SplitFrom} on {Date:d}";
+
+    public override AssetCategoryType AppliesToAssetCategoryType { get; } = AssetCategoryType.STOCK;
 
     public override MatchAdjustment TradeMatching(ITradeTaxCalculation trade1, ITradeTaxCalculation trade2, MatchAdjustment matchAdjustment)
     {

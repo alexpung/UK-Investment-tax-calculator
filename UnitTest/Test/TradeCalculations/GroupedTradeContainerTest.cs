@@ -95,18 +95,18 @@ public class GroupedTradeContainerTests
         allEvents.Count.ShouldBe(2); // Two distinct asset names: "ABC" and "XYZ"
 
         // Assert for ABC events
-        var abcEvents = allEvents[0];
-        abcEvents.Count.ShouldBe(3); // Two trades + one corporate action
-        abcEvents[0].Date.ShouldBe(DateTime.Parse("01-Jan-23 10:00:00", CultureInfo.InvariantCulture)); // First trade
-        abcEvents[1].Date.ShouldBe(DateTime.Parse("02-Jan-23 10:00:00", CultureInfo.InvariantCulture)); // Corporate action
-        abcEvents[2].Date.ShouldBe(DateTime.Parse("03-Jan-23 10:00:00", CultureInfo.InvariantCulture)); // Second trade
+        allEvents[0].AssetName.ShouldBe("ABC");
+        allEvents[0].Events.Count.ShouldBe(3); // Two trades + one corporate action
+        allEvents[0].Events[0].Date.ShouldBe(DateTime.Parse("01-Jan-23 10:00:00", CultureInfo.InvariantCulture)); // First trade
+        allEvents[0].Events[1].Date.ShouldBe(DateTime.Parse("02-Jan-23 10:00:00", CultureInfo.InvariantCulture)); // Corporate action
+        allEvents[0].Events[2].Date.ShouldBe(DateTime.Parse("03-Jan-23 10:00:00", CultureInfo.InvariantCulture)); // Second trade
 
         // Assert for XYZ events
-        var xyzEvents = allEvents[1];
-        xyzEvents.Count.ShouldBe(3); // Two trades + one corporate action
-        xyzEvents[0].Date.ShouldBe(DateTime.Parse("01-Jan-23 10:00:00", CultureInfo.InvariantCulture)); // First trade
-        xyzEvents[1].Date.ShouldBe(DateTime.Parse("04-Jan-23 10:00:00", CultureInfo.InvariantCulture)); // Corporate action
-        xyzEvents[2].Date.ShouldBe(DateTime.Parse("05-Jan-23 10:00:00", CultureInfo.InvariantCulture)); // Second trade
+        allEvents[1].AssetName.ShouldBe("XYZ");
+        allEvents[1].Events.Count.ShouldBe(3); // Two trades + one corporate action
+        allEvents[1].Events[0].Date.ShouldBe(DateTime.Parse("01-Jan-23 10:00:00", CultureInfo.InvariantCulture)); // First trade
+        allEvents[1].Events[1].Date.ShouldBe(DateTime.Parse("04-Jan-23 10:00:00", CultureInfo.InvariantCulture)); // Corporate action
+        allEvents[1].Events[2].Date.ShouldBe(DateTime.Parse("05-Jan-23 10:00:00", CultureInfo.InvariantCulture)); // Second trade
     }
 
     // Helper methods to create mocked trades and corporate actions

@@ -208,7 +208,7 @@ public record UkSection104
     public void MultiplyQuantity(decimal factor, DateTime date, string explanation)
     {
         decimal newQuantity = factor * Quantity;
-        Section104HistoryList.Add(Section104History.ShareAdjustment(date, Quantity, newQuantity, AcquisitionCostInBaseCurrency, explanation, TotalContractValue));
+        Section104HistoryList.Add(Section104History.QuantityAdjustment(date, Quantity, newQuantity, AcquisitionCostInBaseCurrency, explanation, TotalContractValue));
         Quantity = newQuantity;
         AcquiredQuantityByResidencyRange = AcquiredQuantityByResidencyRange.ToDictionary(kvp => kvp.Key, kvp => kvp.Value * factor);
     }
@@ -234,6 +234,35 @@ public record UkSection104
         Section104HistoryList.Add(newSection104History);
         AdjustValues(quantityAdjustment, costAdjustment, contractValueAdjustment);
         return newSection104History;
+    }
+
+    public Section104History AddAssets(DateTime date, decimal addedQuantity, WrappedMoney addedAcquisitionCostInBaseCurrency,
+                                       WrappedMoney? addedContractValue = null, string? explanation = null)
+    {
+        Section104History newSection104History = Section104History.QuantityAndValueAdjustment(date, Quantity, addedQuantity, AcquisitionCostInBaseCurrency, addedAcquisitionCostInBaseCurrency, explanation ?? string.Empty,
+            TotalContractValue, addedContractValue);
+        Section104HistoryList.Add(newSection104History);
+        AdjustValues(addedQuantity, addedAcquisitionCostInBaseCurrency, addedContractValue);
+        return newSection104History;
+    }
+
+    public Section104History ClearSection104(DateTime date, string explanation)
+    {
+        Section104History history = new()
+        {
+            Date = date,
+            QuantityChange = Quantity * -1,
+            ValueChange = AcquisitionCostInBaseCurrency * -1,
+            TradeTaxCalculation = null,
+            OldQuantity = Quantity,
+            OldValue = AcquisitionCostInBaseCurrency,
+            OldContractValue = TotalContractValue is null ? WrappedMoney.GetBaseCurrencyZero() : TotalContractValue,
+            ContractValueChange = TotalContractValue is null ? WrappedMoney.GetBaseCurrencyZero() : TotalContractValue * -1,
+            Explanation = explanation
+        };
+        Section104HistoryList.Add(history);
+        AdjustValues(Quantity * -1, AcquisitionCostInBaseCurrency * -1, TotalContractValue is null ? WrappedMoney.GetBaseCurrencyZero() : TotalContractValue * -1);
+        return history;
     }
 }
 

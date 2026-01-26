@@ -8,10 +8,16 @@ namespace InvestmentTaxCalculator.Model.UkTaxModel.Options;
 
 public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorporateActionList tradeList, ITaxYear taxYear, TradeTaxCalculationFactory tradeTaxCalculationFactory) : ITradeCalculator
 {
+    /// <summary>
+    /// Corporate actions filtered to only those applicable to option trading.
+    /// This ensures each calculator processes only its relevant corporate actions, preventing duplicate application.
+    /// </summary>
+    private List<CorporateAction> OptionRelevantCorporateActions => [.. tradeList.CorporateActions.Where(ca => ca.AppliesToAssetCategoryType is AssetCategoryType.OPTION)];
+
     public List<ITradeTaxCalculation> CalculateTax()
     {
         List<OptionTradeTaxCalculation> tradeTaxCalculations = [.. tradeTaxCalculationFactory.GroupOptionTrade(tradeList.OptionTrades)];
-        GroupedTradeContainer<OptionTradeTaxCalculation> _tradeContainer = new(tradeTaxCalculations, tradeList.CorporateActions);
+        GroupedTradeContainer<OptionTradeTaxCalculation> _tradeContainer = new(tradeTaxCalculations, OptionRelevantCorporateActions);
         UkMatchingRules.ApplyUkTaxRuleSequence(MatchTrade, _tradeContainer, section104Pools);
         return [.. tradeTaxCalculations.Cast<ITradeTaxCalculation>()];
     }

@@ -49,6 +49,10 @@ public class DisposalDetailSection(TradeCalculationResult tradeCalculationResult
             {
                 AddDisposalCalculationFutureContract(section, futureDisposal);
             }
+            else if (disposal is CorporateActionTaxCalculation corporateActionDisposal)
+            {
+                AddDisposalCalculationCorporateAction(section, corporateActionDisposal);
+            }
             else
             {
                 AddDisposalCalculationDetailDefault(section, disposal);
@@ -69,7 +73,7 @@ public class DisposalDetailSection(TradeCalculationResult tradeCalculationResult
                 }
 
             }
-            if (disposal.MatchHistory.Exists(match => match.TradeMatchType != TaxMatchType.SECTION_104))
+            if (disposal is not CorporateActionTaxCalculation && disposal.MatchHistory.Exists(match => match.TradeMatchType != TaxMatchType.SECTION_104))
             {
                 AddAcquisitionTradeDetails(section, disposal);
             }
@@ -219,6 +223,45 @@ public class DisposalDetailSection(TradeCalculationResult tradeCalculationResult
             matchedProceedRow.Cells[0].MergeRight = 2;
             matchedProceedRow.Cells[4].AddParagraph(disposal.TotalProceeds.ToString());
         }
+    }
+
+    private static void AddDisposalCalculationCorporateAction(Section section, CorporateActionTaxCalculation disposal)
+    {
+        Table table = Style.CreateTableWithProportionedWidth(section,
+            [(15, ParagraphAlignment.Left),
+            (35, ParagraphAlignment.Left)]);
+
+        Row titleRow = table.AddRow();
+        titleRow.Cells[0].MergeRight = 1;
+        titleRow.Cells[0].AddParagraph("Corporate Action Details");
+        titleRow.Format.Alignment = ParagraphAlignment.Center;
+        titleRow.Cells[0].Format.Font.Bold = true;
+        titleRow.Cells[0].Format.Font.Color = Colors.DarkBlue;
+        Style.StyleHeaderRow(titleRow);
+
+        Row reasonRow = table.AddRow();
+        reasonRow.Cells[0].AddParagraph("Description");
+        reasonRow.Cells[1].AddParagraph(disposal.RelatedCorporateAction.Reason);
+
+        Row dateRow = table.AddRow();
+        dateRow.Cells[0].AddParagraph("Date");
+        dateRow.Cells[1].AddParagraph(disposal.Date.ToShortDateString());
+
+        Row proceedRow = table.AddRow();
+        proceedRow.Cells[0].AddParagraph("Proceeds");
+        proceedRow.Cells[1].AddParagraph(disposal.TotalCostOrProceed.ToString());
+
+        if (disposal.TotalAllowableCost.Amount > 0)
+        {
+            Row costRow = table.AddRow();
+            costRow.Cells[0].AddParagraph("Allowable Cost");
+            costRow.Cells[1].AddParagraph(disposal.TotalAllowableCost.ToString());
+        }
+
+        Row gainRow = table.AddRow();
+        Style.StyleSumRow(gainRow);
+        gainRow.Cells[0].AddParagraph("Gain (Loss)");
+        gainRow.Cells[1].AddParagraph(disposal.Gain.ToString());
     }
 
     private static string GetMatchQuantityDescription(TradeMatch match)

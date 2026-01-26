@@ -13,8 +13,6 @@ namespace InvestmentTaxCalculator.Model.UkTaxModel.Stocks;
 /// </summary>
 public class TradeTaxCalculation : ITradeTaxCalculation
 {
-    private static int _nextId = 0;
-
     public int Id { get; init; }
     public List<Trade> TradeList { get; init; }
     public List<TradeMatch> MatchHistory { get; init; } = [];
@@ -50,13 +48,6 @@ public class TradeTaxCalculation : ITradeTaxCalculation
     public ResidencyStatus ResidencyStatusAtTrade { get; set; } = ResidencyStatus.Resident;
     public DateTime TaxableDate { get; set; }
 
-    /// <summary>
-    /// Reset trade IDs when start/restart a calculation
-    /// </summary>
-    public static void ResetID()
-    {
-        Interlocked.Exchange(ref _nextId, 0);
-    }
 
     /// <summary>
     /// Bunch a group of trade on the same side so that they can be matched together as a group, 
@@ -76,7 +67,7 @@ public class TradeTaxCalculation : ITradeTaxCalculation
         if (TotalQty <= 0) throw new ArgumentException($"The total quantity must be positive. It is {TotalQty}");
         UnmatchedQty = TotalQty;
         AcquisitionDisposal = trades.First().AcquisitionDisposal;
-        Id = Interlocked.Increment(ref _nextId);
+        Id = ITradeTaxCalculation.GetNextId();
         AssetName = TradeList[0].AssetName;
         AssetCategoryType = TradeList[0].AssetType;
         Date = TradeList[0].Date;

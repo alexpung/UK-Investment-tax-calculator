@@ -1,14 +1,20 @@
 ﻿using InvestmentTaxCalculator.Enumerations;
 using InvestmentTaxCalculator.Model.Interfaces;
+using InvestmentTaxCalculator.Model.TaxEvents;
 
 namespace InvestmentTaxCalculator.Model.UkTaxModel.Futures;
 
 public class UkFutureTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorporateActionList tradeList, TradeTaxCalculationFactory tradeTaxCalculationFactory) : ITradeCalculator
 {
+    /// <summary>
+    /// Corporate actions filtered to only those applicable to futures trading.
+    /// This ensures each calculator processes only its relevant corporate actions, preventing duplicate application.
+    /// </summary>
+    private List<CorporateAction> FutureRelevantCorporateActions => [.. tradeList.CorporateActions.Where(i => i.AppliesToAssetCategoryType is AssetCategoryType.FUTURE)];
     public List<ITradeTaxCalculation> CalculateTax()
     {
         List<FutureTradeTaxCalculation> tradeTaxCalculations = [.. tradeTaxCalculationFactory.GroupFutureTrade(tradeList.FutureContractTrades)];
-        GroupedTradeContainer<FutureTradeTaxCalculation> _tradeContainer = new(tradeTaxCalculations, tradeList.CorporateActions);
+        GroupedTradeContainer<FutureTradeTaxCalculation> _tradeContainer = new(tradeTaxCalculations, FutureRelevantCorporateActions);
         UkMatchingRules.ApplyUkTaxRuleSequence(MatchTrade, _tradeContainer, section104Pools);
         return [.. tradeTaxCalculations.Cast<ITradeTaxCalculation>()];
     }
@@ -17,7 +23,7 @@ public class UkFutureTradeCalculator(UkSection104Pools section104Pools, ITradeAn
     {
         TradePairSorter<FutureTradeTaxCalculation> tradePairSorter = new(trade1, trade2);
         if (trade1.CalculationCompleted || trade2.CalculationCompleted) return;
-        MatchAdjustment matchAdjustment = tradeList.CorporateActions
+        MatchAdjustment matchAdjustment = FutureRelevantCorporateActions
             .Aggregate(new MatchAdjustment(), (matchAdjustment, corporateAction) => corporateAction.TradeMatching(trade1, trade2, matchAdjustment));
         tradePairSorter.SetQuantityAdjustmentFactor(matchAdjustment.MatchAdjustmentFactor);
         WrappedMoney buyContractValue = tradePairSorter.BuyTrade.GetProportionedContractValue(tradePairSorter.BuyMatchQuantity);

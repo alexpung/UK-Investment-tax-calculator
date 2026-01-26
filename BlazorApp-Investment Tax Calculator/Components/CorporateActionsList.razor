@@ -1,0 +1,53 @@
+@using InvestmentTaxCalculator.Model
+@using InvestmentTaxCalculator.Model.TaxEvents
+@using InvestmentTaxCalculator.Model.Interfaces
+@using Syncfusion.Blazor.Grids
+@using Syncfusion.Blazor.Buttons
+@using InvestmentTaxCalculator.Services
+
+@inject ITradeAndCorporateActionList _taxEventLists
+@inject ToastService _toastService
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h3>Corporate Actions History</h3>
+    </div>
+    <div class="card-body">
+        <SfGrid @ref="_grid" DataSource="@_taxEventLists.CorporateActions" AllowPaging="true" AllowSorting="true">
+            <GridPageSettings PageSize="10"></GridPageSettings>
+            <GridColumns>
+                <GridColumn Field="@nameof(CorporateAction.Date)" HeaderText="Date" Format="d" Width="120"></GridColumn>
+                <GridColumn Field="@nameof(CorporateAction.AssetName)" HeaderText="Asset" Width="150"></GridColumn>
+                <GridColumn Field="@nameof(CorporateAction.Reason)" HeaderText="Reason/Description"></GridColumn>
+                <GridColumn HeaderText="Actions" Width="100" TextAlign="TextAlign.Center">
+                    <Template>
+                        @{
+                            var action = (CorporateAction)context;
+                            <SfButton IconCss="e-icons e-delete" CssClass="e-danger e-small" OnClick="@(() => DeleteAction(action))" Content="Delete"></SfButton>
+                        }
+                    </Template>
+                </GridColumn>
+            </GridColumns>
+        </SfGrid>
+    </div>
+</div>
+
+@code {
+    [Parameter] public EventCallback OnActionDeleted { get; set; }
+    private SfGrid<CorporateAction> _grid;
+
+    public void Refresh()
+    {
+        _grid?.Refresh();
+    }
+
+    private void DeleteAction(CorporateAction action)
+    {
+        if (_taxEventLists.CorporateActions.Remove(action))
+        {
+            _toastService.ShowInformation("Corporate action removed.");
+            Refresh();
+            OnActionDeleted.InvokeAsync();
+        }
+    }
+}

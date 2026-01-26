@@ -1,0 +1,38 @@
+@page "/corporate-actions"
+@using InvestmentTaxCalculator.Components
+@using InvestmentTaxCalculator.Services
+@implements IAsyncDisposable
+@inject TaxCalculationService _taxCalculationService
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <Takeover OnCorporateActionAdded="RefreshHistory" />
+            <CorporateActionsList @ref="_historyList" OnActionDeleted="OnActionDeleted" />
+        </div>
+    </div>
+</div>
+
+@code {
+    private CorporateActionsList? _historyList;
+    private bool _hasChanges = false;
+
+    private void RefreshHistory()
+    {
+        _hasChanges = true;
+        _historyList?.Refresh();
+    }
+
+    private void OnActionDeleted()
+    {
+        _hasChanges = true;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_hasChanges)
+        {
+            await _taxCalculationService.CalculateAsync();
+        }
+    }
+}

@@ -11,5 +11,7 @@ public enum TaxMatchType
     [Description("Section 104")]
     SECTION_104,
     [Description("Cover short selling")]
-    SHORTCOVER
+    SHORTCOVER,
+    [Description("Corporate action")]
+    CORPORATE_ACTION
 }

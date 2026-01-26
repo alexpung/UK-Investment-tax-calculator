@@ -1,3 +1,4 @@
+using InvestmentTaxCalculator.Enumerations;
 using InvestmentTaxCalculator.Model.Interfaces;
 using InvestmentTaxCalculator.Model.UkTaxModel;
 
@@ -20,6 +21,8 @@ public record FundEqualisation : CorporateAction, IChangeSection104
     public string? RelatedEventDescription { get; init; }
 
     public override string Reason => $"{AssetName} fund equalisation of {Amount.BaseCurrencyAmount} on {Date:d}" + (string.IsNullOrEmpty(RelatedEventDescription) ? "" : $" ({RelatedEventDescription})");
+
+    public override AssetCategoryType AppliesToAssetCategoryType { get; } = AssetCategoryType.STOCK;
 
     public override MatchAdjustment TradeMatching(ITradeTaxCalculation trade1, ITradeTaxCalculation trade2, MatchAdjustment matchAdjustment)
     {
