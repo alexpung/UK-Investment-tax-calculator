@@ -75,9 +75,8 @@ public static class UkMatchingRules
     /// </summary>
     public static IEnumerable<Tuple<T, T>> ProcessTradeInChronologicalOrder<T>(UkSection104Pools section104Pools, GroupedTradeContainer<T> tradesToBeMatched) where T : ITradeTaxCalculation
     {
-        foreach (ImmutableList<IAssetDatedEvent> group in tradesToBeMatched.GetAllTaxEventsGroupedAndSorted())
+        foreach ((string assetName, ImmutableList<IAssetDatedEvent> group) in tradesToBeMatched.GetAllTaxEventsGroupedAndSorted())
         {
-            string assetName = group[0].AssetName;
             UkSection104 section104 = section104Pools.GetExistingOrInitialise(assetName);
             Dictionary<DateTime, T> unmatchedDisposals = [];
 

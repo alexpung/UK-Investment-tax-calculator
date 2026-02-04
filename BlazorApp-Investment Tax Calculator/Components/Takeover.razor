@@ -1,0 +1,314 @@
+@using InvestmentTaxCalculator.Model
+@using InvestmentTaxCalculator.Model.TaxEvents
+@using InvestmentTaxCalculator.Model.UkTaxModel
+@using InvestmentTaxCalculator.Services
+@using InvestmentTaxCalculator.Model.Interfaces
+@using Syncfusion.Blazor.Calendars
+@using Syncfusion.Blazor.DropDowns
+@using Syncfusion.Blazor.Inputs
+@using Syncfusion.Blazor.Buttons
+@using Syncfusion.Blazor.Notifications
+@using InvestmentTaxCalculator.Enumerations
+
+@inject UkSection104Pools _ukSection104Pools
+@inject TradeCalculationResult _tradeCalculationResult
+@inject ITradeAndCorporateActionList _taxEventLists
+@inject ToastService _toastService
+
+<div class="card">
+    <div class="card-header">
+        <h3>Record Takeover / Merger</h3>
+    </div>
+    <div class="card-body">
+        @if (!_tradeCalculationResult.CalculatedTrade.Any())
+        {
+            <div class="alert alert-warning">
+                Please run a tax calculation first to populate the list of available assets.
+            </div>
+        }
+        else
+        {
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">Date</label>
+                    <SfDatePicker TValue="DateTime" @bind-Value="@_date" Format="d">
+                        <DatePickerEvents TValue="DateTime" ValueChange="OnDateChange"></DatePickerEvents>
+                    </SfDatePicker>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Type</label>
+                    <div class="d-flex gap-3">
+                         <SfRadioButton Label="Share for Share" Name="takeoverType" Value="ShareForShare" @bind-Checked="@_takeoverType" TChecked="string"></SfRadioButton>
+                         <SfRadioButton Label="Share + Cash" Name="takeoverType" Value="SharePlusCash" @bind-Checked="@_takeoverType" TChecked="string"></SfRadioButton>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">Original Asset (Old Company)</label>
+                     <SfDropDownList TValue="string" TItem="string" Placeholder="Select Asset" DataSource="@_availableAssets" @bind-Value="@_oldTicker">
+                        <DropDownListFieldSettings Text="" Value=""></DropDownListFieldSettings>
+                        <DropDownListEvents TItem="string" TValue="string" ValueChange="@(e => CalculateStats())"></DropDownListEvents>
+                    </SfDropDownList>
+                    @if (!string.IsNullOrEmpty(_oldTicker))
+                    {
+                        <div class="form-text text-info">
+                            Holding on @_date.ToShortDateString(): <strong>@_currentHolding</strong> shares
+                        </div>
+                    }
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">New Company Ticker</label>
+                    <SfComboBox TValue="string" TItem="string" Placeholder="Select or Enter New Ticker" DataSource="@_availableAssets" @bind-Value="@_newTicker" AllowCustom="true">
+                    </SfComboBox>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                 <div class="col-12">
+                     <label class="form-label">Exchange Ratio (Old : New)</label>
+                 </div>
+                <div class="col-md-5">
+                     <div class="input-group">
+                         <span class="input-group-text">For every</span>
+                         <SfNumericTextBox TValue="decimal" @bind-Value="@_oldSharesRatio" Min="0.0001m" Placeholder="Old Shares Qty">
+                             <NumericTextBoxEvents TValue="decimal" ValueChange="@(e => CalculateStats())"></NumericTextBoxEvents>
+                         </SfNumericTextBox>
+                         <span class="input-group-text">shares of old company</span>
+                    </div>
+                </div>
+                <div class="col-md-2 text-center align-self-center">
+                    <i class="oi oi-arrow-right"></i>
+                </div>
+                <div class="col-md-5">
+                    <div class="input-group">
+                        <span class="input-group-text">Receive</span>
+                        <SfNumericTextBox TValue="decimal" @bind-Value="@_newSharesRatio" Min="0.0001m" Placeholder="New Shares Qty">
+                             <NumericTextBoxEvents TValue="decimal" ValueChange="@(e => CalculateStats())"></NumericTextBoxEvents>
+                        </SfNumericTextBox>
+                        <span class="input-group-text">shares of new company</span>
+                    </div>
+                     @if (!string.IsNullOrEmpty(_oldTicker))
+                    {
+                        <div class="form-text text-info mt-1">
+                            Expected New Shares: <strong>@_expectedNewQuantity.ToString("F4")</strong>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            @if (_takeoverType == "SharePlusCash")
+            {
+                <div class="card mb-3 text-white" style="background-color: #1e3a8a;">
+                    <div class="card-body">
+                        <h5>Cash Component</h5>
+                        <div class="row mb-3">
+                             <div class="col-md-4">
+                                <label class="form-label">Cash Received (Total)</label>
+                                <SfNumericTextBox TValue="decimal" @bind-Value="@_cashAmount" Min="0" Placeholder="Amount"></SfNumericTextBox>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Currency</label>
+                                <SfDropDownList TValue="string" TItem="CurrencyViewModel" Placeholder="Currency" DataSource="@_currencies" @bind-Value="@_cashCurrency">
+                                    <DropDownListFieldSettings Text="Display" Value="Code"></DropDownListFieldSettings>
+                                </SfDropDownList>
+                            </div>
+                             <div class="col-md-4">
+                                <label class="form-label">FX Rate (to GBP)</label>
+                                <SfNumericTextBox TValue="decimal" @bind-Value="@_cashFx" Decimals="4" Format="n4" Min="0.000001m"></SfNumericTextBox>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <SfCheckBox Label="Elect for Small Cash Treatment (if applicable)" @bind-Checked="@_electSmallCash"></SfCheckBox>
+                                <div class="form-text">
+                                    Only applicable if cash received is less than £3,000 OR less than 5% of the total value of your holding.
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr/>
+                        <h5>Valuation for Cost Apportionment</h5>
+                        <div class="form-text mb-2">Required to calculate the cost basis split between new shares and cash.</div>
+                         <div class="row mb-3">
+                             <div class="col-md-4">
+                                <label class="form-label">Total Market Value of New Share Holding</label>
+                                <SfNumericTextBox TValue="decimal" @bind-Value="@_newShareMv" Min="0" Placeholder="Amount"></SfNumericTextBox>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Currency</label>
+                                <SfDropDownList TValue="string" TItem="CurrencyViewModel" Placeholder="Currency" DataSource="@_currencies" @bind-Value="@_newShareMvCurrency">
+                                    <DropDownListFieldSettings Text="Display" Value="Code"></DropDownListFieldSettings>
+                                </SfDropDownList>
+                            </div>
+                             <div class="col-md-4">
+                                <label class="form-label">FX Rate (to GBP)</label>
+                                <SfNumericTextBox TValue="decimal" @bind-Value="@_newShareMvFx" Decimals="4" Format="n4" Min="0.000001m"></SfNumericTextBox>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <div class="row">
+                <div class="col-12">
+                    <SfButton IsPrimary="true" OnClick="Submit">Add Takeover Action</SfButton>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public EventCallback OnCorporateActionAdded { get; set; }
+
+    private DateTime _date = DateTime.Today;
+    private string _takeoverType = "ShareForShare";
+    private string? _oldTicker;
+    private string? _newTicker;
+    private decimal _oldSharesRatio = 1m;
+    private decimal _newSharesRatio = 1m;
+
+    private decimal _cashAmount;
+    private string _cashCurrency = "GBP";
+    private decimal _cashFx = 1m;
+    private bool _electSmallCash;
+
+    private decimal _newShareMv;
+    private string _newShareMvCurrency = "GBP";
+    private decimal _newShareMvFx = 1m;
+
+    private decimal _currentHolding;
+    private decimal _expectedNewQuantity;
+
+    private List<string> _availableAssets = [];
+    private List<CurrencyViewModel> _currencies = [];
+
+    protected override void OnInitialized()
+    {
+        _currencies = CurrencyService.GetCurrencies();
+        RefreshAssets();
+    }
+
+    private void RefreshAssets()
+    {
+        if (_tradeCalculationResult.CalculatedTrade.Any())
+        {
+            _availableAssets = _ukSection104Pools.GetSection104s()
+                .Select(x => x.AssetName)
+                .OrderBy(x => x)
+                .ToList();
+        }
+    }
+
+    private void CalculateStats()
+    {
+        // Reset defaults
+        _currentHolding = 0;
+        _expectedNewQuantity = 0;
+
+        if (string.IsNullOrEmpty(_oldTicker)) return;
+
+        var pool = _ukSection104Pools.GetExistingOrInitialise(_oldTicker);
+        var history = pool.GetLastSection104History(DateOnly.FromDateTime(_date));
+        
+        if (history != null) 
+        {
+            _currentHolding = history.NewQuantity;
+        }
+
+        if (_oldSharesRatio > 0)
+        {
+            _expectedNewQuantity = _currentHolding * (_newSharesRatio / _oldSharesRatio);
+        }
+    }
+
+    private void OnDateChange(ChangedEventArgs<DateTime> args)
+    {
+        _date = args.Value;
+        CalculateStats();
+    }
+
+    private async Task Submit()
+    {
+        if (string.IsNullOrWhiteSpace(_oldTicker))
+        {
+            _toastService.ShowError("Please select the original asset.");
+            return;
+        }
+        if (string.IsNullOrWhiteSpace(_newTicker))
+        {
+            _toastService.ShowError("Please enter the new company ticker.");
+            return;
+        }
+        if (_oldTicker == _newTicker)
+        {
+             _toastService.ShowError("Old and New tickers cannot be the same.");
+             return;
+        }
+        if (_oldSharesRatio <= 0 || _newSharesRatio <= 0)
+        {
+            _toastService.ShowError("Ratio values must be greater than zero.");
+            return;
+        }
+
+        decimal ratio = _newSharesRatio / _oldSharesRatio;
+
+        DescribedMoney? cashComponent = null;
+        DescribedMoney? newShareMv = null;
+
+        if (_takeoverType == "SharePlusCash")
+        {
+            if (_cashAmount <= 0)
+            {
+                 _toastService.ShowError("Cash amount must be greater than zero.");
+                 return;
+            }
+             if (_newShareMv <= 0)
+            {
+                 _toastService.ShowError("New share market value must be greater than zero.");
+                 return;
+            }
+
+            if (_cashFx <= 0 || _newShareMvFx <= 0)
+            {
+                 _toastService.ShowError("FX rate must be greater than zero.");
+                 return;
+            }
+
+            cashComponent = new DescribedMoney(_cashAmount, _cashCurrency, _cashFx, "Cash component");
+            newShareMv = new DescribedMoney(_newShareMv, _newShareMvCurrency, _newShareMvFx, "New share MV");
+
+            // Validate Small Cash Election using domain logic
+            if (_electSmallCash)
+            {
+                decimal cashInBase = cashComponent.BaseCurrencyAmount.Amount;
+                if (!TakeoverCorporateAction.IsSmallCash(cashInBase, newShareMv!))
+                {
+                     _toastService.ShowError("You elected for Small Cash treatment, but the cash amount exceeds £3,000 and 5% of the total value. This election is invalid.");
+                     return;
+                }
+            }
+        }
+
+        var action = new TakeoverCorporateAction
+        {
+            Date = _date,
+            AssetName = _oldTicker,
+            AcquiringCompanyTicker = _newTicker,
+            OldToNewRatio = ratio,
+            CashComponent = cashComponent,
+            ElectTaxDeferral = _electSmallCash,
+            NewSharesMarketValue = newShareMv
+        };
+
+        _taxEventLists.CorporateActions.Add(action);
+        _toastService.ShowInformation("Takeover action added successfully.");
+        await OnCorporateActionAdded.InvokeAsync();
+        
+        // Reset form slightly?
+        // _oldTicker = null;
+    }
+}

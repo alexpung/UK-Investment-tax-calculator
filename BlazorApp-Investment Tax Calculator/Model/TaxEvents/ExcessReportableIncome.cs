@@ -29,6 +29,7 @@ public record ExcessReportableIncome : CorporateAction, IChangeSection104
     public CountryCode IncomeLocation { get; set; } = CountryCode.UnknownRegion;
 
     public override string Reason => $"{AssetName} excess reportable income ({IncomeType.GetDescription()}) of {Amount.BaseCurrencyAmount} on {Date:d}";
+    public override AssetCategoryType AppliesToAssetCategoryType { get; } = AssetCategoryType.STOCK;
 
     public override MatchAdjustment TradeMatching(ITradeTaxCalculation trade1, ITradeTaxCalculation trade2, MatchAdjustment matchAdjustment)
     {

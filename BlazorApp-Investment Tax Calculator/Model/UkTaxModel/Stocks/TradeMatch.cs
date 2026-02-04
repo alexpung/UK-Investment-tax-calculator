@@ -39,6 +39,13 @@ public record TradeMatch : ITextFilePrintable
                                 $"= {BaseCurrencyMatchDisposalProceed - BaseCurrencyMatchAllowableCost}");
             if (!string.IsNullOrEmpty(AdditionalInformation)) output.AppendLine(AdditionalInformation);
         }
+        else if (TradeMatchType == TaxMatchType.CORPORATE_ACTION)
+        {
+            output.AppendLine($"Corporate Action Matching: {MatchedSellTrade?.AssetName ?? AssetName}");
+            output.AppendLine($"Gain for this match is {BaseCurrencyMatchDisposalProceed} - {BaseCurrencyMatchAllowableCost} " +
+                                $"= {BaseCurrencyMatchDisposalProceed - BaseCurrencyMatchAllowableCost}");
+            if (!string.IsNullOrEmpty(AdditionalInformation)) output.AppendLine(AdditionalInformation);
+        }
         else
         {
             output.AppendLine($"{ToPrintedString(TradeMatchType)}: {MatchAcquisitionQty} units of the acquisition trade against {MatchDisposalQty} units of the disposal trade. " +
@@ -57,6 +64,7 @@ public record TradeMatch : ITextFilePrintable
         TaxMatchType.BED_AND_BREAKFAST => "Bed and breakfast",
         TaxMatchType.SHORTCOVER => "Cover unmatched disposal",
         TaxMatchType.SECTION_104 => "Section 104",
+        TaxMatchType.CORPORATE_ACTION => "Corporate Action",
         _ => throw new NotImplementedException()
     };
 }

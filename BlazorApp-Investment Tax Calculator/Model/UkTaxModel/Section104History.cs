@@ -36,7 +36,7 @@ public class Section104History : ITextFilePrintable
         };
     }
 
-    public static Section104History ShareAdjustment(DateTime date, decimal oldQuantity, decimal newQuantity, WrappedMoney oldValue, string explanation, WrappedMoney? oldContractValue = null)
+    public static Section104History QuantityAdjustment(DateTime date, decimal oldQuantity, decimal newQuantity, WrappedMoney oldValue, string explanation, WrappedMoney? oldContractValue = null)
     {
         return new Section104History
         {
@@ -57,6 +57,21 @@ public class Section104History : ITextFilePrintable
         {
             Date = date,
             QuantityChange = 0,
+            ValueChange = valueChange,
+            OldQuantity = oldQuantity,
+            OldValue = oldValue,
+            OldContractValue = oldContractValue is null ? WrappedMoney.GetBaseCurrencyZero() : oldContractValue,
+            ContractValueChange = contractValueChange is null ? WrappedMoney.GetBaseCurrencyZero() : contractValueChange,
+            Explanation = explanation
+        };
+    }
+
+    public static Section104History QuantityAndValueAdjustment(DateTime date, decimal oldQuantity, decimal quantityChange, WrappedMoney oldValue, WrappedMoney valueChange, string explanation, WrappedMoney? oldContractValue = null, WrappedMoney? contractValueChange = null)
+    {
+        return new Section104History
+        {
+            Date = date,
+            QuantityChange = quantityChange,
             ValueChange = valueChange,
             OldQuantity = oldQuantity,
             OldValue = oldValue,

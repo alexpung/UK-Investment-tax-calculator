@@ -1,4 +1,5 @@
-﻿using InvestmentTaxCalculator.Model.Interfaces;
+﻿using InvestmentTaxCalculator.Enumerations;
+using InvestmentTaxCalculator.Model.Interfaces;
 using InvestmentTaxCalculator.Model.UkTaxModel;
 
 using System.Text.Json.Serialization;
@@ -9,6 +10,7 @@ namespace InvestmentTaxCalculator.Model.TaxEvents;
 [JsonDerivedType(typeof(StockSplit), "stockSplit")]
 [JsonDerivedType(typeof(ExcessReportableIncome), "eri")]
 [JsonDerivedType(typeof(FundEqualisation), "fundEqualisation")]
+[JsonDerivedType(typeof(TakeoverCorporateAction), "takeover")]
 [JsonDerivedType(typeof(ReturnOfCapitalCorporateAction), "roc")]
 public abstract record CorporateAction : TaxEvent
 {
@@ -16,4 +18,5 @@ public abstract record CorporateAction : TaxEvent
     public abstract void ChangeSection104(UkSection104 section104);
     public virtual string Reason => "";
     public override string ToSummaryString() => $"Corporate Action: {AssetName} ({Date.ToShortDateString()}) - {Reason}";
+    public abstract AssetCategoryType AppliesToAssetCategoryType { get; }
 }

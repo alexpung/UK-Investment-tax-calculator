@@ -1,4 +1,5 @@
-﻿using InvestmentTaxCalculator.Model.Interfaces;
+﻿using InvestmentTaxCalculator.Enumerations;
+using InvestmentTaxCalculator.Model.Interfaces;
 using InvestmentTaxCalculator.Model.UkTaxModel;
 
 namespace InvestmentTaxCalculator.Model.TaxEvents;
@@ -9,6 +10,8 @@ public record ReturnOfCapitalCorporateAction : CorporateAction, IChangeSection10
     public required DescribedMoney Amount { get; init; }
 
     public override string Reason => $"{AssetName} return of capital of {Amount.BaseCurrencyAmount} on {Date:d}";
+
+    public override AssetCategoryType AppliesToAssetCategoryType { get; } = AssetCategoryType.STOCK;
 
     // Return of capital reduces the acquisition cost (adjust Section 104 pool)
     public override void ChangeSection104(UkSection104 section104)
