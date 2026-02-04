@@ -10,6 +10,7 @@ using Shouldly;
 
 namespace UnitTest.Test.TradeCalculations;
 
+[Collection("NonParallelTests")]
 public class TradeTaxCalculationIdSeriesTest
 {
     [Fact]

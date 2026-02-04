@@ -41,13 +41,13 @@
         _grid?.Refresh();
     }
 
-    private void DeleteAction(CorporateAction action)
+    private async Task DeleteAction(CorporateAction action)
     {
         if (_taxEventLists.CorporateActions.Remove(action))
         {
             _toastService.ShowInformation("Corporate action removed.");
             Refresh();
-            OnActionDeleted.InvokeAsync();
+            await OnActionDeleted.InvokeAsync();
         }
     }
 }

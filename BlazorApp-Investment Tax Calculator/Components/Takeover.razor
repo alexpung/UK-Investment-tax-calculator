@@ -272,6 +272,12 @@
                  return;
             }
 
+            if (_cashFx <= 0 || _newShareMvFx <= 0)
+            {
+                 _toastService.ShowError("FX rate must be greater than zero.");
+                 return;
+            }
+
             cashComponent = new DescribedMoney(_cashAmount, _cashCurrency, _cashFx, "Cash component");
             newShareMv = new DescribedMoney(_newShareMv, _newShareMvCurrency, _newShareMvFx, "New share MV");
 

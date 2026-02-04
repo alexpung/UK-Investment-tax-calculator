@@ -94,7 +94,8 @@ public class GroupedTradeContainer<T>(IEnumerable<T> tradeList, IEnumerable<Corp
     /// </summary>
     public IEnumerable<(string AssetName, ImmutableList<IAssetDatedEvent> Events)> GetAllTaxEventsGroupedAndSorted()
     {
-        var allAssets = _tradeAndCorporateActionListDict.Keys.ToHashSet();
+        // Use a sorted list for deterministic iteration
+        var allAssets = _tradeAndCorporateActionListDict.Keys.OrderBy(k => k, StringComparer.Ordinal).ToList();
         var processed = new HashSet<string>();
         var result = new List<string>();
 
@@ -110,7 +111,8 @@ public class GroupedTradeContainer<T>(IEnumerable<T> tradeList, IEnumerable<Corp
             // Process dependencies first (old companies before new company)
             if (_takeoverDependencies.TryGetValue(asset, out var deps))
             {
-                foreach (var dep in deps.Where(allAssets.Contains))
+                // Sort dependencies for deterministic order
+                foreach (var dep in deps.Where(allAssets.Contains).OrderBy(k => k, StringComparer.Ordinal))
                 {
                     ProcessAsset(dep, visiting);
                 }
@@ -124,7 +126,7 @@ public class GroupedTradeContainer<T>(IEnumerable<T> tradeList, IEnumerable<Corp
         // Process all assets in topological order
         foreach (var asset in allAssets)
         {
-            ProcessAsset(asset, []);
+            ProcessAsset(asset, new HashSet<string>());
         }
 
         // Yield results in dependency-respecting order

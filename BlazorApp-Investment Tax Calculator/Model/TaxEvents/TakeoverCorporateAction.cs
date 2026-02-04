@@ -112,7 +112,7 @@ public record TakeoverCorporateAction : CorporateAction, IChangeSection104
     private void ProcessCashComponent(WrappedMoney oldCost)
     {
         if (CashComponent == null || NewSharesMarketValue == null)
-            throw new InvalidOperationException($"Invalid operation in processing cash payout in {AssetName}, both {nameof(CashComponent)} and nameof{NewSharesMarketValue} required to calculate taxable gain.");
+            throw new InvalidOperationException($"Invalid operation in processing cash payout in {AssetName}, both {nameof(CashComponent)} and {nameof(NewSharesMarketValue)} required to calculate taxable gain.");
 
         WrappedMoney cashAmount = CashComponent.BaseCurrencyAmount;
         bool isSmallCash = IsSmallCash(cashAmount.Amount);
