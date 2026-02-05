@@ -1,0 +1,127 @@
+/* ===================================
+   Main Styles for UK Investment Tax Calculator
+   =================================== */
+
+/* Root Variables */
+:root {
+    --sidebar-width: 250px;
+    --header-height: 60px;
+    --transition-speed: 0.3s;
+}
+
+/* Layout Styles */
+.app-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.main-content-wrapper {
+    flex: 1;
+    padding: 2rem;
+    background-color: var(--bs-body-bg);
+}
+
+@media (max-width: 768px) {
+    .main-content-wrapper {
+        padding: 1rem;
+    }
+}
+
+/* Page Styles */
+.page-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    outline: none !important;
+    border: none !important;
+}
+
+.page-title {
+    font-size: 2.5rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--bs-heading-color);
+    outline: none !important;
+    box-shadow: none !important;
+    border: none !important;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.page-title:focus,
+.page-title:active {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* Card Enhancements */
+.feature-card {
+    border: 1px solid var(--bs-border-color);
+    height: 100%;
+}
+
+.feature-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: var(--bs-primary);
+}
+
+/* Alert Enhancements */
+.alert-custom {
+    border-left: 4px solid;
+    border-radius: 0.375rem;
+}
+
+.alert-custom.alert-warning {
+    border-left-color: var(--bs-warning);
+}
+
+.alert-custom.alert-info {
+    border-left-color: var(--bs-info);
+}
+
+/* Link Styles */
+.link-styled {
+    color: var(--bs-link-color);
+    text-decoration: none;
+    transition: color var(--transition-speed);
+}
+
+.link-styled:hover {
+    color: var(--bs-link-hover-color);
+    text-decoration: underline;
+}
+
+/* Section Spacing */
+.section {
+    margin-bottom: 3rem;
+}
+
+.section-title {
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    color: var(--bs-heading-color);
+}
+
+/* Utility Classes */
+.text-muted-custom {
+    color: var(--bs-secondary-color) !important;
+}
+
+.bg-dark-subtle {
+    background-color: rgba(var(--bs-dark-rgb), 0.1) !important;
+}
+
+/* Loading Screen Styles */
+.app-loading {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.app-loading-spinner {
+    width: 3rem;
+    height: 3rem;
+    margin-bottom: 1rem;
+}

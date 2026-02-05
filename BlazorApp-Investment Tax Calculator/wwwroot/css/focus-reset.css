@@ -1,0 +1,25 @@
+/* ===================================
+   Global Focus & Accessibility Reset
+   =================================== */
+
+/* 1. Remove focus outlines for mouse/touch users (non-keyboard) */
+*:focus:not(:focus-visible) {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* 2. Provide a clear, high-contrast outline for keyboard navigation */
+*:focus-visible {
+    outline: 2px solid var(--bs-primary) !important;
+    outline-offset: 2px !important;
+    box-shadow: 0 0 0 4px rgba(var(--bs-primary-rgb), 0.25) !important;
+}
+
+/* 3. Exceptions: Keep certain elements cleaner if necessary 
+   (e.g., brand or titles that shouldn't normally be tabbed to) */
+.sidebar-header *,
+.sidebar-brand:focus-visible,
+.page-title:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+}

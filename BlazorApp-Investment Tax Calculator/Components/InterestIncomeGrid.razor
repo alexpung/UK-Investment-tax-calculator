@@ -14,7 +14,6 @@
                 falls within this tax year (checkbox checked) or the next tax year (checkbox unchecked) based on future bond payments. You can manually override this if needed.</p>
         </div>
     </div>
-    <StartCalculation/>
     <SfGrid TValue="InterestIncome" DataSource="@_taxEventLists.InterestIncomes" AllowPaging="true" AllowSorting="true" Width="100%">
         <GridPageSettings PageSizes=@(new List<int>() { 25, 50, 100 }) PageSize="25"></GridPageSettings>
         <GridColumns>
