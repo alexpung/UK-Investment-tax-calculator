@@ -38,7 +38,7 @@ public class TradeTaxCalculationIdSeriesTest
             SplitFrom = 1,
             SplitTo = 2
         };
-        var caCalc = new CorporateActionTaxCalculation(split, WrappedMoney.GetBaseCurrencyZero(), WrappedMoney.GetBaseCurrencyZero());
+        var caCalc = new CorporateActionTaxCalculation(split, WrappedMoney.GetBaseCurrencyZero(), WrappedMoney.GetBaseCurrencyZero(), InvestmentTaxCalculator.Enumerations.ResidencyStatus.Resident);
 
         // 3. Create an OptionTradeTaxCalculation
         var optionTrade = new OptionTrade

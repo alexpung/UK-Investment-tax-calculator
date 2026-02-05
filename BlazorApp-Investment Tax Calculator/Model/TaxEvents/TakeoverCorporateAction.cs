@@ -99,7 +99,7 @@ public record TakeoverCorporateAction : CorporateAction, IChangeSection104
         // Handle cash component if present
         if (CashComponent != null)
         {
-            ProcessCashComponent(oldCost);
+            ProcessCashComponent(oldCost, section104);
         }
 
         // Build explanation including acquisition history
@@ -109,7 +109,7 @@ public record TakeoverCorporateAction : CorporateAction, IChangeSection104
         section104.ClearSection104(Date, explanation);
     }
 
-    private void ProcessCashComponent(WrappedMoney oldCost)
+    private void ProcessCashComponent(WrappedMoney oldCost, UkSection104 section104)
     {
         if (CashComponent == null || NewSharesMarketValue == null)
             throw new InvalidOperationException($"Invalid operation in processing cash payout in {AssetName}, both {nameof(CashComponent)} and {nameof(NewSharesMarketValue)} required to calculate taxable gain.");
@@ -136,7 +136,7 @@ public record TakeoverCorporateAction : CorporateAction, IChangeSection104
                                            $"\tTotal Cost Basis: {oldCost}\n" +
                                            $"\tExcess Gain: {cashAmount} - {oldCost} = {gainAmount}\n" +
                                            $"\tAllowable Cost used to reduce gain: {oldCost}";
-                CreateCashDisposal(gainAmount, WrappedMoney.GetBaseCurrencyZero(), calculationDetail);
+                CreateCashDisposal(gainAmount, WrappedMoney.GetBaseCurrencyZero(), calculationDetail, section104);
             }
         }
         else
@@ -156,7 +156,7 @@ public record TakeoverCorporateAction : CorporateAction, IChangeSection104
                                        $"\tCash Proportion: {cashAmount.Amount:F2} / {totalValue.Amount:F2} = {cashProportion:P2}\n" +
                                        $"\tAllowable Cost: {oldCost} * {cashProportion:P2} = {allowableCostUsed}";
 
-            CreateCashDisposal(cashAmount, allowableCostUsed, calculationDetail);
+            CreateCashDisposal(cashAmount, allowableCostUsed, calculationDetail, section104);
         }
     }
 
@@ -196,9 +196,13 @@ public record TakeoverCorporateAction : CorporateAction, IChangeSection104
         return false;
     }
 
-    private void CreateCashDisposal(WrappedMoney proceeds, WrappedMoney allowableCost, string additionalInfo)
+    private void CreateCashDisposal(WrappedMoney proceeds, WrappedMoney allowableCost, string additionalInfo, UkSection104 section104)
     {
-        CashDisposal = new CorporateActionTaxCalculation(this, proceeds, allowableCost, additionalInfo);
+        // Look up residency status from section104, default to Resident if not available
+        ResidencyStatus residencyStatus = section104.ResidencyStatusRecord?.GetResidencyStatus(DateOnly.FromDateTime(Date)) 
+            ?? ResidencyStatus.Resident;
+
+        CashDisposal = new CorporateActionTaxCalculation(this, proceeds, allowableCost, residencyStatus, additionalInfo);
     }
 
     private string BuildOldCompanyExplanation(UkSection104 section104, decimal quantity, WrappedMoney cost)

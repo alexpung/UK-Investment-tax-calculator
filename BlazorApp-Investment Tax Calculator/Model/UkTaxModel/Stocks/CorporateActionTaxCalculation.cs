@@ -30,7 +30,7 @@ public class CorporateActionTaxCalculation : ITradeTaxCalculation
     public DateTime TaxableDate { get; set; }
     public CorporateAction RelatedCorporateAction { get; init; }
 
-    public CorporateActionTaxCalculation(CorporateAction corporateAction, WrappedMoney proceeds, WrappedMoney allowableCost, string additionalInfo = "")
+    public CorporateActionTaxCalculation(CorporateAction corporateAction, WrappedMoney proceeds, WrappedMoney allowableCost, ResidencyStatus residencyStatus, string additionalInfo = "")
     {
         Id = ITradeTaxCalculation.GetNextId();
         RelatedCorporateAction = corporateAction;
@@ -40,6 +40,12 @@ public class CorporateActionTaxCalculation : ITradeTaxCalculation
         AssetCategoryType = corporateAction.AppliesToAssetCategoryType;
         TotalCostOrProceed = proceeds;
         UnmatchedCostOrProceed = proceeds;
+        ResidencyStatusAtTrade = residencyStatus;
+
+        // Determine taxable status based on residency
+        TaxableStatus taxableStatus = residencyStatus == ResidencyStatus.NonResident 
+            ? TaxableStatus.NON_TAXABLE 
+            : TaxableStatus.TAXABLE;
 
         // Build a synthetic match for the corporate action
         var match = new TradeMatch
@@ -52,7 +58,7 @@ public class CorporateActionTaxCalculation : ITradeTaxCalculation
             MatchAcquisitionQty = 0.0m,
             BaseCurrencyMatchDisposalProceed = proceeds,
             BaseCurrencyMatchAllowableCost = allowableCost,
-            IsTaxable = TaxableStatus.TAXABLE,
+            IsTaxable = taxableStatus,
             AdditionalInformation = additionalInfo
         };
 

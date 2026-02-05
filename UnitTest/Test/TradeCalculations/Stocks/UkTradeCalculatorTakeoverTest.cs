@@ -316,4 +316,175 @@ public class UkTradeCalculatorTakeoverTest
         var corp2S104 = _section104Pools.GetExistingOrInitialise("CORP2");
         corp2S104.Quantity.ShouldBe(150m);
     }
+
+    [Fact]
+    public void NonResidentTakeover_CashDisposal_IsNotTaxable()
+    {
+        // Arrange
+        // Setup residency record: Resident initially, then Non-Resident from March 2023
+        var residencyRecord = new ResidencyStatusRecord();
+        residencyRecord.SetResidencyStatus(
+            new DateOnly(2023, 3, 1), 
+            new DateOnly(2023, 12, 31), 
+            InvestmentTaxCalculator.Enumerations.ResidencyStatus.NonResident);
+
+        var section104Pools = new UkSection104Pools(_taxYear, residencyRecord);
+        var tradeTaxCalculationFactory = new TradeTaxCalculationFactory(residencyRecord);
+
+        // 1. Buy 100 shares of OLDCO while resident
+        var buyOld = new Trade
+        {
+            AssetName = "OLDCO",
+            Date = new DateTime(2023, 1, 1),
+            AcquisitionDisposal = InvestmentTaxCalculator.Enumerations.TradeType.ACQUISITION,
+            Quantity = 100m,
+            GrossProceed = new DescribedMoney(1000m, "GBP", 1m)
+        };
+
+        // 2. Takeover with cash while non-resident (June 2023)
+        var takeover = new TakeoverCorporateAction
+        {
+            AssetName = "OLDCO",
+            Date = new DateTime(2023, 6, 1), // Non-resident period
+            AcquiringCompanyTicker = "NEWCO",
+            OldToNewRatio = 1.0m,
+            CashComponent = new DescribedMoney(500m, "GBP", 1m),
+            ElectTaxDeferral = false,
+            NewSharesMarketValue = new DescribedMoney(2000m, "GBP", 1m)
+        };
+
+        var tradeList = CreateMockTradeList([buyOld], [takeover]);
+        var calculator = new UkTradeCalculator(
+            section104Pools,
+            tradeList,
+            tradeTaxCalculationFactory);
+
+        // Act
+        var results = calculator.CalculateTax();
+
+        // Assert
+        // Should have a cash disposal
+        var cashDisposal = results.FirstOrDefault(r => r.AcquisitionDisposal == InvestmentTaxCalculator.Enumerations.TradeType.DISPOSAL);
+        cashDisposal.ShouldNotBeNull();
+
+        // Verify residency status is set correctly
+        cashDisposal.ResidencyStatusAtTrade.ShouldBe(InvestmentTaxCalculator.Enumerations.ResidencyStatus.NonResident);
+
+        // Verify the disposal is marked as NON_TAXABLE
+        cashDisposal.MatchHistory.Count.ShouldBe(1);
+        cashDisposal.MatchHistory[0].IsTaxable.ShouldBe(InvestmentTaxCalculator.Enumerations.TaxableStatus.NON_TAXABLE);
+    }
+
+    [Fact]
+    public void ResidentTakeover_CashDisposal_IsTaxable()
+    {
+        // Arrange
+        // Setup residency record: Resident throughout
+        var residencyRecord = new ResidencyStatusRecord();
+        // Default is Resident, no need to set anything
+
+        var section104Pools = new UkSection104Pools(_taxYear, residencyRecord);
+        var tradeTaxCalculationFactory = new TradeTaxCalculationFactory(residencyRecord);
+
+        // 1. Buy 100 shares of OLDCO while resident
+        var buyOld = new Trade
+        {
+            AssetName = "OLDCO",
+            Date = new DateTime(2023, 1, 1),
+            AcquisitionDisposal = InvestmentTaxCalculator.Enumerations.TradeType.ACQUISITION,
+            Quantity = 100m,
+            GrossProceed = new DescribedMoney(1000m, "GBP", 1m)
+        };
+
+        // 2. Takeover with cash while resident (June 2023)
+        var takeover = new TakeoverCorporateAction
+        {
+            AssetName = "OLDCO",
+            Date = new DateTime(2023, 6, 1), // Resident period
+            AcquiringCompanyTicker = "NEWCO",
+            OldToNewRatio = 1.0m,
+            CashComponent = new DescribedMoney(500m, "GBP", 1m),
+            ElectTaxDeferral = false,
+            NewSharesMarketValue = new DescribedMoney(2000m, "GBP", 1m)
+        };
+
+        var tradeList = CreateMockTradeList([buyOld], [takeover]);
+        var calculator = new UkTradeCalculator(
+            section104Pools,
+            tradeList,
+            tradeTaxCalculationFactory);
+
+        // Act
+        var results = calculator.CalculateTax();
+
+        // Assert
+        // Should have a cash disposal
+        var cashDisposal = results.FirstOrDefault(r => r.AcquisitionDisposal == InvestmentTaxCalculator.Enumerations.TradeType.DISPOSAL);
+        cashDisposal.ShouldNotBeNull();
+
+        // Verify residency status is set correctly
+        cashDisposal.ResidencyStatusAtTrade.ShouldBe(InvestmentTaxCalculator.Enumerations.ResidencyStatus.Resident);
+
+        // Verify the disposal is marked as TAXABLE
+        cashDisposal.MatchHistory.Count.ShouldBe(1);
+        cashDisposal.MatchHistory[0].IsTaxable.ShouldBe(InvestmentTaxCalculator.Enumerations.TaxableStatus.TAXABLE);
+    }
+
+    [Fact]
+    public void TemporaryNonResidentTakeover_CashDisposal_IsTaxable()
+    {
+        // Arrange
+        // Setup residency record: Temporary Non-Resident from March to December 2023
+        var residencyRecord = new ResidencyStatusRecord();
+        residencyRecord.SetResidencyStatus(
+            new DateOnly(2023, 3, 1), 
+            new DateOnly(2023, 12, 31), 
+            InvestmentTaxCalculator.Enumerations.ResidencyStatus.TemporaryNonResident);
+
+        var section104Pools = new UkSection104Pools(_taxYear, residencyRecord);
+        var tradeTaxCalculationFactory = new TradeTaxCalculationFactory(residencyRecord);
+
+        // 1. Buy 100 shares of OLDCO while resident
+        var buyOld = new Trade
+        {
+            AssetName = "OLDCO",
+            Date = new DateTime(2023, 1, 1),
+            AcquisitionDisposal = InvestmentTaxCalculator.Enumerations.TradeType.ACQUISITION,
+            Quantity = 100m,
+            GrossProceed = new DescribedMoney(1000m, "GBP", 1m)
+        };
+
+        // 2. Takeover with cash while temporary non-resident (June 2023)
+        var takeover = new TakeoverCorporateAction
+        {
+            AssetName = "OLDCO",
+            Date = new DateTime(2023, 6, 1), // Temporary non-resident period
+            AcquiringCompanyTicker = "NEWCO",
+            OldToNewRatio = 1.0m,
+            CashComponent = new DescribedMoney(500m, "GBP", 1m),
+            ElectTaxDeferral = false,
+            NewSharesMarketValue = new DescribedMoney(2000m, "GBP", 1m)
+        };
+
+        var tradeList = CreateMockTradeList([buyOld], [takeover]);
+        var calculator = new UkTradeCalculator(
+            section104Pools,
+            tradeList,
+            tradeTaxCalculationFactory);
+
+        // Act
+        var results = calculator.CalculateTax();
+
+        // Assert
+        // Should have a cash disposal
+        var cashDisposal = results.FirstOrDefault(r => r.AcquisitionDisposal == InvestmentTaxCalculator.Enumerations.TradeType.DISPOSAL);
+        cashDisposal.ShouldNotBeNull();
+
+        // Verify residency status is set correctly
+        cashDisposal.ResidencyStatusAtTrade.ShouldBe(InvestmentTaxCalculator.Enumerations.ResidencyStatus.TemporaryNonResident);
+
+        // Verify the disposal is marked as TAXABLE (temporary non-residents are taxed)
+        cashDisposal.MatchHistory.Count.ShouldBe(1);
+        cashDisposal.MatchHistory[0].IsTaxable.ShouldBe(InvestmentTaxCalculator.Enumerations.TaxableStatus.TAXABLE);
+    }
 }
