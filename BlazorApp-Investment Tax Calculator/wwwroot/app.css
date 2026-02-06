@@ -57,6 +57,11 @@ body {
 
 .content-area {
   padding: 2rem;
+  background: rgba(7, 11, 21, 0.6);
+}
+
+.content-stack > * + * {
+  margin-top: 1.5rem;
 }
 
 .content-card {
@@ -65,6 +70,7 @@ body {
   border-radius: 1rem;
   padding: 1.75rem;
   box-shadow: 0 20px 50px rgba(15, 23, 42, 0.35);
+  overflow-x: auto;
 }
 
 .hero-panel {
@@ -94,5 +100,37 @@ body {
 
   .content-area {
     padding: 1.25rem;
+  }
+
+  .nav-menu {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.75rem;
+    overflow-x: auto;
+  }
+
+  .nav-menu-title {
+    display: none;
+  }
+
+  .nav-menu-list {
+    display: flex;
+    flex-direction: row;
+    gap: 0.5rem;
+    overflow-x: auto;
+  }
+
+  .nav-menu-item {
+    white-space: nowrap;
+  }
+
+  .sidebar .list-group-item {
+    margin: 0;
+  }
+}
+
+@media (max-width: 767px) {
+  .content-card table {
+    min-width: 680px;
   }
 }

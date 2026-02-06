@@ -2,13 +2,13 @@
 @inject NavigationManager Navigation
 @implements IDisposable
 
-<nav class="d-flex flex-column gap-3 p-3">
-    <div class="text-uppercase text-secondary small fw-semibold px-3">Navigation</div>
-    <div class="list-group list-group-flush">
+<nav class="nav-menu d-flex flex-column gap-3 p-3">
+    <div class="nav-menu-title text-uppercase text-secondary small fw-semibold px-3">Navigation</div>
+    <div class="nav-menu-list list-group list-group-flush">
         @foreach (var entry in List)
         {
             <button type="button"
-                    class="list-group-item list-group-item-action @GetActiveClass(entry.PageAddress)"
+                    class="nav-menu-item list-group-item list-group-item-action @GetActiveClass(entry.PageAddress)"
                     @onclick="() => NavigateTo(entry.PageAddress)">
                 @entry.Text
             </button>
