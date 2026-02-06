@@ -1,5 +1,6 @@
 ﻿@using Syncfusion.Blazor.Navigations
 @inject NavigationManager Navigation
+@implements IDisposable
 
 <nav class="d-flex flex-column gap-3 p-3">
     <div class="text-uppercase text-secondary small fw-semibold px-3">Navigation</div>
@@ -47,9 +48,19 @@
         public required string PageAddress { get; set; }
     }
 
+    protected override void OnInitialized()
+    {
+        Navigation.LocationChanged += HandleLocationChanged;
+    }
+
+    private void HandleLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs args)
+    {
+        StateHasChanged();
+    }
+
     private void NavigateTo(string pageAddress)
     {
-        Navigation.NavigateTo(Navigation.BaseUri + pageAddress);
+        Navigation.NavigateTo(pageAddress);
     }
 
     private string GetActiveClass(string pageAddress)
@@ -61,5 +72,10 @@
         }
 
         return current.Equals(pageAddress, StringComparison.OrdinalIgnoreCase) ? "active" : string.Empty;
+    }
+
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= HandleLocationChanged;
     }
 }
