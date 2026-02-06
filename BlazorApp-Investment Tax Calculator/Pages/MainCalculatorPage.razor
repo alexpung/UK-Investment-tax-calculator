@@ -1,20 +1,20 @@
 ﻿@page "/MainCalculatorPage"
 
 @using InvestmentTaxCalculator.Components
-<div class="content-card">
+<section class="content-card content-stack">
     <h2 class="h4 mb-3">Import &amp; calculate</h2>
-    <p class="text-secondary">
+    <p class="text-secondary lead">
         Upload your broker statements and run calculations to generate CGT, dividend, and income summaries.
     </p>
     <ImportFile/>
-    <p class="text-secondary mt-3">
+    <p class="text-secondary helper-text">
         If you have bond ETFs, use the conversion page to indicate which tickers should be treated as income before
         running the calculation.
     </p>
     <StartCalculation OnCalculated="HandleCalculated"/>
     <CalculationSummary ShouldReRender="@calculationVersion"></CalculationSummary>
     <ExportFile/>
-</div>
+</section>
 
 @code {
     private int calculationVersion = 0;

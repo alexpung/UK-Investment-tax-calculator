@@ -73,6 +73,18 @@ body {
   overflow-x: auto;
 }
 
+.content-card.content-stack > * + * {
+  margin-top: 1.25rem;
+}
+
+.content-card .lead {
+  font-size: 1.1rem;
+}
+
+.content-card .helper-text {
+  margin-bottom: 0.5rem;
+}
+
 .hero-panel {
   background: linear-gradient(135deg, rgba(37, 99, 235, 0.25), rgba(99, 102, 241, 0.15));
   border-radius: 1.25rem;
@@ -81,11 +93,36 @@ body {
   box-shadow: 0 30px 60px rgba(15, 23, 42, 0.4);
 }
 
+.hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  gap: 2rem;
+  align-items: center;
+}
+
+.hero-steps {
+  align-self: stretch;
+}
+
 .metric-card {
   background: rgba(30, 41, 59, 0.9);
   border: 1px solid rgba(148, 163, 184, 0.2);
   border-radius: 1rem;
   padding: 1.5rem;
+}
+
+.content-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 2rem;
+  align-items: start;
+}
+
+.content-meta {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  margin-top: 1.5rem;
 }
 
 .alert {
@@ -130,6 +167,11 @@ body {
 }
 
 @media (max-width: 767px) {
+  .hero-grid,
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+
   .content-card table {
     min-width: 680px;
   }

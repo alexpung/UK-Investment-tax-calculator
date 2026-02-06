@@ -1,61 +1,53 @@
 ﻿@page "/"
 
-<section class="hero-panel mb-4">
-    <div class="row align-items-center g-4">
-        <div class="col-lg-7">
-            <p class="text-uppercase text-info small mb-2">UK investment reporting</p>
-            <h1 class="display-5 fw-semibold">Plan your CGT and dividend tax with confidence.</h1>
-            <p class="lead text-secondary">
-                Import broker statements, match trades, and export summaries for SA106/SA108 — all in a private,
-                client-side workflow powered by Blazor WebAssembly.
-            </p>
-            <div class="d-flex flex-wrap gap-2">
-                <a class="btn btn-primary btn-lg" href="MainCalculatorPage">Start with Import/Export</a>
-                <a class="btn btn-outline-info btn-lg" href="https://github.com/alexpung/UK-Investment-tax-calculator/wiki">Read the Wiki</a>
-            </div>
-        </div>
-        <div class="col-lg-5">
-            <div class="metric-card">
-                <h5 class="fw-semibold">Quick start</h5>
-                <ol class="text-secondary mb-0">
-                    <li>Download sample Interactive Brokers XML files.</li>
-                    <li>Upload via Import/Export.</li>
-                    <li>Review CGT and dividend summaries.</li>
-                </ol>
-                <a class="btn btn-link text-info ps-0 mt-2"
-                   href="https://github.com/alexpung/UK-Investment-tax-calculator/tree/master/UnitTest/System%20Test/Interactive%20brokers">
-                    View sample files
-                </a>
-            </div>
+<section class="hero-panel hero-grid mb-4">
+    <div class="hero-copy">
+        <p class="text-uppercase text-info small mb-2">UK investment reporting</p>
+        <h1 class="display-5 fw-semibold">Plan your CGT and dividend tax with confidence.</h1>
+        <p class="lead text-secondary">
+            Import broker statements, match trades, and export summaries for SA106/SA108 — all in a private,
+            client-side workflow powered by Blazor WebAssembly.
+        </p>
+        <div class="d-flex flex-wrap gap-2">
+            <a class="btn btn-primary btn-lg" href="MainCalculatorPage">Start with Import/Export</a>
+            <a class="btn btn-outline-info btn-lg" href="https://github.com/alexpung/UK-Investment-tax-calculator/wiki">Read the Wiki</a>
         </div>
     </div>
+    <aside class="metric-card hero-steps">
+        <h5 class="fw-semibold">Quick start</h5>
+        <ol class="text-secondary mb-0">
+            <li>Download sample Interactive Brokers XML files.</li>
+            <li>Upload via Import/Export.</li>
+            <li>Review CGT and dividend summaries.</li>
+        </ol>
+        <a class="btn btn-link text-info ps-0 mt-2"
+           href="https://github.com/alexpung/UK-Investment-tax-calculator/tree/master/UnitTest/System%20Test/Interactive%20brokers">
+            View sample files
+        </a>
+    </aside>
 </section>
 
-<section class="content-card">
-    <div class="row g-4">
-        <div class="col-xl-8">
-            <h2 class="h4 mb-3">What this calculator does</h2>
-            <p class="text-secondary">
-                This application accepts broker statements (Interactive Brokers XML currently) and outputs taxable gains
-                and losses according to UK trade matching rules. It also reports dividends and withholding tax paid by
-                countries so you can complete SA106 and SA108 forms with clarity.
-            </p>
-            <p class="text-secondary">
-                Your trade data never leaves your browser. The calculation is entirely client-side, protecting privacy
-                while you model outcomes.
-            </p>
-        </div>
-        <div class="col-xl-4">
-            <div class="metric-card h-100">
-                <h3 class="h6 text-uppercase text-secondary">Highlights</h3>
-                <ul class="list-unstyled text-secondary mb-0">
-                    <li class="mb-2">✔ CGT yearly summaries & trade matching</li>
-                    <li class="mb-2">✔ Dividend and income tracking</li>
-                    <li class="mb-2">✔ PDF export for record keeping</li>
-                </ul>
-            </div>
-        </div>
+<section class="content-card content-grid">
+    <div class="content-main">
+        <h2 class="h4 mb-3">What this calculator does</h2>
+        <p class="text-secondary">
+            This application accepts broker statements (Interactive Brokers XML currently) and outputs taxable gains
+            and losses according to UK trade matching rules. It also reports dividends and withholding tax paid by
+            countries so you can complete SA106 and SA108 forms with clarity.
+        </p>
+        <p class="text-secondary">
+            Your trade data never leaves your browser. The calculation is entirely client-side, protecting privacy
+            while you model outcomes.
+        </p>
     </div>
+    <aside class="metric-card content-highlights">
+        <h3 class="h6 text-uppercase text-secondary">Highlights</h3>
+        <ul class="list-unstyled text-secondary mb-0">
+            <li class="mb-2">✔ CGT yearly summaries & trade matching</li>
+            <li class="mb-2">✔ Dividend and income tracking</li>
+            <li class="mb-2">✔ PDF export for record keeping</li>
+        </ul>
+    </aside>
 
     <div class="alert alert-warning mt-4" role="alert">
         <strong>
@@ -65,13 +57,13 @@
         </strong>
     </div>
 
-    <div class="row g-4 mt-2">
-        <div class="col-lg-6">
+    <div class="content-meta">
+        <div>
             <h2 class="h5">License</h2>
             <p class="text-secondary mb-1">MIT License</p>
             <p class="text-secondary mb-0">Copyright (c) 2023-@DateTime.Now.Year Ka Wing Pun</p>
         </div>
-        <div class="col-lg-6">
+        <div>
             <h2 class="h5">Syncfusion components</h2>
             <p class="text-secondary mb-0">
                 If you need to access Syncfusion binaries or compile any Syncfusion-linked code, you will need an
