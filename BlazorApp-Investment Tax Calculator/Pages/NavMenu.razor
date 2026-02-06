@@ -1,38 +1,24 @@
 ﻿@using Syncfusion.Blazor.Navigations
-@using Syncfusion.Blazor.Buttons
-@using Syncfusion.Blazor.Inputs
-@using Syncfusion.Blazor.Lists
 @inject NavigationManager Navigation
-<SfButton OnClick="ToggleMenu" class=open-menu-button>>></SfButton>
-<SfSidebar ref="NavBar" Width="220px" MediaQuery="(min-width:600px)" @bind-IsOpen="SidebarToggle" Type="SidebarType.Auto">
-    <ChildContent>
-        <SfListView DataSource="@List" TValue="ListData" CssClass="e-template-list">
-            <ListViewFieldSettings TValue="ListData" Id="Id" Text="Text"></ListViewFieldSettings>
-            <ListViewEvents TValue="ListData" Clicked="OnSelect"></ListViewEvents>
-        </SfListView>
-        <div class="sidebar-content mt-3">
-            <SfButton OnClick="ToggleMenu" class="close-menu-button">Close menu</SfButton>
-        </div>
-    </ChildContent>
-</SfSidebar>
 
-<style>
-    .e-listview .e-list-item {
-        text-align: center;
-        font-size: 14px;
-        padding: 0;
-    }
-
-    .sidebar-content {
-        display: flex;
-        flex-direction: column; /* Stack children vertically */
-        justify-content: center; /* Center children vertically */
-        align-items: center; /* Center children horizontally */
-    }
-</style>
+<nav class="d-flex flex-column gap-3 p-3">
+    <div class="text-uppercase text-secondary small fw-semibold px-3">Navigation</div>
+    <div class="list-group list-group-flush">
+        @foreach (var entry in List)
+        {
+            <button type="button"
+                    class="list-group-item list-group-item-action @GetActiveClass(entry.PageAddress)"
+                    @onclick="() => NavigateTo(entry.PageAddress)">
+                @entry.Text
+            </button>
+        }
+    </div>
+    <div class="mt-3 px-3">
+        <div class="text-secondary small">Data never leaves your browser.</div>
+    </div>
+</nav>
 
 @code {
-    public bool SidebarToggle { get; set; } = true;
     // Specify the value of ListView component DataSource property.
     public List<ListData> List { get; set; } = new List<ListData>
     {
@@ -61,14 +47,19 @@
         public required string PageAddress { get; set; }
     }
 
-    // Specifies the event handler for Clicked event in ListView component.
-    public void OnSelect(Syncfusion.Blazor.Lists.ClickEventArgs<ListData> args)
+    private void NavigateTo(string pageAddress)
     {
-        Navigation.NavigateTo(Navigation.BaseUri + args.ItemData.PageAddress);
+        Navigation.NavigateTo(Navigation.BaseUri + pageAddress);
     }
 
-    public void ToggleMenu()
+    private string GetActiveClass(string pageAddress)
     {
-        SidebarToggle = !SidebarToggle;
+        var current = Navigation.ToBaseRelativePath(Navigation.Uri);
+        if (string.IsNullOrWhiteSpace(current))
+        {
+            return pageAddress == string.Empty ? "active" : string.Empty;
+        }
+
+        return current.Equals(pageAddress, StringComparison.OrdinalIgnoreCase) ? "active" : string.Empty;
     }
 }

@@ -2,32 +2,33 @@
 @using InvestmentTaxCalculator.Pages
 @using InvestmentTaxCalculator.Components
 
-<div class="page">
-    <div class="grid-container">
-        <div class="sidebar">
-            <NavMenu />
+<div class="app-shell">
+    <header class="app-header py-3 px-3 px-lg-4">
+        <div class="container-fluid">
+            <nav class="navbar navbar-dark navbar-expand-lg gap-3">
+                <span class="navbar-brand d-flex align-items-center gap-2 fw-semibold">
+                    <span class="badge rounded-pill bg-primary-subtle text-primary">UK</span>
+                    Investment Tax Calculator
+                </span>
+                <div class="ms-auto d-flex align-items-center gap-2">
+                    <span class="badge bg-success-subtle text-success">WebAssembly</span>
+                    <span class="text-secondary small">Private, client-side reporting</span>
+                </div>
+            </nav>
         </div>
-        <main class="content">
-            @Body
-            <ToastComponent />
-        </main>
+    </header>
+
+    <div class="app-layout">
+        <div class="container-fluid">
+            <div class="row g-0">
+                <aside class="sidebar col-12 col-lg-3 col-xl-2">
+                    <NavMenu />
+                </aside>
+                <main class="content-area col-12 col-lg-9 col-xl-10">
+                    @Body
+                    <ToastComponent />
+                </main>
+            </div>
+        </div>
     </div>
 </div>
-
-
-<style>
-    .grid-container {
-        display: grid;
-        grid-template-columns: minmax(auto, 250px) auto;
-        grid-template-areas: 'sidebar content';
-    }
-
-    .sidebar {
-        grid-area: sidebar;
-    }
-
-    .content {
-        grid-area: content;
-    }
-</style>
-

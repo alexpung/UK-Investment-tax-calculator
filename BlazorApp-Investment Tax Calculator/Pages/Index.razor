@@ -1,46 +1,92 @@
 ﻿@page "/"
 
-<div class="bg-dark text-light p-3">
-    <div class="container">
-        <h2 class="display-4 mb-4">Welcome to the UK Investment Tax Calculator</h2>
-        <p>This application is designed to accept broker statements (only Interactive Brokers XML statement currently) and output taxable gains and losses according to normal trade matching rules.</p>
-        <p>Also report dividends and withholding tax paid by countries.</p>
-        <p>To sum up, this application assists you in filling out the SA106, SA108 tax forms.</p>
-        <p>To get started, gather some sample XML files 
-            <a href="https://github.com/alexpung/UK-Investment-tax-calculator/tree/master/UnitTest/System%20Test/Interactive%20brokers" class="link-primary">here</a>
-            and try to import them by going to the 'Import/Export' tab.</p>
-        <p> Also check <a href="https://github.com/alexpung/UK-Investment-tax-calculator/wiki" class="link-primary">Wiki</a> for more information.</p>
-        <p>Your trade data is not uploaded anywhere. They never leave your browser thanks to the Blazor Webassembly framework. The calculation is entirely done in your browser.</p>
-        <p>Permission to use the software is granted under the MIT license.</p>
-
-        <div class="alert alert-warning" role="alert">
-            <strong>
-                This software serves as an assistive tool only and does not handle many of the exceptions in tax law, nor is the correctness of its output warranted.<br>
-                The taxpayers are responsible for verifying that they are reporting correct data in their tax forms.
-            </strong>
+<section class="hero-panel mb-4">
+    <div class="row align-items-center g-4">
+        <div class="col-lg-7">
+            <p class="text-uppercase text-info small mb-2">UK investment reporting</p>
+            <h1 class="display-5 fw-semibold">Plan your CGT and dividend tax with confidence.</h1>
+            <p class="lead text-secondary">
+                Import broker statements, match trades, and export summaries for SA106/SA108 — all in a private,
+                client-side workflow powered by Blazor WebAssembly.
+            </p>
+            <div class="d-flex flex-wrap gap-2">
+                <a class="btn btn-primary btn-lg" href="MainCalculatorPage">Start with Import/Export</a>
+                <a class="btn btn-outline-info btn-lg" href="https://github.com/alexpung/UK-Investment-tax-calculator/wiki">Read the Wiki</a>
+            </div>
         </div>
-
-        <h2 class="mt-4">License</h2>
-        <p>MIT License</p>
-        <p>Copyright (c) 2023-@DateTime.Now.Year Ka Wing Pun</p>
-
-        <p>
-            The front end contains components from Syncfusion.
-            If you need to access Syncfusion's binaries or compile any part of this project containing Syncfusion code, or anything linked to or dependent on this project, you would need to contact Syncfusion to receive either an eligible community license or a paid license.
-        </p>
-
-        <p>
-            Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-        </p>
-
-        <p>
-            The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-        </p>
-
-        <div class="alert alert-secondary" role="alert">
-            <strong>
-                THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-            </strong>
+        <div class="col-lg-5">
+            <div class="metric-card">
+                <h5 class="fw-semibold">Quick start</h5>
+                <ol class="text-secondary mb-0">
+                    <li>Download sample Interactive Brokers XML files.</li>
+                    <li>Upload via Import/Export.</li>
+                    <li>Review CGT and dividend summaries.</li>
+                </ol>
+                <a class="btn btn-link text-info ps-0 mt-2"
+                   href="https://github.com/alexpung/UK-Investment-tax-calculator/tree/master/UnitTest/System%20Test/Interactive%20brokers">
+                    View sample files
+                </a>
+            </div>
         </div>
     </div>
-</div>
+</section>
+
+<section class="content-card">
+    <div class="row g-4">
+        <div class="col-xl-8">
+            <h2 class="h4 mb-3">What this calculator does</h2>
+            <p class="text-secondary">
+                This application accepts broker statements (Interactive Brokers XML currently) and outputs taxable gains
+                and losses according to UK trade matching rules. It also reports dividends and withholding tax paid by
+                countries so you can complete SA106 and SA108 forms with clarity.
+            </p>
+            <p class="text-secondary">
+                Your trade data never leaves your browser. The calculation is entirely client-side, protecting privacy
+                while you model outcomes.
+            </p>
+        </div>
+        <div class="col-xl-4">
+            <div class="metric-card h-100">
+                <h3 class="h6 text-uppercase text-secondary">Highlights</h3>
+                <ul class="list-unstyled text-secondary mb-0">
+                    <li class="mb-2">✔ CGT yearly summaries & trade matching</li>
+                    <li class="mb-2">✔ Dividend and income tracking</li>
+                    <li class="mb-2">✔ PDF export for record keeping</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="alert alert-warning mt-4" role="alert">
+        <strong>
+            This software serves as an assistive tool only and does not handle many of the exceptions in tax law, nor is
+            the correctness of its output warranted. Taxpayers are responsible for verifying that they are reporting
+            correct data in their tax forms.
+        </strong>
+    </div>
+
+    <div class="row g-4 mt-2">
+        <div class="col-lg-6">
+            <h2 class="h5">License</h2>
+            <p class="text-secondary mb-1">MIT License</p>
+            <p class="text-secondary mb-0">Copyright (c) 2023-@DateTime.Now.Year Ka Wing Pun</p>
+        </div>
+        <div class="col-lg-6">
+            <h2 class="h5">Syncfusion components</h2>
+            <p class="text-secondary mb-0">
+                If you need to access Syncfusion binaries or compile any Syncfusion-linked code, you will need an
+                eligible community license or a paid license from Syncfusion.
+            </p>
+        </div>
+    </div>
+
+    <div class="alert alert-secondary mt-4" role="alert">
+        <strong>
+            THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
+            LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO
+            EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+            AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
+            OR OTHER DEALINGS IN THE SOFTWARE.
+        </strong>
+    </div>
+</section>
