@@ -41,12 +41,14 @@ public partial class ImportFile : IDisposable
                     if (executionState is ExecutionState.SKIP_DUPLICATE) taxEventLists.AddData(events, true);
                     if (executionState is ExecutionState.INCLUDE_DUPLICATE) taxEventLists.AddData(events, false);
                     OptionHelper.CheckOptions(taxEventLists);
-
-                    FileImportState.IncrementProcessedFiles();
                 }
                 catch (Exception ex)
                 {
                     toastService.ShowException(ex);
+                }
+                finally
+                {
+                    FileImportState.IncrementProcessedFiles();
                 }
             }
         }
