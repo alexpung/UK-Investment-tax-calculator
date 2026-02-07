@@ -5,7 +5,6 @@
 /* Root Variables */
 :root {
     --sidebar-width: 250px;
-    --header-height: 60px;
     --transition-speed: 0.3s;
 }
 
@@ -79,6 +78,10 @@
     border-left-color: var(--bs-info);
 }
 
+.alert-custom.alert-secondary {
+    border-left-color: var(--bs-secondary);
+}
+
 /* Link Styles */
 .link-styled {
     color: var(--bs-link-color);
@@ -106,10 +109,6 @@
 /* Utility Classes */
 .text-muted-custom {
     color: var(--bs-secondary-color) !important;
-}
-
-.bg-dark-subtle {
-    background-color: rgba(var(--bs-dark-rgb), 0.1) !important;
 }
 
 /* Loading Screen Styles */

@@ -15,9 +15,8 @@
     box-shadow: 0 0 0 4px rgba(var(--bs-primary-rgb), 0.25) !important;
 }
 
-/* 3. Exceptions: Keep certain elements cleaner if necessary 
+/* 3. Exceptions: Keep certain non-interactive elements cleaner
    (e.g., brand or titles that shouldn't normally be tabbed to) */
-.sidebar-header *,
 .sidebar-brand:focus-visible,
 .page-title:focus-visible {
     outline: none !important;

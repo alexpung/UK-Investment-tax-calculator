@@ -1,12 +1,45 @@
 ﻿@page "/MainCalculatorPage"
 
 @using InvestmentTaxCalculator.Components
-<div class="container mt-4 mb-4 bg-dark text-light p-3">
-    <ImportFile/>
-    <p class="card-text">If you have bond ETF you need to use the conversion page to indicate which tickers should be treated as income, before running the calculation.</p>
-    <StartCalculation OnCalculated="HandleCalculated"/>
-    <CalculationSummary ShouldReRender="@calculationVersion"></CalculationSummary>
-    <ExportFile/>
+<div class="container-fluid py-5">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <!-- Page Header -->
+            <div class="page-header text-center mb-5">
+                <h1 class="page-title">Import & Export</h1>
+                <p class="page-subtitle">Manage your tax data - import broker statements and export calculation results</p>
+            </div>
+
+            <!-- Import Section -->
+            <div class="section mb-5">
+                <ImportFile/>
+            </div>
+
+            <!-- Bond ETF Notice -->
+            <div class="alert alert-warning alert-custom mb-4" role="alert">
+                <h5 class="alert-heading">Bond ETF Notice</h5>
+                <p class="mb-0">
+                    If you have bond ETF holdings, you need to use the <strong>Income taxable dividend selection</strong> page 
+                    to indicate which tickers should be treated as income, before running the calculation.
+                </p>
+            </div>
+
+            <!-- Calculation Section -->
+            <div class="section mb-5">
+                <StartCalculation OnCalculated="HandleCalculated"/>
+            </div>
+
+            <!-- Results Section -->
+            <div class="section mb-5">
+                <CalculationSummary ShouldReRender="@calculationVersion"></CalculationSummary>
+            </div>
+
+            <!-- Export Section -->
+            <div class="section">
+                <ExportFile/>
+            </div>
+        </div>
+    </div>
 </div>
 
 @code {

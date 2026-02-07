@@ -1,34 +1,60 @@
 using InvestmentTaxCalculator.Model;
 using InvestmentTaxCalculator.Parser;
+using InvestmentTaxCalculator.Services;
+
+using Microsoft.AspNetCore.Components;
 
 using Syncfusion.Blazor.Inputs;
 
 namespace InvestmentTaxCalculator.Components;
 
-public partial class ImportFile
+public partial class ImportFile : IDisposable
 {
+    [Inject] public required FileImportStateService FileImportState { get; set; }
+
     private DuplicateWarningModal duplicateModal;
+
+    protected override void OnInitialized()
+    {
+        FileImportState.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        FileImportState.OnChange -= StateHasChanged;
+    }
 
     private async Task LoadFiles(UploadChangeEventArgs args)
     {
-        foreach (var file in args.Files)
+        FileImportState.StartProcessing(args.Files.Count);
+
+        try
         {
-            try
+            foreach (var file in args.Files)
             {
-                TaxEventLists events = await fileParseController.ReadFile(file.File);
-                ShowDividendRegionUnknownWarning(events);
-                ExecutionState executionState = await CheckDuplicateAndConfirm(events);
-                if (executionState is ExecutionState.SKIP_FILE) continue;
-                if (executionState is ExecutionState.SKIP_DUPLICATE) taxEventLists.AddData(events, true);
-                if (executionState is ExecutionState.INCLUDE_DUPLICATE) taxEventLists.AddData(events, false);
-                OptionHelper.CheckOptions(taxEventLists);
-            }
-            catch (Exception ex)
-            {
-                toastService.ShowException(ex);
+                try
+                {
+                    TaxEventLists events = await fileParseController.ReadFile(file.File);
+                    ShowDividendRegionUnknownWarning(events);
+                    ExecutionState executionState = await CheckDuplicateAndConfirm(events);
+                    if (executionState is ExecutionState.SKIP_FILE) continue;
+                    if (executionState is ExecutionState.SKIP_DUPLICATE) taxEventLists.AddData(events, true);
+                    if (executionState is ExecutionState.INCLUDE_DUPLICATE) taxEventLists.AddData(events, false);
+                    OptionHelper.CheckOptions(taxEventLists);
+
+                    FileImportState.IncrementProcessedFiles();
+                }
+                catch (Exception ex)
+                {
+                    toastService.ShowException(ex);
+                }
             }
         }
-        args.Files.Clear();
+        finally
+        {
+            FileImportState.CompleteProcessing();
+            args.Files.Clear();
+        }
     }
 
     private void ShowDividendRegionUnknownWarning(TaxEventLists events)

@@ -2,10 +2,24 @@
 @using Model;
 @inject AssetTypeToLoadSetting AssetSettings
 
-<SfCheckBox Label="Load Stocks" @bind-Checked="@AssetSettings.LoadStocks"></SfCheckBox>
-<SfCheckBox Label="Load Options" @bind-Checked="@AssetSettings.LoadOptions"></SfCheckBox>
-<SfCheckBox Label="Load Futures" @bind-Checked="@AssetSettings.LoadFutures"></SfCheckBox>
-<SfCheckBox Label="Load FX" @bind-Checked="@AssetSettings.LoadFx"></SfCheckBox>
-<SfCheckBox Label="Load Dividends" @bind-Checked="@AssetSettings.LoadDividends"></SfCheckBox>
-<SfCheckBox Label="Load Interest Income" @bind-Checked="@AssetSettings.LoadInterestIncome"></SfCheckBox>
+<div class="row g-3">
+    <div class="col-md-6 col-lg-4">
+        <SfCheckBox Label="Load Stocks" @bind-Checked="@AssetSettings.LoadStocks"></SfCheckBox>
+    </div>
+    <div class="col-md-6 col-lg-4">
+        <SfCheckBox Label="Load Options" @bind-Checked="@AssetSettings.LoadOptions"></SfCheckBox>
+    </div>
+    <div class="col-md-6 col-lg-4">
+        <SfCheckBox Label="Load Futures" @bind-Checked="@AssetSettings.LoadFutures"></SfCheckBox>
+    </div>
+    <div class="col-md-6 col-lg-4">
+        <SfCheckBox Label="Load FX" @bind-Checked="@AssetSettings.LoadFx"></SfCheckBox>
+    </div>
+    <div class="col-md-6 col-lg-4">
+        <SfCheckBox Label="Load Dividends" @bind-Checked="@AssetSettings.LoadDividends"></SfCheckBox>
+    </div>
+    <div class="col-md-6 col-lg-4">
+        <SfCheckBox Label="Load Interest Income" @bind-Checked="@AssetSettings.LoadInterestIncome"></SfCheckBox>
+    </div>
+</div>
 

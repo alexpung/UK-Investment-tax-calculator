@@ -37,6 +37,11 @@
 
 .sidebar-menu {
     padding: 1rem 0;
+    padding-bottom: 80px;
+    /* Prevent overlap with footer */
+    overflow-y: auto;
+    height: calc(100vh - 80px);
+    /* Account for header height */
 }
 
 .nav-item {
@@ -154,8 +159,9 @@
 }
 
 .category-content.show {
-    max-height: 500px;
-    /* High enough to fit content */
+    max-height: 800px;
+    /* Increased from 500px to accommodate growing categories (e.g., "Configurations and manual inputs" has 5 items).
+       Provides headroom for future additions and ensures smoother animation timing. */
     transition: max-height var(--transition-speed) ease-in;
 }
 

@@ -9,42 +9,164 @@
 @inject FileParseController fileParseController
 @inject ToastService toastService
 
-<div class="container bg-dark text-light p-3">
-    <h2 class="mb-3">Import and Export</h2>
-
-    <div class="mb-4">
-        <h4>Load Options</h4>
-        <AssetTypeToLoad></AssetTypeToLoad>
+<!-- Import Data Card -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h3 class="mb-0">Import Data</h3>
     </div>
+    <div class="card-body">
+        <!-- Load Options Card -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <span class="me-2">⚙️</span>
+                    Load Options
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small mb-3">Select which asset types to import from your broker statements</p>
+                <AssetTypeToLoad></AssetTypeToLoad>
+            </div>
+        </div>
 
-    <div class="mb-4">
-        <h4>Import Files</h4>
-        <div class="p-2">
-            <SfUploader AutoUpload="false" MaxFileSize="@FileParseController.MaxFileSize">
-                <UploaderEvents ValueChange="LoadFiles"></UploaderEvents>
-            </SfUploader>
+        <!-- Import Files Card -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <span class="me-2">📄</span>
+                    Import Files
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small mb-3">Upload individual broker statement files (XML format)</p>
+                <SfUploader AutoUpload="false" MaxFileSize="@FileParseController.MaxFileSize">
+                    <UploaderEvents ValueChange="LoadFiles"></UploaderEvents>
+                </SfUploader>
+            </div>
+        </div>
+
+        <!-- Import Folders Card -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <span class="me-2">📂</span>
+                    Import Folders
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small mb-3">Upload an entire folder containing multiple broker statement files</p>
+                <SfUploader ID="UploadFiles" AutoUpload="false" DirectoryUpload="true" MaxFileSize="@FileParseController.MaxFileSize">
+                    <UploaderEvents ValueChange="LoadFiles"></UploaderEvents>
+                </SfUploader>
+            </div>
+        </div>
+
+        <!-- Import Statistics -->
+        <div class="mb-3">
+            <h5 class="section-title">Import Statistics</h5>
+        </div>
+        
+        @if (FileImportState.IsProcessing)
+        {
+            <!-- Loading State -->
+            <div class="alert alert-info alert-custom mb-3" role="alert">
+                <div class="d-flex align-items-center">
+                    <div class="spinner-border spinner-border-sm me-3" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <div>
+                        <strong>Processing files...</strong>
+                        @if (FileImportState.TotalFilesToProcess > 1)
+                        {
+                            <span class="ms-2">(@FileImportState.FilesProcessed / @FileImportState.TotalFilesToProcess completed)</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+        
+        <div class="row g-3 @(FileImportState.IsProcessing ? "opacity-50" : "")">
+            <!-- Total Events -->
+            <div class="col-md-6 col-lg-3">
+                <div class="card metric-card">
+                    <div class="card-body">
+                        <div class="metric-label text-muted small">Total Tax Events</div>
+                        <div class="metric-value h4 mb-0">@taxEventLists.GetTotalNumberOfEvents()</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dividends -->
+            <div class="col-md-6 col-lg-3">
+                <div class="card metric-card">
+                    <div class="card-body">
+                        <div class="metric-label text-muted small">Dividends</div>
+                        <div class="metric-value h4 mb-0">@taxEventLists.Dividends.Count</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trades -->
+            <div class="col-md-6 col-lg-3">
+                <div class="card metric-card">
+                    <div class="card-body">
+                        <div class="metric-label text-muted small">Trades</div>
+                        <div class="metric-value h4 mb-0">@taxEventLists.Trades.Count</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Corporate Actions -->
+            <div class="col-md-6 col-lg-3">
+                <div class="card metric-card">
+                    <div class="card-body">
+                        <div class="metric-label text-muted small">Corporate Actions</div>
+                        <div class="metric-value h4 mb-0">@taxEventLists.CorporateActions.Count</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Future Contracts -->
+            <div class="col-md-6 col-lg-3">
+                <div class="card metric-card">
+                    <div class="card-body">
+                        <div class="metric-label text-muted small">Future Contracts</div>
+                        <div class="metric-value h4 mb-0">@taxEventLists.FutureContractTrades.Count</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Options -->
+            <div class="col-md-6 col-lg-3">
+                <div class="card metric-card">
+                    <div class="card-body">
+                        <div class="metric-label text-muted small">Option Trades</div>
+                        <div class="metric-value h4 mb-0">@taxEventLists.OptionTrades.Count</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cash Settlements -->
+            <div class="col-md-6 col-lg-3">
+                <div class="card metric-card">
+                    <div class="card-body">
+                        <div class="metric-label text-muted small">Cash Settlements</div>
+                        <div class="metric-value h4 mb-0">@taxEventLists.CashSettlements.Count</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interest Income -->
+            <div class="col-md-6 col-lg-3">
+                <div class="card metric-card">
+                    <div class="card-body">
+                        <div class="metric-label text-muted small">Interest Income</div>
+                        <div class="metric-value h4 mb-0">@taxEventLists.InterestIncomes.Count</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-
-    <div class="mb-4">
-        <h4>Import Folders</h4>
-        <div class="p-2">
-            <SfUploader ID="UploadFiles" AutoUpload="false" DirectoryUpload="true" MaxFileSize="@FileParseController.MaxFileSize">
-                <UploaderEvents ValueChange="LoadFiles"></UploaderEvents>
-            </SfUploader>
-        </div>
-    </div>
-
-    <div class="mt-4 p-2">
-        <p>Number of tax events: @taxEventLists.GetTotalNumberOfEvents()</p>
-        <p>Number of dividends imported: @taxEventLists.Dividends.Count</p>
-        <p>Number of trades imported: @taxEventLists.Trades.Count</p>
-        <p>Number of corporate actions imported: @taxEventLists.CorporateActions.Count</p>
-        <p>Number of future contract trades imported: @taxEventLists.FutureContractTrades.Count</p>
-        <p>Number of option trades imported: @taxEventLists.OptionTrades.Count</p>
-        <p>Number of option cash settlement imported: @taxEventLists.CashSettlements.Count</p>
-        <p>Number of Interest income imported: @taxEventLists.InterestIncomes.Count</p>
-    </div>
-    
-    <DuplicateWarningModal @ref="duplicateModal" />
 </div>
+
+<DuplicateWarningModal @ref="duplicateModal" />

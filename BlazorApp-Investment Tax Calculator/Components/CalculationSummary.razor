@@ -8,33 +8,131 @@
 @inject YearOptions years
 @inject YearOptions yearOptions
 
-<div class="mt-4">
-    <h4>Select Tax Year(s)</h4>
-    <p class="text-muted">
-        <i>For example, selecting <b>2023</b> covers the period 6 April 2023 to 5 April 2024.</i>
-    </p>
-    <SfMultiSelect @bind-Value="yearOptions.SelectedOptions"
-                   Placeholder="Select Years"
-                   Mode="VisualMode.CheckBox"
-                   ShowSelectAll=true
-                   SelectAllText="Select All"
-                   UnSelectAllText="Unselect All"
-                   DataSource=@yearOptions.Options>
-        <MultiSelectFieldSettings Text="Years" Value="Years">
-        </MultiSelectFieldSettings>
-    </SfMultiSelect>
+<!-- Year Selector Card -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h4 class="mb-0">
+            <span class="me-2">📅</span>
+            Select Tax Year(s)
+        </h4>
+    </div>
+    <div class="card-body">
+        <p class="text-muted small mb-3">
+            <i>For example, selecting <strong>2023</strong> covers the period 6 April 2023 to 5 April 2024.</i>
+        </p>
+        <SfMultiSelect @bind-Value="yearOptions.SelectedOptions"
+                       Placeholder="Select Years"
+                       Mode="VisualMode.CheckBox"
+                       ShowSelectAll=true
+                       SelectAllText="Select All"
+                       UnSelectAllText="Unselect All"
+                       DataSource=@yearOptions.Options>
+            <MultiSelectFieldSettings Text="Years" Value="Years">
+            </MultiSelectFieldSettings>
+        </SfMultiSelect>
+    </div>
 </div>
 
-<div class="mt-4">
-    <h3 class="mb-3">Tax Summary:</h3>
-    <p>Number of disposals: @tradeCalculationResult.GetNumberOfDisposals(years.SelectedOptions)</p>
-    <p>Total Disposal Proceed: @tradeCalculationResult.GetDisposalProceeds(years.SelectedOptions)</p>
-    <p>Total Allowable Cost: @tradeCalculationResult.GetAllowableCosts(years.SelectedOptions)</p>
-    <p>Total Gain: @tradeCalculationResult.GetTotalGain(years.SelectedOptions)</p>
-    <p>Total Loss: @tradeCalculationResult.GetTotalLoss(years.SelectedOptions)</p>
-    <p>Total Dividend: @dividendCalculationResult.GetTotalDividend(years.SelectedOptions)</p>
-    <p>Total Foreign Witholding Tax Paid: @dividendCalculationResult.GetForeignTaxPaid(years.SelectedOptions)</p>
+<!-- Tax Summary Section -->
+<div class="mb-3">
+    <h3 class="section-title">Tax Summary</h3>
 </div>
+
+<!-- Metric Cards Grid -->
+<div class="row g-3">
+    <!-- Number of Disposals -->
+    <div class="col-md-6 col-lg-4">
+        <div class="card metric-card">
+            <div class="card-body">
+                <div class="metric-label text-muted small">Number of Disposals</div>
+                <div class="metric-value h4 mb-0">@tradeCalculationResult.GetNumberOfDisposals(years.SelectedOptions)</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Disposal Proceeds -->
+    <div class="col-md-6 col-lg-4">
+        <div class="card metric-card">
+            <div class="card-body">
+                <div class="metric-label text-muted small">Total Disposal Proceeds</div>
+                <div class="metric-value h4 mb-0">@tradeCalculationResult.GetDisposalProceeds(years.SelectedOptions)</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Allowable Cost -->
+    <div class="col-md-6 col-lg-4">
+        <div class="card metric-card">
+            <div class="card-body">
+                <div class="metric-label text-muted small">Total Allowable Cost</div>
+                <div class="metric-value h4 mb-0">@tradeCalculationResult.GetAllowableCosts(years.SelectedOptions)</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Gain -->
+    <div class="col-md-6 col-lg-4">
+        <div class="card metric-card">
+            <div class="card-body">
+                <div class="metric-label text-muted small">Total Gain</div>
+                <div class="metric-value h4 mb-0">@tradeCalculationResult.GetTotalGain(years.SelectedOptions)</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Loss -->
+    <div class="col-md-6 col-lg-4">
+        <div class="card metric-card">
+            <div class="card-body">
+                <div class="metric-label text-muted small">Total Loss</div>
+                <div class="metric-value h4 mb-0">@tradeCalculationResult.GetTotalLoss(years.SelectedOptions)</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Dividend -->
+    <div class="col-md-6 col-lg-4">
+        <div class="card metric-card">
+            <div class="card-body">
+                <div class="metric-label text-muted small">Total Dividend</div>
+                <div class="metric-value h4 mb-0">@dividendCalculationResult.GetTotalDividend(years.SelectedOptions)</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Foreign Withholding Tax Paid -->
+    <div class="col-md-6 col-lg-4">
+        <div class="card metric-card">
+            <div class="card-body">
+                <div class="metric-label text-muted small">Total Foreign Withholding Tax Paid</div>
+                <div class="metric-value h4 mb-0">@dividendCalculationResult.GetForeignTaxPaid(years.SelectedOptions)</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .metric-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .metric-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .metric-label {
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .metric-value {
+        font-weight: 600;
+        color: var(--bs-body-color);
+    }
+</style>
+
 
 
 @code{
