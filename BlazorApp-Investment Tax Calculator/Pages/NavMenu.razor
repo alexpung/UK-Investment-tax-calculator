@@ -21,7 +21,7 @@
     <div class="sidebar-menu">
         <ul class="nav flex-column">
             <li class="nav-item">
-                <NavLink href="/" class="nav-link-custom" Match="NavLinkMatch.All" @onclick="CloseMenuOnMobile">
+                <NavLink href="" class="nav-link-custom" Match="NavLinkMatch.All" @onclick="CloseMenuOnMobile">
                     <span class="nav-icon">🏠</span>
                     <span>Home</span>
                 </NavLink>
@@ -53,7 +53,7 @@
             }
 
             <li class="nav-item">
-                <NavLink href="/AcknowledgementPage" class="nav-link-custom" Match="NavLinkMatch.All" @onclick="CloseMenuOnMobile">
+                <NavLink href="AcknowledgementPage" class="nav-link-custom" Match="NavLinkMatch.All" @onclick="CloseMenuOnMobile">
                     <span class="nav-icon">ℹ️</span>
                     <span>Acknowledgement</span>
                 </NavLink>
@@ -94,34 +94,34 @@
             new MenuCategory { 
                 Title = "Import + PDF",
                 Items = new() {
-                    new MenuItem { Text = "Import/Export", PageAddress = "/MainCalculatorPage", Icon = "📁" },
-                    new MenuItem { Text = "PDF Report", PageAddress = "/PdfReportPage", Icon = "📄" }
+                    new MenuItem { Text = "Import/Export", PageAddress = "MainCalculatorPage", Icon = "📁" },
+                    new MenuItem { Text = "PDF Report", PageAddress = "PdfReportPage", Icon = "📄" }
                 }
             },
             new MenuCategory { 
                 Title = "Tax summaries",
                 Items = new() {
-                    new MenuItem { Text = "CGT Yearly Summary", PageAddress = "/CgtYearlyTaxSummaryPage", Icon = "📊" },
-                    new MenuItem { Text = "Dividend/Income Summary", PageAddress = "/DividendYearlyTaxSummaryPage", Icon = "💰" },
-                    new MenuItem { Text = "Disposal Summary", PageAddress = "/CalculationViewPage", Icon = "📈" }
+                    new MenuItem { Text = "CGT Yearly Summary", PageAddress = "CgtYearlyTaxSummaryPage", Icon = "📊" },
+                    new MenuItem { Text = "Dividend/Income Summary", PageAddress = "DividendYearlyTaxSummaryPage", Icon = "💰" },
+                    new MenuItem { Text = "Disposal Summary", PageAddress = "CalculationViewPage", Icon = "📈" }
                 }
             },
             new MenuCategory { 
                 Title = "Raw Data",
                 Items = new() {
-                    new MenuItem { Text = "Trade Matches", PageAddress = "/TradeMatchPage", Icon = "🔄" },
-                    new MenuItem { Text = "Dividend/Income Data", PageAddress = "/DividendDataPage", Icon = "💵" },
-                    new MenuItem { Text = "Section 104 Data", PageAddress = "/Section104DataPage", Icon = "📋" }
+                    new MenuItem { Text = "Trade Matches", PageAddress = "TradeMatchPage", Icon = "🔄" },
+                    new MenuItem { Text = "Dividend/Income Data", PageAddress = "DividendDataPage", Icon = "💵" },
+                    new MenuItem { Text = "Section 104 Data", PageAddress = "Section104DataPage", Icon = "📋" }
                 }
             },
             new MenuCategory { 
                 Title = "Configurations and manual inputs",
                 Items = new() {
-                    new MenuItem { Text = "Add Trades", PageAddress = "/AddTradePage", Icon = "➕" },
-                    new MenuItem { Text = "Residency Status", PageAddress = "/ResidencyStatusPage", Icon = "🌍" },
-                    new MenuItem { Text = "ERI and Equalisation", PageAddress = "/AddExcessReportableIncome", Icon = "⚖️" },
-                    new MenuItem { Text = "Corporate Actions", PageAddress = "/corporate-actions", Icon = "🏢" },
-                    new MenuItem { Text = "Income taxable dividend selection", PageAddress = "/ConvertPage", Icon = "🔀" }
+                    new MenuItem { Text = "Add Trades", PageAddress = "AddTradePage", Icon = "➕" },
+                    new MenuItem { Text = "Residency Status", PageAddress = "ResidencyStatusPage", Icon = "🌍" },
+                    new MenuItem { Text = "ERI and Equalisation", PageAddress = "AddExcessReportableIncome", Icon = "⚖️" },
+                    new MenuItem { Text = "Corporate Actions", PageAddress = "corporate-actions", Icon = "🏢" },
+                    new MenuItem { Text = "Income taxable dividend selection", PageAddress = "ConvertPage", Icon = "🔀" }
                 }
             }
         };
