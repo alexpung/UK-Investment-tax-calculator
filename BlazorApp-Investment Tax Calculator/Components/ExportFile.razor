@@ -9,33 +9,48 @@
 @inject UkSection104ExportService ukSection104ExportService
 @inject ExportTaxEventService exportTaxEventService
 
-<div class="container bg-dark text-light mb-4">
-    <div class="row">
-        <div class="col">
-            <h3>Export Calculation Result to Files</h3>
-        </div>
+<div class="card">
+    <div class="card-header">
+        <h3 class="mb-0">Export Results</h3>
     </div>
-
-    <div class="row mt-3">
-        <div class="col-md-4 mb-2">
-            <SfButton @onclick="InvokeExportDividend" CssClass="btn btn-primary w-100">Export Dividends/Interest Income</SfButton>
-        </div>
-        <div class="col-md-4 mb-2">
-            <SfButton @onclick="InvokeExportTrades" CssClass="btn btn-primary w-100">Export Trades</SfButton>
-        </div>
-        <div class="col-md-4 mb-2">
-            <SfButton @onclick="InvokeExportSection104" CssClass="btn btn-primary w-100">Export Section104</SfButton>
-        </div>
-        <div class="col-md-12 mb-2">
-            <div class="note">
-                <p class="text-info">Note: The export data button give you a .json file, allowing you to import this file instead of your broker statements in the future.
-                    The export includes imported data, manually added trades, ERI/equalisation payment and other manual corporate action adjustments.
-                </p>
-                <p class="text-info">Importing this file instead of the broker statements would also be much faster.</p>
+    <div class="card-body">
+        <p class="text-muted mb-4">Export your calculation results in various formats for record-keeping or further analysis</p>
+        
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <SfButton @onclick="InvokeExportDividend" CssClass="btn btn-primary w-100">
+                    Export Dividends/Interest Income
+                </SfButton>
+            </div>
+            <div class="col-md-4">
+                <SfButton @onclick="InvokeExportTrades" CssClass="btn btn-primary w-100">
+                    Export Trades
+                </SfButton>
+            </div>
+            <div class="col-md-4">
+                <SfButton @onclick="InvokeExportSection104" CssClass="btn btn-primary w-100">
+                    Export Section104
+                </SfButton>
             </div>
         </div>
-        <div class="col-md-4 mb-2">
-            <SfButton @onclick="InvokeExportTaxEvents" CssClass="btn btn-primary w-100">Export data for future import</SfButton>
+
+        <div class="alert alert-info alert-custom mb-4" role="alert">
+            <h5 class="alert-heading">About Data Export</h5>
+            <p class="mb-2">
+                The <strong>Export data for future import</strong> button generates a .json file containing all your imported data, 
+                manually added trades, ERI/equalisation payments, and other manual corporate action adjustments.
+            </p>
+            <p class="mb-0">
+                Importing this file instead of broker statements in the future will be much faster and preserve all your manual adjustments.
+            </p>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-md-4">
+                <SfButton @onclick="InvokeExportTaxEvents" CssClass="btn btn-success w-100">
+                    Export data for future import
+                </SfButton>
+            </div>
         </div>
     </div>
 </div>

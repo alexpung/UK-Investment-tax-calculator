@@ -1,74 +1,147 @@
 ﻿@using Syncfusion.Blazor.Navigations
 @using Syncfusion.Blazor.Buttons
-@using Syncfusion.Blazor.Inputs
-@using Syncfusion.Blazor.Lists
 @inject NavigationManager Navigation
-<SfButton OnClick="ToggleMenu" class=open-menu-button>>></SfButton>
-<SfSidebar ref="NavBar" Width="220px" MediaQuery="(min-width:600px)" @bind-IsOpen="SidebarToggle" Type="SidebarType.Auto">
-    <ChildContent>
-        <SfListView DataSource="@List" TValue="ListData" CssClass="e-template-list">
-            <ListViewFieldSettings TValue="ListData" Id="Id" Text="Text"></ListViewFieldSettings>
-            <ListViewEvents TValue="ListData" Clicked="OnSelect"></ListViewEvents>
-        </SfListView>
-        <div class="sidebar-content mt-3">
-            <SfButton OnClick="ToggleMenu" class="close-menu-button">Close menu</SfButton>
-        </div>
-    </ChildContent>
-</SfSidebar>
 
-<style>
-    .e-listview .e-list-item {
-        text-align: center;
-        font-size: 14px;
-        padding: 0;
-    }
+<button class="mobile-nav-toggle" @onclick="ToggleMenu" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;">
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+    Menu
+</button>
 
-    .sidebar-content {
-        display: flex;
-        flex-direction: column; /* Stack children vertically */
-        justify-content: center; /* Center children vertically */
-        align-items: center; /* Center children horizontally */
-    }
-</style>
+<nav class="sidebar-nav @(SidebarToggle ? "show" : "")">
+    <div class="sidebar-header">
+        <span class="sidebar-brand">
+            UK Tax Calculator
+        </span>
+    </div>
+    
+    <div class="sidebar-menu">
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <NavLink href="/" class="nav-link-custom" Match="NavLinkMatch.All" @onclick="CloseMenuOnMobile">
+                    <span class="nav-icon">🏠</span>
+                    <span>Home</span>
+                </NavLink>
+            </li>
+
+            @foreach (var category in Categories)
+            {
+                <li class="nav-item category-item">
+                    <button class="category-header @(category.IsExpanded ? "expanded" : "")" @onclick="() => ToggleCategory(category)">
+                        <span class="category-title">@category.Title</span>
+                        <svg class="category-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </button>
+                    <div class="category-content @(category.IsExpanded ? "show" : "")">
+                        <ul class="nav flex-column">
+                            @foreach (var item in category.Items)
+                            {
+                                <li class="nav-item sub-item">
+                                    <NavLink href="@item.PageAddress" class="nav-link-custom" Match="NavLinkMatch.All" @onclick="CloseMenuOnMobile">
+                                        <span class="nav-icon">@item.Icon</span>
+                                        <span>@item.Text</span>
+                                    </NavLink>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </li>
+            }
+
+            <li class="nav-item">
+                <NavLink href="/AcknowledgementPage" class="nav-link-custom" Match="NavLinkMatch.All" @onclick="CloseMenuOnMobile">
+                    <span class="nav-icon">ℹ️</span>
+                    <span>Acknowledgement</span>
+                </NavLink>
+            </li>
+        </ul>
+    </div>
+    
+    <div class="sidebar-footer d-md-none">
+        <button class="btn btn-outline-light close-menu-btn" @onclick="ToggleMenu">
+            Close Menu
+        </button>
+    </div>
+</nav>
 
 @code {
-    public bool SidebarToggle { get; set; } = true;
-    // Specify the value of ListView component DataSource property.
-    public List<ListData> List { get; set; } = new List<ListData>
+    public bool SidebarToggle { get; set; } = false;
+    
+    public class MenuItem
     {
-        new ListData {Id="1", Text = "Home", PageAddress = ""},
-        new ListData {Id="2",Text = "Import/Export", PageAddress = "MainCalculatorPage"},
-        new ListData {Id="3",Text = "CGT Yearly Summary", PageAddress = "CgtYearlyTaxSummaryPage"},
-        new ListData {Id="4",Text = "Dividend/income Summary", PageAddress = "DividendYearlyTaxSummaryPage"},
-        new ListData {Id="5",Text = "Disposal Summary", PageAddress = "CalculationViewPage"},
-        new ListData {Id="6", Text = "Trade Matches", PageAddress = "TradeMatchPage"},
-        new ListData {Id="7", Text = "Dividend/income Data", PageAddress = "DividendDataPage"},
-        new ListData {Id="8", Text = "Section 104 Data", PageAddress = "Section104DataPage"},
-        new ListData {Id="9", Text = "Add Trades", PageAddress = "AddTradePage"},
-        new ListData {Id="10", Text = "Conversion", PageAddress = "ConvertPage"},
-        new ListData {Id="11", Text = "PDF Report", PageAddress = "PdfReportPage"},
-        new ListData {Id="12", Text = "Residency Status", PageAddress = "ResidencyStatusPage"},
-        new ListData {Id="13", Text = "ERI and Equalisation", PageAddress = "AddExcessReportableIncome"},
-        new ListData {Id="15", Text = "Corporate Actions", PageAddress = "corporate-actions"},
-        new ListData {Id="14", Text = "Acknowledgement", PageAddress = "AcknowledgementPage"}
-        ,
-    };
-
-    public class ListData
-    {
-        public required string Id { get; set; }
         public required string Text { get; set; }
         public required string PageAddress { get; set; }
+        public required string Icon { get; set; }
     }
 
-    // Specifies the event handler for Clicked event in ListView component.
-    public void OnSelect(Syncfusion.Blazor.Lists.ClickEventArgs<ListData> args)
+    public class MenuCategory
     {
-        Navigation.NavigateTo(Navigation.BaseUri + args.ItemData.PageAddress);
+        public required string Title { get; set; }
+        public List<MenuItem> Items { get; set; } = new();
+        public bool IsExpanded { get; set; } = false;
+    }
+    
+    public List<MenuCategory> Categories { get; set; } = new();
+
+    protected override void OnInitialized()
+    {
+        Categories = new List<MenuCategory>
+        {
+            new MenuCategory { 
+                Title = "Import + PDF",
+                Items = new() {
+                    new MenuItem { Text = "Import/Export", PageAddress = "/MainCalculatorPage", Icon = "📁" },
+                    new MenuItem { Text = "PDF Report", PageAddress = "/PdfReportPage", Icon = "📄" }
+                }
+            },
+            new MenuCategory { 
+                Title = "Tax summaries",
+                Items = new() {
+                    new MenuItem { Text = "CGT Yearly Summary", PageAddress = "/CgtYearlyTaxSummaryPage", Icon = "📊" },
+                    new MenuItem { Text = "Dividend/Income Summary", PageAddress = "/DividendYearlyTaxSummaryPage", Icon = "💰" },
+                    new MenuItem { Text = "Disposal Summary", PageAddress = "/CalculationViewPage", Icon = "📈" }
+                }
+            },
+            new MenuCategory { 
+                Title = "Raw Data",
+                Items = new() {
+                    new MenuItem { Text = "Trade Matches", PageAddress = "/TradeMatchPage", Icon = "🔄" },
+                    new MenuItem { Text = "Dividend/Income Data", PageAddress = "/DividendDataPage", Icon = "💵" },
+                    new MenuItem { Text = "Section 104 Data", PageAddress = "/Section104DataPage", Icon = "📋" }
+                }
+            },
+            new MenuCategory { 
+                Title = "Configurations and manual inputs",
+                Items = new() {
+                    new MenuItem { Text = "Add Trades", PageAddress = "/AddTradePage", Icon = "➕" },
+                    new MenuItem { Text = "Residency Status", PageAddress = "/ResidencyStatusPage", Icon = "🌍" },
+                    new MenuItem { Text = "ERI and Equalisation", PageAddress = "/AddExcessReportableIncome", Icon = "⚖️" },
+                    new MenuItem { Text = "Corporate Actions", PageAddress = "/corporate-actions", Icon = "🏢" },
+                    new MenuItem { Text = "Income taxable dividend selection", PageAddress = "/ConvertPage", Icon = "🔀" }
+                }
+            }
+        };
     }
 
+    private void ToggleCategory(MenuCategory category)
+    {
+        category.IsExpanded = !category.IsExpanded;
+    }
+    
     public void ToggleMenu()
     {
         SidebarToggle = !SidebarToggle;
+    }
+    
+    private void CloseMenuOnMobile()
+    {
+        if (SidebarToggle)
+        {
+            SidebarToggle = false;
+        }
     }
 }

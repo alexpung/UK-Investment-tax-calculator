@@ -2,32 +2,10 @@
 @using InvestmentTaxCalculator.Pages
 @using InvestmentTaxCalculator.Components
 
-<div class="page">
-    <div class="grid-container">
-        <div class="sidebar">
-            <NavMenu />
-        </div>
-        <main class="content">
-            @Body
-            <ToastComponent />
-        </main>
-    </div>
+<div class="app-container">
+    <NavMenu />
+    <main class="main-content-wrapper">
+        @Body
+        <ToastComponent />
+    </main>
 </div>
-
-
-<style>
-    .grid-container {
-        display: grid;
-        grid-template-columns: minmax(auto, 250px) auto;
-        grid-template-areas: 'sidebar content';
-    }
-
-    .sidebar {
-        grid-area: sidebar;
-    }
-
-    .content {
-        grid-area: content;
-    }
-</style>
-

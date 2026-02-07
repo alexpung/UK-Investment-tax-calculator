@@ -21,62 +21,58 @@
 @inject IJSRuntime JSRuntime
 @inject TaxCalculationService TaxCalculationService
 
-<div class="bg-dark text-light p-4 position-relative">
-    <div class="container-fluid">
-        <!-- Page Title -->
-        <div class="row mb-5">
-            <div class="col text-center">
-                <h1 class="display-4">ERI and Fund Equalisation</h1>
+<div class="container-fluid py-5">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <!-- Page Header -->
+            <div class="page-header text-center mb-5">
+                <h1 class="page-title">ERI and Fund Equalisation</h1>
+                <p class="page-subtitle">Manage Excess Reportable Income and fund equalisation payments</p>
             </div>
-        </div>
 
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="alert alert-info border-info bg-dark text-light shadow-sm" role="alert">
-                    <h5 class="alert-heading text-info"><i class="bi bi-info-circle-fill me-2"></i>Guidance & How to Use</h5>
-                    <hr class="border-info opacity-25">
-                    
-                    <div class="mb-3">
-                        <h6 class="text-info fw-bold">How to Use:</h6>
-                        <ol class="mb-2">
-                            <li><strong>Add ERI:</strong> Enter the fund's accounting period end date, ticker, and income per share. This calculates the total ERI based on your holdings at that date.</li>
-                            <li><strong>Add Equalisation:</strong> Select the fund ticker and the specific income event (Dividend or ERI) to be reduced by the equalisation amount.</li>
-                        </ol>
-                    </div>
+            <!-- Guidance Section -->
+            <div class="alert alert-info alert-custom mb-4" role="alert">
+                <h5 class="alert-heading">Guidance & How to Use</h5>
+                
+                <div class="mb-3">
+                    <h6 class="fw-bold">How to Use:</h6>
+                    <ol class="mb-2">
+                        <li><strong>Add ERI:</strong> Enter the fund's accounting period end date, ticker, and income per share. This calculates the total ERI based on your holdings at that date.</li>
+                        <li><strong>Add Equalisation:</strong> Select the fund ticker and the specific income event (Dividend or ERI) to be reduced by the equalisation amount.</li>
+                    </ol>
+                </div>
 
-                    <div class="mb-3">
-                        <h6 class="text-info fw-bold">Important Workflow Notes:</h6>
-                        <ul class="mb-0">
-                            <li><strong>Accumulating Funds:</strong> For accumulating funds with equalisation, you must <strong>add the Excess Reportable Income (ERI) first</strong>. Once added, you can then select that ERI entry in the Equalisation section to reduce it.</li>
-                            <li><strong>Ticker Selection:</strong> Some available tickers may be standard stocks (non-funds). Ensure you only apply ERI or Equalisation to appropriate offshore fund assets.</li>
-                            <li><strong>Manual Matching:</strong> You are responsible for matching equalisation payments to the correct corresponding income event as per your broker's tax reports.</li>
-                            <li><strong>Export & Backup:</strong> All manual entries are saved automatically to the session. You can export the entire session (including ERI and Equalisation) for future use from the <a href="MainCalculatorPage" class="alert-link">Main Import/Export page</a>.</li>
-                        </ul>
-                    </div>
+                <div class="mb-3">
+                    <h6 class="fw-bold">Important Workflow Notes:</h6>
+                    <ul class="mb-0">
+                        <li><strong>Accumulating Funds:</strong> For accumulating funds with equalisation, you must <strong>add the Excess Reportable Income (ERI) first</strong>. Once added, you can then select that ERI entry in the Equalisation section to reduce it.</li>
+                        <li><strong>Ticker Selection:</strong> Some available tickers may be standard stocks (non-funds). Ensure you only apply ERI or Equalisation to appropriate offshore fund assets.</li>
+                        <li><strong>Manual Matching:</strong> You are responsible for matching equalisation payments to the correct corresponding income event as per your broker's tax reports.</li>
+                        <li><strong>Export & Backup:</strong> All manual entries are saved automatically to the session. You can export the entire session (including ERI and Equalisation) for future use from the <a href="MainCalculatorPage" class="alert-link">Main Import/Export page</a>.</li>
+                    </ul>
                 </div>
             </div>
-        </div>
 
-        @if (_isCalculationMissing)
-        {
-            <div class="alert alert-danger" role="alert">
-                <h4 class="alert-heading">Calculations Required</h4>
-                <p>No Section 104 pools found. Please run the calculation first in the <a href="MainCalculatorPage" class="alert-link">Import/Export page</a> before adding entries, so that available tickers and quantities can be populated.</p>
-            </div>
-        }
+            @if (_isCalculationMissing)
+            {
+                <div class="alert alert-danger alert-custom mb-4" role="alert">
+                    <h5 class="alert-heading">Calculations Required</h5>
+                    <p class="mb-0">No Section 104 pools found. Please run the calculation first in the <a href="MainCalculatorPage" class="alert-link">Import/Export page</a> before adding entries, so that available tickers and quantities can be populated.</p>
+                </div>
+            }
 
-        <div class="row g-4">
-            <div class="col-xl-6">
-                <EriControl IsCalculationMissing="@_isCalculationMissing" OnDataChanged="RefreshAll" />
+            <!-- ERI and Equalisation Controls -->
+            <div class="row g-4 mb-5">
+                <div class="col-xl-6">
+                    <EriControl IsCalculationMissing="@_isCalculationMissing" OnDataChanged="RefreshAll" />
+                </div>
+                <div class="col-xl-6">
+                    <EqualisationControl IsCalculationMissing="@_isCalculationMissing" OnDataChanged="RefreshAll" />
+                </div>
             </div>
-            <div class="col-xl-6">
-                <EqualisationControl IsCalculationMissing="@_isCalculationMissing" OnDataChanged="RefreshAll" />
-            </div>
-        </div>
 
-        <!-- Corporate Action History Table -->
-        <div class="row mt-5">
-            <div class="col-12">
+            <!-- Corporate Action History Table -->
+            <div class="section">
                 <h3 class="mb-3">Corporate Action History (ERI & Equalisation)</h3>
                 <SfGrid TValue="CorporateAction" DataSource="@History" AllowPaging="true">
                     <GridPageSettings PageSize="10"></GridPageSettings>

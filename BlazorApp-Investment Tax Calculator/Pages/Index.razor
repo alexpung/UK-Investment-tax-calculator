@@ -1,46 +1,143 @@
 ﻿@page "/"
 
-<div class="bg-dark text-light p-3">
-    <div class="container">
-        <h2 class="display-4 mb-4">Welcome to the UK Investment Tax Calculator</h2>
-        <p>This application is designed to accept broker statements (only Interactive Brokers XML statement currently) and output taxable gains and losses according to normal trade matching rules.</p>
-        <p>Also report dividends and withholding tax paid by countries.</p>
-        <p>To sum up, this application assists you in filling out the SA106, SA108 tax forms.</p>
-        <p>To get started, gather some sample XML files 
-            <a href="https://github.com/alexpung/UK-Investment-tax-calculator/tree/master/UnitTest/System%20Test/Interactive%20brokers" class="link-primary">here</a>
-            and try to import them by going to the 'Import/Export' tab.</p>
-        <p> Also check <a href="https://github.com/alexpung/UK-Investment-tax-calculator/wiki" class="link-primary">Wiki</a> for more information.</p>
-        <p>Your trade data is not uploaded anywhere. They never leave your browser thanks to the Blazor Webassembly framework. The calculation is entirely done in your browser.</p>
-        <p>Permission to use the software is granted under the MIT license.</p>
+<div class="container-fluid py-5">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <!-- Hero Section -->
+            <div class="page-header text-center mb-5">
+                <h1 class="page-title">UK Investment Tax Calculator</h1>
+                <p class="page-subtitle">Simplify your UK tax reporting for investments</p>
+            </div>
 
-        <div class="alert alert-warning" role="alert">
-            <strong>
-                This software serves as an assistive tool only and does not handle many of the exceptions in tax law, nor is the correctness of its output warranted.<br>
-                The taxpayers are responsible for verifying that they are reporting correct data in their tax forms.
-            </strong>
-        </div>
+            <!-- Introduction Card -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h2 class="h4 card-title mb-3">Welcome</h2>
+                    <p class="card-text">
+                        This application helps you calculate taxable gains and losses from your investment activities according to UK tax rules.
+                        It processes broker statements and applies normal trade matching rules to determine your tax obligations.
+                    </p>
+                    <p class="card-text">
+                        The calculator assists with completing SA106 (Capital Gains) and SA108 (Income) tax forms by:
+                    </p>
+                    <ul class="list-group list-group-flush mb-3">
+                        <li class="list-group-item bg-transparent">📊 Calculating capital gains and losses</li>
+                        <li class="list-group-item bg-transparent">💰 Reporting dividends and withholding tax</li>
+                        <li class="list-group-item bg-transparent">📈 Tracking Section 104 holdings</li>
+                        <li class="list-group-item bg-transparent">🔄 Handling corporate actions</li>
+                    </ul>
+                </div>
+            </div>
 
-        <h2 class="mt-4">License</h2>
-        <p>MIT License</p>
-        <p>Copyright (c) 2023-@DateTime.Now.Year Ka Wing Pun</p>
+            <!-- Getting Started Section -->
+            <div class="section">
+                <h2 class="section-title">Getting Started</h2>
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="card feature-card">
+                            <div class="card-body">
+                                <div class="feature-icon">📁</div>
+                                <h3 class="h5 card-title">1. Get Sample Files</h3>
+                                <p class="card-text">
+                                    Download sample XML files from our 
+                                    <a href="https://github.com/alexpung/UK-Investment-tax-calculator/tree/master/UnitTest/System%20Test/Interactive%20brokers" 
+                                       class="link-styled" target="_blank" rel="noopener noreferrer">
+                                        GitHub repository
+                                    </a> to test the application.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card feature-card">
+                            <div class="card-body">
+                                <div class="feature-icon">📤</div>
+                                <h3 class="h5 card-title">2. Import Your Data</h3>
+                                <p class="card-text">
+                                    Navigate to the <strong>Import/Export</strong> tab and upload your Interactive Brokers XML statement files.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card feature-card">
+                            <div class="card-body">
+                                <div class="feature-icon">📖</div>
+                                <h3 class="h5 card-title">3. Read the Documentation</h3>
+                                <p class="card-text">
+                                    Check our 
+                                    <a href="https://github.com/alexpung/UK-Investment-tax-calculator/wiki" 
+                                       class="link-styled" target="_blank" rel="noopener noreferrer">
+                                        Wiki
+                                    </a> for detailed information and guidance.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card feature-card">
+                            <div class="card-body">
+                                <div class="feature-icon">🔒</div>
+                                <h3 class="h5 card-title">4. Your Data is Private</h3>
+                                <p class="card-text">
+                                    All calculations happen in your browser using Blazor WebAssembly. Your data never leaves your device.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-        <p>
-            The front end contains components from Syncfusion.
-            If you need to access Syncfusion's binaries or compile any part of this project containing Syncfusion code, or anything linked to or dependent on this project, you would need to contact Syncfusion to receive either an eligible community license or a paid license.
-        </p>
+            <!-- Important Notice -->
+            <div class="alert alert-warning alert-custom" role="alert">
+                <h4 class="alert-heading">⚠️ Important Disclaimer</h4>
+                <p class="mb-0">
+                    <strong>This software serves as an assistive tool only</strong> and does not handle many exceptions in tax law, 
+                    nor is the correctness of its output warranted. Taxpayers are responsible for verifying that they are reporting 
+                    correct data in their tax forms.
+                </p>
+            </div>
 
-        <p>
-            Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-        </p>
+            <!-- License Section -->
+            <div class="section">
+                <h2 class="section-title">License</h2>
+                <div class="card">
+                    <div class="card-body">
+                        <h3 class="h5 card-title">MIT License</h3>
+                        <p class="card-text text-muted-custom">
+                            Copyright © 2023-@DateTime.Now.Year Ka Wing Pun
+                        </p>
+                        
+                        <div class="alert alert-info alert-custom mb-3" role="alert">
+                            <strong>Syncfusion Components:</strong> This application uses Syncfusion components. 
+                            To access Syncfusion's binaries or compile any part of this project containing Syncfusion code, 
+                            you need to obtain either a community license or a paid license from Syncfusion.
+                        </div>
 
-        <p>
-            The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-        </p>
+                        <p class="small text-muted-custom">
+                            Permission is hereby granted, free of charge, to any person obtaining a copy of this software 
+                            and associated documentation files (the "Software"), to deal in the Software without restriction, 
+                            including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
+                            and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, 
+                            subject to the following conditions:
+                        </p>
+                        <p class="small text-muted-custom">
+                            The above copyright notice and this permission notice shall be included in all copies or 
+                            substantial portions of the Software.
+                        </p>
 
-        <div class="alert alert-secondary" role="alert">
-            <strong>
-                THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-            </strong>
+                        <div class="alert alert-secondary alert-custom mt-3" role="alert">
+                            <p class="small mb-0">
+                                <strong>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+                                INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE 
+                                AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, 
+                                DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
+                                OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</strong>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>

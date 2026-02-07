@@ -37,6 +37,7 @@ builder.Services.AddSingleton<TaxYearCgtByTypeReportService>();
 builder.Services.AddSingleton<PdfExportService>();
 builder.Services.AddSingleton<TaxCalculationService>();
 builder.Services.AddSingleton<CurrencyService>();
+builder.Services.AddScoped<FileImportStateService>();
 
 // UK tax specific components - replace if you want to calculate some other countries.
 builder.Services.AddSingleton<UkCalculationResultExportService>();

@@ -2,5 +2,24 @@
 
 @using InvestmentTaxCalculator.Components
 
-<DividendTable />
-<InterestIncomeGrid />
+<div class="container-fluid py-5">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <!-- Page Header -->
+            <div class="page-header text-center mb-5">
+                <h1 class="page-title">Dividend & Interest Income</h1>
+                <p class="page-subtitle">Review your dividend payments and interest income records</p>
+            </div>
+
+            <!-- Dividend Section -->
+            <div class="section mb-5">
+                <DividendTable />
+            </div>
+
+            <!-- Interest Income Section -->
+            <div class="section">
+                <InterestIncomeGrid />
+            </div>
+        </div>
+    </div>
+</div>

@@ -2,5 +2,24 @@
 
 @using InvestmentTaxCalculator.Components
 
-<AddDividend/>
-<AddTrade/>
+<div class="container-fluid py-5">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <!-- Page Header -->
+            <div class="page-header text-center mb-5">
+                <h1 class="page-title">Add Manual Entries</h1>
+                <p class="page-subtitle">Manually add dividends and trades not captured in broker statements</p>
+            </div>
+
+            <!-- Add Dividend Section -->
+            <div class="section mb-5">
+                <AddDividend/>
+            </div>
+
+            <!-- Add Trade Section -->
+            <div class="section">
+                <AddTrade/>
+            </div>
+        </div>
+    </div>
+</div>
