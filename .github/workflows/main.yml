@@ -29,6 +29,11 @@ jobs:
          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
      - name: Publish .NET Core Project
        run: dotnet publish "BlazorApp-Investment Tax Calculator/InvestmentTaxCalculator.csproj" -c:Release -p:GHPages=true -o dist/Web --nologo
+     - name: Patch base href for GitHub Pages
+       shell: pwsh
+       run: |
+         $indexPath = "dist/Web/wwwroot/index.html"
+         (Get-Content $indexPath) -replace '<base href=\"/\" />', '<base href=\"/UK-Investment-tax-calculator/\" />' | Set-Content $indexPath
      - name: Deploy
        uses: peaceiris/actions-gh-pages@v3
        with:
