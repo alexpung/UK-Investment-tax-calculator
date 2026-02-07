@@ -5,7 +5,6 @@
 
 @inject TradeCalculationResult tradeCalculationResult
 @inject DividendCalculationResult dividendCalculationResult
-@inject YearOptions years
 @inject YearOptions yearOptions
 
 <!-- Year Selector Card -->
@@ -45,7 +44,7 @@
         <div class="card metric-card">
             <div class="card-body">
                 <div class="metric-label text-muted small">Number of Disposals</div>
-                <div class="metric-value h4 mb-0">@tradeCalculationResult.GetNumberOfDisposals(years.SelectedOptions)</div>
+                <div class="metric-value h4 mb-0">@tradeCalculationResult.GetNumberOfDisposals(yearOptions.SelectedOptions)</div>
             </div>
         </div>
     </div>
@@ -55,7 +54,7 @@
         <div class="card metric-card">
             <div class="card-body">
                 <div class="metric-label text-muted small">Total Disposal Proceeds</div>
-                <div class="metric-value h4 mb-0">@tradeCalculationResult.GetDisposalProceeds(years.SelectedOptions)</div>
+                <div class="metric-value h4 mb-0">@tradeCalculationResult.GetDisposalProceeds(yearOptions.SelectedOptions)</div>
             </div>
         </div>
     </div>
@@ -65,7 +64,7 @@
         <div class="card metric-card">
             <div class="card-body">
                 <div class="metric-label text-muted small">Total Allowable Cost</div>
-                <div class="metric-value h4 mb-0">@tradeCalculationResult.GetAllowableCosts(years.SelectedOptions)</div>
+                <div class="metric-value h4 mb-0">@tradeCalculationResult.GetAllowableCosts(yearOptions.SelectedOptions)</div>
             </div>
         </div>
     </div>
@@ -75,7 +74,7 @@
         <div class="card metric-card">
             <div class="card-body">
                 <div class="metric-label text-muted small">Total Gain</div>
-                <div class="metric-value h4 mb-0">@tradeCalculationResult.GetTotalGain(years.SelectedOptions)</div>
+                <div class="metric-value h4 mb-0">@tradeCalculationResult.GetTotalGain(yearOptions.SelectedOptions)</div>
             </div>
         </div>
     </div>
@@ -85,7 +84,7 @@
         <div class="card metric-card">
             <div class="card-body">
                 <div class="metric-label text-muted small">Total Loss</div>
-                <div class="metric-value h4 mb-0">@tradeCalculationResult.GetTotalLoss(years.SelectedOptions)</div>
+                <div class="metric-value h4 mb-0">@tradeCalculationResult.GetTotalLoss(yearOptions.SelectedOptions)</div>
             </div>
         </div>
     </div>
@@ -95,7 +94,7 @@
         <div class="card metric-card">
             <div class="card-body">
                 <div class="metric-label text-muted small">Total Dividend</div>
-                <div class="metric-value h4 mb-0">@dividendCalculationResult.GetTotalDividend(years.SelectedOptions)</div>
+                <div class="metric-value h4 mb-0">@dividendCalculationResult.GetTotalDividend(yearOptions.SelectedOptions)</div>
             </div>
         </div>
     </div>
@@ -105,7 +104,7 @@
         <div class="card metric-card">
             <div class="card-body">
                 <div class="metric-label text-muted small">Total Foreign Withholding Tax Paid</div>
-                <div class="metric-value h4 mb-0">@dividendCalculationResult.GetForeignTaxPaid(years.SelectedOptions)</div>
+                <div class="metric-value h4 mb-0">@dividendCalculationResult.GetForeignTaxPaid(yearOptions.SelectedOptions)</div>
             </div>
         </div>
     </div>

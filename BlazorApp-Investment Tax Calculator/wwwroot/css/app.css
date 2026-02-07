@@ -84,6 +84,10 @@
     border-left-color: var(--bs-secondary);
 }
 
+.alert-custom.alert-danger {
+    border-left-color: var(--bs-danger);
+}
+
 /* Link Styles */
 .link-styled {
     color: var(--bs-link-color);
