@@ -1,14 +1,28 @@
 @page "/corporate-actions"
+
 @using InvestmentTaxCalculator.Components
 @using InvestmentTaxCalculator.Services
 @implements IAsyncDisposable
 @inject TaxCalculationService _taxCalculationService
 
-<div class="container mt-4">
-    <div class="row justify-content-center">
-        <div class="col-lg-10">
-            <Takeover OnCorporateActionAdded="RefreshHistory" />
-            <CorporateActionsList @ref="_historyList" OnActionDeleted="OnActionDeleted" />
+<div class="container-fluid py-5">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <!-- Page Header -->
+            <div class="page-header text-center mb-5">
+                <h1 class="page-title">Corporate Actions</h1>
+                <p class="page-subtitle">Record takeover events and view corporate action history</p>
+            </div>
+
+            <!-- Takeover Section -->
+            <div class="section mb-5">
+                <Takeover OnCorporateActionAdded="RefreshHistory" />
+            </div>
+
+            <!-- Corporate Actions List Section -->
+            <div class="section">
+                <CorporateActionsList @ref="_historyList" OnActionDeleted="OnActionDeleted" />
+            </div>
         </div>
     </div>
 </div>

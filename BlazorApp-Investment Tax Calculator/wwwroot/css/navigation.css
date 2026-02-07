@@ -71,6 +71,14 @@
     font-weight: 500;
 }
 
+.nav-link-custom:focus-visible {
+    outline: 2px solid var(--bs-primary);
+    outline-offset: 2px;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--bs-light);
+    border-left-color: var(--bs-primary);
+}
+
 .nav-icon {
     margin-right: 0.75rem;
     font-size: 1.1rem;
@@ -141,6 +149,12 @@
 }
 
 .category-header:hover {
+    color: var(--bs-light);
+}
+
+.category-header:focus-visible {
+    outline: 2px solid var(--bs-primary);
+    outline-offset: -2px;
     color: var(--bs-light);
 }
 

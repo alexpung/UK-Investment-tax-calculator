@@ -2,7 +2,29 @@
 
 @using InvestmentTaxCalculator.Components
 
-<CgtYearSummary></CgtYearSummary>
-<TaxYearCgtAssetTypeReport></TaxYearCgtAssetTypeReport>
-<TaxRefundTable></TaxRefundTable>
+<div class="container-fluid py-5">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <!-- Page Header -->
+            <div class="page-header text-center mb-5">
+                <h1 class="page-title">Capital Gains Tax Summary</h1>
+                <p class="page-subtitle">Yearly CGT summary by tax year and asset type</p>
+            </div>
 
+            <!-- CGT Year Summary Section -->
+            <div class="section mb-5">
+                <CgtYearSummary></CgtYearSummary>
+            </div>
+
+            <!-- CGT by Asset Type Section -->
+            <div class="section mb-5">
+                <TaxYearCgtAssetTypeReport></TaxYearCgtAssetTypeReport>
+            </div>
+
+            <!-- Tax Refund Section -->
+            <div class="section">
+                <TaxRefundTable></TaxRefundTable>
+            </div>
+        </div>
+    </div>
+</div>

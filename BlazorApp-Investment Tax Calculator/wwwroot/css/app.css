@@ -24,6 +24,8 @@
 @media (max-width: 768px) {
     .main-content-wrapper {
         padding: 1rem;
+        padding-top: 4.5rem;
+        /* Prevent overlap with fixed hamburger button */
     }
 }
 

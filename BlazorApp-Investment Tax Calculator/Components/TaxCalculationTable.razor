@@ -2,6 +2,7 @@
 @using InvestmentTaxCalculator.ViewModel
 @using InvestmentTaxCalculator.Model.Interfaces
 @using Syncfusion.Blazor.Grids
+@using Syncfusion.Blazor.Navigations
 @using InvestmentTaxCalculator.Model.TaxEvents
 @using InvestmentTaxCalculator.Model.UkTaxModel
 @using InvestmentTaxCalculator.Model.UkTaxModel.Stocks
@@ -12,59 +13,183 @@
 @inject TradeCalculationResult tradeCalculationResult
 @inject SfGridToolBarHandlingService _toolbarHandlingService
 
-<div class="bg-dark text-light">
-    <div class="row my-4">
-        <div class="col">
-            <h3>Disposal calculation summary</h3>
-        </div>
+<div class="card bg-dark text-light">
+    <div class="card-header">
+        <h3 class="mb-0">Disposal Calculation Summary</h3>
     </div>
-    <div class="row me-3">
-        <div class="col">
-            <SfGrid ID="DisposalCalculationGrid" @ref="disposalCalculationGrid" DataSource="@_trades"
-                    AllowPaging="true" AllowSorting="true" AllowPdfExport="true" AllowExcelExport="true" AllowResizing="true" AllowFiltering="true" AllowTextWrap="true"
-                    Toolbar="@(new List<string>() { "PdfExport", "ExcelExport", "Print" })">
-                <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
-                <GridPageSettings PageSizes=@(new List<int>() {25, 50, 100}) PageSize="25"></GridPageSettings>
-                <GridEvents OnToolbarClick="ToolbarClickHandler" TValue="TradeTaxCalculationViewModel"></GridEvents>
-                <GridColumns>
-                    <GridColumn Field=@nameof(TradeTaxCalculationViewModel.TradeId) HeaderText="Trade Id"></GridColumn>
-                    <GridColumn Field=@nameof(TradeTaxCalculationViewModel.Date) HeaderText="Date" Format="d"></GridColumn>
-                    <GridColumn Field=@nameof(TradeTaxCalculationViewModel.AssetType) HeaderText="Asset Type"></GridColumn>
-                    <GridColumn Field=@nameof(TradeTaxCalculationViewModel.AssetName) HeaderText="Asset Name"></GridColumn>
-                    <GridColumn Field=@nameof(TradeTaxCalculationViewModel.AcquisitionOrDisposal) HeaderText="Acquisition/Disposal"></GridColumn>
-                    <GridColumn Field=@nameof(TradeTaxCalculationViewModel.ResidencyStatusAtTrade) HeaderText="Residency status"></GridColumn>
-                    <GridColumn HeaderText="Matching Quantity">
-                        <GridColumns>
-                            <GridColumn Field=@nameof(TradeTaxCalculationViewModel.Qty) HeaderText="Total Quantity disposed"></GridColumn>
-                            <GridColumn Field=@nameof(TradeTaxCalculationViewModel.SameDayMatchQty) HeaderText="Same day"></GridColumn>
-                            <GridColumn Field=@nameof(TradeTaxCalculationViewModel.BedAndBreakfastMatchQty) HeaderText="Bed and Breakfast"></GridColumn>
-                            <GridColumn Field=@nameof(TradeTaxCalculationViewModel.Section104MatchQty) HeaderText="Section 104"></GridColumn>
-                            <GridColumn Field=@nameof(TradeTaxCalculationViewModel.CoveredShortMatchQty) HeaderText="Cover Short Sale"></GridColumn>
-                            <GridColumn Field=@nameof(TradeTaxCalculationViewModel.UnmatchedQty) HeaderText="Unmatched Shares"></GridColumn>
-                        </GridColumns>
-                    </GridColumn>
-                    <GridColumn HeaderText="Calculation Result">
-                        <GridColumns>
-                            <GridColumn Field=@nameof(TradeTaxCalculationViewModel.TotalProceed) HeaderText="Total Proceeeds"></GridColumn>
-                            <GridColumn Field=@nameof(TradeTaxCalculationViewModel.TotalAllowableCost) HeaderText="Allowable Cost"></GridColumn>
-                            <GridColumn Field=@nameof(TradeTaxCalculationViewModel.ContractValue) HeaderText="Contract Value (Future only)"></GridColumn>
-                            <GridColumn Field=@nameof(TradeTaxCalculationViewModel.Gain) HeaderText="Gain (Loss)"></GridColumn>
-                        </GridColumns>
-                    </GridColumn>
-                </GridColumns>
-            </SfGrid>
-        </div>
+    <div class="card-body">
+        <SfTab CssClass="tax-calculation-tabs">
+            <TabItems>
+                <!-- Tab 1: Overview -->
+                <TabItem>
+                    <HeaderTemplate>
+                        <div class="d-flex align-items-center">
+                            <span class="me-2">📊</span>
+                            <span>Overview</span>
+                        </div>
+                    </HeaderTemplate>
+                    <ContentTemplate>
+                        <div class="tab-content-wrapper">
+                            <SfGrid @ref="overviewGrid" DataSource="@_trades"
+                                    AllowPaging="true" AllowSorting="true" AllowPdfExport="true" AllowExcelExport="true" 
+                                    AllowResizing="true" AllowFiltering="true" AllowTextWrap="true"
+                                    Toolbar="@(new List<string>() { "PdfExport", "ExcelExport", "Print" })">
+                                <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
+                                <GridPageSettings PageSizes="@(new List<int>() {25, 50, 100})" PageSize="25"></GridPageSettings>
+                                <GridEvents OnToolbarClick="OverviewToolbarClickHandler" TValue="TradeTaxCalculationViewModel"></GridEvents>
+                                <GridColumns>
+                                    <GridColumn Field="@nameof(TradeTaxCalculationViewModel.TradeId)" HeaderText="Trade ID" Width="100"></GridColumn>
+                                    <GridColumn Field="@nameof(TradeTaxCalculationViewModel.Date)" HeaderText="Date" Format="d" Width="120"></GridColumn>
+                                    <GridColumn Field="@nameof(TradeTaxCalculationViewModel.AssetType)" HeaderText="Asset Type" Width="120"></GridColumn>
+                                    <GridColumn Field="@nameof(TradeTaxCalculationViewModel.AssetName)" HeaderText="Asset Name" Width="150"></GridColumn>
+                                    <GridColumn Field="@nameof(TradeTaxCalculationViewModel.AcquisitionOrDisposal)" HeaderText="Acquisition/Disposal" Width="150"></GridColumn>
+                                    <GridColumn Field="@nameof(TradeTaxCalculationViewModel.ResidencyStatusAtTrade)" HeaderText="Residency Status" Width="150"></GridColumn>
+                                    <GridColumn Field="@nameof(TradeTaxCalculationViewModel.Qty)" HeaderText="Quantity" Width="100"></GridColumn>
+                                    <GridColumn Field="@nameof(TradeTaxCalculationViewModel.Gain)" HeaderText="Gain (Loss)" Width="120">
+                                        <Template>
+                                            @{
+                                                var trade = context as TradeTaxCalculationViewModel;
+                                                var gainValue = trade?.Gain?.Amount ?? 0m;
+                                                var cssClass = gainValue >= 0 ? "text-success" : "text-danger";
+                                                <span class="@cssClass fw-bold">@trade?.Gain</span>
+                                            }
+                                        </Template>
+                                    </GridColumn>
+                                </GridColumns>
+                            </SfGrid>
+                        </div>
+                    </ContentTemplate>
+                </TabItem>
+
+                <!-- Tab 2: Matching Details -->
+                <TabItem>
+                    <HeaderTemplate>
+                        <div class="d-flex align-items-center">
+                            <span class="me-2">🔗</span>
+                            <span>Matching Details</span>
+                        </div>
+                    </HeaderTemplate>
+                    <ContentTemplate>
+                        <div class="tab-content-wrapper">
+                            <SfGrid @ref="matchingGrid" DataSource="@_trades"
+                                    AllowPaging="true" AllowSorting="true" AllowPdfExport="true" AllowExcelExport="true" 
+                                    AllowResizing="true" AllowFiltering="true" AllowTextWrap="true"
+                                    Toolbar="@(new List<string>() { "PdfExport", "ExcelExport", "Print" })">
+                                <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
+                                <GridPageSettings PageSizes="@(new List<int>() {25, 50, 100})" PageSize="25"></GridPageSettings>
+                                <GridEvents OnToolbarClick="MatchingToolbarClickHandler" TValue="TradeTaxCalculationViewModel"></GridEvents>
+                                <GridColumns>
+                                    <GridColumn Field="@nameof(TradeTaxCalculationViewModel.Date)" HeaderText="Date" Format="d" Width="120"></GridColumn>
+                                    <GridColumn Field="@nameof(TradeTaxCalculationViewModel.AssetName)" HeaderText="Asset Name" Width="150"></GridColumn>
+                                    <GridColumn Field="@nameof(TradeTaxCalculationViewModel.Qty)" HeaderText="Total Quantity Disposed" Width="150"></GridColumn>
+                                    <GridColumn Field="@nameof(TradeTaxCalculationViewModel.SameDayMatchQty)" HeaderText="Same Day" Width="120"></GridColumn>
+                                    <GridColumn Field="@nameof(TradeTaxCalculationViewModel.BedAndBreakfastMatchQty)" HeaderText="Bed & Breakfast" Width="150"></GridColumn>
+                                    <GridColumn Field="@nameof(TradeTaxCalculationViewModel.Section104MatchQty)" HeaderText="Section 104" Width="120"></GridColumn>
+                                    <GridColumn Field="@nameof(TradeTaxCalculationViewModel.CoveredShortMatchQty)" HeaderText="Cover Short Sale" Width="150"></GridColumn>
+                                    <GridColumn Field="@nameof(TradeTaxCalculationViewModel.UnmatchedQty)" HeaderText="Unmatched Shares" Width="150"></GridColumn>
+                                </GridColumns>
+                            </SfGrid>
+                        </div>
+                    </ContentTemplate>
+                </TabItem>
+
+                <!-- Tab 3: Calculation Breakdown -->
+                <TabItem>
+                    <HeaderTemplate>
+                        <div class="d-flex align-items-center">
+                            <span class="me-2">💰</span>
+                            <span>Calculation Breakdown</span>
+                        </div>
+                    </HeaderTemplate>
+                    <ContentTemplate>
+                        <div class="tab-content-wrapper">
+                            <SfGrid @ref="calculationGrid" DataSource="@_trades"
+                                    AllowPaging="true" AllowSorting="true" AllowPdfExport="true" AllowExcelExport="true" 
+                                    AllowResizing="true" AllowFiltering="true" AllowTextWrap="true"
+                                    Toolbar="@(new List<string>() { "PdfExport", "ExcelExport", "Print" })">
+                                <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
+                                <GridPageSettings PageSizes="@(new List<int>() {25, 50, 100})" PageSize="25"></GridPageSettings>
+                                <GridEvents OnToolbarClick="CalculationToolbarClickHandler" TValue="TradeTaxCalculationViewModel"></GridEvents>
+                                <GridColumns>
+                                    <GridColumn Field="@nameof(TradeTaxCalculationViewModel.Date)" HeaderText="Date" Format="d" Width="120"></GridColumn>
+                                    <GridColumn Field="@nameof(TradeTaxCalculationViewModel.AssetName)" HeaderText="Asset Name" Width="150"></GridColumn>
+                                    <GridColumn Field="@nameof(TradeTaxCalculationViewModel.Qty)" HeaderText="Quantity" Width="100"></GridColumn>
+                                    <GridColumn Field="@nameof(TradeTaxCalculationViewModel.TotalProceed)" HeaderText="Total Proceeds" Width="150" Format="N2"></GridColumn>
+                                    <GridColumn Field="@nameof(TradeTaxCalculationViewModel.TotalAllowableCost)" HeaderText="Allowable Cost" Width="150" Format="N2"></GridColumn>
+                                    <GridColumn Field="@nameof(TradeTaxCalculationViewModel.ContractValue)" HeaderText="Contract Value (Futures)" Width="180" Format="N2"></GridColumn>
+                                    <GridColumn Field="@nameof(TradeTaxCalculationViewModel.Gain)" HeaderText="Gain (Loss)" Width="150">
+                                        <Template>
+                                            @{
+                                                var trade = context as TradeTaxCalculationViewModel;
+                                                var gainValue = trade?.Gain?.Amount ?? 0m;
+                                                var cssClass = gainValue >= 0 ? "text-success" : "text-danger";
+                                                <span class="@cssClass fw-bold">@trade?.Gain</span>
+                                            }
+                                        </Template>
+                                    </GridColumn>
+                                </GridColumns>
+                            </SfGrid>
+                        </div>
+                    </ContentTemplate>
+                </TabItem>
+            </TabItems>
+        </SfTab>
     </div>
 </div>
 
+<style>
+    .tax-calculation-tabs .e-tab-header {
+        background-color: var(--bs-dark);
+        border-bottom: 2px solid var(--bs-border-color);
+    }
+
+    .tax-calculation-tabs .e-tab-header .e-toolbar-item {
+        color: var(--bs-light);
+    }
+
+    .tax-calculation-tabs .e-tab-header .e-toolbar-item.e-active {
+        background-color: rgba(var(--bs-primary-rgb), 0.2);
+        border-bottom: 3px solid var(--bs-primary);
+    }
+
+    .tax-calculation-tabs .e-tab-header .e-toolbar-item:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .tab-content-wrapper {
+        padding: 1rem 0;
+    }
+
+    .card-header h3 {
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+</style>
+
 @code {
-    private SfGrid<TradeTaxCalculationViewModel> disposalCalculationGrid = new();
+    private SfGrid<TradeTaxCalculationViewModel>? overviewGrid;
+    private SfGrid<TradeTaxCalculationViewModel>? matchingGrid;
+    private SfGrid<TradeTaxCalculationViewModel>? calculationGrid;
+
     private IEnumerable<TradeTaxCalculationViewModel> _trades => tradeCalculationResult.CalculatedTrade
                                                                 .Select(trade => new TradeTaxCalculationViewModel(trade))
                                                                 .DefaultIfEmpty()!;
 
-    public async Task ToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)
+    public async Task OverviewToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)
     {
-        await _toolbarHandlingService.ToolbarClickHandler(args, disposalCalculationGrid);
+        if (overviewGrid != null)
+            await _toolbarHandlingService.ToolbarClickHandler(args, overviewGrid);
+    }
+
+    public async Task MatchingToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)
+    {
+        if (matchingGrid != null)
+            await _toolbarHandlingService.ToolbarClickHandler(args, matchingGrid);
+    }
+
+    public async Task CalculationToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)
+    {
+        if (calculationGrid != null)
+            await _toolbarHandlingService.ToolbarClickHandler(args, calculationGrid);
     }
 }
