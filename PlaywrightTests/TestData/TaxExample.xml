@@ -1,0 +1,65 @@
+<FlexQueryResponse queryName="Tax" type="AF">
+	<FlexStatements count="1">
+		<FlexStatement accountId="TestAccount" fromDate="04-Jan-21" toDate="31-Dec-21" period="Last365CalendarDays" whenGenerated="01-Jan-22 00:00:00">
+			<StmtFunds>
+				<!-- Foreign currencies -->
+				<StatementOfFundsLine currency="DKK" fxRateToBase="0.11857" isin="DK0010267129" reportDate="03-Feb-21" activityCode="DIV" activityDescription="RTE(DK0010267129) Cash Dividend DKK 2.50 per Share (Ordinary Dividend)" amount="4000" levelOfDetail="Currency" />
+				<StatementOfFundsLine currency="DKK" fxRateToBase="0.11857" isin="DK0010267129" reportDate="03-Feb-21" activityCode="DIV" activityDescription="RTE(DK0010267129) Cash Dividend DKK 2.50 per Share - DK Tax" amount="-1080" levelOfDetail="Currency" />
+			</StmtFunds>
+			<Trades>
+				<!-- Stock trades -->
+				<Order currency="USD" fxRateToBase="0.8" assetCategory="STK" symbol="ABC" isin="US12345" description="ABC Example Stock" dateTime="01-May-21 12:34:56" quantity="200" proceeds="-2000" taxes="-20" ibCommission="-1.5" ibCommissionCurrency="USD" notes="O" buySell="BUY" levelOfDetail="ORDER" />
+				<Order currency="USD" fxRateToBase="0.85" assetCategory="STK" symbol="ABC" isin="US12345" description="ABC Example Stock" dateTime="03-May-21 12:33:56" quantity="50" proceeds="-510" taxes="-30" ibCommission="-1.5" ibCommissionCurrency="USD" notes="O" buySell="BUY" levelOfDetail="ORDER" />
+				<Order currency="USD" fxRateToBase="0.85" assetCategory="STK" symbol="ABC" isin="US12345" description="ABC Example Stock" dateTime="03-May-21 12:34:56" quantity="-200" proceeds="2200" taxes="-40" ibCommission="-1.5" ibCommissionCurrency="USD" notes="C" buySell="SELL" levelOfDetail="ORDER" />
+				<Order currency="USD" fxRateToBase="0.86" assetCategory="STK" symbol="ABC" isin="US12345" description="ABC Example Stock" dateTime="04-May-21 12:34:56" quantity="100" proceeds="-600" taxes="-50" ibCommission="-1.5" ibCommissionCurrency="USD" notes="O" buySell="BUY" levelOfDetail="ORDER" />
+				<Order currency="USD" fxRateToBase="0.86" assetCategory="STK" symbol="DEF" isin="US12346" description="DEF Example Stock" dateTime="05-May-21 12:34:56" quantity="-100" proceeds="1000" taxes="0" ibCommission="-1.5" ibCommissionCurrency="USD" notes="O" buySell="SELL" levelOfDetail="ORDER" />
+				<Order currency="USD" fxRateToBase="0.86" assetCategory="STK" symbol="DEF" isin="US12346" description="DEF Example Stock" dateTime="06-Dec-21 12:34:56" quantity="100" proceeds="-500" taxes="0" ibCommission="-1.5" ibCommissionCurrency="USD" notes="C" buySell="BUY" levelOfDetail="ORDER" />
+				<Order currency="JPY" fxRateToBase="0.006" assetCategory="FUT" symbol="NIYH3" isin="JP12343" description="NIY 10MAR23" dateTime="05-Mar-23 12:34:56" quantity="2" proceeds="-27000000" taxes="0" ibCommission="-700" ibCommissionCurrency="JPY" buySell="BUY" levelOfDetail="ORDER"/>
+				<Order currency="JPY" fxRateToBase="0.006" assetCategory="FUT" symbol="NIYH3" isin="JP12343" description="NIY 10MAR23" dateTime="07-Mar-23 12:34:56" quantity="-2" proceeds="29000000" taxes="0" ibCommission="-800" ibCommissionCurrency="JPY" buySell="SELL" levelOfDetail="ORDER"/>
+
+				<!-- Future contract trades -->
+				<Order currency="JPY" fxRateToBase="0.8" assetCategory="FUT" symbol="NIYH4" isin="JP12344" description="NIY 12MAR23" dateTime="05-Mar-23 12:34:56" quantity="-2" proceeds="27000000" taxes="0" ibCommission="-700" ibCommissionCurrency="JPY" buySell="SELL" levelOfDetail="ORDER"/>
+				<Order currency="JPY" fxRateToBase="0.7" assetCategory="FUT" symbol="NIYH4" isin="JP12344" description="NIY 12MAR23" dateTime="05-Mar-23 12:35:56" quantity="2" proceeds="-31000000" taxes="0" ibCommission="-900" ibCommissionCurrency="JPY" buySell="BUY" levelOfDetail="ORDER"/>
+				<Order currency="JPY" fxRateToBase="1" assetCategory="FUT" symbol="NIYH5" isin="JP12345" description="NIY 14MAR23" dateTime="05-Mar-23 12:34:56" quantity="2" proceeds="-27000000" taxes="0" ibCommission="-700" ibCommissionCurrency="JPY" buySell="BUY" levelOfDetail="ORDER"/>
+				<Order currency="JPY" fxRateToBase="0.9" assetCategory="FUT" symbol="NIYH5" isin="JP12345" description="NIY 14MAR23" dateTime="07-Mar-23 12:34:56" quantity="-2" proceeds="29000000" taxes="0" ibCommission="-500" ibCommissionCurrency="JPY" buySell="SELL" levelOfDetail="ORDER"/>
+				<Order currency="JPY" fxRateToBase="0.9" assetCategory="FUT" symbol="NIYH5" isin="JP12345" description="NIY 14MAR23" dateTime="09-Mar-23 12:34:56" quantity="2" proceeds="-25000000" taxes="0" ibCommission="-800" ibCommissionCurrency="JPY" buySell="BUY" levelOfDetail="ORDER"/>
+				<Order currency="JPY" fxRateToBase="0.6" assetCategory="FUT" symbol="NIYH6" isin="JP12346" description="NIY 15MAR23" dateTime="05-Mar-23 12:34:56" quantity="2" proceeds="-27000000" taxes="0" ibCommission="-700" ibCommissionCurrency="JPY" buySell="BUY" levelOfDetail="ORDER"/>
+				<Order currency="JPY" fxRateToBase="0.6" assetCategory="FUT" symbol="NIYH6" isin="JP12346" description="NIY 15MAR23" dateTime="07-Mar-23 12:34:56" quantity="-2" proceeds="20000000" taxes="0" ibCommission="-800" ibCommissionCurrency="JPY" buySell="SELL" levelOfDetail="ORDER"/>
+				
+				<!-- Open Option Trade for Exercise (Call Option) -->
+				<Order currency="USD" fxRateToBase="1" assetCategory="OPT" symbol="GOOG  180119C00800000" isin="US02079K1079" description="GOOG 19JAN18 800.0 C" underlyingSymbol="GOOG" multiplier="100" strike="800" expiry="19-Jan-18" putCall="C" dateTime="19-AUG-17 16:20:00" quantity="1" proceeds="-500" taxes="0" ibCommission="-2" ibCommissionCurrency="USD" buySell="BUY" notes="O;" levelOfDetail="ORDER"/>
+				<Order currency="USD" fxRateToBase="1" assetCategory="OPT" symbol="GOOG  180119C00800000" isin="US02079K1079" description="GOOG 19JAN18 800.0 C" underlyingSymbol="GOOG" multiplier="100" strike="800" expiry="19-Jan-18" putCall="C" dateTime="19-Jan-18 16:20:00" quantity="-1" proceeds="0" taxes="0" ibCommission="-1" ibCommissionCurrency="USD" buySell="SELL" notes="C;Ex" levelOfDetail="ORDER"/>
+				<Order currency="USD" fxRateToBase="1" assetCategory="STK" symbol="GOOG" isin="US02079K1079" description="ALPHABET INC-CL C" dateTime="19-Jan-18 16:20:00" quantity="100" proceeds="-80000" taxes="0" ibCommission="0" ibCommissionCurrency="USD" notes="O;Ex" buySell="BUY" levelOfDetail="ORDER"/>
+
+				<!-- Open Option Trade for Exercise (Put Option) -->
+				<Order currency="USD" fxRateToBase="0.5" assetCategory="OPT" symbol="AAPL  210120C00125000" isin="US0378331005" description="AAPL 20JAN21 125.0 P" underlyingSymbol="AAPL" multiplier="100" strike="125" expiry="20-Jan-21" putCall="P" dateTime="10-Jan-21 16:00:00" quantity="1" proceeds="-1000" taxes="0" ibCommission="-5" ibCommissionCurrency="USD" notes="O" buySell="BUY" levelOfDetail="ORDER" />
+				<Order currency="USD" fxRateToBase="0.5" assetCategory="OPT" symbol="AAPL  210120C00125000" isin="US0378331005" description="AAPL 20JAN21 125.0 P" underlyingSymbol="AAPL" multiplier="100" strike="125" expiry="20-Jan-21" putCall="P" dateTime="20-Jan-21 16:00:00" quantity="-1"  proceeds="0" taxes="3" ibCommission="-4" ibCommissionCurrency="USD" notes="C;Ex" buySell="SELL" levelOfDetail="ORDER" />
+				<Order currency="USD" fxRateToBase="0.5" assetCategory="STK" symbol="AAPL" isin="US0378331005" description="APPLE" dateTime="20-Jan-21 16:00:00" quantity="-100" proceeds="12500" taxes="0" ibCommission="0" ibCommissionCurrency="USD" notes="O;Ex" buySell="SELL" levelOfDetail="ORDER"/>
+
+				<!-- Open Option Trade for Assignment (Put Option) -->
+				<Order currency="USD" fxRateToBase="0.1" assetCategory="OPT" symbol="TSLA  210320P00650000" isin="US88160R1014" description="TSLA 20MAR21 650.0 P" underlyingSymbol="TSLA" multiplier="100" strike="650" expiry="20-Mar-21" putCall="P" dateTime="05-Mar-21 16:00:00" quantity="-1"  proceeds="1500" taxes="0" ibCommission="-7" ibCommissionCurrency="USD" notes="O" buySell="SELL" levelOfDetail="ORDER" />
+				<Order currency="USD" fxRateToBase="0.1" assetCategory="OPT" symbol="TSLA  210320P00650000" isin="US88160R1014" description="TSLA 20MAR21 650.0 P" underlyingSymbol="TSLA" multiplier="100" strike="650" expiry="20-Mar-21" putCall="P" dateTime="20-Mar-21 16:00:00" quantity="1"  proceeds="0" taxes="0" ibCommission="0" ibCommissionCurrency="USD" notes="C;A" buySell="BUY" levelOfDetail="ORDER" />
+				<Order currency="USD" fxRateToBase="0.1" assetCategory="STK" symbol="TSLA" isin="US88160R1014" description="Tesla" dateTime="20-Mar-21 16:20:00" quantity="100" proceeds="-65000" taxes="0" ibCommission="2" ibCommissionCurrency="USD" notes="O;A" buySell="BUY" levelOfDetail="ORDER"/>
+
+				<!-- Open Option Trade for Expiration (Long) -->
+				<Order currency="USD" fxRateToBase="0.7" assetCategory="OPT" symbol="MSFT  210416C00230000" isin="US5949181045" description="MSFT 16APR21 230.0 C" underlyingSymbol="MSFT" multiplier="100" strike="230" expiry="16-Apr-21" putCall="C" dateTime="01-Apr-21 16:00:00" quantity="1"  proceeds="-2000" taxes="0" ibCommission="-3" ibCommissionCurrency="USD" notes="O" buySell="BUY" levelOfDetail="ORDER" />
+				<Order currency="USD" fxRateToBase="0.7" assetCategory="OPT" symbol="MSFT  210416C00230000" isin="US5949181045" description="MSFT 16APR21 230.0 C" underlyingSymbol="MSFT" multiplier="100" strike="230" expiry="16-Apr-21" putCall="C" dateTime="16-Apr-21 16:00:00" quantity="-1"  proceeds="0" taxes="0" ibCommission="0" ibCommissionCurrency="USD" notes="C;Ep" buySell="SELL" levelOfDetail="ORDER" />
+
+				<!-- Open Option Trade for Expiration (Short) -->
+				<Order currency="USD" fxRateToBase="0.8" assetCategory="OPT" symbol="MSFT  210116C00230000" isin="US5949181045" description="MSFT 16JAN21 230.0 C" underlyingSymbol="MSFT" multiplier="100" strike="230" expiry="16-Jan-21" putCall="C" dateTime="01-Jan-21 16:00:00" quantity="-1"  proceeds="3000" taxes="0" ibCommission="-3" ibCommissionCurrency="USD" notes="O" buySell="SELL" levelOfDetail="ORDER" />
+				<Order currency="USD" fxRateToBase="0.85" assetCategory="OPT" symbol="MSFT  210116C00230000" isin="US5949181045" description="MSFT 16JAN21 230.0 C" underlyingSymbol="MSFT" multiplier="100" strike="230" expiry="16-Jan-21" putCall="C" dateTime="16-Jan-21 16:00:00" quantity="1"  proceeds="0" taxes="0" ibCommission="0" ibCommissionCurrency="USD" notes="C;Ep" buySell="BUY" levelOfDetail="ORDER" />
+			</Trades>
+			<CorporateActions>
+				<CorporateAction symbol="ABC" isin="US12345" description="ABC SPLIT 2 FOR 1" dateTime="03-May-21 20:25:00" type="FS"/>
+			</CorporateActions>
+			<CashTransactions>
+				<CashTransaction settleDate="02-Feb-21" symbol="ABCD" isin="JP12345" description="ABC CASH DIVIDEND - JP TAX" amount="-30000" type="Withholding Tax" currency="JPY" fxRateToBase="0.00555" levelOfDetail="DETAIL"/>
+				<CashTransaction settleDate="02-Feb-21" symbol="ABCD" isin="JP12345" description="ABC CASH DIVIDEND (Ordinary Dividend)" amount="90000" type="Dividends" currency="JPY" fxRateToBase="0.00555" levelOfDetail="DETAIL"/>
+				<CashTransaction settleDate="02-Feb-21" symbol="ABCD" isin="JP12345" description="ABC CASH DIVIDEND (Ordinary Dividend)" amount="10000" type="Payment In Lieu Of Dividends" currency="JPY" fxRateToBase="0.00555" levelOfDetail="DETAIL"/>
+			</CashTransactions>
+			<ConversionRates>
+				<ConversionRate reportDate="03-Feb-21" fromCurrency="DKK" toCurrency="GBP" rate="0.11857" />
+			</ConversionRates>
+		</FlexStatement>
+	</FlexStatements>
+</FlexQueryResponse>
