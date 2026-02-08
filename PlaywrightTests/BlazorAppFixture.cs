@@ -33,7 +33,7 @@ public class BlazorAppFixture
         var startInfo = new ProcessStartInfo
         {
             FileName = "dotnet",
-            Arguments = $"run --project \"{projectPath}\" --urls \"{AppUrl}\"",
+            Arguments = $"run --project \"{projectPath}\" --no-launch-profile --urls \"{AppUrl}\"",
             UseShellExecute = false,
             RedirectStandardOutput = false,
             RedirectStandardError = false,

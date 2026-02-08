@@ -27,15 +27,8 @@ jobs:
        run: dotnet test UnitTest/UnitTest.csproj --collect:"XPlat Code Coverage"
      - name: Install Playwright browsers
        run: pwsh PlaywrightTests/bin/Release/net10.0-windows10.0.22621.0/playwright.ps1 install --with-deps
-     - name: Start Blazor app
-       run: |
-         Start-Process -FilePath "dotnet" -ArgumentList "run", "--project", "`"BlazorApp-Investment Tax Calculator/InvestmentTaxCalculator.csproj`"", "--no-launch-profile", "--configuration", "Release", "--urls", "http://127.0.0.1:5000" -NoNewWindow
-         Start-Sleep -Seconds 60
-       shell: pwsh
      - name: Run Playwright tests
-       run: dotnet test PlaywrightTests/PlaywrightTests.csproj --configuration Release --no-build
-       env:
-         BASE_URL: http://127.0.0.1:5000
+       run: dotnet test PlaywrightTests/PlaywrightTests.csproj --configuration Release
      - name: Upload coverage reports to Codecov
        uses: codecov/codecov-action@v3
        env: 
