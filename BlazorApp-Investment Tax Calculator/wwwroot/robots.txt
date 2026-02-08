@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://alexpung.github.io/UK-Investment-tax-calculator/sitemap.xml
+
