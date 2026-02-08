@@ -56,11 +56,29 @@ public class BlazorAppFixture
     [OneTimeTearDown]
     public void StopBlazorApp()
     {
-        if (_appProcess != null && !_appProcess.HasExited)
+        if (_appProcess == null) return;
+        
+        try
         {
-            Console.WriteLine("Stopping Blazor app...");
-            _appProcess.Kill(entireProcessTree: true);
+            if (!_appProcess.HasExited)
+            {
+                Console.WriteLine("Stopping Blazor app...");
+                _appProcess.Kill(entireProcessTree: true);
+            }
             _appProcess.Dispose();
+        }
+        catch (InvalidOperationException ex)
+        {
+            // Process already exited between HasExited check and Kill - this is fine
+            Console.WriteLine($"Process cleanup race condition (expected): {ex.Message}");
+        }
+        catch (System.ComponentModel.Win32Exception ex)
+        {
+            // Process access error - log and continue
+            Console.WriteLine($"Process cleanup error: {ex.Message}");
+        }
+        finally
+        {
             _appProcess = null;
         }
     }
@@ -93,13 +111,15 @@ public class BlazorAppFixture
         
         var maxWaitTime = TimeSpan.FromSeconds(60);
         var checkInterval = TimeSpan.FromMilliseconds(500);
+        var perRequestTimeout = TimeSpan.FromSeconds(5);
         var startTime = DateTime.UtcNow;
 
         while (DateTime.UtcNow - startTime < maxWaitTime)
         {
             try
             {
-                var response = await httpClient.GetAsync(AppUrl);
+                using var cts = new CancellationTokenSource(perRequestTimeout);
+                var response = await httpClient.GetAsync(AppUrl, cts.Token);
                 if (response.IsSuccessStatusCode)
                 {
                     return;
@@ -107,7 +127,11 @@ public class BlazorAppFixture
             }
             catch (HttpRequestException)
             {
-                // App not ready yet
+                // App not ready yet - connection refused or similar
+            }
+            catch (TaskCanceledException)
+            {
+                // Request timed out - app not ready yet
             }
 
             await Task.Delay(checkInterval);

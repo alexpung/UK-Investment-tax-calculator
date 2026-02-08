@@ -17,7 +17,7 @@
 				<Order currency="JPY" fxRateToBase="0.006" assetCategory="FUT" symbol="NIYH3" isin="JP12343" description="NIY 10MAR23" dateTime="05-Mar-23 12:34:56" quantity="2" proceeds="-27000000" taxes="0" ibCommission="-700" ibCommissionCurrency="JPY" buySell="BUY" levelOfDetail="ORDER"/>
 				<Order currency="JPY" fxRateToBase="0.006" assetCategory="FUT" symbol="NIYH3" isin="JP12343" description="NIY 10MAR23" dateTime="07-Mar-23 12:34:56" quantity="-2" proceeds="29000000" taxes="0" ibCommission="-800" ibCommissionCurrency="JPY" buySell="SELL" levelOfDetail="ORDER"/>
 
-				<!-- Future contract trades -->
+				<!-- Future contract trades the 2023 date is expected. It is just a mock -->
 				<Order currency="JPY" fxRateToBase="0.8" assetCategory="FUT" symbol="NIYH4" isin="JP12344" description="NIY 12MAR23" dateTime="05-Mar-23 12:34:56" quantity="-2" proceeds="27000000" taxes="0" ibCommission="-700" ibCommissionCurrency="JPY" buySell="SELL" levelOfDetail="ORDER"/>
 				<Order currency="JPY" fxRateToBase="0.7" assetCategory="FUT" symbol="NIYH4" isin="JP12344" description="NIY 12MAR23" dateTime="05-Mar-23 12:35:56" quantity="2" proceeds="-31000000" taxes="0" ibCommission="-900" ibCommissionCurrency="JPY" buySell="BUY" levelOfDetail="ORDER"/>
 				<Order currency="JPY" fxRateToBase="1" assetCategory="FUT" symbol="NIYH5" isin="JP12345" description="NIY 14MAR23" dateTime="05-Mar-23 12:34:56" quantity="2" proceeds="-27000000" taxes="0" ibCommission="-700" ibCommissionCurrency="JPY" buySell="BUY" levelOfDetail="ORDER"/>

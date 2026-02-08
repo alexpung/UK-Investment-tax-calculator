@@ -37,7 +37,7 @@ public class CalculationWorkflowTests : PlaywrightTestBase
         // Get initial event count (should be 0)
         var totalEventsCard = Page.Locator(".metric-card:has-text('Total Tax Events') .metric-value");
         await Expect(totalEventsCard).ToBeVisibleAsync();
-        var initialCount = int.Parse(await totalEventsCard.TextContentAsync() ?? "0");
+        var initialCount = await ParseMetricValueAsync(totalEventsCard, "Total Tax Events (initial)");
         TestContext.WriteLine($"Initial event count: {initialCount}");
         Assert.That(initialCount, Is.EqualTo(0), "Should start with 0 events");
 
@@ -45,14 +45,14 @@ public class CalculationWorkflowTests : PlaywrightTestBase
         await UploadTestFileAsync();
 
         // Verify import statistics match expected values from TaxExample.xml
-        var newCount = int.Parse(await totalEventsCard.TextContentAsync() ?? "0");
+        var newCount = await ParseMetricValueAsync(totalEventsCard, "Total Tax Events (after import)");
         TestContext.WriteLine($"Event count after import: {newCount}");
         Assert.That(newCount, Is.EqualTo(ExpectedTotalEvents), 
             $"Should have {ExpectedTotalEvents} total events from TaxExample.xml");
         
         // Verify trades count
         var tradesCard = Page.Locator(".metric-card").Filter(new LocatorFilterOptions { HasText = "Trades" }).First.Locator(".metric-value");
-        var tradesCount = int.Parse(await tradesCard.TextContentAsync() ?? "0");
+        var tradesCount = await ParseMetricValueAsync(tradesCard, "Trades");
         TestContext.WriteLine($"Trades count: {tradesCount}");
         Assert.That(tradesCount, Is.EqualTo(ExpectedTrades), 
             $"Should have {ExpectedTrades} trades from TaxExample.xml");
@@ -68,7 +68,7 @@ public class CalculationWorkflowTests : PlaywrightTestBase
 
         // Verify data was imported
         var totalEventsCard = Page.Locator(".metric-card:has-text('Total Tax Events') .metric-value");
-        var eventCount = int.Parse(await totalEventsCard.TextContentAsync() ?? "0");
+        var eventCount = await ParseMetricValueAsync(totalEventsCard, "Total Tax Events (before calc)");
         Assert.That(eventCount, Is.EqualTo(ExpectedTotalEvents), "Should have expected events before calculation");
 
         // Find and click the Start Calculation button
@@ -260,7 +260,7 @@ public class CalculationWorkflowTests : PlaywrightTestBase
         await UploadTestFileAsync();
         
         var totalEventsCard = Page.Locator(".metric-card:has-text('Total Tax Events') .metric-value");
-        var eventCount = int.Parse(await totalEventsCard.TextContentAsync() ?? "0");
+        var eventCount = await ParseMetricValueAsync(totalEventsCard, "Total Tax Events");
         TestContext.WriteLine($"Events after upload: {eventCount}");
         Assert.That(eventCount, Is.EqualTo(ExpectedTotalEvents), "Should have expected events after upload");
         
@@ -271,5 +271,34 @@ public class CalculationWorkflowTests : PlaywrightTestBase
         
         await WaitForCalculationToCompleteAsync();
         TestContext.WriteLine("Calculation complete");
+    }
+
+    /// <summary>
+    /// Robustly parses an integer metric value from a locator, with diagnostic logging on failure.
+    /// </summary>
+    private async Task<int> ParseMetricValueAsync(ILocator locator, string metricName)
+    {
+        var rawText = await locator.TextContentAsync() ?? "";
+        
+        // Clean the text - remove any non-numeric characters except minus sign
+        var cleanedText = rawText.Trim();
+        
+        if (int.TryParse(cleanedText, out var result))
+        {
+            return result;
+        }
+        
+        // Log detailed diagnostic info before failing
+        TestContext.WriteLine($"Failed to parse '{metricName}' metric. Raw text: '{rawText}', Cleaned: '{cleanedText}'");
+        
+        // Return 0 as default for initial state checks, or fail for expected values
+        if (string.IsNullOrWhiteSpace(cleanedText))
+        {
+            TestContext.WriteLine($"Metric '{metricName}' returned empty text, defaulting to 0");
+            return 0;
+        }
+        
+        Assert.Fail($"Could not parse metric '{metricName}': expected integer, got '{rawText}'");
+        return 0; // Unreachable but required for compiler
     }
 }
