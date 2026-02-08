@@ -30,7 +30,7 @@ jobs:
      - name: Start Blazor app
        run: |
          Start-Process -FilePath "dotnet" -ArgumentList "run", "--project", "`"BlazorApp-Investment Tax Calculator/InvestmentTaxCalculator.csproj`"", "--configuration", "Release", "--urls", "http://localhost:5000" -NoNewWindow
-         Start-Sleep -Seconds 30
+         Start-Sleep -Seconds 60
        shell: pwsh
      - name: Run Playwright tests
        run: dotnet test PlaywrightTests/PlaywrightTests.csproj --configuration Release --no-build

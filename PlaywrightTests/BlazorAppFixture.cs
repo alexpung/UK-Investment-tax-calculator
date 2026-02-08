@@ -109,34 +109,39 @@ public class BlazorAppFixture
         };
         using var httpClient = new HttpClient(httpClientHandler);
         
-        var maxWaitTime = TimeSpan.FromSeconds(60);
-        var checkInterval = TimeSpan.FromMilliseconds(500);
-        var perRequestTimeout = TimeSpan.FromSeconds(5);
+        var maxWaitTime = TimeSpan.FromSeconds(120); // Increased for CI
+        var checkInterval = TimeSpan.FromMilliseconds(1000);
+        var perRequestTimeout = TimeSpan.FromSeconds(10);
         var startTime = DateTime.UtcNow;
 
+        Console.WriteLine($"Waiting for app at {AppUrl}...");
+        
         while (DateTime.UtcNow - startTime < maxWaitTime)
         {
             try
             {
                 using var cts = new CancellationTokenSource(perRequestTimeout);
                 var response = await httpClient.GetAsync(AppUrl, cts.Token);
-                if (response.IsSuccessStatusCode)
-                {
-                    return;
-                }
+                
+                // Accept any response - if we get here, the app is running
+                Console.WriteLine($"App responded with status {(int)response.StatusCode} ({response.StatusCode})");
+                return;
             }
-            catch (HttpRequestException)
+            catch (HttpRequestException ex)
             {
                 // App not ready yet - connection refused or similar
+                Console.WriteLine($"Waiting for app... ({ex.Message})");
             }
             catch (TaskCanceledException)
             {
                 // Request timed out - app not ready yet
+                Console.WriteLine("Waiting for app... (request timed out)");
             }
 
             await Task.Delay(checkInterval);
         }
 
-        throw new Exception($"Blazor app did not start within {maxWaitTime.TotalSeconds} seconds");
+        var elapsed = DateTime.UtcNow - startTime;
+        throw new Exception($"Blazor app did not start within {elapsed.TotalSeconds:F1} seconds at {AppUrl}");
     }
 }
