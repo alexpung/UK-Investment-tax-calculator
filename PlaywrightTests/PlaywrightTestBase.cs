@@ -14,7 +14,7 @@ public class PlaywrightTestBase : PageTest
     /// Base URL for the application under test.
     /// Uses BASE_URL environment variable if set, otherwise defaults to localhost HTTP.
     /// </summary>
-    protected string BaseUrl => Environment.GetEnvironmentVariable("BASE_URL") ?? "http://localhost:5000";
+    protected string BaseUrl => Environment.GetEnvironmentVariable("BASE_URL") ?? "http://127.0.0.1:5000";
 
     /// <summary>
     /// Configure Playwright context to ignore HTTPS certificate errors for dev certs.

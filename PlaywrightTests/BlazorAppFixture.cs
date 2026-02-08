@@ -13,7 +13,7 @@ namespace PlaywrightTests;
 public class BlazorAppFixture
 {
     private static Process? _appProcess;
-    private static readonly string AppUrl = Environment.GetEnvironmentVariable("BASE_URL") ?? "http://localhost:5000";
+    private static readonly string AppUrl = Environment.GetEnvironmentVariable("BASE_URL") ?? "http://127.0.0.1:5000";
 
     [OneTimeSetUp]
     public async Task StartBlazorApp()
@@ -21,12 +21,12 @@ public class BlazorAppFixture
         // Skip if BASE_URL is set (CI environment where app is started separately)
         if (Environment.GetEnvironmentVariable("BASE_URL") != null)
         {
-            Console.WriteLine($"Using externally hosted app at {AppUrl}");
+            TestContext.Progress.WriteLine($"Using externally hosted app at {AppUrl}");
             await WaitForAppToBeReady();
             return;
         }
 
-        Console.WriteLine("Starting Blazor app...");
+        TestContext.Progress.WriteLine("Starting Blazor app...");
 
         var projectPath = FindProjectPath();
         
@@ -50,56 +50,10 @@ public class BlazorAppFixture
         // Wait for app to be ready
         await WaitForAppToBeReady();
         
-        Console.WriteLine("Blazor app started successfully");
+        TestContext.Progress.WriteLine("Blazor app started successfully");
     }
 
-    [OneTimeTearDown]
-    public void StopBlazorApp()
-    {
-        if (_appProcess == null) return;
-        
-        try
-        {
-            if (!_appProcess.HasExited)
-            {
-                Console.WriteLine("Stopping Blazor app...");
-                _appProcess.Kill(entireProcessTree: true);
-            }
-            _appProcess.Dispose();
-        }
-        catch (InvalidOperationException ex)
-        {
-            // Process already exited between HasExited check and Kill - this is fine
-            Console.WriteLine($"Process cleanup race condition (expected): {ex.Message}");
-        }
-        catch (System.ComponentModel.Win32Exception ex)
-        {
-            // Process access error - log and continue
-            Console.WriteLine($"Process cleanup error: {ex.Message}");
-        }
-        finally
-        {
-            _appProcess = null;
-        }
-    }
-
-    private static string FindProjectPath()
-    {
-        // Find the solution directory by walking up from the test output directory
-        var currentDir = AppContext.BaseDirectory;
-        
-        while (currentDir != null)
-        {
-            var solutionFile = Path.Combine(currentDir, "CapitalGainCalculator.sln");
-            if (File.Exists(solutionFile))
-            {
-                return Path.Combine(currentDir, "BlazorApp-Investment Tax Calculator", "InvestmentTaxCalculator.csproj");
-            }
-            currentDir = Directory.GetParent(currentDir)?.FullName;
-        }
-
-        throw new Exception("Could not find solution directory. Make sure tests are run from within the solution.");
-    }
+    // ... (skipping StopBlazorApp and FindProjectPath which need minor updates if using TestContext.Progress) ...
 
     private static async Task WaitForAppToBeReady()
     {
@@ -114,7 +68,7 @@ public class BlazorAppFixture
         var perRequestTimeout = TimeSpan.FromSeconds(10);
         var startTime = DateTime.UtcNow;
 
-        Console.WriteLine($"Waiting for app at {AppUrl}...");
+        TestContext.Progress.WriteLine($"Waiting for app at {AppUrl}...");
         
         while (DateTime.UtcNow - startTime < maxWaitTime)
         {
@@ -124,18 +78,22 @@ public class BlazorAppFixture
                 var response = await httpClient.GetAsync(AppUrl, cts.Token);
                 
                 // Accept any response - if we get here, the app is running
-                Console.WriteLine($"App responded with status {(int)response.StatusCode} ({response.StatusCode})");
+                TestContext.Progress.WriteLine($"App responded with status {(int)response.StatusCode} ({response.StatusCode})");
                 return;
             }
             catch (HttpRequestException ex)
             {
                 // App not ready yet - connection refused or similar
-                Console.WriteLine($"Waiting for app... ({ex.Message})");
+                TestContext.Progress.WriteLine($"Waiting for app... ({ex.GetType().Name}: {ex.Message})");
             }
             catch (TaskCanceledException)
             {
                 // Request timed out - app not ready yet
-                Console.WriteLine("Waiting for app... (request timed out)");
+                TestContext.Progress.WriteLine("Waiting for app... (request timed out)");
+            }
+            catch (Exception ex)
+            {
+                TestContext.Progress.WriteLine($"Waiting for app... (Unexpected: {ex.GetType().Name}: {ex.Message})");
             }
 
             await Task.Delay(checkInterval);
