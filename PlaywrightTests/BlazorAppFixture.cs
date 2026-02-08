@@ -53,7 +53,53 @@ public class BlazorAppFixture
         TestContext.Progress.WriteLine("Blazor app started successfully");
     }
 
-    // ... (skipping StopBlazorApp and FindProjectPath which need minor updates if using TestContext.Progress) ...
+    [OneTimeTearDown]
+    public void StopBlazorApp()
+    {
+        if (_appProcess == null) return;
+        
+        try
+        {
+            if (!_appProcess.HasExited)
+            {
+                TestContext.Progress.WriteLine("Stopping Blazor app...");
+                _appProcess.Kill(entireProcessTree: true);
+            }
+            _appProcess.Dispose();
+        }
+        catch (InvalidOperationException ex)
+        {
+            // Process already exited between HasExited check and Kill - this is fine
+            TestContext.Progress.WriteLine($"Process cleanup race condition (expected): {ex.Message}");
+        }
+        catch (System.ComponentModel.Win32Exception ex)
+        {
+            // Process access error - log and continue
+            TestContext.Progress.WriteLine($"Process cleanup error: {ex.Message}");
+        }
+        finally
+        {
+            _appProcess = null;
+        }
+    }
+
+    private static string FindProjectPath()
+    {
+        // Find the solution directory by walking up from the test output directory
+        var currentDir = AppContext.BaseDirectory;
+        
+        while (currentDir != null)
+        {
+            var solutionFile = Path.Combine(currentDir, "CapitalGainCalculator.sln");
+            if (File.Exists(solutionFile))
+            {
+                return Path.Combine(currentDir, "BlazorApp-Investment Tax Calculator", "InvestmentTaxCalculator.csproj");
+            }
+            currentDir = Directory.GetParent(currentDir)?.FullName;
+        }
+
+        throw new Exception("Could not find solution directory. Make sure tests are run from within the solution.");
+    }
 
     private static async Task WaitForAppToBeReady()
     {
