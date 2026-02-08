@@ -123,6 +123,7 @@ public class NavigationLinkTests : PlaywrightTestBase
         // Initially should not have 'show' class
         var initialClasses = await categoryContent.GetAttributeAsync("class") ?? "";
         var initiallyExpanded = initialClasses.Contains("show");
+        Assert.That(initiallyExpanded, Is.False, "Category should be initially collapsed");
 
         // Test expanding - click the category header
         var categoryHeader = Page.Locator(".category-header:has-text('Tax summaries')");

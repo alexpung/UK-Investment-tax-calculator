@@ -13,7 +13,7 @@ namespace PlaywrightTests;
 public class BlazorAppFixture
 {
     private static Process? _appProcess;
-    private static readonly string AppUrl = Environment.GetEnvironmentVariable("BASE_URL") ?? "https://localhost:5001";
+    private static readonly string AppUrl = Environment.GetEnvironmentVariable("BASE_URL") ?? "http://localhost:5000";
 
     [OneTimeSetUp]
     public async Task StartBlazorApp()
@@ -35,8 +35,8 @@ public class BlazorAppFixture
             FileName = "dotnet",
             Arguments = $"run --project \"{projectPath}\" --urls \"{AppUrl}\"",
             UseShellExecute = false,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
+            RedirectStandardOutput = false,
+            RedirectStandardError = false,
             CreateNoWindow = true
         };
 

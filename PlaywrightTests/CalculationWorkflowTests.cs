@@ -177,24 +177,33 @@ public class CalculationWorkflowTests : PlaywrightTestBase
     }
 
     /// <summary>
-    /// Waits for calculation to complete by monitoring button state
+    /// Waits for calculation to complete by monitoring button state.
+    /// Throws if calculation doesn't complete within timeout.
     /// </summary>
     private async Task WaitForCalculationToCompleteAsync()
     {
         var calcButton = Page.Locator("button:has-text('Start Calculation'), button:has-text('Calculating')");
         
         var startTime = DateTime.UtcNow;
-        while ((DateTime.UtcNow - startTime).TotalSeconds < 60)
+        var timeoutSeconds = 60;
+        var lastButtonText = "";
+        
+        while ((DateTime.UtcNow - startTime).TotalSeconds < timeoutSeconds)
         {
-            var buttonText = await calcButton.First.TextContentAsync() ?? "";
-            if (!buttonText.Contains("Calculating"))
+            lastButtonText = await calcButton.First.TextContentAsync() ?? "";
+            if (!lastButtonText.Contains("Calculating"))
             {
-                break;
+                // Calculation completed successfully
+                await Task.Delay(2000); // Wait for UI to settle
+                return;
             }
             await Task.Delay(500);
         }
         
-        await Task.Delay(2000);
+        // Timeout reached - fail explicitly with context
+        var elapsed = DateTime.UtcNow - startTime;
+        Assert.Fail($"Calculation did not complete within {timeoutSeconds} seconds. " +
+                    $"Elapsed: {elapsed.TotalSeconds:F1}s. Last button text: '{lastButtonText}'");
     }
 
     /// <summary>
@@ -233,9 +242,9 @@ public class CalculationWorkflowTests : PlaywrightTestBase
             await spinner.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Hidden, Timeout = 30000 });
             TestContext.WriteLine("Spinner disappeared");
         }
-        catch
+        catch (TimeoutException ex)
         {
-            TestContext.WriteLine("Spinner did not appear (fast processing or not present)");
+            TestContext.WriteLine($"Spinner did not appear (fast processing or not present): {ex.Message}");
         }
         
         await Task.Delay(1000);

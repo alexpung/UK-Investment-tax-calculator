@@ -12,9 +12,20 @@ public class PlaywrightTestBase : PageTest
 {
     /// <summary>
     /// Base URL for the application under test.
-    /// Uses BASE_URL environment variable if set, otherwise defaults to localhost.
+    /// Uses BASE_URL environment variable if set, otherwise defaults to localhost HTTP.
     /// </summary>
-    protected string BaseUrl => Environment.GetEnvironmentVariable("BASE_URL") ?? "https://localhost:5001";
+    protected string BaseUrl => Environment.GetEnvironmentVariable("BASE_URL") ?? "http://localhost:5000";
+
+    /// <summary>
+    /// Configure Playwright context to ignore HTTPS certificate errors for dev certs.
+    /// </summary>
+    public override BrowserNewContextOptions ContextOptions()
+    {
+        return new BrowserNewContextOptions
+        {
+            IgnoreHTTPSErrors = true
+        };
+    }
 
     /// <summary>
     /// Navigates to the specified path and waits for Blazor WebAssembly to fully hydrate.
