@@ -19,6 +19,11 @@
                 <Takeover OnCorporateActionAdded="RefreshHistory" />
             </div>
 
+            <!-- Spinoff Section -->
+            <div class="section mb-5">
+                <Spinoff OnCorporateActionAdded="RefreshHistory" />
+            </div>
+
             <!-- Corporate Actions List Section -->
             <div class="section">
                 <CorporateActionsList @ref="_historyList" OnActionDeleted="OnActionDeleted" />

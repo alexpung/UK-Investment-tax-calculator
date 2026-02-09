@@ -1,0 +1,383 @@
+@using InvestmentTaxCalculator.Model
+@using InvestmentTaxCalculator.Model.TaxEvents
+@using InvestmentTaxCalculator.Model.UkTaxModel
+@using InvestmentTaxCalculator.Services
+@using InvestmentTaxCalculator.Model.Interfaces
+@using Syncfusion.Blazor.Calendars
+@using Syncfusion.Blazor.DropDowns
+@using Syncfusion.Blazor.Inputs
+@using Syncfusion.Blazor.Buttons
+@using Syncfusion.Blazor.Notifications
+@using InvestmentTaxCalculator.Enumerations
+
+@inject UkSection104Pools _ukSection104Pools
+@inject TradeCalculationResult _tradeCalculationResult
+@inject ITradeAndCorporateActionList _taxEventLists
+@inject ToastService _toastService
+
+<div class="card">
+    <div class="card-header">
+        <h3>Record Spinoff</h3>
+    </div>
+    <div class="card-body">
+        @if (!_tradeCalculationResult.CalculatedTrade.Any())
+        {
+            <div class="alert alert-warning">
+                Please run a tax calculation first to populate the list of available assets.
+            </div>
+        }
+        else
+        {
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">Date</label>
+                    <SfDatePicker TValue="DateTime" @bind-Value="@_date" Format="d">
+                        <DatePickerEvents TValue="DateTime" ValueChange="OnDateChange"></DatePickerEvents>
+                    </SfDatePicker>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Type</label>
+                    <div class="d-flex gap-3">
+                         <SfRadioButton Label="Shares Only" Name="spinoffType" Value="SharesOnly" @bind-Checked="@_spinoffType" TChecked="string"></SfRadioButton>
+                         <SfRadioButton Label="Shares + Cash-in-Lieu" Name="spinoffType" Value="SharesPlusCash" @bind-Checked="@_spinoffType" TChecked="string"></SfRadioButton>
+                    </div>
+                    <div class="form-text mt-1">
+                        @if (_spinoffType == "SharesOnly")
+                        {
+                            <text><strong>Shares Only:</strong> Fractional shares are kept (for brokers that support them).</text>
+                        }
+                        else
+                        {
+                            <text><strong>Shares + Cash:</strong> Fractional shares are rounded down to whole shares; the fraction is paid as cash-in-lieu.</text>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">Parent Company</label>
+                     <SfDropDownList TValue="string" TItem="string" Placeholder="Select Asset" DataSource="@_availableAssets" @bind-Value="@_parentTicker">
+                        <DropDownListEvents TItem="string" TValue="string" ValueChange="@(e => CalculateStats())"></DropDownListEvents>
+                    </SfDropDownList>
+                    @if (!string.IsNullOrEmpty(_parentTicker))
+                    {
+                        <div class="form-text text-info">
+                            Holding on @_date.ToShortDateString(): <strong>@_currentHolding</strong> shares
+                        </div>
+                    }
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Spinoff Company Ticker</label>
+                    <SfComboBox TValue="string" TItem="string" Placeholder="Enter Spinoff Ticker" DataSource="@_availableAssets" @bind-Value="@_spinoffTicker" AllowCustom="true">
+                    </SfComboBox>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                 <div class="col-12">
+                     <label class="form-label">Distribution Ratio (Parent : Spinoff)</label>
+                 </div>
+                <div class="col-md-5">
+                     <div class="input-group">
+                         <span class="input-group-text">For every</span>
+                         <SfNumericTextBox TValue="decimal" @bind-Value="@_parentSharesRatio" Min="0.0001m" Placeholder="Parent Shares Qty">
+                             <NumericTextBoxEvents TValue="decimal" ValueChange="@(e => CalculateStats())"></NumericTextBoxEvents>
+                         </SfNumericTextBox>
+                         <span class="input-group-text">parent share(s)</span>
+                    </div>
+                </div>
+                <div class="col-md-2 text-center align-self-center">
+                    <i class="oi oi-arrow-right"></i>
+                </div>
+                <div class="col-md-5">
+                    <div class="input-group">
+                        <span class="input-group-text">Receive</span>
+                        <SfNumericTextBox TValue="decimal" @bind-Value="@_spinoffSharesRatio" Min="0.0001m" Placeholder="Spinoff Shares Qty">
+                             <NumericTextBoxEvents TValue="decimal" ValueChange="@(e => CalculateStats())"></NumericTextBoxEvents>
+                        </SfNumericTextBox>
+                        <span class="input-group-text">spinoff share(s)</span>
+                    </div>
+                     @if (!string.IsNullOrEmpty(_parentTicker))
+                    {
+                        <div class="form-text text-info mt-1">
+                            @if (_spinoffType == "SharesOnly")
+                            {
+                                @* Shares-only: fractional shares are kept *@
+                                <text>Expected Spinoff Shares: <strong>@_expectedSpinoffQuantity.ToString("F4")</strong></text>
+                            }
+                            else
+                            {
+                                @* Shares + Cash: round to whole shares *@
+                                <text>Expected Spinoff Shares: <strong>@Math.Floor(_expectedSpinoffQuantity)</strong> whole shares</text>
+                                @if (_expectedSpinoffQuantity != Math.Floor(_expectedSpinoffQuantity))
+                                {
+                                    <span class="text-warning"> (fractional @((_expectedSpinoffQuantity - Math.Floor(_expectedSpinoffQuantity)).ToString("F4")) paid as cash-in-lieu)</span>
+                                }
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="card mb-3 text-white" style="background-color: #1e3a8a;">
+                <div class="card-body">
+                    <h5>Market Values for Cost Allocation</h5>
+                    <div class="form-text mb-2">Required to calculate the cost basis split between parent and spinoff.</div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Parent Company Market Value (Total Holding)</label>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Amount</label>
+                            <SfNumericTextBox TValue="decimal" @bind-Value="@_parentMv" Min="0" Placeholder="Amount">
+                                <NumericTextBoxEvents TValue="decimal" ValueChange="@(e => CalculateCostSplit())"></NumericTextBoxEvents>
+                            </SfNumericTextBox>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Currency</label>
+                            <SfDropDownList TValue="string" TItem="CurrencyViewModel" Placeholder="Currency" DataSource="@_currencies" @bind-Value="@_parentMvCurrency">
+                                <DropDownListFieldSettings Text="Display" Value="Code"></DropDownListFieldSettings>
+                            </SfDropDownList>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">FX Rate (to GBP)</label>
+                            <SfNumericTextBox TValue="decimal" @bind-Value="@_parentMvFx" Decimals="4" Format="n4" Min="0.000001m">
+                                <NumericTextBoxEvents TValue="decimal" ValueChange="@(e => CalculateCostSplit())"></NumericTextBoxEvents>
+                            </SfNumericTextBox>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Spinoff Company Market Value (Total Holding)</label>
+                        </div>
+                         <div class="col-md-4">
+                            <label class="form-label">Amount</label>
+                            <SfNumericTextBox TValue="decimal" @bind-Value="@_spinoffMv" Min="0" Placeholder="Amount">
+                                <NumericTextBoxEvents TValue="decimal" ValueChange="@(e => CalculateCostSplit())"></NumericTextBoxEvents>
+                            </SfNumericTextBox>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Currency</label>
+                            <SfDropDownList TValue="string" TItem="CurrencyViewModel" Placeholder="Currency" DataSource="@_currencies" @bind-Value="@_spinoffMvCurrency">
+                                <DropDownListFieldSettings Text="Display" Value="Code"></DropDownListFieldSettings>
+                            </SfDropDownList>
+                        </div>
+                         <div class="col-md-4">
+                            <label class="form-label">FX Rate (to GBP)</label>
+                            <SfNumericTextBox TValue="decimal" @bind-Value="@_spinoffMvFx" Decimals="4" Format="n4" Min="0.000001m">
+                                <NumericTextBoxEvents TValue="decimal" ValueChange="@(e => CalculateCostSplit())"></NumericTextBoxEvents>
+                            </SfNumericTextBox>
+                        </div>
+                    </div>
+
+                    @if (_parentMv > 0 || _spinoffMv > 0)
+                    {
+                        <div class="alert alert-info">
+                            <strong>Cost Allocation:</strong> Parent retains <strong>@_parentRetainedPct.ToString("P2")</strong>, 
+                            Spinoff receives <strong>@((1 - _parentRetainedPct).ToString("P2"))</strong>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            @if (_spinoffType == "SharesPlusCash")
+            {
+                <div class="card mb-3 text-white" style="background-color: #7c2d12;">
+                    <div class="card-body">
+                        <h5>Cash-in-Lieu</h5>
+                        <div class="form-text mb-2">Cash received instead of fractional spinoff shares.</div>
+                        <div class="row mb-3">
+                             <div class="col-md-4">
+                                <label class="form-label">Cash Received (Total)</label>
+                                <SfNumericTextBox TValue="decimal" @bind-Value="@_cashAmount" Min="0" Placeholder="Amount"></SfNumericTextBox>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Currency</label>
+                                <SfDropDownList TValue="string" TItem="CurrencyViewModel" Placeholder="Currency" DataSource="@_currencies" @bind-Value="@_cashCurrency">
+                                    <DropDownListFieldSettings Text="Display" Value="Code"></DropDownListFieldSettings>
+                                </SfDropDownList>
+                            </div>
+                             <div class="col-md-4">
+                                <label class="form-label">FX Rate (to GBP)</label>
+                                <SfNumericTextBox TValue="decimal" @bind-Value="@_cashFx" Decimals="4" Format="n4" Min="0.000001m"></SfNumericTextBox>
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-12">
+                                <SfCheckBox Label="Elect Small Cash Deferral (TCGA s122)" @bind-Checked="@_electTaxDeferral"></SfCheckBox>
+                                <div class="form-text mt-1">If cash is less than £3,000 or 5% of total value, defer tax by reducing cost basis instead of recognizing a gain.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <div class="row">
+                <div class="col-12">
+                    <SfButton IsPrimary="true" OnClick="Submit">Add Spinoff Action</SfButton>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public EventCallback OnCorporateActionAdded { get; set; }
+
+    private DateTime _date = DateTime.Today;
+    private string _spinoffType = "SharesOnly";
+    private string? _parentTicker;
+    private string? _spinoffTicker;
+    private decimal _parentSharesRatio = 1m;
+    private decimal _spinoffSharesRatio = 1m;
+
+    private decimal _parentMv;
+    private string _parentMvCurrency = "GBP";
+    private decimal _parentMvFx = 1m;
+
+    private decimal _spinoffMv;
+    private string _spinoffMvCurrency = "GBP";
+    private decimal _spinoffMvFx = 1m;
+
+    private decimal _cashAmount;
+    private string _cashCurrency = "GBP";
+    private decimal _cashFx = 1m;
+    private bool _electTaxDeferral = true;
+
+    private decimal _currentHolding;
+    private decimal _expectedSpinoffQuantity;
+    private decimal _parentRetainedPct;
+
+    private List<string> _availableAssets = [];
+    private List<CurrencyViewModel> _currencies = [];
+
+    protected override void OnInitialized()
+    {
+        _currencies = CurrencyService.GetCurrencies();
+        RefreshAssets();
+    }
+
+    private void RefreshAssets()
+    {
+        if (_tradeCalculationResult.CalculatedTrade.Any())
+        {
+            _availableAssets = _ukSection104Pools.GetSection104s()
+                .Select(x => x.AssetName)
+                .OrderBy(x => x)
+                .ToList();
+        }
+    }
+
+    private void CalculateStats()
+    {
+        _currentHolding = 0;
+        _expectedSpinoffQuantity = 0;
+
+        if (string.IsNullOrEmpty(_parentTicker)) return;
+
+        var pool = _ukSection104Pools.GetExistingOrInitialise(_parentTicker);
+        var history = pool.GetLastSection104History(DateOnly.FromDateTime(_date));
+        
+        if (history != null) 
+        {
+            _currentHolding = history.NewQuantity;
+        }
+
+        if (_parentSharesRatio > 0)
+        {
+            decimal rawQuantity = _currentHolding * (_spinoffSharesRatio / _parentSharesRatio);
+            // Round to 4 decimal places to match typical broker precision
+            _expectedSpinoffQuantity = Math.Round(rawQuantity, 4, MidpointRounding.ToZero);
+        }
+    }
+
+    private void CalculateCostSplit()
+    {
+        decimal parentValueGbp = _parentMv * _parentMvFx;
+        decimal spinoffValueGbp = _spinoffMv * _spinoffMvFx;
+        decimal total = parentValueGbp + spinoffValueGbp;
+
+        _parentRetainedPct = total > 0 ? parentValueGbp / total : 1m;
+    }
+
+    private void OnDateChange(ChangedEventArgs<DateTime> args)
+    {
+        _date = args.Value;
+        CalculateStats();
+    }
+
+    private async Task Submit()
+    {
+        if (string.IsNullOrWhiteSpace(_parentTicker))
+        {
+            _toastService.ShowError("Please select the parent company.");
+            return;
+        }
+        if (string.IsNullOrWhiteSpace(_spinoffTicker))
+        {
+            _toastService.ShowError("Please enter the spinoff company ticker.");
+            return;
+        }
+        if (_parentTicker == _spinoffTicker)
+        {
+             _toastService.ShowError("Parent and Spinoff tickers cannot be the same.");
+             return;
+        }
+        if (_parentSharesRatio <= 0 || _spinoffSharesRatio <= 0)
+        {
+            _toastService.ShowError("Ratio values must be greater than zero.");
+            return;
+        }
+        if (_parentMv <= 0 || _spinoffMv <= 0)
+        {
+            _toastService.ShowError("Market values are required for cost allocation.");
+            return;
+        }
+        if (_parentMvFx <= 0 || _spinoffMvFx <= 0)
+        {
+            _toastService.ShowError("FX rates must be greater than zero.");
+            return;
+        }
+
+        decimal ratio = _spinoffSharesRatio / _parentSharesRatio;
+
+        DescribedMoney? cashInLieu = null;
+
+        if (_spinoffType == "SharesPlusCash")
+        {
+            if (_cashAmount <= 0)
+            {
+                 _toastService.ShowError("Cash amount must be greater than zero.");
+                 return;
+            }
+            if (_cashFx <= 0)
+            {
+                 _toastService.ShowError("Cash FX rate must be greater than zero.");
+                 return;
+            }
+            cashInLieu = new DescribedMoney(_cashAmount, _cashCurrency, _cashFx, "Cash-in-lieu");
+        }
+
+        var parentMv = new DescribedMoney(_parentMv, _parentMvCurrency, _parentMvFx, "Parent MV");
+        var spinoffMv = new DescribedMoney(_spinoffMv, _spinoffMvCurrency, _spinoffMvFx, "Spinoff MV");
+
+        var action = new SpinoffCorporateAction
+        {
+            Date = _date,
+            AssetName = _parentTicker,
+            SpinoffCompanyTicker = _spinoffTicker,
+            SpinoffSharesPerParentShare = ratio,
+            ParentMarketValue = parentMv,
+            SpinoffMarketValue = spinoffMv,
+            CashInLieu = cashInLieu,
+            ElectTaxDeferral = _electTaxDeferral
+        };
+
+        _taxEventLists.CorporateActions.Add(action);
+        _toastService.ShowInformation("Spinoff action added successfully.");
+        await OnCorporateActionAdded.InvokeAsync();
+    }
+}

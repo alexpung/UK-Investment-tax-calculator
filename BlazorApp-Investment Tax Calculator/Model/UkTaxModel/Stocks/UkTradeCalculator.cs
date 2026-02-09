@@ -27,12 +27,19 @@ public class UkTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorpo
         GroupedTradeContainer<ITradeTaxCalculation> _tradeContainer = new(tradeTaxCalculations, StockRelevantCorporateActions);
         UkMatchingRules.ApplyUkTaxRuleSequence(MatchTrade, _tradeContainer, section104Pools);
 
-        // Collect generated disposals from corporate actions (e.g., cash from takeovers)
+        // Collect generated disposals from corporate actions (e.g., cash from takeovers/spinoffs)
         var generatedDisposals = StockRelevantCorporateActions
             .OfType<TakeoverCorporateAction>()
             .Where(t => t.CashDisposal != null)
             .Select(t => t.CashDisposal!)
-            .Cast<ITradeTaxCalculation>();
+            .Cast<ITradeTaxCalculation>()
+            .Concat(
+                StockRelevantCorporateActions
+                    .OfType<SpinoffCorporateAction>()
+                    .Where(s => s.CashDisposal != null)
+                    .Select(s => s.CashDisposal!)
+                    .Cast<ITradeTaxCalculation>()
+            );
 
         tradeTaxCalculations.AddRange(generatedDisposals);
 
