@@ -16,12 +16,7 @@ public class GroupedTradeContainer<T>(IEnumerable<T> tradeList, IEnumerable<Corp
     private readonly Dictionary<string, ImmutableList<IAssetDatedEvent>> _tradeAndCorporateActionListDict = BuildTaxEventsDictionary(tradeList, corporateActionList);
 
     // Dependency tree: new company ticker -> set of old company tickers that must be processed first
-    private readonly Dictionary<string, HashSet<string>> _takeoverDependencies = corporateActionList.OfType<TakeoverCorporateAction>()
-                                                                                                   .GroupBy(ca => ca.AcquiringCompanyTicker)
-                                                                                                   .ToDictionary(
-                                                                                                       group => group.Key,
-                                                                                                       group => group.Select(ca => ca.AssetName).ToHashSet()
-                                                                                                   );
+    private readonly Dictionary<string, HashSet<string>> _takeoverDependencies = BuildDependencyTree(corporateActionList);
 
     /// <summary>
     /// Builds the dictionary of tax events grouped by asset name.
@@ -56,7 +51,56 @@ public class GroupedTradeContainer<T>(IEnumerable<T> tradeList, IEnumerable<Corp
             }
         }
 
+        // Manually add SpinoffCorporateActions to the spinoff company's list
+        foreach (var action in corporateActionList.OfType<SpinoffCorporateAction>())
+        {
+            if (dict.TryGetValue(action.SpinoffCompanyTicker, out var existingList))
+            {
+                // Add the spinoff to the existing list and re-sort
+                var updatedList = existingList.Add(action).OrderBy(e => e.Date.Date).ToImmutableList();
+                dict[action.SpinoffCompanyTicker] = updatedList;
+            }
+            else
+            {
+                // Create a new list with just the spinoff
+                dict[action.SpinoffCompanyTicker] = [action];
+            }
+        }
+
         return dict;
+    }
+
+    /// <summary>
+    /// Builds dependency tree for takeovers and spinoffs.
+    /// New company tickers depend on old/parent company tickers being processed first.
+    /// </summary>
+    private static Dictionary<string, HashSet<string>> BuildDependencyTree(IEnumerable<CorporateAction> corporateActionList)
+    {
+        var deps = new Dictionary<string, HashSet<string>>();
+
+        // Add takeover dependencies
+        foreach (var takeover in corporateActionList.OfType<TakeoverCorporateAction>())
+        {
+            if (!deps.TryGetValue(takeover.AcquiringCompanyTicker, out var set))
+            {
+                set = new HashSet<string>();
+                deps[takeover.AcquiringCompanyTicker] = set;
+            }
+            set.Add(takeover.AssetName);
+        }
+
+        // Add spinoff dependencies
+        foreach (var spinoff in corporateActionList.OfType<SpinoffCorporateAction>())
+        {
+            if (!deps.TryGetValue(spinoff.SpinoffCompanyTicker, out var set))
+            {
+                set = new HashSet<string>();
+                deps[spinoff.SpinoffCompanyTicker] = set;
+            }
+            set.Add(spinoff.AssetName);
+        }
+
+        return deps;
     }
 
     /// <summary>

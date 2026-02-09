@@ -12,6 +12,7 @@ namespace InvestmentTaxCalculator.Model.TaxEvents;
 [JsonDerivedType(typeof(FundEqualisation), "fundEqualisation")]
 [JsonDerivedType(typeof(TakeoverCorporateAction), "takeover")]
 [JsonDerivedType(typeof(ReturnOfCapitalCorporateAction), "roc")]
+[JsonDerivedType(typeof(SpinoffCorporateAction), "spinoff")]
 public abstract record CorporateAction : TaxEvent
 {
     public abstract MatchAdjustment TradeMatching(ITradeTaxCalculation trade1, ITradeTaxCalculation trade2, MatchAdjustment matchAdjustment);
