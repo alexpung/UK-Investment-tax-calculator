@@ -223,7 +223,7 @@ public record SpinoffCorporateAction : CorporateAction, IChangeSection104
 
     /// <summary>
     /// Determines if cash-in-lieu qualifies as "small" under TCGA s122.
-    /// Small cash is defined as £3000 or 5% of total market value.
+    /// Small cash is defined as £3000 or 5% of total market value of the shareholding before distribution.
     /// </summary>
     private bool IsSmallCash(decimal cashAmountInBaseCurrency)
     {
@@ -232,12 +232,14 @@ public record SpinoffCorporateAction : CorporateAction, IChangeSection104
         if (cashAmountInBaseCurrency <= smallCashThreshold)
             return true;
 
-        // Check 5% rule using spinoff market value
-        if (SpinoffMarketValue?.BaseCurrencyAmount.Amount > 0)
+        // Check 5% rule using parent shareholding value before distribution
+        // This is Parent Market Value + Spinoff Market Value (the total value before spinoff)
+        if (ParentMarketValue?.BaseCurrencyAmount.Amount > 0 && SpinoffMarketValue?.BaseCurrencyAmount.Amount > 0)
         {
-            decimal totalMarketValue = cashAmountInBaseCurrency + SpinoffMarketValue.BaseCurrencyAmount.Amount;
-            decimal fivePercentOfTotalMarketValue = totalMarketValue * 0.05m;
-            return cashAmountInBaseCurrency <= fivePercentOfTotalMarketValue;
+            decimal parentShareholdingValueBeforeDistribution = 
+                ParentMarketValue.BaseCurrencyAmount.Amount + SpinoffMarketValue.BaseCurrencyAmount.Amount;
+            decimal fivePercentThreshold = parentShareholdingValueBeforeDistribution * 0.05m;
+            return cashAmountInBaseCurrency <= fivePercentThreshold;
         }
         return false;
     }
@@ -279,14 +281,8 @@ public record SpinoffCorporateAction : CorporateAction, IChangeSection104
 
         string explanation = $"Spinoff from {AssetName} on {Date:d}: {_transferQuantity} shares received with cost basis of {_transferCost}";
 
+        // AddAssets sets the explanation on the history entry it creates
         section104.AddAssets(Date, _transferQuantity, _transferCost, null, explanation);
-
-        // Update the explanation in the last history entry
-        if (section104.Section104HistoryList.Count > 0)
-        {
-            var lastHistory = section104.Section104HistoryList[^1];
-            lastHistory.Explanation = explanation;
-        }
     }
 
     public override string GetDuplicateSignature()
