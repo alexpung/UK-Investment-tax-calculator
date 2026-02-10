@@ -14,6 +14,8 @@ namespace InvestmentTaxCalculator.Model.TaxEvents;
 /// </summary>
 public record SpinoffCorporateAction : CorporateAction, IChangeSection104
 {
+    public override IReadOnlyList<string> CompanyTickersInProcessingOrder => [AssetName, SpinoffCompanyTicker];
+
     /// <summary>
     /// Ticker symbol of the spinoff company (new subsidiary)
     /// </summary>
