@@ -26,18 +26,6 @@ public class GroupedTradeContainer<T>(IEnumerable<T> tradeList, IEnumerable<Corp
         IEnumerable<T> tradeList,
         IEnumerable<CorporateAction> corporateActionList)
     {
-        static IEnumerable<string> GetOrderedTickers(CorporateAction action)
-        {
-            var tickers = action.CompanyTickersInProcessingOrder;
-
-            if (tickers == null || tickers.Count == 0)
-            {
-                return [action.AssetName];
-            }
-
-            var validTickers = tickers.Where(ticker => !string.IsNullOrWhiteSpace(ticker));
-            return validTickers.Any() ? validTickers : [action.AssetName];
-        }
 
         var mutableDict = tradeList.Cast<IAssetDatedEvent>()
             .GroupBy(e => e.AssetName)
@@ -49,7 +37,7 @@ public class GroupedTradeContainer<T>(IEnumerable<T> tradeList, IEnumerable<Corp
         // Add corporate actions to each relevant ticker list
         foreach (var action in corporateActionList)
         {
-            foreach (var ticker in GetOrderedTickers(action).Distinct(StringComparer.Ordinal))
+            foreach (var ticker in GetOrderedTickers(action))
             {
                 if (mutableDict.TryGetValue(ticker, out var existingList))
                 {
@@ -74,18 +62,6 @@ public class GroupedTradeContainer<T>(IEnumerable<T> tradeList, IEnumerable<Corp
     /// </summary>
     private static Dictionary<string, HashSet<string>> BuildDependencyTree(IEnumerable<CorporateAction> corporateActionList)
     {
-        static List<string> GetOrderedTickers(CorporateAction action)
-        {
-            var tickers = action.CompanyTickersInProcessingOrder;
-
-            if (tickers == null || tickers.Count == 0)
-            {
-                return [action.AssetName];
-            }
-
-            var validTickers = tickers.Where(ticker => !string.IsNullOrWhiteSpace(ticker)).ToList();
-            return validTickers.Count > 0 ? validTickers : [action.AssetName];
-        }
 
         var deps = new Dictionary<string, HashSet<string>>();
 
@@ -95,16 +71,14 @@ public class GroupedTradeContainer<T>(IEnumerable<T> tradeList, IEnumerable<Corp
             for (int i = 0; i < tickers.Count - 1; i++)
             {
                 string dependency = tickers[i];
-                for (int j = i + 1; j < tickers.Count; j++)
+                string dependent = tickers[i + 1];
+
+                if (!deps.TryGetValue(dependent, out var set))
                 {
-                    string dependent = tickers[j];
-                    if (!deps.TryGetValue(dependent, out var set))
-                    {
-                        set = new HashSet<string>();
-                        deps[dependent] = set;
-                    }
-                    set.Add(dependency);
+                    set = new HashSet<string>();
+                    deps[dependent] = set;
                 }
+                set.Add(dependency);
             }
         }
 
@@ -186,5 +160,18 @@ public class GroupedTradeContainer<T>(IEnumerable<T> tradeList, IEnumerable<Corp
         {
             yield return (asset, _tradeAndCorporateActionListDict[asset]);
         }
+    }
+
+    private static List<string> GetOrderedTickers(CorporateAction action)
+    {
+        var tickers = action.CompanyTickersInProcessingOrder;
+
+        if (tickers == null || tickers.Count == 0)
+        {
+            return [action.AssetName];
+        }
+
+        var validTickers = tickers.Where(ticker => !string.IsNullOrWhiteSpace(ticker)).ToList();
+        return validTickers.Count > 0 ? validTickers : [action.AssetName];
     }
 }
