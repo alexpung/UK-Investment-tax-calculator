@@ -26,7 +26,6 @@ public class GroupedTradeContainer<T>(IEnumerable<T> tradeList, IEnumerable<Corp
         IEnumerable<T> tradeList,
         IEnumerable<CorporateAction> corporateActionList)
     {
-
         var mutableDict = tradeList.Cast<IAssetDatedEvent>()
             .GroupBy(e => e.AssetName)
             .ToDictionary(
@@ -37,7 +36,7 @@ public class GroupedTradeContainer<T>(IEnumerable<T> tradeList, IEnumerable<Corp
         // Add corporate actions to each relevant ticker list
         foreach (var action in corporateActionList)
         {
-            foreach (var ticker in GetOrderedTickers(action))
+            foreach (var ticker in action.CompanyTickersInProcessingOrder.Distinct(StringComparer.Ordinal))
             {
                 if (mutableDict.TryGetValue(ticker, out var existingList))
                 {
@@ -67,18 +66,20 @@ public class GroupedTradeContainer<T>(IEnumerable<T> tradeList, IEnumerable<Corp
 
         foreach (var action in corporateActionList)
         {
-            var tickers = GetOrderedTickers(action);
+            var tickers = action.CompanyTickersInProcessingOrder;
             for (int i = 0; i < tickers.Count - 1; i++)
             {
                 string dependency = tickers[i];
-                string dependent = tickers[i + 1];
-
-                if (!deps.TryGetValue(dependent, out var set))
+                for (int j = i + 1; j < tickers.Count; j++)
                 {
-                    set = new HashSet<string>();
-                    deps[dependent] = set;
+                    string dependent = tickers[j];
+                    if (!deps.TryGetValue(dependent, out var set))
+                    {
+                        set = new HashSet<string>();
+                        deps[dependent] = set;
+                    }
+                    set.Add(dependency);
                 }
-                set.Add(dependency);
             }
         }
 
