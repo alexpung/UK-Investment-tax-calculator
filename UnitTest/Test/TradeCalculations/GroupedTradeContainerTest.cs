@@ -109,6 +109,36 @@ public class GroupedTradeContainerTests
         xyzEvents.Events[2].Date.ShouldBe(DateTime.Parse("05-Jan-23 10:00:00", CultureInfo.InvariantCulture)); // Second trade
     }
 
+    [Fact]
+    public void GetAllTaxEventsGroupedAndSorted_WithNullTickerOrderOnCorporateAction_ShouldFallbackToAssetName()
+    {
+        // Arrange
+        var tradeList = new List<ITradeTaxCalculation>
+        {
+            CreateTrade("ABC", DateTime.Parse("01-Jan-23 10:00:00", CultureInfo.InvariantCulture)),
+            CreateTrade("ABC", DateTime.Parse("03-Jan-23 10:00:00", CultureInfo.InvariantCulture))
+        };
+
+        var corporateAction = Substitute.For<CorporateAction>();
+        corporateAction.AssetName.Returns("ABC");
+        corporateAction.Date.Returns(DateTime.Parse("02-Jan-23 10:00:00", CultureInfo.InvariantCulture));
+        corporateAction.CompanyTickersInProcessingOrder.Returns((IReadOnlyList<string>?)null);
+
+        var container = new GroupedTradeContainer<ITradeTaxCalculation>(tradeList, [corporateAction]);
+
+        // Act
+        var allEvents = container.GetAllTaxEventsGroupedAndSorted().ToList();
+
+        // Assert
+        allEvents.Count.ShouldBe(1);
+
+        var abcEvents = allEvents.Single(e => e.AssetName == "ABC");
+        abcEvents.Events.Count.ShouldBe(3);
+        abcEvents.Events[0].Date.ShouldBe(DateTime.Parse("01-Jan-23 10:00:00", CultureInfo.InvariantCulture));
+        abcEvents.Events[1].Date.ShouldBe(DateTime.Parse("02-Jan-23 10:00:00", CultureInfo.InvariantCulture));
+        abcEvents.Events[2].Date.ShouldBe(DateTime.Parse("03-Jan-23 10:00:00", CultureInfo.InvariantCulture));
+    }
+
     // Helper methods to create mocked trades and corporate actions
     private static ITradeTaxCalculation CreateTrade(string assetName, DateTime date)
     {
@@ -126,5 +156,4 @@ public class GroupedTradeContainerTests
         return corporateAction;
     }
 }
-
 
