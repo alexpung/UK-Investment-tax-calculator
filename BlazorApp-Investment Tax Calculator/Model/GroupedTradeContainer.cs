@@ -26,12 +26,11 @@ public class GroupedTradeContainer<T>(IEnumerable<T> tradeList, IEnumerable<Corp
         IEnumerable<T> tradeList,
         IEnumerable<CorporateAction> corporateActionList)
     {
-        // Group trades by asset name
-        var dict = tradeList.Cast<IAssetDatedEvent>()
+        var mutableDict = tradeList.Cast<IAssetDatedEvent>()
             .GroupBy(e => e.AssetName)
             .ToDictionary(
                 group => group.Key,
-                group => group.OrderBy(e => e.Date.Date).ToImmutableList()
+                group => group.ToList()
             );
 
         // Add corporate actions to each relevant ticker list
@@ -39,19 +38,21 @@ public class GroupedTradeContainer<T>(IEnumerable<T> tradeList, IEnumerable<Corp
         {
             foreach (var ticker in action.CompanyTickersInProcessingOrder.Distinct(StringComparer.Ordinal))
             {
-                if (dict.TryGetValue(ticker, out var existingList))
+                if (mutableDict.TryGetValue(ticker, out var existingList))
                 {
-                    var updatedList = existingList.Add(action).OrderBy(e => e.Date.Date).ToImmutableList();
-                    dict[ticker] = updatedList;
+                    existingList.Add(action);
                 }
                 else
                 {
-                    dict[ticker] = [action];
+                    mutableDict[ticker] = [action];
                 }
             }
         }
 
-        return dict;
+        return mutableDict.ToDictionary(
+            kvp => kvp.Key,
+            kvp => kvp.Value.OrderBy(e => e.Date.Date).ToImmutableList()
+        );
     }
 
     /// <summary>
