@@ -13,6 +13,8 @@ namespace InvestmentTaxCalculator.Model.TaxEvents;
 /// </summary>
 public record TakeoverCorporateAction : CorporateAction, IChangeSection104
 {
+    public override IReadOnlyList<string> CompanyTickersInProcessingOrder => [AssetName, AcquiringCompanyTicker];
+
     /// <summary>
     /// Ticker symbol of the acquiring company
     /// </summary>

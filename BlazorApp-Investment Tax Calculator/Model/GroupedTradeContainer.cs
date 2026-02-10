@@ -15,7 +15,7 @@ public class GroupedTradeContainer<T>(IEnumerable<T> tradeList, IEnumerable<Corp
 
     private readonly Dictionary<string, ImmutableList<IAssetDatedEvent>> _tradeAndCorporateActionListDict = BuildTaxEventsDictionary(tradeList, corporateActionList);
 
-    // Dependency tree: new company ticker -> set of old company tickers that must be processed first
+    // Dependency tree: ticker -> set of tickers that must be processed first
     private readonly Dictionary<string, HashSet<string>> _takeoverDependencies = BuildDependencyTree(corporateActionList);
 
     /// <summary>
@@ -26,78 +26,86 @@ public class GroupedTradeContainer<T>(IEnumerable<T> tradeList, IEnumerable<Corp
         IEnumerable<T> tradeList,
         IEnumerable<CorporateAction> corporateActionList)
     {
-        // Group trades and corporate actions by asset name
-        var dict = tradeList.Cast<IAssetDatedEvent>()
-                           .Concat(corporateActionList.Cast<IAssetDatedEvent>())
-                           .GroupBy(e => e.AssetName)
-                           .ToDictionary(
-                               group => group.Key,
-                               group => group.OrderBy(e => e.Date.Date).ToImmutableList()
-                           );
-
-        // Manually add TakeoverCorporateActions to the acquiring company's list
-        foreach (var action in corporateActionList.OfType<TakeoverCorporateAction>())
+        static IEnumerable<string> GetOrderedTickers(CorporateAction action)
         {
-            if (dict.TryGetValue(action.AcquiringCompanyTicker, out var existingList))
+            var tickers = action.CompanyTickersInProcessingOrder;
+
+            if (tickers == null || tickers.Count == 0)
             {
-                // Add the takeover to the existing list and re-sort
-                var updatedList = existingList.Add(action).OrderBy(e => e.Date.Date).ToImmutableList();
-                dict[action.AcquiringCompanyTicker] = updatedList;
+                return [action.AssetName];
             }
-            else
+
+            var validTickers = tickers.Where(ticker => !string.IsNullOrWhiteSpace(ticker));
+            return validTickers.Any() ? validTickers : [action.AssetName];
+        }
+
+        var mutableDict = tradeList.Cast<IAssetDatedEvent>()
+            .GroupBy(e => e.AssetName)
+            .ToDictionary(
+                group => group.Key,
+                group => group.ToList()
+            );
+
+        // Add corporate actions to each relevant ticker list
+        foreach (var action in corporateActionList)
+        {
+            foreach (var ticker in GetOrderedTickers(action).Distinct(StringComparer.Ordinal))
             {
-                // Create a new list with just the takeover
-                dict[action.AcquiringCompanyTicker] = [action];
+                if (mutableDict.TryGetValue(ticker, out var existingList))
+                {
+                    existingList.Add(action);
+                }
+                else
+                {
+                    mutableDict[ticker] = [action];
+                }
             }
         }
 
-        // Manually add SpinoffCorporateActions to the spinoff company's list
-        foreach (var action in corporateActionList.OfType<SpinoffCorporateAction>())
-        {
-            if (dict.TryGetValue(action.SpinoffCompanyTicker, out var existingList))
-            {
-                // Add the spinoff to the existing list and re-sort
-                var updatedList = existingList.Add(action).OrderBy(e => e.Date.Date).ToImmutableList();
-                dict[action.SpinoffCompanyTicker] = updatedList;
-            }
-            else
-            {
-                // Create a new list with just the spinoff
-                dict[action.SpinoffCompanyTicker] = [action];
-            }
-        }
-
-        return dict;
+        return mutableDict.ToDictionary(
+            kvp => kvp.Key,
+            kvp => kvp.Value.OrderBy(e => e.Date.Date).ToImmutableList()
+        );
     }
 
     /// <summary>
-    /// Builds dependency tree for takeovers and spinoffs.
-    /// New company tickers depend on old/parent company tickers being processed first.
+    /// Builds dependency tree for corporate actions.
+    /// Later tickers depend on earlier tickers in the processing order list.
     /// </summary>
     private static Dictionary<string, HashSet<string>> BuildDependencyTree(IEnumerable<CorporateAction> corporateActionList)
     {
-        var deps = new Dictionary<string, HashSet<string>>();
-
-        // Add takeover dependencies
-        foreach (var takeover in corporateActionList.OfType<TakeoverCorporateAction>())
+        static List<string> GetOrderedTickers(CorporateAction action)
         {
-            if (!deps.TryGetValue(takeover.AcquiringCompanyTicker, out var set))
+            var tickers = action.CompanyTickersInProcessingOrder;
+
+            if (tickers == null || tickers.Count == 0)
             {
-                set = new HashSet<string>();
-                deps[takeover.AcquiringCompanyTicker] = set;
+                return [action.AssetName];
             }
-            set.Add(takeover.AssetName);
+
+            var validTickers = tickers.Where(ticker => !string.IsNullOrWhiteSpace(ticker)).ToList();
+            return validTickers.Count > 0 ? validTickers : [action.AssetName];
         }
 
-        // Add spinoff dependencies
-        foreach (var spinoff in corporateActionList.OfType<SpinoffCorporateAction>())
+        var deps = new Dictionary<string, HashSet<string>>();
+
+        foreach (var action in corporateActionList)
         {
-            if (!deps.TryGetValue(spinoff.SpinoffCompanyTicker, out var set))
+            var tickers = GetOrderedTickers(action);
+            for (int i = 0; i < tickers.Count - 1; i++)
             {
-                set = new HashSet<string>();
-                deps[spinoff.SpinoffCompanyTicker] = set;
+                string dependency = tickers[i];
+                for (int j = i + 1; j < tickers.Count; j++)
+                {
+                    string dependent = tickers[j];
+                    if (!deps.TryGetValue(dependent, out var set))
+                    {
+                        set = new HashSet<string>();
+                        deps[dependent] = set;
+                    }
+                    set.Add(dependency);
+                }
             }
-            set.Add(spinoff.AssetName);
         }
 
         return deps;
