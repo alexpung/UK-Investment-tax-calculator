@@ -61,6 +61,7 @@ public class GroupedTradeContainer<T>(IEnumerable<T> tradeList, IEnumerable<Corp
     /// </summary>
     private static Dictionary<string, HashSet<string>> BuildDependencyTree(IEnumerable<CorporateAction> corporateActionList)
     {
+
         var deps = new Dictionary<string, HashSet<string>>();
 
         foreach (var action in corporateActionList)
@@ -160,5 +161,18 @@ public class GroupedTradeContainer<T>(IEnumerable<T> tradeList, IEnumerable<Corp
         {
             yield return (asset, _tradeAndCorporateActionListDict[asset]);
         }
+    }
+
+    private static List<string> GetOrderedTickers(CorporateAction action)
+    {
+        var tickers = action.CompanyTickersInProcessingOrder;
+
+        if (tickers == null || tickers.Count == 0)
+        {
+            return [action.AssetName];
+        }
+
+        var validTickers = tickers.Where(ticker => !string.IsNullOrWhiteSpace(ticker)).ToList();
+        return validTickers.Count > 0 ? validTickers : [action.AssetName];
     }
 }
