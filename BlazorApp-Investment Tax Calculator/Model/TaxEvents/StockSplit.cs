@@ -33,8 +33,8 @@ public record StockSplit : CorporateAction, IChangeSection104
     public override bool ElectTaxDeferral { get; init; } = true;
 
     public override string Reason => CashInLieu != null
-        ? $"{AssetName} undergo a stock split {SplitTo} for {SplitFrom} with cash-in-lieu {CashInLieu.BaseCurrencyAmount} on {Date:d}"
-        : $"{AssetName} undergo a stock split {SplitTo} for {SplitFrom} on {Date:d}";
+        ? $"{AssetName} undergoes a stock split {SplitTo} for {SplitFrom} with cash-in-lieu {CashInLieu.BaseCurrencyAmount} on {Date:d}"
+        : $"{AssetName} undergoes a stock split {SplitTo} for {SplitFrom} on {Date:d}";
 
     public override AssetCategoryType AppliesToAssetCategoryType { get; } = AssetCategoryType.STOCK;
 
