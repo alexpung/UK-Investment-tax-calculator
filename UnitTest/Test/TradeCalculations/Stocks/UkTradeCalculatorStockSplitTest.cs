@@ -187,4 +187,96 @@ public class UkTradeCalculatorStockSplitTest
         section104Pools.GetExistingOrInitialise("ABC").Quantity.ShouldBe(150); // Remaining quantity in pool (200 - 100)
     }
 
+    [Fact]
+    public void TestReverseStockSplitWithRoundingAndCash()
+    {
+        // Initial purchase of 95 shares @ £10
+        Trade trade1 = new()
+        {
+            AssetName = "RS_TEST",
+            AcquisitionDisposal = TradeType.ACQUISITION,
+            Date = DateTime.Parse("01-Jan-22"),
+            Quantity = 95,
+            GrossProceed = new() { Amount = new(950m) }
+        };
+
+        // 1-for-10 reverse split. 
+        // 95 shares should become 9.5 shares.
+        // With rounding down, it becomes 9 shares.
+        // Cash-in-lieu for 0.5 shares.
+        StockSplit reverseSplit = new()
+        {
+            AssetName = "RS_TEST",
+            Date = DateTime.Parse("01-Feb-22"),
+            SplitTo = 1,
+            SplitFrom = 10,
+            CashInLieu = new DescribedMoney { Amount = new(6m) }, // £6 for the 0.5 shares
+            ElectTaxDeferral = false // Normal part-disposal
+        };
+
+        UkSection104Pools section104Pools = new(new UKTaxYear(), new ResidencyStatusRecord());
+        TaxEventLists taxEventLists = new();
+        taxEventLists.AddData([trade1, reverseSplit]);
+
+        UkTradeCalculator calculator = TradeCalculationHelper.CreateUkTradeCalculator(section104Pools, taxEventLists);
+        List<ITradeTaxCalculation> result = calculator.CalculateTax();
+
+        // result[0] is the Acquisition (initialPurchase)
+        // result[1] is the CashDisposal (CorporateActionTaxCalculation)
+        
+        var cashCalc = (CorporateActionTaxCalculation)result.First(r => r is CorporateActionTaxCalculation);
+        var splitResult = (StockSplit)cashCalc.RelatedCorporateAction;
+        
+        splitResult.CashDisposal.ShouldNotBeNull();
+        splitResult.CashDisposal.TotalProceeds.Amount.ShouldBe(6m);
+        splitResult.CashDisposal.TotalAllowableCost.Amount.ShouldBe(50m, 0.01m);
+        splitResult.CashDisposal.Gain.Amount.ShouldBe(-44m, 0.01m);
+
+        // Final S104 state
+        var pool = section104Pools.GetExistingOrInitialise("RS_TEST");
+        pool.Quantity.ShouldBe(9);
+        pool.AcquisitionCostInBaseCurrency.Amount.ShouldBe(900m, 0.01m); // 950 - 50
+    }
+
+    [Fact]
+    public void TestSmallCashStockSplitDeferral()
+    {
+        // Initial purchase of 95 shares @ £10
+        Trade trade1 = new()
+        {
+            AssetName = "DEFER_TEST",
+            AcquisitionDisposal = TradeType.ACQUISITION,
+            Date = DateTime.Parse("01-Jan-22"),
+            Quantity = 95,
+            GrossProceed = new() { Amount = new(950m) }
+        };
+
+        // 1-for-10 reverse split. 
+        // Receive small cash £6.
+        StockSplit reverseSplit = new()
+        {
+            AssetName = "DEFER_TEST",
+            Date = DateTime.Parse("01-Feb-22"),
+            SplitTo = 1,
+            SplitFrom = 10,
+            CashInLieu = new DescribedMoney { Amount = new(6m) },
+            ElectTaxDeferral = true // Elect s122 deferral
+        };
+
+        UkSection104Pools section104Pools = new(new UKTaxYear(), new ResidencyStatusRecord());
+        TaxEventLists taxEventLists = new();
+        taxEventLists.AddData([trade1, reverseSplit]);
+
+        UkTradeCalculator calculator = TradeCalculationHelper.CreateUkTradeCalculator(section104Pools, taxEventLists);
+        List<ITradeTaxCalculation> result = calculator.CalculateTax();
+        
+        result.Any(r => r is CorporateActionTaxCalculation).ShouldBeFalse();
+
+        // Final S104 state
+        var pool = section104Pools.GetExistingOrInitialise("DEFER_TEST");
+        pool.Quantity.ShouldBe(9);
+
+        // 950 - 6 = 944.
+        pool.AcquisitionCostInBaseCurrency.Amount.ShouldBe(944m, 0.01m);
+    }
 }
