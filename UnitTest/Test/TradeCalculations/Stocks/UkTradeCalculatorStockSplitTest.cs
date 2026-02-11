@@ -279,4 +279,179 @@ public class UkTradeCalculatorStockSplitTest
         // 950 - 6 = 944.
         pool.AcquisitionCostInBaseCurrency.Amount.ShouldBe(944m, 0.01m);
     }
+    [Fact]
+    public void TestStockSplitFractionalCost_QuantityProportion()
+    {
+        // Regression test for "Quantity Proportion vs Value Proportion" logic.
+        // Verifies that cost allocated to a fractional share is based on the fraction of shares removed,
+        // (Quantity Proportion), NOT the relative value of the cash vs the remaining shares (A/A+B).
+        
+        // Scenario:
+        // Buy 100 shares @ £10 = £1000.
+        // Reverse Split 200-for-101 (effectively 100 -> 50.5).
+        // New Qty Raw = 50.5.
+        // Floor = 50.
+        // Fraction Removed = 0.5.
+        // Fraction of Total = 0.5 / 50.5 = 0.00990099... (1/101).
+        
+        // Expected Cost Allocation = £1000 * (1/101) = £9.90099...
+        
+        // "Bad Rate" Scenario:
+        // Assume the 0.5 share would be worth £10 per share = £5.
+        // But we only get £1 cash-in-lieu (very low).
+        // If we used Value Proportion (A/A+B):
+        // Value of remaining 50 shares @ £20 = £1000.
+        // Total Value = £1000 + £1 = £1001.
+        // Cash Ratio = 1 / 1001 = 0.000999... (~0.1%).
+        // Cost Allocation would be £1000 * 0.000999 = £0.99. -> INCORRECT.
+        
+        Trade trade1 = new()
+        {
+            AssetName = "QUANTITY_TEST",
+            AcquisitionDisposal = TradeType.ACQUISITION,
+            Date = DateTime.Parse("01-Jan-22", CultureInfo.InvariantCulture),
+            Quantity = 100,
+            GrossProceed = new() { Amount = new(1000m) }
+        };
+
+        StockSplit split = new()
+        {
+            AssetName = "QUANTITY_TEST",
+            Date = DateTime.Parse("01-Feb-22", CultureInfo.InvariantCulture),
+            SplitTo = 101,
+            SplitFrom = 200,
+            CashInLieu = new DescribedMoney { Amount = new(1m) }, // Very low cash
+            ElectTaxDeferral = false 
+        };
+
+        UkSection104Pools section104Pools = new(new UKTaxYear(), new ResidencyStatusRecord());
+        TaxEventLists taxEventLists = new();
+        taxEventLists.AddData([trade1, split]);
+
+        UkTradeCalculator calculator = TradeCalculationHelper.CreateUkTradeCalculator(section104Pools, taxEventLists);
+        List<ITradeTaxCalculation> result = calculator.CalculateTax();
+        
+        var cashCalc = result.OfType<CorporateActionTaxCalculation>().FirstOrDefault();
+        cashCalc.ShouldNotBeNull();
+        
+        var stockSplitResult = (StockSplit)cashCalc.RelatedCorporateAction;
+        
+        // Assertions
+        decimal expectedCost = 1000m * (0.5m / 50.5m); // ~9.90
+        
+        // Should match the Quantity Proportion cost (~9.90), NOT the Value Proportion cost (~0.99)
+        stockSplitResult.CashDisposal.TotalAllowableCost.Amount.ShouldBe(expectedCost, 0.01m);
+        
+        // Gain = Proceeds (1.00) - Cost (9.90) = -8.90
+        stockSplitResult.CashDisposal.Gain.Amount.ShouldBe(1m - expectedCost, 0.01m);
+    }
+    [Fact]
+    public void TestStockSplitSmallCashLoss_DeferredIfElected()
+    {
+        // Verifies that a loss is deferred (no disposal created) if Deferral is elected for "small" cash.
+        
+        // Buy 101 shares @ £10 = £1010.
+        // Reverse Split 1-for-10. 
+        // 101 shares becomes 10.1 shares.
+        // Fraction Removed = 0.1.
+        // Proportional Cost = 1010 * (0.1/10.1) = £10.
+        // CashReceived = £5 (Small cash).
+        // Loss = £5.
+        
+        Trade trade1 = new()
+        {
+            AssetName = "SMALL_LOSS_DEFER",
+            AcquisitionDisposal = TradeType.ACQUISITION,
+            Date = DateTime.Parse("01-Jan-22", CultureInfo.InvariantCulture),
+            Quantity = 101,
+            GrossProceed = new() { Amount = new(1010m) }
+        };
+
+        StockSplit split = new()
+        {
+            AssetName = "SMALL_LOSS_DEFER",
+            Date = DateTime.Parse("01-Feb-22", CultureInfo.InvariantCulture),
+            SplitTo = 1,
+            SplitFrom = 10,
+            CashInLieu = new DescribedMoney { Amount = new(5m) }, 
+            ElectTaxDeferral = true // Electing deferral SHOULD suppress a loss if it's small
+        };
+
+        UkSection104Pools section104Pools = new(new UKTaxYear(), new ResidencyStatusRecord());
+        TaxEventLists taxEventLists = new();
+        taxEventLists.AddData([trade1, split]);
+
+        UkTradeCalculator calculator = TradeCalculationHelper.CreateUkTradeCalculator(section104Pools, taxEventLists);
+        List<ITradeTaxCalculation> result = calculator.CalculateTax();
+        
+        // Expected: No disposal created for the corporate action
+        var cashCalc = result.OfType<CorporateActionTaxCalculation>().FirstOrDefault();
+        cashCalc.ShouldBeNull("Small loss should be deferred when elected, resulting in no disposal record.");
+        
+        // Final S104 state: 10 shares, cost = 1010 - 5 = 1005
+        var pool = section104Pools.GetExistingOrInitialise("SMALL_LOSS_DEFER");
+        pool.Quantity.ShouldBe(10m);
+        pool.AcquisitionCostInBaseCurrency.Amount.ShouldBe(1005m, 0.01m);
+    }
+
+    [Fact]
+    public void TestStockSplitSmallCash_ExcessGainDeferral()
+    {
+        // Verifies TCGA 1992 s122 "Excess Gain" logic:
+        // If cash is "small" and deferred, but EXCEEDS the total pool cost,
+        // the excess must be recognized as a capital gain immediately.
+        
+        // Buy 10 shares @ £10 = £100.
+        // Reverse Split 1-for-20.
+        // 10 shares -> 0.5 shares.
+        // Cash in lieu for 0.5 = £150.
+        // Pool Cost = £100.
+        // Total Value (Extrapolated) = £150.
+        // IsSmall(150, 150) = True (<= £3000).
+        
+        // Expected:
+        // CashCostUsed (to reduce pool) = £100 (max available).
+        // Excess Gain = 150 - 100 = £50.
+        // A disposal of £50 with £0 cost should be created.
+        // Final Pool: 0 shares, £0 cost.
+
+        Trade trade1 = new()
+        {
+            AssetName = "EXCESS_GAIN_TEST",
+            AcquisitionDisposal = TradeType.ACQUISITION,
+            Date = DateTime.Parse("01-Jan-22", CultureInfo.InvariantCulture),
+            Quantity = 10,
+            GrossProceed = new() { Amount = new(100m) }
+        };
+
+        StockSplit split = new()
+        {
+            AssetName = "EXCESS_GAIN_TEST",
+            Date = DateTime.Parse("01-Feb-22", CultureInfo.InvariantCulture),
+            SplitTo = 1,
+            SplitFrom = 20,
+            CashInLieu = new DescribedMoney { Amount = new(150m) }, 
+            ElectTaxDeferral = true 
+        };
+
+        UkSection104Pools section104Pools = new(new UKTaxYear(), new ResidencyStatusRecord());
+        TaxEventLists taxEventLists = new();
+        taxEventLists.AddData([trade1, split]);
+
+        UkTradeCalculator calculator = TradeCalculationHelper.CreateUkTradeCalculator(section104Pools, taxEventLists);
+        List<ITradeTaxCalculation> result = calculator.CalculateTax();
+        
+        // Check for the excess gain disposal
+        var cashCalc = result.OfType<CorporateActionTaxCalculation>().FirstOrDefault();
+        cashCalc.ShouldNotBeNull("Excess gain should be recognized even when deferring if cash > cost.");
+        
+        cashCalc.TotalProceeds.Amount.ShouldBe(50m);
+        cashCalc.TotalAllowableCost.Amount.ShouldBe(0m);
+        cashCalc.Gain.Amount.ShouldBe(50m);
+        
+        // Final S104 state: 0 shares, £0 cost (100 - 100)
+        var pool = section104Pools.GetExistingOrInitialise("EXCESS_GAIN_TEST");
+        pool.Quantity.ShouldBe(0m);
+        pool.AcquisitionCostInBaseCurrency.Amount.ShouldBe(0m, 0.000001m);
+    }
 }

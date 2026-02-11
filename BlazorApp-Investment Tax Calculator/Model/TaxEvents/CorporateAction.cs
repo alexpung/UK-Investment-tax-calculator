@@ -53,9 +53,13 @@ public abstract record CorporateAction : TaxEvent
                                  $"\tExcess Gain: {gainAmount} (taxable)\n" +
                                  $"\tAllowable Cost used to reduce gain: {allowableCostUsed}";
 
-            // For small distribution deferrals, we record the taxable gain as the proceeds with zero cost
-            // This ensures the gain matches expectations while the rest of the cost is preserved in the pool.
-            CreateCashDisposal(gainAmount, WrappedMoney.GetBaseCurrencyZero(), quantity, calculationDetail, section104);
+            // For small distribution deferrals:
+            // If gainAmount > 0, we MUST report a disposal for the excess gain.
+            // If gainAmount == 0, we have fully deferred the cash into the cost basis. No disposal is created.
+            if (gainAmount.Amount > 0)
+            {
+                CreateCashDisposal(gainAmount, WrappedMoney.GetBaseCurrencyZero(), quantity, calculationDetail, section104);
+            }
         }
         else
         {
@@ -77,12 +81,6 @@ public abstract record CorporateAction : TaxEvent
             ?? ResidencyStatus.Resident;
 
         CashDisposal = new CorporateActionTaxCalculation(this, proceeds, allowableCost, residencyStatus, quantity, info);
-
-        // Only add to the collection if there is a gain to recognize (or it's a loss and we didn't defer)
-        // For s122 small distributions, the fully deferred ones shouldn't appear as separate disposals in the calculation results.
-        if (!ElectTaxDeferral || proceeds.Amount > allowableCost.Amount)
-        {
-            GeneratedDisposals.Add(CashDisposal);
-        }
+        GeneratedDisposals.Add(CashDisposal);
     }
 }
