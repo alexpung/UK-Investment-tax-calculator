@@ -47,13 +47,7 @@ public record SpinoffCorporateAction : CorporateAction, IChangeSection104
     /// elect to defer capital gains by reducing cost basis instead of recognizing a gain.
     /// This follows TCGA 1992 s122.
     /// </summary>
-    public bool ElectTaxDeferral { get; init; } = true;
-
-    /// <summary>
-    /// Stores the disposal generated for cash-in-lieu payment (recreated on each calculation run)
-    /// </summary>
-    [JsonIgnore]
-    public CorporateActionTaxCalculation? CashDisposal { get; private set; }
+    public override bool ElectTaxDeferral { get; init; } = true;
 
     public override AssetCategoryType AppliesToAssetCategoryType { get; } = AssetCategoryType.STOCK;
 
@@ -152,107 +146,22 @@ public record SpinoffCorporateAction : CorporateAction, IChangeSection104
         section104.AdjustAcquisitionCost(costReduction * -1, Date, explanation);
     }
 
-    private WrappedMoney GetCashInLieuCostUsed(WrappedMoney totalCost)
-    {
-        if (CashInLieu == null) return WrappedMoney.GetBaseCurrencyZero();
-
-        // Cash-in-lieu is treated as a part-disposal
-        // The cost attributable to cash is: (Cash / (Cash + SpinoffValue)) * SpinoffAllocationCost
-        decimal spinoffPercentage = 1m - ParentRetainedPercentage;
-        WrappedMoney spinoffAllocation = totalCost * spinoffPercentage;
-        
-        WrappedMoney cashAmount = CashInLieu.BaseCurrencyAmount;
-        WrappedMoney spinoffShareValue = SpinoffMarketValue.BaseCurrencyAmount;
-        
-        if (spinoffShareValue.Amount + cashAmount.Amount == 0) return WrappedMoney.GetBaseCurrencyZero();
-        
-        decimal cashProportion = cashAmount.Amount / (spinoffShareValue.Amount + cashAmount.Amount);
-        return spinoffAllocation * cashProportion;
-    }
 
     private WrappedMoney ProcessCashInLieu(WrappedMoney parentCost, UkSection104 section104)
     {
         if (CashInLieu == null) return WrappedMoney.GetBaseCurrencyZero();
 
         WrappedMoney cashAmount = CashInLieu.BaseCurrencyAmount;
-        bool isSmallCash = IsSmallCash(cashAmount.Amount);
-        WrappedMoney allowableCostUsed;
+        WrappedMoney spinoffShareValue = SpinoffMarketValue.BaseCurrencyAmount;
+        decimal totalValue = cashAmount.Amount + spinoffShareValue.Amount;
 
-        if (isSmallCash && ElectTaxDeferral)
-        {
-            // Small cash deferral (TCGA 1992 s122)
-            // The spinoff allocation portion of cost that relates to cash
-            decimal spinoffPercentage = 1m - ParentRetainedPercentage;
-            WrappedMoney spinoffAllocationCost = parentCost * spinoffPercentage;
-            
-            // Defer tax by treating cash as cost reduction
-            // If Cash < SpinoffAllocationCost, we just reduce transfer cost by cash amount. Gain = 0.
-            // If Cash > SpinoffAllocationCost, excess becomes taxable gain.
-            allowableCostUsed = WrappedMoney.Min(cashAmount, spinoffAllocationCost);
-            
-            // Reduce the transfer cost by cash amount (this is the deferral)
-            _transferCost = spinoffAllocationCost - allowableCostUsed;
-            
-            WrappedMoney excessGain = cashAmount - allowableCostUsed;
-            if (excessGain.Amount > 0)
-            {
-                string calculationDetail = $"Small cash treatment (deferred) from spinoff of {SpinoffCompanyTicker}: \n" +
-                                           $"\tCash Received: {cashAmount}\n" +
-                                           $"\tSpinoff Allocation Cost: {spinoffAllocationCost}\n" +
-                                           $"\tExcess Gain: {excessGain} (taxable)\n" +
-                                           $"\tCost transferred to spinoff: {_transferCost}";
-                CreateCashDisposal(excessGain, WrappedMoney.GetBaseCurrencyZero(), calculationDetail, section104);
-            }
-            // Note: No disposal created if no excess gain (fully deferred)
-        }
-        else
-        {
-            // Normal matching (part-disposal rules)
-            allowableCostUsed = GetCashInLieuCostUsed(parentCost);
-            
-            // Reduce the transfer cost by the amount used for cash-in-lieu
-            _transferCost -= allowableCostUsed;
+        // The cost basis relevant to the spinoff distribution is the spinoff allocation.
+        decimal spinoffPercentage = 1m - ParentRetainedPercentage;
+        WrappedMoney spinoffAllocationCost = parentCost * spinoffPercentage;
 
-            string calculationDetail = $"Cash-in-lieu from spinoff of {SpinoffCompanyTicker}: \n" +
-                                       $"\tCash Received: {cashAmount}\n" +
-                                       $"\tProportioned Allowable Cost: {allowableCostUsed}";
-
-            CreateCashDisposal(cashAmount, allowableCostUsed, calculationDetail, section104);
-        }
-        
+        WrappedMoney allowableCostUsed = ProcessCashResult(cashAmount, spinoffAllocationCost, totalValue, 1.0m, SpinoffCompanyTicker, section104);
+        _transferCost = spinoffAllocationCost - allowableCostUsed;
         return allowableCostUsed;
-    }
-
-    /// <summary>
-    /// Determines if cash-in-lieu qualifies as "small" under TCGA s122.
-    /// Small cash is defined as £3000 or 5% of total market value of the shareholding before distribution.
-    /// </summary>
-    private bool IsSmallCash(decimal cashAmountInBaseCurrency)
-    {
-        const decimal smallCashThreshold = 3000m;
-
-        if (cashAmountInBaseCurrency <= smallCashThreshold)
-            return true;
-
-        // Check 5% rule using parent shareholding value before distribution
-        // This is Parent Market Value + Spinoff Market Value (the total value before spinoff)
-        if (ParentMarketValue?.BaseCurrencyAmount.Amount > 0 && SpinoffMarketValue?.BaseCurrencyAmount.Amount > 0)
-        {
-            decimal parentShareholdingValueBeforeDistribution = 
-                ParentMarketValue.BaseCurrencyAmount.Amount + SpinoffMarketValue.BaseCurrencyAmount.Amount;
-            decimal fivePercentThreshold = parentShareholdingValueBeforeDistribution * 0.05m;
-            return cashAmountInBaseCurrency <= fivePercentThreshold;
-        }
-        return false;
-    }
-
-    private void CreateCashDisposal(WrappedMoney proceeds, WrappedMoney allowableCost, string additionalInfo, UkSection104 section104)
-    {
-        // Look up residency status from section104, default to Resident if not available
-        ResidencyStatus residencyStatus = section104.ResidencyStatusRecord?.GetResidencyStatus(DateOnly.FromDateTime(Date))
-            ?? ResidencyStatus.Resident;
-
-        CashDisposal = new CorporateActionTaxCalculation(this, proceeds, allowableCost, residencyStatus, additionalInfo);
     }
 
     private string BuildParentExplanation(UkSection104 section104, decimal quantity, WrappedMoney originalCost, WrappedMoney retainedCost)

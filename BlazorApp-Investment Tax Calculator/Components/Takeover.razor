@@ -285,7 +285,8 @@
             if (_electSmallCash)
             {
                 decimal cashInBase = cashComponent.BaseCurrencyAmount.Amount;
-                if (!TakeoverCorporateAction.IsSmallCash(cashInBase, newShareMv!))
+                decimal totalValue = cashInBase + newShareMv!.BaseCurrencyAmount.Amount;
+                if (!UkTaxRules.IsSmallCash(cashInBase, totalValue))
                 {
                      _toastService.ShowError("You elected for Small Cash treatment, but the cash amount exceeds £3,000 and 5% of the total value. This election is invalid.");
                      return;

@@ -11,9 +11,10 @@ https://alexpung.github.io/UK-Investment-tax-calculator/
 1. It is a web app so no installation required and you don't need to worry about malware.
 2. Privacy oriented. There is no web server hosting your trade data, the entire calculation is done in your brower.
 3. Support trades and dividends in foreign currency.
-4. Support shorting and forward split corporate action. (Reverse split I need sample)
+4. Support shorting and stock split corporate actions (forward and experimental support for reverse splits).
 5. Implementation of TCGA92/S105 (1)(a): Multiple trades in the same day for the same Buy/Sell side is treated as a single trade. This affect same day/bread and breakfast calculation.
 6. Support for **Excess Reportable Income (ERI) and Equalisation** for offshore funds/ETFs, including automatic cost base adjustment and region-based income reporting by detecting the ISIN country code.
+7. Support for UK specific tax rules such as TCGA92/S122 for small distributions in corporate actions (automatic gain deferral).
 
 ## Supported import format and brokers
 | Category                | IB XML | FreeTrade CSV        | Trading212 CSV       |
@@ -27,8 +28,7 @@ https://alexpung.github.io/UK-Investment-tax-calculator/
 | OptionTrade             | O      |                      |                      |
 | Trade (Stock)           | O      | Total in GBP         | Total in GBP         |
 
-
-User can also add trades manually using the "Add trades" page or you can also try to mimic the data format.
+User can also add trades and corporate actions (like Takeovers/Spinoffs) manually using the "Add trades" page.
 
 An example is included (see below). For other brokers I suggest copying the xml example and modifying it manually if you only have small number of trades.
 Or if you can code new parsers are welcome.
@@ -49,7 +49,9 @@ https://github.com/alexpung/UK-Investment-tax-calculator/tree/master/BlazorApp-I
     2. Witholding tax paid
     3. Dividend in Lieu.
 3. Corporate actions
-    1. Forward split only
+    1. Stock splits (forward and reverse splits with cash-in-lieu/rounding)
+    2. Takeovers and Mergers (Manual input: shares + cash components)
+    3. Spinoffs (Manual input: cost base allocation and cash-in-lieu)
 4. Options (experimental, use with verification)
     1. Stock option execise/expiration/assignment.
     2. Financial option open/close (cash settlement)

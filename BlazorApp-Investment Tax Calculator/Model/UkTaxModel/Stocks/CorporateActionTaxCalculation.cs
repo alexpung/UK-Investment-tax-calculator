@@ -19,10 +19,10 @@ public class CorporateActionTaxCalculation : ITradeTaxCalculation
     public bool CalculationCompleted { get; private set; } = false;
     public List<TradeMatch> MatchHistory { get; init; } = [];
     public WrappedMoney TotalCostOrProceed { get; }
-    public decimal TotalQty { get; } = 1.0m; // Usually a single event
+    public decimal TotalQty { get; }
     public List<Trade> TradeList { get; init; } = [];
     public WrappedMoney UnmatchedCostOrProceed { get; private set; }
-    public decimal UnmatchedQty { get; private set; } = 1.0m;
+    public decimal UnmatchedQty { get; private set; }
     public WrappedMoney TotalProceeds => MatchHistory.Sum(m => m.BaseCurrencyMatchDisposalProceed);
     public WrappedMoney TotalAllowableCost => MatchHistory.Sum(m => m.BaseCurrencyMatchAllowableCost);
     public WrappedMoney Gain => TotalProceeds - TotalAllowableCost;
@@ -30,7 +30,7 @@ public class CorporateActionTaxCalculation : ITradeTaxCalculation
     public DateTime TaxableDate { get; set; }
     public CorporateAction RelatedCorporateAction { get; init; }
 
-    public CorporateActionTaxCalculation(CorporateAction corporateAction, WrappedMoney proceeds, WrappedMoney allowableCost, ResidencyStatus residencyStatus, string additionalInfo = "")
+    public CorporateActionTaxCalculation(CorporateAction corporateAction, WrappedMoney proceeds, WrappedMoney allowableCost, ResidencyStatus residencyStatus, decimal quantity, string additionalInfo = "")
     {
         Id = ITradeTaxCalculation.GetNextId();
         RelatedCorporateAction = corporateAction;
@@ -40,6 +40,8 @@ public class CorporateActionTaxCalculation : ITradeTaxCalculation
         AssetCategoryType = corporateAction.AppliesToAssetCategoryType;
         TotalCostOrProceed = proceeds;
         UnmatchedCostOrProceed = proceeds;
+        TotalQty = quantity;
+        UnmatchedQty = quantity;
         ResidencyStatusAtTrade = residencyStatus;
 
         // Determine taxable status based on residency
@@ -54,7 +56,7 @@ public class CorporateActionTaxCalculation : ITradeTaxCalculation
             AssetName = corporateAction.AssetName,
             TradeMatchType = TaxMatchType.CORPORATE_ACTION,
             MatchedSellTrade = this,
-            MatchDisposalQty = 1.0m,
+            MatchDisposalQty = quantity,
             MatchAcquisitionQty = 0.0m,
             BaseCurrencyMatchDisposalProceed = proceeds,
             BaseCurrencyMatchAllowableCost = allowableCost,
@@ -63,7 +65,7 @@ public class CorporateActionTaxCalculation : ITradeTaxCalculation
         };
 
         MatchHistory.Add(match);
-        MatchQty(1.0m);
+        MatchQty(quantity);
     }
 
     public void MatchQty(decimal demandedQty)
@@ -80,7 +82,7 @@ public class CorporateActionTaxCalculation : ITradeTaxCalculation
             CalculationCompleted = true;
         }
 
-        UnmatchedCostOrProceed = TotalCostOrProceed * (UnmatchedQty / 1.0m);
+        UnmatchedCostOrProceed = TotalQty > 0 ? TotalCostOrProceed * (UnmatchedQty / TotalQty) : TotalCostOrProceed;
     }
 
     public void MatchWithSection104(UkSection104 ukSection104)
