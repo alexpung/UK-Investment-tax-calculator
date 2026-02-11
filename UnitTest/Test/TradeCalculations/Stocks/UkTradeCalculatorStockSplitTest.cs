@@ -195,7 +195,7 @@ public class UkTradeCalculatorStockSplitTest
         {
             AssetName = "RS_TEST",
             AcquisitionDisposal = TradeType.ACQUISITION,
-            Date = DateTime.Parse("01-Jan-22"),
+            Date = DateTime.Parse("01-Jan-22", CultureInfo.InvariantCulture),
             Quantity = 95,
             GrossProceed = new() { Amount = new(950m) }
         };
@@ -207,7 +207,7 @@ public class UkTradeCalculatorStockSplitTest
         StockSplit reverseSplit = new()
         {
             AssetName = "RS_TEST",
-            Date = DateTime.Parse("01-Feb-22"),
+            Date = DateTime.Parse("01-Feb-22", CultureInfo.InvariantCulture),
             SplitTo = 1,
             SplitFrom = 10,
             CashInLieu = new DescribedMoney { Amount = new(6m) }, // £6 for the 0.5 shares
@@ -246,7 +246,7 @@ public class UkTradeCalculatorStockSplitTest
         {
             AssetName = "DEFER_TEST",
             AcquisitionDisposal = TradeType.ACQUISITION,
-            Date = DateTime.Parse("01-Jan-22"),
+            Date = DateTime.Parse("01-Jan-22", CultureInfo.InvariantCulture),
             Quantity = 95,
             GrossProceed = new() { Amount = new(950m) }
         };
@@ -256,7 +256,7 @@ public class UkTradeCalculatorStockSplitTest
         StockSplit reverseSplit = new()
         {
             AssetName = "DEFER_TEST",
-            Date = DateTime.Parse("01-Feb-22"),
+            Date = DateTime.Parse("01-Feb-22", CultureInfo.InvariantCulture),
             SplitTo = 1,
             SplitFrom = 10,
             CashInLieu = new DescribedMoney { Amount = new(6m) },
