@@ -14,6 +14,50 @@ namespace UnitTest.Test.TradeCalculations.Stocks;
 public class UkTradeCalculatorStockSplitTest
 {
     [Fact]
+    public void TestStockSplitIntraday_AppliesBeforeLaterDisposalInSection104Flow()
+    {
+        Trade initialPurchase = new()
+        {
+            AssetName = "INTRADAY_SPLIT",
+            AcquisitionDisposal = TradeType.ACQUISITION,
+            Date = DateTime.Parse("01-Jan-22 10:00:00", CultureInfo.InvariantCulture),
+            Quantity = 100,
+            GrossProceed = new() { Amount = new(1000m) },
+        };
+
+        StockSplit stockSplit = new()
+        {
+            AssetName = "INTRADAY_SPLIT",
+            Date = DateTime.Parse("01-Feb-22 09:00:00", CultureInfo.InvariantCulture),
+            SplitFrom = 1,
+            SplitTo = 2
+        };
+
+        Trade postSplitDisposal = new()
+        {
+            AssetName = "INTRADAY_SPLIT",
+            AcquisitionDisposal = TradeType.DISPOSAL,
+            Date = DateTime.Parse("01-Feb-22 16:00:00", CultureInfo.InvariantCulture),
+            Quantity = 100,
+            GrossProceed = new() { Amount = new(1200m) },
+        };
+
+        UkSection104Pools section104Pools = new(new UKTaxYear(), new ResidencyStatusRecord());
+        TaxEventLists taxEventLists = new();
+        taxEventLists.AddData([initialPurchase, stockSplit, postSplitDisposal]);
+
+        UkTradeCalculator calculator = TradeCalculationHelper.CreateUkTradeCalculator(section104Pools, taxEventLists);
+        List<ITradeTaxCalculation> result = calculator.CalculateTax();
+
+        ITradeTaxCalculation disposal = result.First(x => x.AcquisitionDisposal == TradeType.DISPOSAL && x is not CorporateActionTaxCalculation);
+        disposal.TotalAllowableCost.Amount.ShouldBe(500m, 0.01m);
+
+        UkSection104 pool = section104Pools.GetExistingOrInitialise("INTRADAY_SPLIT");
+        pool.Quantity.ShouldBe(100m);
+        pool.AcquisitionCostInBaseCurrency.Amount.ShouldBe(500m, 0.01m);
+    }
+
+    [Fact]
     public void TestSection104WithStockSplit()
     {
         // First trade: Initial purchase before the split
