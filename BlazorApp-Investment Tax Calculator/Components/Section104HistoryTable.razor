@@ -50,7 +50,10 @@
 
 @code {
     private SfGrid<Section104HistoryViewModel> section104HistoryGrid = default!;
-    private IEnumerable<Section104HistoryViewModel> _section104HistoryViewModels => Section104HistoryViewModel.GetSection104Data(section104Pools);
+    private IEnumerable<Section104HistoryViewModel> _section104HistoryViewModels => Section104HistoryViewModel
+        .GetSection104Data(section104Pools)
+        .Where(x => x is not null)
+        .Select(x => x!);
 
     public async Task ToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)
     {

@@ -1,4 +1,4 @@
-﻿using InvestmentTaxCalculator.Enumerations;
+using InvestmentTaxCalculator.Enumerations;
 using InvestmentTaxCalculator.Model;
 using InvestmentTaxCalculator.Model.Interfaces;
 using InvestmentTaxCalculator.Model.TaxEvents;
@@ -334,7 +334,8 @@ public class UkTradeCalculatorStockSplitTest
         var cashCalc = result.OfType<CorporateActionTaxCalculation>().FirstOrDefault();
         cashCalc.ShouldNotBeNull();
         
-        var stockSplitResult = (StockSplit)cashCalc.RelatedCorporateAction;
+        var stockSplitResult = (StockSplit)cashCalc!.RelatedCorporateAction;
+        stockSplitResult.CashDisposal.ShouldNotBeNull();
         
         // Assertions
         decimal expectedCost = 1000m * (0.5m / 50.5m); // ~9.90
