@@ -34,7 +34,7 @@
 
 @code {
     [Parameter] public EventCallback OnActionDeleted { get; set; }
-    private SfGrid<CorporateAction> _grid;
+    private SfGrid<CorporateAction> _grid = default!;
 
     public void Refresh()
     {

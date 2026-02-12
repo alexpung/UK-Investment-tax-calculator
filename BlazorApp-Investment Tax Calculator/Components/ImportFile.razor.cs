@@ -12,7 +12,7 @@ public partial class ImportFile : IDisposable
 {
     [Inject] public required FileImportStateService FileImportState { get; set; }
 
-    private DuplicateWarningModal duplicateModal;
+    private DuplicateWarningModal duplicateModal = default!;
 
     protected override void OnInitialized()
     {

@@ -1,4 +1,4 @@
-﻿using InvestmentTaxCalculator.Enumerations;
+using InvestmentTaxCalculator.Enumerations;
 using InvestmentTaxCalculator.Model.Interfaces;
 using InvestmentTaxCalculator.Model.TaxEvents;
 using InvestmentTaxCalculator.Services;
@@ -10,6 +10,7 @@ public class UkDividendCalculator(IDividendLists dividendList, ITaxYear taxYear,
 {
     public List<DividendSummary> CalculateTax()
     {
+        _ = toastService;
         List<DividendSummary> dividendSummaries = [];
         var groupedDividendsDict = dividendList.Dividends
             .Where(g => residencyStatusRecord.GetResidencyStatus(DateOnly.FromDateTime(g.Date)) == ResidencyStatus.Resident)
