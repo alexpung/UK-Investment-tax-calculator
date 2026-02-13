@@ -42,8 +42,13 @@ public record StockSplit : CorporateAction, IChangeSection104
     {
         ITradeTaxCalculation earlierTrade = trade1.Date <= trade2.Date ? trade1 : trade2;
         ITradeTaxCalculation laterTrade = trade1.Date > trade2.Date ? trade1 : trade2;
+
+        DateOnly splitDate = EffectiveDate;
+        DateOnly earlierTradeDate = DateOnly.FromDateTime(earlierTrade.Date);
+        DateOnly laterTradeDate = DateOnly.FromDateTime(laterTrade.Date);
+
         if (AssetName != trade1.AssetName || AssetName != trade2.AssetName) return matchAdjustment;
-        if (earlierTrade.Date > Date || Date > laterTrade.Date) return matchAdjustment;
+        if (!(earlierTradeDate < splitDate && splitDate <= laterTradeDate)) return matchAdjustment;
         matchAdjustment.MatchAdjustmentFactor *= (decimal)SplitTo / SplitFrom;
         matchAdjustment.CorporateActions.Add(this);
         return matchAdjustment;

@@ -112,7 +112,7 @@ public class GroupedTradeContainerTests
     }
 
     [Fact]
-    public void GetAllTaxEventsGroupedAndSorted_SameDay_OrdersAdjustmentThenTradeThenReorganisation()
+    public void GetAllTaxEventsGroupedAndSorted_SameDay_ProcessesCorporateActionsAtMidnightUsingEffectiveDate()
     {
         DateTime sameDay = DateTime.Parse("10-Jan-24 00:00:00", CultureInfo.InvariantCulture);
 
@@ -131,13 +131,14 @@ public class GroupedTradeContainerTests
         var seqEvents = container.GetAllTaxEventsGroupedAndSorted().Single(e => e.AssetName == "SEQ").Events;
 
         seqEvents.Count.ShouldBe(3);
-        seqEvents[0].ShouldBeOfType<StockSplit>();
-        seqEvents[1].ShouldBe(trade);
-        seqEvents[2].ShouldBe(reorganisation);
+        seqEvents[0].ShouldBeAssignableTo<CorporateAction>();
+        seqEvents[1].ShouldBeAssignableTo<CorporateAction>();
+        seqEvents[2].ShouldBe(trade);
+        seqEvents.IndexOf(split).ShouldBeLessThan(seqEvents.IndexOf(trade));
     }
 
     [Fact]
-    public void GetAllTaxEventsGroupedAndSorted_SameDay_OrdersOptionExpiryAfterNormalTrade()
+    public void GetAllTaxEventsGroupedAndSorted_SameDay_OrdersTradesByTimestamp()
     {
         DateTime sameDay = DateTime.Parse("11-Jan-24 00:00:00", CultureInfo.InvariantCulture);
 
@@ -149,8 +150,8 @@ public class GroupedTradeContainerTests
         var seqEvents = container.GetAllTaxEventsGroupedAndSorted().Single(e => e.AssetName == "OPTSEQ").Events;
 
         seqEvents.Count.ShouldBe(2);
-        seqEvents[0].ShouldBe(orderedOptionTrade);
-        seqEvents[1].ShouldBe(expiryOnlyOptionEvent);
+        seqEvents[0].ShouldBe(expiryOnlyOptionEvent);
+        seqEvents[1].ShouldBe(orderedOptionTrade);
     }
 
     // Helper methods to create mocked trades and corporate actions

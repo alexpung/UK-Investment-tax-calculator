@@ -1,4 +1,3 @@
-using InvestmentTaxCalculator.Enumerations;
 using InvestmentTaxCalculator.Model.Interfaces;
 using InvestmentTaxCalculator.Model.TaxEvents;
 
@@ -8,12 +7,6 @@ namespace InvestmentTaxCalculator.Model;
 
 public class GroupedTradeContainer<T>(IEnumerable<T> tradeList, IEnumerable<CorporateAction> corporateActionList) where T : ITradeTaxCalculation
 {
-    private const int AdjustmentsSequence = 10;
-    private const int TradeExecutionSequence = 20;
-    private const int ReorganisationSequence = 30;
-    private const int ExpirationSequence = 40;
-    private const int EndOfDaySequence = 50;
-
     private readonly Dictionary<string, ImmutableList<T>> _tradeListDict = tradeList
         .GroupBy(trade => trade.AssetName)
         .ToDictionary(
@@ -31,8 +24,7 @@ public class GroupedTradeContainer<T>(IEnumerable<T> tradeList, IEnumerable<Corp
     /// <summary>
     /// Builds the dictionary of tax events grouped by asset name.
     /// TakeoverCorporateActions are added to BOTH old company and acquiring company groups.
-    /// Events are sequenced by date-stage model:
-    /// 0 start of day, 10 adjustments, 20 trades, 30 reorganisations, 40 expirations, 50 end of day.
+    /// Corporate actions are processed at the start of their EffectiveDate (midnight).
     /// </summary>
     private static Dictionary<string, ImmutableList<IAssetDatedEvent>> BuildTaxEventsDictionary(
         IEnumerable<T> tradeList,
@@ -64,68 +56,18 @@ public class GroupedTradeContainer<T>(IEnumerable<T> tradeList, IEnumerable<Corp
         return mutableDict.ToDictionary(
             kvp => kvp.Key,
             kvp => kvp.Value
-                .OrderBy(GetEventDateOnly)
-                .ThenBy(GetSequenceId)
-                .ThenBy(taxEvent => taxEvent.Date)
+                .OrderBy(GetProcessingDateTime)
                 .ThenBy(GetStableEventId)
                 .ToImmutableList()
         );
     }
 
-    private static DateOnly GetEventDateOnly(IAssetDatedEvent taxEvent) => DateOnly.FromDateTime(taxEvent.Date);
-
-    private static int GetSequenceId(IAssetDatedEvent taxEvent) => taxEvent switch
+    private static DateTime GetProcessingDateTime(IAssetDatedEvent taxEvent) => taxEvent switch
     {
-        // Stage 10: start-of-day style adjustments before trading.
-        StockSplit => AdjustmentsSequence,
-        SpinoffCorporateAction => AdjustmentsSequence,
-        ReturnOfCapitalCorporateAction => AdjustmentsSequence,
-        ExcessReportableIncome => AdjustmentsSequence,
-        FundEqualisation => AdjustmentsSequence,
-
-        // Stage 30: mergers/reorganisations after trading activity.
-        TakeoverCorporateAction => ReorganisationSequence,
-
-        // Stage 40: option expiry lifecycle event.
-        ITradeTaxCalculation tradeCalculation when IsExpirationOnlyOptionEvent(tradeCalculation) => ExpirationSequence,
-
-        // Stage 20: normal trades.
-        ITradeTaxCalculation => TradeExecutionSequence,
-
-        // Unknown corporate actions default to stage 30 for conservative ordering.
-        CorporateAction => ReorganisationSequence,
-
-        // Fallback for future event types.
-        _ => EndOfDaySequence
+        CorporateAction corporateAction =>
+            DateTime.SpecifyKind(corporateAction.EffectiveDate.ToDateTime(TimeOnly.MinValue), corporateAction.Date.Kind),
+        _ => taxEvent.Date
     };
-
-    private static bool IsExpirationOnlyOptionEvent(ITradeTaxCalculation tradeCalculation)
-    {
-        if (tradeCalculation.AssetCategoryType != AssetCategoryType.OPTION)
-        {
-            return false;
-        }
-
-        var tradeList = tradeCalculation.TradeList;
-        if (tradeList == null || tradeList.Count == 0 || tradeList.Any(trade => trade.AssetType != AssetCategoryType.OPTION))
-        {
-            return false;
-        }
-
-        decimal orderedTradeQty = tradeList
-            .Where(trade => trade.TradeReason == TradeReason.OrderedTrade)
-            .Sum(trade => trade.Quantity);
-
-        decimal expiryQty = tradeList
-            .Where(trade => trade.TradeReason == TradeReason.Expired)
-            .Sum(trade => trade.Quantity);
-
-        decimal nonExpiryLifecycleQty = tradeList
-            .Where(trade => trade.TradeReason is TradeReason.OptionAssigned or TradeReason.OwnerExerciseOption)
-            .Sum(trade => trade.Quantity);
-
-        return expiryQty > 0m && orderedTradeQty == 0m && nonExpiryLifecycleQty == 0m;
-    }
 
     private static int GetStableEventId(IAssetDatedEvent taxEvent) => taxEvent switch
     {

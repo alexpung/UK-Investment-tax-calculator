@@ -69,7 +69,8 @@ public class UkTradeCalculatorTest4Trades
             ],
             GrossProceed = new() { Description = "", Amount = new(600m, "USD"), FxRate = 0.86m },
         };
-        StockSplit stockSplit = new() { AssetName = "ABC", Date = DateTime.Parse("03-May-21 20:25:00", CultureInfo.InvariantCulture), SplitTo = 2, SplitFrom = 1 };
+        StockSplit stockSplit = new() { AssetName = "ABC", Date = DateTime.Parse("04-May-21 13:34:56", CultureInfo.InvariantCulture), SplitTo = 2, SplitFrom = 1 }; 
+        // all stock splits are considered to occur at the start of the day, so will occurs before trade4. Only date is take into account
         List<ITradeTaxCalculation> result = TradeCalculationHelper.CalculateTrades([trade1, trade2, trade3, trade4, stockSplit], out UkSection104Pools section104Pools);
         result[2].TotalProceeds.ShouldBe(new WrappedMoney(1834.725m));
         result[2].Gain.ShouldBe(new WrappedMoney(5.56m));

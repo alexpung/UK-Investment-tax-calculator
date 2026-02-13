@@ -70,7 +70,7 @@ public class StockSplitTests
         var trade2 = Substitute.For<ITradeTaxCalculation>();
         var matchAdjustment = new MatchAdjustment { MatchAdjustmentFactor = 1 };
 
-        trade1.Date.Returns(DateTime.Parse("01-Jan-23 09:00:00", CultureInfo.InvariantCulture));
+        trade1.Date.Returns(DateTime.Parse("31-Dec-22 09:00:00", CultureInfo.InvariantCulture));
         trade2.Date.Returns(DateTime.Parse("05-Jan-23 10:00:00", CultureInfo.InvariantCulture));
         trade1.AssetName.Returns("ABC");
         trade2.AssetName.Returns("ABC");
@@ -95,6 +95,27 @@ public class StockSplitTests
         trade2.Date.Returns(DateTime.Parse("05-Jan-23 10:00:00", CultureInfo.InvariantCulture));
         trade1.AssetName.Returns("XYZ");
         trade2.AssetName.Returns("XYZ");
+
+        // Act
+        var result = _stockSplit.TradeMatching(trade1, trade2, matchAdjustment);
+
+        // Assert
+        result.MatchAdjustmentFactor.ShouldBe(1);
+        result.CorporateActions.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void TradeMatching_SameDayTrades_NoAdjustment()
+    {
+        // Arrange
+        var trade1 = Substitute.For<ITradeTaxCalculation>();
+        var trade2 = Substitute.For<ITradeTaxCalculation>();
+        var matchAdjustment = new MatchAdjustment { MatchAdjustmentFactor = 1 };
+
+        trade1.Date.Returns(DateTime.Parse("01-Jan-23 09:00:00", CultureInfo.InvariantCulture));
+        trade2.Date.Returns(DateTime.Parse("01-Jan-23 15:00:00", CultureInfo.InvariantCulture));
+        trade1.AssetName.Returns("ABC");
+        trade2.AssetName.Returns("ABC");
 
         // Act
         var result = _stockSplit.TradeMatching(trade1, trade2, matchAdjustment);

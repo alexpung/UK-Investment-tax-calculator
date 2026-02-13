@@ -14,6 +14,53 @@ namespace UnitTest.Test.TradeCalculations.Stocks;
 public class UkTradeCalculatorStockSplitTest
 {
     [Fact]
+    public void TestStockSplitOnSameDay_DoesNotAdjustSameDayMatching()
+    {
+        Trade sameDayBuy = new()
+        {
+            AssetName = "SAME_DAY_SPLIT",
+            AcquisitionDisposal = TradeType.ACQUISITION,
+            Date = DateTime.Parse("01-Feb-22 10:00:00", CultureInfo.InvariantCulture),
+            Quantity = 100,
+            GrossProceed = new() { Amount = new(1000m) },
+        };
+
+        StockSplit stockSplit = new()
+        {
+            AssetName = "SAME_DAY_SPLIT",
+            Date = DateTime.Parse("01-Feb-22 12:00:00", CultureInfo.InvariantCulture),
+            SplitFrom = 1,
+            SplitTo = 2
+        };
+
+        Trade sameDaySell = new()
+        {
+            AssetName = "SAME_DAY_SPLIT",
+            AcquisitionDisposal = TradeType.DISPOSAL,
+            Date = DateTime.Parse("01-Feb-22 16:00:00", CultureInfo.InvariantCulture),
+            Quantity = 100,
+            GrossProceed = new() { Amount = new(1200m) },
+        };
+
+        UkSection104Pools section104Pools = new(new UKTaxYear(), new ResidencyStatusRecord());
+        TaxEventLists taxEventLists = new();
+        taxEventLists.AddData([sameDayBuy, stockSplit, sameDaySell]);
+
+        UkTradeCalculator calculator = TradeCalculationHelper.CreateUkTradeCalculator(section104Pools, taxEventLists);
+        List<ITradeTaxCalculation> result = calculator.CalculateTax();
+
+        ITradeTaxCalculation disposal = result.First(x => x.AcquisitionDisposal == TradeType.DISPOSAL && x is not CorporateActionTaxCalculation);
+        disposal.MatchHistory.Count.ShouldBe(1);
+        disposal.MatchHistory[0].TradeMatchType.ShouldBe(TaxMatchType.SAME_DAY);
+        disposal.TotalAllowableCost.Amount.ShouldBe(1000m, 0.01m);
+        disposal.Gain.Amount.ShouldBe(200m, 0.01m);
+
+        UkSection104 pool = section104Pools.GetExistingOrInitialise("SAME_DAY_SPLIT");
+        pool.Quantity.ShouldBe(0m);
+        pool.AcquisitionCostInBaseCurrency.Amount.ShouldBe(0m, 0.01m);
+    }
+
+    [Fact]
     public void TestStockSplitIntraday_AppliesBeforeLaterDisposalInSection104Flow()
     {
         Trade initialPurchase = new()
