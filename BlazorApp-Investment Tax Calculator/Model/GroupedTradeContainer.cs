@@ -57,7 +57,6 @@ public class GroupedTradeContainer<T>(IEnumerable<T> tradeList, IEnumerable<Corp
             kvp => kvp.Key,
             kvp => kvp.Value
                 .OrderBy(GetProcessingDateTime)
-                .ThenBy(GetStableEventId)
                 .ToImmutableList()
         );
     }
@@ -67,13 +66,6 @@ public class GroupedTradeContainer<T>(IEnumerable<T> tradeList, IEnumerable<Corp
         CorporateAction corporateAction =>
             DateTime.SpecifyKind(corporateAction.EffectiveDate.ToDateTime(TimeOnly.MinValue), corporateAction.Date.Kind),
         _ => taxEvent.Date
-    };
-
-    private static int GetStableEventId(IAssetDatedEvent taxEvent) => taxEvent switch
-    {
-        ITradeTaxCalculation tradeCalculation => tradeCalculation.Id,
-        TaxEvent taxEventRecord => taxEventRecord.Id,
-        _ => 0
     };
 
     /// <summary>
