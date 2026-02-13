@@ -1,4 +1,6 @@
-﻿namespace UnitTest.Test.TradeCalculations;
+namespace UnitTest.Test.TradeCalculations;
+
+using InvestmentTaxCalculator.Enumerations;
 using InvestmentTaxCalculator.Model;
 using InvestmentTaxCalculator.Model.Interfaces;
 using InvestmentTaxCalculator.Model.TaxEvents;
@@ -109,12 +111,63 @@ public class GroupedTradeContainerTests
         xyzEvents.Events[2].Date.ShouldBe(DateTime.Parse("05-Jan-23 10:00:00", CultureInfo.InvariantCulture)); // Second trade
     }
 
+    [Fact]
+    public void GetAllTaxEventsGroupedAndSorted_SameDay_ProcessesCorporateActionsAtMidnightUsingEffectiveDate()
+    {
+        DateTime sameDay = DateTime.Parse("10-Jan-24 00:00:00", CultureInfo.InvariantCulture);
+
+        ITradeTaxCalculation trade = CreateTrade("SEQ", sameDay.AddHours(9), id: 100, assetCategoryType: AssetCategoryType.STOCK, TradeReason.OrderedTrade);
+        StockSplit split = new()
+        {
+            AssetName = "SEQ",
+            Date = sameDay.AddHours(16),
+            SplitTo = 2,
+            SplitFrom = 1
+        };
+        CorporateAction reorganisation = CreateCorporateAction("SEQ", sameDay.AddHours(8));
+
+        GroupedTradeContainer<ITradeTaxCalculation> container = new([trade], [split, reorganisation]);
+
+        var seqEvents = container.GetAllTaxEventsGroupedAndSorted().Single(e => e.AssetName == "SEQ").Events;
+
+        seqEvents.Count.ShouldBe(3);
+        seqEvents[0].ShouldBeAssignableTo<CorporateAction>();
+        seqEvents[1].ShouldBeAssignableTo<CorporateAction>();
+        seqEvents[2].ShouldBe(trade);
+        seqEvents.IndexOf(split).ShouldBeLessThan(seqEvents.IndexOf(trade));
+    }
+
+    [Fact]
+    public void GetAllTaxEventsGroupedAndSorted_SameDay_OrdersTradesByTimestamp()
+    {
+        DateTime sameDay = DateTime.Parse("11-Jan-24 00:00:00", CultureInfo.InvariantCulture);
+
+        ITradeTaxCalculation expiryOnlyOptionEvent = CreateTrade("OPTSEQ", sameDay.AddHours(9), id: 1, assetCategoryType: AssetCategoryType.OPTION, TradeReason.Expired);
+        ITradeTaxCalculation orderedOptionTrade = CreateTrade("OPTSEQ", sameDay.AddHours(16), id: 2, assetCategoryType: AssetCategoryType.OPTION, TradeReason.OrderedTrade);
+
+        GroupedTradeContainer<ITradeTaxCalculation> container = new([expiryOnlyOptionEvent, orderedOptionTrade], []);
+
+        var seqEvents = container.GetAllTaxEventsGroupedAndSorted().Single(e => e.AssetName == "OPTSEQ").Events;
+
+        seqEvents.Count.ShouldBe(2);
+        seqEvents[0].ShouldBe(expiryOnlyOptionEvent);
+        seqEvents[1].ShouldBe(orderedOptionTrade);
+    }
+
     // Helper methods to create mocked trades and corporate actions
-    private static ITradeTaxCalculation CreateTrade(string assetName, DateTime date)
+    private static ITradeTaxCalculation CreateTrade(
+        string assetName,
+        DateTime date,
+        int id = 0,
+        AssetCategoryType assetCategoryType = AssetCategoryType.STOCK,
+        params TradeReason[] tradeReasons)
     {
         var trade = Substitute.For<ITradeTaxCalculation>();
         trade.AssetName.Returns(assetName);
         trade.Date.Returns(date);
+        trade.Id.Returns(id);
+        trade.AssetCategoryType.Returns(assetCategoryType);
+        trade.TradeList.Returns(CreateTradeList(assetName, date, assetCategoryType, tradeReasons));
         return trade;
     }
 
@@ -126,5 +179,40 @@ public class GroupedTradeContainerTests
         corporateAction.Date.Returns(date);
         return corporateAction;
     }
-}
 
+    private static List<Trade> CreateTradeList(string assetName, DateTime date, AssetCategoryType assetCategoryType, IReadOnlyCollection<TradeReason> tradeReasons)
+    {
+        IReadOnlyCollection<TradeReason> reasons = tradeReasons.Count == 0 ? [TradeReason.OrderedTrade] : tradeReasons;
+        return reasons
+            .Select(reason => assetCategoryType == AssetCategoryType.OPTION
+                ? CreateOptionTrade(assetName, date, reason)
+                : CreateRegularTrade(assetName, date, assetCategoryType, reason))
+            .ToList();
+    }
+
+    private static Trade CreateRegularTrade(string assetName, DateTime date, AssetCategoryType assetCategoryType, TradeReason reason) => new()
+    {
+        AssetName = assetName,
+        Date = date,
+        AssetType = assetCategoryType,
+        AcquisitionDisposal = TradeType.ACQUISITION,
+        Quantity = 1,
+        TradeReason = reason,
+        GrossProceed = new() { Amount = new WrappedMoney(1m) },
+    };
+
+    private static Trade CreateOptionTrade(string assetName, DateTime date, TradeReason reason) => new OptionTrade()
+    {
+        AssetName = assetName,
+        Date = date,
+        AcquisitionDisposal = TradeType.ACQUISITION,
+        Quantity = 1,
+        TradeReason = reason,
+        GrossProceed = new() { Amount = new WrappedMoney(1m) },
+        Underlying = "UNDERLYING",
+        StrikePrice = new WrappedMoney(100m),
+        ExpiryDate = date.Date.AddMonths(1),
+        PUTCALL = PUTCALL.CALL,
+        Multiplier = 100,
+    };
+}

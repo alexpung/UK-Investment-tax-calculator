@@ -1,4 +1,4 @@
-﻿using InvestmentTaxCalculator.Model.Interfaces;
+using InvestmentTaxCalculator.Model.Interfaces;
 using InvestmentTaxCalculator.Model.TaxEvents;
 
 using System.Collections.Immutable;
@@ -7,11 +7,14 @@ namespace InvestmentTaxCalculator.Model;
 
 public class GroupedTradeContainer<T>(IEnumerable<T> tradeList, IEnumerable<CorporateAction> corporateActionList) where T : ITradeTaxCalculation
 {
-    private readonly Dictionary<string, ImmutableList<T>> _tradeListDict = tradeList.GroupBy(trade => trade.AssetName)
-                                                                                                       .ToDictionary(
-                                                                                                       group => group.Key,
-                                                                                                       group => group.OrderBy(trade => trade.Date.Date).ToImmutableList()
-                                                                                                       );
+    private readonly Dictionary<string, ImmutableList<T>> _tradeListDict = tradeList
+        .GroupBy(trade => trade.AssetName)
+        .ToDictionary(
+            group => group.Key,
+            group => group.OrderBy(trade => trade.Date)
+                          .ThenBy(trade => trade.Id)
+                          .ToImmutableList()
+        );
 
     private readonly Dictionary<string, ImmutableList<IAssetDatedEvent>> _tradeAndCorporateActionListDict = BuildTaxEventsDictionary(tradeList, corporateActionList);
 
@@ -21,6 +24,7 @@ public class GroupedTradeContainer<T>(IEnumerable<T> tradeList, IEnumerable<Corp
     /// <summary>
     /// Builds the dictionary of tax events grouped by asset name.
     /// TakeoverCorporateActions are added to BOTH old company and acquiring company groups.
+    /// Corporate actions are processed at the start of their EffectiveDate (midnight).
     /// </summary>
     private static Dictionary<string, ImmutableList<IAssetDatedEvent>> BuildTaxEventsDictionary(
         IEnumerable<T> tradeList,
@@ -51,9 +55,18 @@ public class GroupedTradeContainer<T>(IEnumerable<T> tradeList, IEnumerable<Corp
 
         return mutableDict.ToDictionary(
             kvp => kvp.Key,
-            kvp => kvp.Value.OrderBy(e => e.Date.Date).ToImmutableList()
+            kvp => kvp.Value
+                .OrderBy(GetProcessingDateTime)
+                .ToImmutableList()
         );
     }
+
+    private static DateTime GetProcessingDateTime(IAssetDatedEvent taxEvent) => taxEvent switch
+    {
+        CorporateAction corporateAction =>
+            DateTime.SpecifyKind(corporateAction.EffectiveDate.ToDateTime(TimeOnly.MinValue), corporateAction.Date.Kind),
+        _ => taxEvent.Date
+    };
 
     /// <summary>
     /// Builds dependency tree for corporate actions.
@@ -108,7 +121,7 @@ public class GroupedTradeContainer<T>(IEnumerable<T> tradeList, IEnumerable<Corp
     /// </summary>
     public IEnumerable<ImmutableList<T>> GetAllTradesGroupedAndSorted()
     {
-        foreach (var key in _tradeListDict.Keys)
+        foreach (var key in _tradeListDict.Keys.OrderBy(key => key, StringComparer.Ordinal))
         {
             yield return _tradeListDict[key];
         }
@@ -161,18 +174,5 @@ public class GroupedTradeContainer<T>(IEnumerable<T> tradeList, IEnumerable<Corp
         {
             yield return (asset, _tradeAndCorporateActionListDict[asset]);
         }
-    }
-
-    private static List<string> GetOrderedTickers(CorporateAction action)
-    {
-        var tickers = action.CompanyTickersInProcessingOrder;
-
-        if (tickers == null || tickers.Count == 0)
-        {
-            return [action.AssetName];
-        }
-
-        var validTickers = tickers.Where(ticker => !string.IsNullOrWhiteSpace(ticker)).ToList();
-        return validTickers.Count > 0 ? validTickers : [action.AssetName];
     }
 }
