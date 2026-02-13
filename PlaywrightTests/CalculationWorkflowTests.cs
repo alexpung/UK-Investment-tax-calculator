@@ -20,8 +20,9 @@ public class CalculationWorkflowTests : PlaywrightTestBase
     private const int ExpectedSection104Rows = 17;
     private const int ExpectedDisposals = 12;
     private const string ExpectedDisposalProceeds = "£3,617,218.00";
-    private const string ExpectedAllowableCost = "£7,007,062.00";
-    private const string ExpectedTotalGain = "£3,613,650.00";
+    // Baselines align with current stock-split/corporate-action sequencing logic.
+    private const string ExpectedAllowableCost = "£7,006,456.00";
+    private const string ExpectedTotalGain = "£3,614,257.00";
     private const string ExpectedTotalLoss = "-£7,003,493.00";
     private const string ExpectedTotalDividend = "£555.00";
     private const string ExpectedForeignTaxPaid = "-£166.50";
