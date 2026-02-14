@@ -19,11 +19,14 @@
                 <GridColumn Field="@nameof(CorporateAction.Date)" HeaderText="Date" Format="d" Width="120"></GridColumn>
                 <GridColumn Field="@nameof(CorporateAction.AssetName)" HeaderText="Asset" Width="150"></GridColumn>
                 <GridColumn Field="@nameof(CorporateAction.Reason)" HeaderText="Reason/Description"></GridColumn>
-                <GridColumn HeaderText="Actions" Width="100" TextAlign="TextAlign.Center">
+                <GridColumn HeaderText="Actions" Width="180" TextAlign="TextAlign.Center">
                     <Template>
                         @{
                             var action = (CorporateAction)context;
-                            <SfButton IconCss="e-icons e-delete" CssClass="e-danger e-small" OnClick="@(() => DeleteAction(action))" Content="Delete"></SfButton>
+                            <div class="d-flex gap-2 justify-content-center">
+                                <SfButton IconCss="e-icons e-edit" CssClass="e-primary e-small" OnClick="@(() => EditAction(action))" Content="Edit"></SfButton>
+                                <SfButton IconCss="e-icons e-delete" CssClass="e-danger e-small" OnClick="@(() => DeleteAction(action))" Content="Delete"></SfButton>
+                            </div>
                         }
                     </Template>
                 </GridColumn>
@@ -34,11 +37,18 @@
 
 @code {
     [Parameter] public EventCallback OnActionDeleted { get; set; }
+    [Parameter] public EventCallback<CorporateAction> OnActionEdit { get; set; }
+    
     private SfGrid<CorporateAction> _grid = default!;
 
     public void Refresh()
     {
         _grid?.Refresh();
+    }
+
+    private async Task EditAction(CorporateAction action)
+    {
+        await OnActionEdit.InvokeAsync(action);
     }
 
     private async Task DeleteAction(CorporateAction action)

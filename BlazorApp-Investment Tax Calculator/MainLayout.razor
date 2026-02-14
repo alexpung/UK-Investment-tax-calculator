@@ -1,6 +1,9 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
 @using InvestmentTaxCalculator.Pages
 @using InvestmentTaxCalculator.Components
+@using InvestmentTaxCalculator.Services
+@implements IDisposable
+@inject TaxCalculationService TaxCalculationService
 
 <div class="app-container">
     <NavMenu />
@@ -9,3 +12,64 @@
         <ToastComponent />
     </main>
 </div>
+
+@if (TaxCalculationService.IsCalculating)
+{
+    <div class="calc-overlay" role="status" aria-live="polite" aria-label="@OverlayTitle">
+        <div class="calc-overlay-card">
+            <div class="spinner-border text-info mb-3" role="presentation"></div>
+            <div class="fw-semibold">@OverlayTitle</div>
+            <div class="small text-light-emphasis">@OverlaySubtitle</div>
+        </div>
+    </div>
+}
+
+<style>
+    .calc-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 2000;
+        background-color: rgba(10, 14, 25, 0.55);
+        backdrop-filter: blur(2px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+    }
+
+    .calc-overlay-card {
+        width: min(460px, 92vw);
+        background: #0f172a;
+        border: 1px solid #334155;
+        border-radius: 12px;
+        padding: 1.25rem;
+        text-align: center;
+        color: #e2e8f0;
+        box-shadow: 0 14px 40px rgba(2, 6, 23, 0.45);
+    }
+</style>
+
+@code {
+    private string OverlayTitle => TaxCalculationService.CurrentTrigger == CalculationTrigger.NavigationRefresh
+        ? "Recalculating with updated information..."
+        : "Calculating...";
+
+    private string OverlaySubtitle => TaxCalculationService.CurrentTrigger == CalculationTrigger.NavigationRefresh
+        ? "Please wait. Navigation will continue automatically."
+        : "Please wait while calculation is running.";
+
+    protected override void OnInitialized()
+    {
+        TaxCalculationService.OnStateChanged += HandleTaxCalculationStateChanged;
+    }
+
+    private void HandleTaxCalculationStateChanged()
+    {
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        TaxCalculationService.OnStateChanged -= HandleTaxCalculationStateChanged;
+    }
+}

@@ -6,6 +6,12 @@ using InvestmentTaxCalculator.Model.UkTaxModel.Stocks;
 
 namespace InvestmentTaxCalculator.Services;
 
+public enum CalculationTrigger
+{
+    Manual,
+    NavigationRefresh
+}
+
 public class TaxCalculationService(
     UkSection104Pools section104Pools,
     IDividendCalculator dividendCalculator,
@@ -18,14 +24,18 @@ public class TaxCalculationService(
 {
     private bool _isCalculating = false;
     public bool IsCalculating => _isCalculating;
+    public CalculationTrigger CurrentTrigger { get; private set; } = CalculationTrigger.Manual;
+    public event Action? OnStateChanged;
 
-    public async Task CalculateAsync()
+    public async Task CalculateAsync(CalculationTrigger trigger = CalculationTrigger.Manual)
     {
         if (_isCalculating) return;
 
         try
         {
+            CurrentTrigger = trigger;
             _isCalculating = true;
+            OnStateChanged?.Invoke();
             section104Pools.Clear();
             tradeCalculationResult.Clear();
             ITradeTaxCalculation.ResetID();
@@ -47,6 +57,8 @@ public class TaxCalculationService(
         finally
         {
             _isCalculating = false;
+            CurrentTrigger = CalculationTrigger.Manual;
+            OnStateChanged?.Invoke();
         }
     }
 

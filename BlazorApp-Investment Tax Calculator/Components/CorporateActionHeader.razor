@@ -1,0 +1,178 @@
+@using InvestmentTaxCalculator.Model
+@using InvestmentTaxCalculator.Model.UkTaxModel
+@using InvestmentTaxCalculator.Services
+@using Syncfusion.Blazor.Calendars
+@using Syncfusion.Blazor.DropDowns
+@using Syncfusion.Blazor.Inputs
+
+@inject UkSection104Pools _ukSection104Pools
+@inject TradeCalculationResult _tradeCalculationResult
+
+<div class="row mb-3">
+    <div class="col-md-6">
+        <label class="form-label">Date</label>
+        <SfDatePicker TValue="DateTime" Value="@Date" Format="d">
+            <DatePickerEvents TValue="DateTime" ValueChange="@OnDateChangeInternal"></DatePickerEvents>
+        </SfDatePicker>
+    </div>
+</div>
+
+<div class="row mb-3">
+    <div class="col-md-6">
+        <label class="form-label">@SourceLabel</label>
+        <SfDropDownList TValue="string" TItem="string" Placeholder="Select Asset" DataSource="@_availableAssets" Value="@SourceTicker">
+            <DropDownListFieldSettings Text="" Value=""></DropDownListFieldSettings>
+            <DropDownListEvents TItem="string" TValue="string" ValueChange="@OnSourceTickerChangedInternal"></DropDownListEvents>
+        </SfDropDownList>
+        @if (!string.IsNullOrEmpty(SourceTicker))
+        {
+            <div class="form-text text-info">
+                Holding on @Date.ToShortDateString(): <strong>@CurrentHolding</strong> shares
+            </div>
+        }
+    </div>
+    <div class="col-md-6">
+        <label class="form-label">@DestinationLabel</label>
+        <SfComboBox TValue="string" TItem="string" Placeholder="Select or Enter Ticker" DataSource="@_availableAssets" Value="@DestinationTicker" AllowCustom="true" Enabled="@(!IsDestinationDisabled)">
+            <ComboBoxEvents TItem="string" TValue="string" ValueChange="@OnDestinationTickerChangedInternal"></ComboBoxEvents>
+        </SfComboBox>
+    </div>
+</div>
+
+<div class="row mb-3">
+    <div class="col-12">
+        <label class="form-label">@RatioLabel</label>
+    </div>
+    <div class="col-md-5">
+        <div class="input-group">
+            <span class="input-group-text">For every</span>
+            <SfNumericTextBox TValue="decimal" Value="@SourceRatio" Min="@RatioMin" Placeholder="Qty" Decimals="@RatioDecimals" Format="@RatioFormat">
+                <NumericTextBoxEvents TValue="decimal" ValueChange="@OnSourceRatioChangedInternal"></NumericTextBoxEvents>
+            </SfNumericTextBox>
+            <span class="input-group-text">@SourceUnitLabel</span>
+        </div>
+    </div>
+    <div class="col-md-2 text-center align-self-center">
+        <i class="oi oi-arrow-right"></i>
+    </div>
+    <div class="col-md-5">
+        <div class="input-group">
+            <span class="input-group-text">Receive</span>
+            <SfNumericTextBox TValue="decimal" Value="@DestinationRatio" Min="@RatioMin" Placeholder="Qty" Decimals="@RatioDecimals" Format="@RatioFormat">
+                <NumericTextBoxEvents TValue="decimal" ValueChange="@OnDestinationRatioChangedInternal"></NumericTextBoxEvents>
+            </SfNumericTextBox>
+            <span class="input-group-text">@DestinationUnitLabel</span>
+        </div>
+        @if (DestinationInfo != null)
+        {
+            <div class="form-text text-info mt-1">
+                @DestinationInfo
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public DateTime Date { get; set; }
+    [Parameter] public EventCallback<DateTime> DateChanged { get; set; }
+
+    [Parameter] public string? SourceTicker { get; set; }
+    [Parameter] public EventCallback<string?> SourceTickerChanged { get; set; }
+
+    [Parameter] public string? DestinationTicker { get; set; }
+    [Parameter] public EventCallback<string?> DestinationTickerChanged { get; set; }
+
+    [Parameter] public decimal SourceRatio { get; set; }
+    [Parameter] public EventCallback<decimal> SourceRatioChanged { get; set; }
+
+    [Parameter] public decimal DestinationRatio { get; set; }
+    [Parameter] public EventCallback<decimal> DestinationRatioChanged { get; set; }
+
+    [Parameter] public string SourceLabel { get; set; } = "Original Asset";
+    [Parameter] public string DestinationLabel { get; set; } = "New Asset";
+    [Parameter] public string RatioLabel { get; set; } = "Exchange Ratio";
+    [Parameter] public string SourceUnitLabel { get; set; } = "shares";
+    [Parameter] public string DestinationUnitLabel { get; set; } = "shares";
+    [Parameter] public RenderFragment? DestinationInfo { get; set; }
+    [Parameter] public bool IsDestinationDisabled { get; set; }
+    [Parameter] public int RatioDecimals { get; set; } = 4;
+    [Parameter] public string RatioFormat { get; set; } = "n4";
+    [Parameter] public decimal RatioMin { get; set; } = 0.0001m;
+    [Parameter] public EventCallback OnInputsChanged { get; set; }
+
+    public decimal CurrentHolding { get; private set; }
+    private List<string> _availableAssets = [];
+
+    protected override void OnInitialized()
+    {
+        RefreshAssets();
+        CalculateStats();
+    }
+
+    protected override void OnParametersSet()
+    {
+        CalculateStats();
+    }
+
+    private void RefreshAssets()
+    {
+        if (_tradeCalculationResult.CalculatedTrade.Any())
+        {
+            _availableAssets = _ukSection104Pools.GetSection104s()
+                .Select(x => x.AssetName)
+                .OrderBy(x => x)
+                .ToList();
+        }
+    }
+
+    private void CalculateStats()
+    {
+        CurrentHolding = 0;
+        if (string.IsNullOrEmpty(SourceTicker)) return;
+
+        var pool = _ukSection104Pools.GetExistingOrInitialise(SourceTicker!);
+        var history = pool.GetLastSection104History(DateOnly.FromDateTime(Date));
+        
+        if (history != null) 
+        {
+            CurrentHolding = history.NewQuantity;
+        }
+    }
+
+    private async Task OnDateChangeInternal(Syncfusion.Blazor.Calendars.ChangedEventArgs<DateTime> args)
+    {
+        Date = args.Value;
+        CalculateStats();
+        await DateChanged.InvokeAsync(args.Value);
+        await OnInputsChanged.InvokeAsync();
+    }
+
+    private async Task OnSourceTickerChangedInternal(Syncfusion.Blazor.DropDowns.ChangeEventArgs<string, string> args)
+    {
+        SourceTicker = args.Value;
+        CalculateStats();
+        await SourceTickerChanged.InvokeAsync(args.Value);
+        await OnInputsChanged.InvokeAsync();
+    }
+
+    private async Task OnDestinationTickerChangedInternal(Syncfusion.Blazor.DropDowns.ChangeEventArgs<string, string> args)
+    {
+        DestinationTicker = args.Value;
+        await DestinationTickerChanged.InvokeAsync(args.Value);
+        await OnInputsChanged.InvokeAsync();
+    }
+
+    private async Task OnSourceRatioChangedInternal(Syncfusion.Blazor.Inputs.ChangeEventArgs<decimal> args)
+    {
+        SourceRatio = args.Value;
+        await SourceRatioChanged.InvokeAsync(args.Value);
+        await OnInputsChanged.InvokeAsync();
+    }
+
+    private async Task OnDestinationRatioChangedInternal(Syncfusion.Blazor.Inputs.ChangeEventArgs<decimal> args)
+    {
+        DestinationRatio = args.Value;
+        await DestinationRatioChanged.InvokeAsync(args.Value);
+        await OnInputsChanged.InvokeAsync();
+    }
+}

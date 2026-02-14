@@ -1,6 +1,9 @@
-﻿@page "/MainCalculatorPage"
+@page "/MainCalculatorPage"
 
 @using InvestmentTaxCalculator.Components
+@using InvestmentTaxCalculator.Services
+@implements IDisposable
+@inject TaxCalculationService TaxCalculationService
 <div class="container-fluid py-5">
     <div class="row">
         <div class="col-lg-10 mx-auto">
@@ -44,11 +47,35 @@
 
 @code {
     private int calculationVersion = 0;
+    private bool _wasCalculating;
+
+    protected override void OnInitialized()
+    {
+        _wasCalculating = TaxCalculationService.IsCalculating;
+        TaxCalculationService.OnStateChanged += HandleTaxCalculationStateChanged;
+    }
 
     private Task HandleCalculated()
     {
         calculationVersion++;
         StateHasChanged();
         return Task.CompletedTask;
+    }
+
+    private void HandleTaxCalculationStateChanged()
+    {
+        bool isCalculating = TaxCalculationService.IsCalculating;
+        if (_wasCalculating && !isCalculating)
+        {
+            calculationVersion++;
+        }
+
+        _wasCalculating = isCalculating;
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        TaxCalculationService.OnStateChanged -= HandleTaxCalculationStateChanged;
     }
 }
