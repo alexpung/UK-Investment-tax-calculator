@@ -35,7 +35,7 @@ public class TaxCalculationService(
         {
             CurrentTrigger = trigger;
             _isCalculating = true;
-            OnStateChanged?.Invoke();
+            SafeInvokeOnStateChanged();
             section104Pools.Clear();
             tradeCalculationResult.Clear();
             ITradeTaxCalculation.ResetID();
@@ -58,7 +58,19 @@ public class TaxCalculationService(
         {
             _isCalculating = false;
             CurrentTrigger = CalculationTrigger.Manual;
+            SafeInvokeOnStateChanged();
+        }
+    }
+
+    private void SafeInvokeOnStateChanged()
+    {
+        try
+        {
             OnStateChanged?.Invoke();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"TaxCalculationService.OnStateChanged subscriber failed: {ex}");
         }
     }
 

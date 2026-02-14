@@ -122,6 +122,7 @@
 
     private decimal _expectedNewQuantity;
     private bool _isEditing => ActionToEdit != null;
+    private TakeoverCorporateAction? _previousActionToEdit;
 
     private List<CurrencyViewModel> _currencies = [];
 
@@ -138,7 +139,14 @@
     {
         if (ActionToEdit != null)
         {
-            LoadAction(ActionToEdit);
+            if (!ReferenceEquals(ActionToEdit, _previousActionToEdit))
+            {
+                LoadAction(ActionToEdit);
+            }
+        }
+        else if (_previousActionToEdit != null)
+        {
+            _previousActionToEdit = null;
         }
     }
 
@@ -171,14 +179,16 @@
         }
 
         CalculateStats();
+        _previousActionToEdit = action;
     }
 
-    private void CancelEdit()
+    private async Task CancelEdit()
     {
          _oldTicker = null;
          _newTicker = null;
+         _previousActionToEdit = null;
          ActionToEdit = null;
-         OnCorporateActionAdded.InvokeAsync();
+         await OnCorporateActionAdded.InvokeAsync();
     }
 
     private void CalculateStats()

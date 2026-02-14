@@ -35,7 +35,7 @@
 
         <div class="row mb-3">
             <div class="col-12">
-                <SfCheckBox Label="@CheckboxLabel" Checked="@ElectSmallCash" CheckedChanged="@((bool v) => OnElectSmallCashChangedInternal(v))"></SfCheckBox>
+                <SfCheckBox Label="@CheckboxLabel" Checked="@ElectSmallCash" CheckedChanged="@(async (bool v) => await OnElectSmallCashChangedInternal(v))"></SfCheckBox>
                 @if (!string.IsNullOrEmpty(CheckboxHelpText))
                 {
                     <div class="form-text text-white-50">
@@ -76,27 +76,27 @@
         _currencies = CurrencyService.GetCurrencies();
     }
 
-    private void OnCashAmountChangedInternal(Syncfusion.Blazor.Inputs.ChangeEventArgs<decimal> args)
+    private async Task OnCashAmountChangedInternal(Syncfusion.Blazor.Inputs.ChangeEventArgs<decimal> args)
     {
         CashAmount = args.Value;
-        CashAmountChanged.InvokeAsync(args.Value);
+        await CashAmountChanged.InvokeAsync(args.Value);
     }
 
-    private void OnCashCurrencyChangedInternal(Syncfusion.Blazor.DropDowns.ChangeEventArgs<string, CurrencyViewModel> args)
+    private async Task OnCashCurrencyChangedInternal(Syncfusion.Blazor.DropDowns.ChangeEventArgs<string, CurrencyViewModel> args)
     {
         CashCurrency = args.Value;
-        CashCurrencyChanged.InvokeAsync(args.Value);
+        await CashCurrencyChanged.InvokeAsync(args.Value);
     }
 
-    private void OnCashFxChangedInternal(Syncfusion.Blazor.Inputs.ChangeEventArgs<decimal> args)
+    private async Task OnCashFxChangedInternal(Syncfusion.Blazor.Inputs.ChangeEventArgs<decimal> args)
     {
         CashFx = args.Value;
-        CashFxChanged.InvokeAsync(args.Value);
+        await CashFxChanged.InvokeAsync(args.Value);
     }
 
-    private void OnElectSmallCashChangedInternal(bool value)
+    private async Task OnElectSmallCashChangedInternal(bool value)
     {
         ElectSmallCash = value;
-        ElectSmallCashChanged.InvokeAsync(value);
+        await ElectSmallCashChanged.InvokeAsync(value);
     }
 }

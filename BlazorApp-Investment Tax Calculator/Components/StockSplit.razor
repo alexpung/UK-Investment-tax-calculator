@@ -106,6 +106,7 @@
     private decimal _expectedNewQuantity;
     private decimal _fractionalRemoved;
     private bool _isEditing => ActionToEdit != null;
+    private StockSplitAction? _previousActionToEdit;
     private const decimal FractionalTolerance = 0.00000001m;
 
     protected override void OnInitialized()
@@ -120,7 +121,14 @@
     {
         if (ActionToEdit != null)
         {
-             LoadAction(ActionToEdit);
+            if (!ReferenceEquals(ActionToEdit, _previousActionToEdit))
+            {
+                LoadAction(ActionToEdit);
+            }
+        }
+        else if (_previousActionToEdit != null)
+        {
+            _previousActionToEdit = null;
         }
     }
 
@@ -139,9 +147,10 @@
         }
         _electSmallCash = action.ElectTaxDeferral;
         CalculateStats();
+        _previousActionToEdit = action;
     }
 
-    private void CancelEdit()
+    private async Task CancelEdit()
     {
          _ticker = null;
          _splitFrom = 1m;
@@ -149,8 +158,9 @@
          _hasCash = false;
          _cashAmount = 0;
          _electSmallCash = true;
+         _previousActionToEdit = null;
          ActionToEdit = null;
-         OnCorporateActionAdded.InvokeAsync(); 
+         await OnCorporateActionAdded.InvokeAsync(); 
     }
 
     private void CalculateStats()
@@ -183,6 +193,11 @@
         if (_splitFrom != decimal.Truncate(_splitFrom) || _splitTo != decimal.Truncate(_splitTo))
         {
             _toastService.ShowError("Stock split ratio values must be whole numbers.");
+            return;
+        }
+        if (_splitFrom > int.MaxValue || _splitTo > int.MaxValue)
+        {
+            _toastService.ShowError($"Stock split ratio values must be less than or equal to {int.MaxValue:N0}.");
             return;
         }
 
