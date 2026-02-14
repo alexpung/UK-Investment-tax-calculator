@@ -1,14 +1,13 @@
 ﻿using InvestmentTaxCalculator.Enumerations;
 using InvestmentTaxCalculator.Model.Interfaces;
 using InvestmentTaxCalculator.Model.UkTaxModel;
-using InvestmentTaxCalculator.Model.UkTaxModel.Stocks;
-
-using System.Text.Json.Serialization;
 
 namespace InvestmentTaxCalculator.Model.TaxEvents;
 
 public record StockSplit : CorporateAction, IChangeSection104
 {
+    private const decimal FractionalTolerance = 0.00000001m;
+
     /// <summary>
     /// The number of shares after the split that are being given for the original number of shares.
     /// For example, in a 2:1 stock split, where 2 shares are given for every 1 share, this is 2.
@@ -58,6 +57,9 @@ public record StockSplit : CorporateAction, IChangeSection104
     {
         if (AssetName != section104.AssetName) return;
 
+        // Ensure per-run state is reset before processing.
+        CashDisposal = null;
+
         decimal oldQuantity = section104.Quantity;
         WrappedMoney oldCost = section104.AcquisitionCostInBaseCurrency;
 
@@ -75,51 +77,63 @@ public record StockSplit : CorporateAction, IChangeSection104
             // Process cash-in-lieu and rounding
             decimal roundedQuantity = Math.Floor(rawNewQuantity);
             decimal fractionalRemoved = rawNewQuantity - roundedQuantity;
-
-            if (fractionalRemoved > 0)
+            if (fractionalRemoved <= FractionalTolerance)
             {
-                // This will setup the CashDisposal property if applicable (deferral not elected or gain exists)
-                WrappedMoney cashCostUsed = ProcessCashInLieu(oldCost, rawNewQuantity, fractionalRemoved, section104);
+                throw new InvalidOperationException(
+                    $"Cash-in-lieu provided for {AssetName} stock split {SplitTo} for {SplitFrom} on {Date:d}, " +
+                    $"but no fractional shares were produced from quantity {oldQuantity}.");
+            }
 
-                // Following user's advice: use AddAssets/RemoveAssets (or similar) to adjust diff.
-                // We basically want to remove fractionalRemoved quantity and its corresponding cost bits.
-                
-                if (CashDisposal != null)
+            // This will setup the CashDisposal property if applicable (deferral not elected or gain exists)
+            WrappedMoney cashCostUsed = ProcessCashInLieu(oldCost, rawNewQuantity, fractionalRemoved, section104);
+
+            // Following user's advice: use AddAssets/RemoveAssets (or similar) to adjust diff.
+            // We basically want to remove fractionalRemoved quantity and its corresponding cost bits.
+
+            if (CashDisposal != null)
+            {
+                // 1. Remove the quantity (this also removes the proportion of cost based on rawNewQuantity)
+                string roundingExplanation = $"Fractional shares ({fractionalRemoved:F4}) removed for cash-in-lieu";
+                var removalResults = section104.RemoveAssets(CashDisposal!, fractionalRemoved);
+                foreach (var removal in removalResults)
                 {
-                    // 1. Remove the quantity (this also removes the proportion of cost based on rawNewQuantity)
-                    string roundingExplanation = $"Fractional shares ({fractionalRemoved:F4}) removed for cash-in-lieu";
-                    section104.RemoveAssets(CashDisposal!, fractionalRemoved);
-                    
-                    // 2. Adjust the pool cost if we deferred some of the cost of the removed fractions
-                    // RemoveAssets removes proportional cost: Cost * (QtyRemoved / TotalQty)
-                    // We want to remove `cashCostUsed`.
-                    // So we add back (Proportional - ActualUsed).
-                    
-                    // Note: In StockSplit, we are removing from NEW quantity basis?
-                    // Actually, RemoveAssets removes from *current* pool state.
-                    // The pool currently has `rawNewQuantity`.
-                    WrappedMoney proportionalCostRemoved = oldCost * (fractionalRemoved / rawNewQuantity);
-                    WrappedMoney costToAddBack = proportionalCostRemoved - cashCostUsed;
-                    
-                    if (Math.Abs(costToAddBack.Amount) > 0.00000001m)
-                    {
-                        string deferralExplanation = $"Cost basis adjustment for deferred Gain/Loss on split rounding";
-                        section104.AdjustAcquisitionCost(costToAddBack, Date, deferralExplanation);
-                    }
+                    string taxableStatus = removal.IsTaxable == TaxableStatus.TAXABLE
+                        ? "Taxable cash disposal recognized."
+                        : "Cash disposal not taxable due to residency status.";
+                    removal.Section104HistoryResult.Explanation =
+                        $"{roundingExplanation}. Cash-in-lieu received: {CashInLieu.BaseCurrencyAmount}. " +
+                        $"Allowable cost used: {cashCostUsed}. {taxableStatus}";
                 }
-                else
+
+                // 2. Adjust the pool cost if we deferred some of the cost of the removed fractions
+                // RemoveAssets removes proportional cost: Cost * (QtyRemoved / TotalQty)
+                // We want to remove `cashCostUsed`.
+                // So we add back (Proportional - ActualUsed).
+
+                // Note: In StockSplit, we are removing from NEW quantity basis?
+                // Actually, RemoveAssets removes from *current* pool state.
+                // The pool currently has `rawNewQuantity`.
+                WrappedMoney proportionalCostRemoved = oldCost * (fractionalRemoved / rawNewQuantity);
+                WrappedMoney costToAddBack = proportionalCostRemoved - cashCostUsed;
+
+                if (Math.Abs(costToAddBack.Amount) > 0.00000001m)
                 {
-                    // Deferral Case (s122 small distribution, no excess gain).
-                    // No disposal created. Check s122 logic: "No disposal is treated as occurring"
-                    // But we must reduce the allowable cost by the amount of the distribution.
-                    // And we must reduce the quantity (the fractional shares are gone).
-                    
-                    string deferralExplanation = $"Small cash distribution (s122) deferral: {fractionalRemoved:F4} shares removed, cost reduced by {cashCostUsed.Amount}";
-                    
-                    // We use AddAssets with negative values to reduce quantity and cost without triggering a disposal calculation.
-                    // Check if cashCostUsed is > 0? It should be the cash amount (up to cost).
-                    section104.AddAssets(Date, -fractionalRemoved, -cashCostUsed, null, deferralExplanation);
+                    string deferralExplanation = "Cost basis alignment adjustment after fractional-share cash disposal";
+                    section104.AdjustAcquisitionCost(costToAddBack, Date, deferralExplanation);
                 }
+            }
+            else
+            {
+                // Deferral Case (s122 small distribution, no excess gain).
+                // No disposal created. Check s122 logic: "No disposal is treated as occurring"
+                // But we must reduce the allowable cost by the amount of the distribution.
+                // And we must reduce the quantity (the fractional shares are gone).
+
+                string deferralExplanation = $"Small cash distribution (s122) deferral: {fractionalRemoved:F4} shares removed, cost reduced by {cashCostUsed.Amount}";
+
+                // We use AddAssets with negative values to reduce quantity and cost without triggering a disposal calculation.
+                // Check if cashCostUsed is > 0? It should be the cash amount (up to cost).
+                section104.AddAssets(Date, -fractionalRemoved, -cashCostUsed, null, deferralExplanation);
             }
         }
     }
@@ -129,13 +143,13 @@ public record StockSplit : CorporateAction, IChangeSection104
         if (CashInLieu == null || fractionalRemoved == 0) return WrappedMoney.GetBaseCurrencyZero();
 
         WrappedMoney cashAmount = CashInLieu.BaseCurrencyAmount;
-        
+
         // Extrapolate the total market value of the holding based on the cash-in-lieu rate.
         decimal totalValue = (cashAmount.Amount / fractionalRemoved) * rawNewQuantity;
-        
+
         // Strictly proportional cost for the fractional shares removed.
         WrappedMoney fractionalCost = oldPoolCost * (fractionalRemoved / rawNewQuantity);
-        
+
         bool isSmall = UkTaxRules.IsSmallCash(cashAmount.Amount, totalValue);
 
         // Deferral logic applies if elected and small.
@@ -144,7 +158,7 @@ public record StockSplit : CorporateAction, IChangeSection104
         {
             // Deferral path: Reduce pool cost by cash (capped at current pool cost).
             WrappedMoney allowableCostUsed = WrappedMoney.Min(cashAmount, oldPoolCost);
-            
+
             // If cash exceeds the whole pool cost, the excess is a taxable gain (s122).
             WrappedMoney excessGain = cashAmount - allowableCostUsed;
             if (excessGain.Amount > 0)
@@ -163,7 +177,7 @@ public record StockSplit : CorporateAction, IChangeSection104
         else
         {
             // Recognition path: Generate a disposal record (Gain or Loss).
-            
+
             string calculationDetail = cashAmount.Amount < fractionalCost.Amount
                 ? $"Recognized loss on fractional share from {AssetName}:\n" +
                   $"\tCash: {cashAmount}\n" +

@@ -1,0 +1,102 @@
+@using InvestmentTaxCalculator.Model
+@using InvestmentTaxCalculator.Services
+@using Syncfusion.Blazor.DropDowns
+@using Syncfusion.Blazor.Inputs
+@using Syncfusion.Blazor.Buttons
+
+<div class="card mb-3 text-white" style="background-color: @CssBackgroundColor;">
+    <div class="card-body">
+        <h5>@Title</h5>
+        @if (!string.IsNullOrEmpty(Description))
+        {
+            <div class="form-text mb-2 text-white-50">@Description</div>
+        }
+        <div class="row mb-3">
+             <div class="col-md-4">
+                <label class="form-label">Cash Received (Total)</label>
+                <SfNumericTextBox TValue="decimal" Value="@CashAmount" Min="0" Placeholder="Amount">
+                    <NumericTextBoxEvents TValue="decimal" ValueChange="@OnCashAmountChangedInternal"></NumericTextBoxEvents>
+                </SfNumericTextBox>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Currency</label>
+                <SfDropDownList TValue="string" TItem="CurrencyViewModel" Placeholder="Currency" DataSource="@_currencies" Value="@CashCurrency">
+                    <DropDownListFieldSettings Text="Display" Value="Code"></DropDownListFieldSettings>
+                    <DropDownListEvents TItem="CurrencyViewModel" TValue="string" ValueChange="@OnCashCurrencyChangedInternal"></DropDownListEvents>
+                </SfDropDownList>
+            </div>
+             <div class="col-md-4">
+                <label class="form-label">FX Rate (to GBP)</label>
+                <SfNumericTextBox TValue="decimal" Value="@CashFx" Decimals="4" Format="n4" Min="0.000001m">
+                    <NumericTextBoxEvents TValue="decimal" ValueChange="@OnCashFxChangedInternal"></NumericTextBoxEvents>
+                </SfNumericTextBox>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-12">
+                <SfCheckBox Label="@CheckboxLabel" Checked="@ElectSmallCash" CheckedChanged="@(async (bool v) => await OnElectSmallCashChangedInternal(v))"></SfCheckBox>
+                @if (!string.IsNullOrEmpty(CheckboxHelpText))
+                {
+                    <div class="form-text text-white-50">
+                        @CheckboxHelpText
+                    </div>
+                }
+            </div>
+        </div>
+        
+        @ChildContent
+    </div>
+</div>
+
+@code {
+    [Parameter] public decimal CashAmount { get; set; }
+    [Parameter] public EventCallback<decimal> CashAmountChanged { get; set; }
+
+    [Parameter] public string CashCurrency { get; set; } = "GBP";
+    [Parameter] public EventCallback<string> CashCurrencyChanged { get; set; }
+
+    [Parameter] public decimal CashFx { get; set; } = 1m;
+    [Parameter] public EventCallback<decimal> CashFxChanged { get; set; }
+
+    [Parameter] public bool ElectSmallCash { get; set; }
+    [Parameter] public EventCallback<bool> ElectSmallCashChanged { get; set; }
+
+    [Parameter] public string Title { get; set; } = "Cash Component";
+    [Parameter] public string Description { get; set; } = "";
+    [Parameter] public string CheckboxLabel { get; set; } = "Elect Small Cash Treatment (if applicable)";
+    [Parameter] public string CheckboxHelpText { get; set; } = "";
+    [Parameter] public string CssBackgroundColor { get; set; } = "#1e3a8a";
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private List<CurrencyViewModel> _currencies = [];
+
+    protected override void OnInitialized()
+    {
+        _currencies = CurrencyService.GetCurrencies();
+    }
+
+    private async Task OnCashAmountChangedInternal(Syncfusion.Blazor.Inputs.ChangeEventArgs<decimal> args)
+    {
+        CashAmount = args.Value;
+        await CashAmountChanged.InvokeAsync(args.Value);
+    }
+
+    private async Task OnCashCurrencyChangedInternal(Syncfusion.Blazor.DropDowns.ChangeEventArgs<string, CurrencyViewModel> args)
+    {
+        CashCurrency = args.Value;
+        await CashCurrencyChanged.InvokeAsync(args.Value);
+    }
+
+    private async Task OnCashFxChangedInternal(Syncfusion.Blazor.Inputs.ChangeEventArgs<decimal> args)
+    {
+        CashFx = args.Value;
+        await CashFxChanged.InvokeAsync(args.Value);
+    }
+
+    private async Task OnElectSmallCashChangedInternal(bool value)
+    {
+        ElectSmallCash = value;
+        await ElectSmallCashChanged.InvokeAsync(value);
+    }
+}

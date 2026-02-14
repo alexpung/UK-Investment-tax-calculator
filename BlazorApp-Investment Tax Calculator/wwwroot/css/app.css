@@ -48,6 +48,13 @@
     -webkit-tap-highlight-color: transparent;
 }
 
+.page-subtitle {
+    color: var(--bs-secondary-color);
+    font-size: 1.1rem;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
 .page-title:focus,
 .page-title:active {
     outline: none !important;

@@ -1,0 +1,246 @@
+@using InvestmentTaxCalculator.Model
+@using InvestmentTaxCalculator.Model.TaxEvents
+@using InvestmentTaxCalculator.Model.UkTaxModel
+@using InvestmentTaxCalculator.Services
+@using InvestmentTaxCalculator.Model.Interfaces
+@using Syncfusion.Blazor.Calendars
+@using Syncfusion.Blazor.DropDowns
+@using Syncfusion.Blazor.Inputs
+@using Syncfusion.Blazor.Buttons
+@using Syncfusion.Blazor.Notifications
+@using InvestmentTaxCalculator.Enumerations
+@using StockSplitAction = InvestmentTaxCalculator.Model.TaxEvents.StockSplit
+
+@inject UkSection104Pools _ukSection104Pools
+@inject TradeCalculationResult _tradeCalculationResult
+@inject ITradeAndCorporateActionList _taxEventLists
+@inject ToastService _toastService
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-with-center">
+        <h3>@(_isEditing ? "Edit" : "Record") Stock Split / Reverse Split</h3>
+        @if (_isEditing)
+        {
+            <SfButton CssClass="e-flat e-small" OnClick="CancelEdit">Cancel Edit</SfButton>
+        }
+    </div>
+    <div class="card-body">
+        @if (!_tradeCalculationResult.CalculatedTrade.Any())
+        {
+            <div class="alert alert-warning">
+                Please run a tax calculation first to populate the list of available assets.
+            </div>
+        }
+        else
+        {
+            <CorporateActionHeader @bind-Date="@_date"
+                                   @bind-SourceTicker="@_ticker"
+                                   @bind-SourceRatio="@_splitFrom"
+                                   @bind-DestinationRatio="@_splitTo"
+                                   OnInputsChanged="CalculateStats"
+                                   SourceLabel="Asset undergoing split"
+                                   DestinationLabel="N/A (Ticker remains same)"
+                                   RatioLabel="Split Ratio (Example: 2 for 1)"
+                                   SourceUnitLabel="shares before"
+                                   DestinationUnitLabel="shares after"
+                                   RatioDecimals="0"
+                                   RatioFormat="n0"
+                                   RatioMin="1m"
+                                   IsDestinationDisabled="true">
+                <DestinationInfo>
+                    Expected New Quantity: <strong>@_expectedNewQuantity.ToString("F4")</strong>
+                </DestinationInfo>
+            </CorporateActionHeader>
+
+            <div class="row mb-3">
+                 <div class="col-12">
+                     <SfCheckBox Label="Cash-in-lieu received (for fractional shares)" @bind-Checked="@_hasCash"></SfCheckBox>
+                 </div>
+            </div>
+
+            @if (_hasCash)
+            {
+                <CashInLieuInput @bind-CashAmount="@_cashAmount"
+                                 @bind-CashCurrency="@_cashCurrency"
+                                 @bind-CashFx="@_cashFx"
+                                 @bind-ElectSmallCash="@_electSmallCash"
+                                 Title="Cash Component"
+                                 CheckboxHelpText="If cash is less than £3,000 OR less than 5% of total value and this is elected, the cash is not treated as a disposal; it reduces the Section 104 cost basis instead."
+                                 CssBackgroundColor="#374151">
+                    <ChildContent>
+                        <div class="alert @(_fractionalRemoved > FractionalTolerance ? "alert-info" : "alert-warning") py-2 mb-0">
+                            Fractional Shares Removed: <strong>@_fractionalRemoved.ToString("F6")</strong>
+                            @if (_fractionalRemoved <= FractionalTolerance)
+                            {
+                                <div class="mt-1">No fractional shares are produced by the current holding and split ratio, so cash-in-lieu cannot be applied.</div>
+                            }
+                        </div>
+                    </ChildContent>
+                </CashInLieuInput>
+            }
+
+            <div class="row">
+                <div class="col-12">
+                    <SfButton IsPrimary="true" OnClick="Submit">@(_isEditing ? "Update" : "Add") Stock Split</SfButton>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public EventCallback OnCorporateActionAdded { get; set; }
+    [Parameter] public StockSplitAction? ActionToEdit { get; set; }
+
+    private DateTime _date = DateTime.Today;
+    private string? _ticker;
+    private decimal _splitFrom = 1m;
+    private decimal _splitTo = 1m;
+
+    private bool _hasCash = false;
+    private decimal _cashAmount;
+    private string _cashCurrency = "GBP";
+    private decimal _cashFx = 1m;
+    private bool _electSmallCash = true;
+
+    private decimal _expectedNewQuantity;
+    private decimal _fractionalRemoved;
+    private bool _isEditing => ActionToEdit != null;
+    private StockSplitAction? _previousActionToEdit;
+    private const decimal FractionalTolerance = 0.00000001m;
+
+    protected override void OnInitialized()
+    {
+        if (ActionToEdit != null)
+        {
+            LoadAction(ActionToEdit);
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (ActionToEdit != null)
+        {
+            if (!ReferenceEquals(ActionToEdit, _previousActionToEdit))
+            {
+                LoadAction(ActionToEdit);
+            }
+        }
+        else if (_previousActionToEdit != null)
+        {
+            _previousActionToEdit = null;
+        }
+    }
+
+    private void LoadAction(StockSplitAction action)
+    {
+        _date = action.Date;
+        _ticker = action.AssetName;
+        _splitFrom = action.SplitFrom;
+        _splitTo = action.SplitTo;
+        _hasCash = action.CashInLieu != null;
+        if (action.CashInLieu != null)
+        {
+            _cashAmount = action.CashInLieu.Amount.Amount;
+            _cashCurrency = action.CashInLieu.Amount.Currency;
+            _cashFx = action.CashInLieu.FxRate;
+        }
+        _electSmallCash = action.ElectTaxDeferral;
+        CalculateStats();
+        _previousActionToEdit = action;
+    }
+
+    private async Task CancelEdit()
+    {
+         _ticker = null;
+         _splitFrom = 1m;
+         _splitTo = 1m;
+         _hasCash = false;
+         _cashAmount = 0;
+         _electSmallCash = true;
+         _previousActionToEdit = null;
+         ActionToEdit = null;
+         await OnCorporateActionAdded.InvokeAsync(); 
+    }
+
+    private void CalculateStats()
+    {
+        _expectedNewQuantity = 0;
+        _fractionalRemoved = 0;
+        if (_splitFrom > 0 && !string.IsNullOrEmpty(_ticker))
+        {
+            var pool = _ukSection104Pools.GetExistingOrInitialise(_ticker!);
+            var history = pool.GetLastSection104History(DateOnly.FromDateTime(_date));
+            decimal currentHolding = history?.NewQuantity ?? 0;
+            decimal rawNewQuantity = currentHolding * (_splitTo / _splitFrom);
+            _expectedNewQuantity = rawNewQuantity;
+            _fractionalRemoved = rawNewQuantity - Math.Floor(rawNewQuantity);
+        }
+    }
+
+    private async Task Submit()
+    {
+        if (string.IsNullOrWhiteSpace(_ticker))
+        {
+            _toastService.ShowError("Please select the asset.");
+            return;
+        }
+        if (_splitFrom <= 0 || _splitTo <= 0)
+        {
+            _toastService.ShowError("Split ratio values must be greater than zero.");
+            return;
+        }
+        if (_splitFrom != decimal.Truncate(_splitFrom) || _splitTo != decimal.Truncate(_splitTo))
+        {
+            _toastService.ShowError("Stock split ratio values must be whole numbers.");
+            return;
+        }
+        if (_splitFrom > int.MaxValue || _splitTo > int.MaxValue)
+        {
+            _toastService.ShowError($"Stock split ratio values must be less than or equal to {int.MaxValue:N0}.");
+            return;
+        }
+
+        CalculateStats();
+
+        DescribedMoney? cashInLieu = null;
+        if (_hasCash)
+        {
+            if (_fractionalRemoved <= FractionalTolerance)
+            {
+                _toastService.ShowError("Cash-in-lieu requires fractional shares, but the current holding and split ratio produce no fractional shares.");
+                return;
+            }
+            if (_cashAmount <= 0)
+            {
+                 _toastService.ShowError("Cash amount must be greater than zero.");
+                 return;
+            }
+            if (_cashFx <= 0)
+            {
+                 _toastService.ShowError("FX rate must be greater than zero.");
+                 return;
+            }
+            cashInLieu = new DescribedMoney(_cashAmount, _cashCurrency, _cashFx, "Cash-in-lieu");
+        }
+
+        var action = new StockSplitAction
+        {
+            Date = _date,
+            AssetName = _ticker,
+            SplitFrom = decimal.ToInt32(_splitFrom),
+            SplitTo = decimal.ToInt32(_splitTo),
+            CashInLieu = cashInLieu,
+            ElectTaxDeferral = _electSmallCash
+        };
+
+        if (_isEditing)
+        {
+             _taxEventLists.CorporateActions.Remove(ActionToEdit!);
+        }
+
+        _taxEventLists.CorporateActions.Add(action);
+        _toastService.ShowInformation(_isEditing ? "Stock split updated successfully." : "Stock split added successfully.");
+        await OnCorporateActionAdded.InvokeAsync();
+    }
+}

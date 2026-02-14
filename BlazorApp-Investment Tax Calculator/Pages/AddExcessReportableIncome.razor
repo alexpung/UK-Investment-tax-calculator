@@ -178,7 +178,7 @@
         if (_dataChanged)
         {
             _dataChanged = false;
-            await TaxCalculationService.CalculateAsync();
+            await TaxCalculationService.CalculateAsync(CalculationTrigger.NavigationRefresh);
         }
     }
 

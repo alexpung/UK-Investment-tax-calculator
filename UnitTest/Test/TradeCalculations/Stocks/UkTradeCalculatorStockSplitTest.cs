@@ -546,4 +546,36 @@ public class UkTradeCalculatorStockSplitTest
         pool.Quantity.ShouldBe(0m);
         pool.AcquisitionCostInBaseCurrency.Amount.ShouldBe(0m, 0.000001m);
     }
+
+    [Fact]
+    public void TestStockSplitCashInLieuWithoutFraction_Throws()
+    {
+        Trade trade1 = new()
+        {
+            AssetName = "NO_FRACTION_TEST",
+            AcquisitionDisposal = TradeType.ACQUISITION,
+            Date = DateTime.Parse("01-Jan-22", CultureInfo.InvariantCulture),
+            Quantity = 100,
+            GrossProceed = new() { Amount = new(1000m) }
+        };
+
+        StockSplit split = new()
+        {
+            AssetName = "NO_FRACTION_TEST",
+            Date = DateTime.Parse("01-Feb-22", CultureInfo.InvariantCulture),
+            SplitTo = 2,
+            SplitFrom = 1,
+            CashInLieu = new DescribedMoney { Amount = new(10m) },
+            ElectTaxDeferral = false
+        };
+
+        UkSection104Pools section104Pools = new(new UKTaxYear(), new ResidencyStatusRecord());
+        TaxEventLists taxEventLists = new();
+        taxEventLists.AddData([trade1, split]);
+
+        UkTradeCalculator calculator = TradeCalculationHelper.CreateUkTradeCalculator(section104Pools, taxEventLists);
+
+        var ex = Should.Throw<InvalidOperationException>(() => calculator.CalculateTax());
+        ex.Message.ShouldContain("no fractional shares were produced");
+    }
 }

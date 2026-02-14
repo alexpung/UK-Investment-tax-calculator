@@ -13,16 +13,23 @@ public partial class StartCalculation : IDisposable
     protected override void OnInitialized()
     {
         FileImportState.OnChange += StateHasChanged;
+        TaxCalculationService.OnStateChanged += HandleTaxCalculationStateChanged;
     }
 
     public void Dispose()
     {
         FileImportState.OnChange -= StateHasChanged;
+        TaxCalculationService.OnStateChanged -= HandleTaxCalculationStateChanged;
     }
 
     public async Task OnStartCalculation()
     {
         await TaxCalculationService.CalculateAsync();
         await OnCalculated.InvokeAsync();
+    }
+
+    private void HandleTaxCalculationStateChanged()
+    {
+        _ = InvokeAsync(StateHasChanged);
     }
 }

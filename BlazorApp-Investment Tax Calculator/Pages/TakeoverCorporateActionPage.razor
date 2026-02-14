@@ -1,9 +1,13 @@
 @page "/corporate-actions"
 
 @using InvestmentTaxCalculator.Components
+@using InvestmentTaxCalculator.Model.TaxEvents
+@using StockSplitAction = InvestmentTaxCalculator.Model.TaxEvents.StockSplit
 @using InvestmentTaxCalculator.Services
-@implements IAsyncDisposable
+@using Syncfusion.Blazor.DropDowns
+@implements IDisposable
 @inject TaxCalculationService _taxCalculationService
+@inject NavigationManager _navigationManager
 
 <div class="container-fluid py-5">
     <div class="row">
@@ -11,22 +15,42 @@
             <!-- Page Header -->
             <div class="page-header text-center mb-5">
                 <h1 class="page-title">Corporate Actions</h1>
-                <p class="page-subtitle">Record takeover events and view corporate action history</p>
+                <p class="page-subtitle">Select an action type to configure and record events</p>
             </div>
 
-            <!-- Takeover Section -->
+            <!-- Action Selector -->
+            <div class="row mb-5 justify-content-center">
+                <div class="col-md-5">
+                    <div class="card bg-dark border-secondary shadow-sm">
+                        <div class="card-body">
+                            <label class="form-label text-info fw-bold">Select Corporate Action Type</label>
+                            <SfDropDownList TValue="string" TItem="string" DataSource="@_actionTypes" @bind-Value="@_selectedAction" Placeholder="Choose an action type">
+                                <DropDownListEvents TValue="string" TItem="string" ValueChange="@OnActionTypeChanged" />
+                            </SfDropDownList>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Conditional UI based on selection -->
             <div class="section mb-5">
-                <Takeover OnCorporateActionAdded="RefreshHistory" />
+                @if (_selectedAction == "Takeover / Merger")
+                {
+                    <Takeover OnCorporateActionAdded="OnActionModified" ActionToEdit="@(_actionToEdit as TakeoverCorporateAction)" />
+                }
+                else if (_selectedAction == "Spinoff")
+                {
+                    <Spinoff OnCorporateActionAdded="OnActionModified" ActionToEdit="@(_actionToEdit as SpinoffCorporateAction)" />
+                }
+                else if (_selectedAction == "Stock Split / Reverse Split")
+                {
+                    <StockSplit OnCorporateActionAdded="OnActionModified" ActionToEdit="@(_actionToEdit as StockSplitAction)" />
+                }
             </div>
 
-            <!-- Spinoff Section -->
-            <div class="section mb-5">
-                <Spinoff OnCorporateActionAdded="RefreshHistory" />
-            </div>
-
-            <!-- Corporate Actions List Section -->
+            <!-- Corporate Actions History Section -->
             <div class="section">
-                <CorporateActionsList @ref="_historyList" OnActionDeleted="OnActionDeleted" />
+                <CorporateActionsList @ref="_historyList" OnActionDeleted="OnActionModified" OnActionEdit="HandleEdit" />
             </div>
         </div>
     </div>
@@ -35,23 +59,57 @@
 @code {
     private CorporateActionsList? _historyList;
     private bool _hasChanges = false;
+    private IDisposable? _navigationRegistration;
+    
+    private List<string> _actionTypes = new() { "Takeover / Merger", "Spinoff", "Stock Split / Reverse Split" };
+    private string? _selectedAction = "Takeover / Merger";
 
-    private void RefreshHistory()
+    private CorporateAction? _actionToEdit;
+
+    protected override void OnInitialized()
+    {
+        _navigationRegistration = _navigationManager.RegisterLocationChangingHandler(OnLocationChanging);
+    }
+
+    private void OnActionTypeChanged(Syncfusion.Blazor.DropDowns.ChangeEventArgs<string, string> args)
+    {
+        if (args.IsInteracted)
+        {
+            _actionToEdit = null; 
+        }
+    }
+
+    private void HandleEdit(CorporateAction action)
+    {
+        _actionToEdit = action;
+        
+        if (action is TakeoverCorporateAction) _selectedAction = "Takeover / Merger";
+        else if (action is SpinoffCorporateAction) _selectedAction = "Spinoff";
+        else if (action is StockSplitAction) _selectedAction = "Stock Split / Reverse Split";
+        
+        StateHasChanged();
+    }
+
+    private void OnActionModified()
     {
         _hasChanges = true;
+        _actionToEdit = null; 
         _historyList?.Refresh();
+        StateHasChanged();
     }
 
-    private void OnActionDeleted()
-    {
-        _hasChanges = true;
-    }
-
-    public async ValueTask DisposeAsync()
+    private async ValueTask OnLocationChanging(LocationChangingContext _)
     {
         if (_hasChanges)
         {
-            await _taxCalculationService.CalculateAsync();
+            _hasChanges = false;
+            await _taxCalculationService.CalculateAsync(CalculationTrigger.NavigationRefresh);
         }
     }
+
+    public void Dispose()
+    {
+        _navigationRegistration?.Dispose();
+    }
 }
+

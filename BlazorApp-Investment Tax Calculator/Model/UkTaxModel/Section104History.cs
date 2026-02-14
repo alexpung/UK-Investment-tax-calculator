@@ -1,4 +1,5 @@
-﻿using InvestmentTaxCalculator.Model.Interfaces;
+using InvestmentTaxCalculator.Model.Interfaces;
+using InvestmentTaxCalculator.Model.UkTaxModel.Stocks;
 using InvestmentTaxCalculator.Services;
 
 using System.Text;
@@ -98,7 +99,8 @@ public class Section104History : ITextFilePrintable
         {
             output.AppendLine($"{Explanation}");
         }
-        if (TradeTaxCalculation?.TradeList is not null)
+
+        if (TradeTaxCalculation?.TradeList is { Count: > 0 })
         {
             output.AppendLine("Involved trades:");
             foreach (var trade in TradeTaxCalculation.TradeList)
@@ -106,6 +108,11 @@ public class Section104History : ITextFilePrintable
                 output.AppendLine(trade.PrintToTextFile());
             }
         }
+        else if (TradeTaxCalculation is CorporateActionTaxCalculation corporateActionCalc)
+        {
+            output.AppendLine($"Involved event: {corporateActionCalc.RelatedCorporateAction.Reason}");
+        }
+
         return output.ToString();
     }
 }
