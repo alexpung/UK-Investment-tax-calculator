@@ -278,7 +278,12 @@
 
         if (_isEditing)
         {
-            _taxEventLists.CorporateActions.Remove(ActionToEdit!);
+            bool removed = _taxEventLists.CorporateActions.Remove(ActionToEdit!);
+            if (!removed)
+            {
+                _toastService.ShowWarning("Unable to update takeover action because the original entry could not be found.");
+                return;
+            }
         }
 
         _taxEventLists.CorporateActions.Add(action);
