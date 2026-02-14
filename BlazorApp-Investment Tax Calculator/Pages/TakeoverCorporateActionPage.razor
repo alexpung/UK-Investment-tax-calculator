@@ -2,6 +2,7 @@
 
 @using InvestmentTaxCalculator.Components
 @using InvestmentTaxCalculator.Model.TaxEvents
+@using StockSplitAction = InvestmentTaxCalculator.Model.TaxEvents.StockSplit
 @using InvestmentTaxCalculator.Services
 @using Syncfusion.Blazor.DropDowns
 @implements IDisposable
@@ -43,7 +44,7 @@
                 }
                 else if (_selectedAction == "Stock Split / Reverse Split")
                 {
-                    <StockSplit OnCorporateActionAdded="OnActionModified" ActionToEdit="@(_actionToEdit as InvestmentTaxCalculator.Model.TaxEvents.StockSplit)" />
+                    <StockSplit OnCorporateActionAdded="OnActionModified" ActionToEdit="@(_actionToEdit as StockSplitAction)" />
                 }
             </div>
 
@@ -84,7 +85,7 @@
         
         if (action is TakeoverCorporateAction) _selectedAction = "Takeover / Merger";
         else if (action is SpinoffCorporateAction) _selectedAction = "Spinoff";
-        else if (action is InvestmentTaxCalculator.Model.TaxEvents.StockSplit) _selectedAction = "Stock Split / Reverse Split";
+        else if (action is StockSplitAction) _selectedAction = "Stock Split / Reverse Split";
         
         StateHasChanged();
     }

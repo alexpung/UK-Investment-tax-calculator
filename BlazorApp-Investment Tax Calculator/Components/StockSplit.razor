@@ -9,6 +9,7 @@
 @using Syncfusion.Blazor.Buttons
 @using Syncfusion.Blazor.Notifications
 @using InvestmentTaxCalculator.Enumerations
+@using StockSplitAction = InvestmentTaxCalculator.Model.TaxEvents.StockSplit
 
 @inject UkSection104Pools _ukSection104Pools
 @inject TradeCalculationResult _tradeCalculationResult
@@ -89,7 +90,7 @@
 
 @code {
     [Parameter] public EventCallback OnCorporateActionAdded { get; set; }
-    [Parameter] public InvestmentTaxCalculator.Model.TaxEvents.StockSplit? ActionToEdit { get; set; }
+    [Parameter] public StockSplitAction? ActionToEdit { get; set; }
 
     private DateTime _date = DateTime.Today;
     private string? _ticker;
@@ -123,7 +124,7 @@
         }
     }
 
-    private void LoadAction(InvestmentTaxCalculator.Model.TaxEvents.StockSplit action)
+    private void LoadAction(StockSplitAction action)
     {
         _date = action.Date;
         _ticker = action.AssetName;
@@ -208,7 +209,7 @@
             cashInLieu = new DescribedMoney(_cashAmount, _cashCurrency, _cashFx, "Cash-in-lieu");
         }
 
-        var action = new InvestmentTaxCalculator.Model.TaxEvents.StockSplit
+        var action = new StockSplitAction
         {
             Date = _date,
             AssetName = _ticker,
