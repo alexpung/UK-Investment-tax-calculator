@@ -14,6 +14,7 @@ namespace InvestmentTaxCalculator.Model.TaxEvents;
 [JsonDerivedType(typeof(TakeoverCorporateAction), "takeover")]
 [JsonDerivedType(typeof(ReturnOfCapitalCorporateAction), "roc")]
 [JsonDerivedType(typeof(SpinoffCorporateAction), "spinoff")]
+[JsonDerivedType(typeof(PartnerTransferCorporateAction), "partnerTransfer")]
 public abstract record CorporateAction : TaxEvent
 {
     [JsonIgnore]

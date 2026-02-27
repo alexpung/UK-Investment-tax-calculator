@@ -1,0 +1,233 @@
+@using InvestmentTaxCalculator.Model
+@using InvestmentTaxCalculator.Model.Interfaces
+@using InvestmentTaxCalculator.Model.TaxEvents
+@using InvestmentTaxCalculator.Model.UkTaxModel
+@using InvestmentTaxCalculator.Services
+@using Syncfusion.Blazor.Buttons
+@using Syncfusion.Blazor.Calendars
+@using Syncfusion.Blazor.DropDowns
+@using Syncfusion.Blazor.Inputs
+
+@inject UkSection104Pools _ukSection104Pools
+@inject TradeCalculationResult _tradeCalculationResult
+@inject ITradeAndCorporateActionList _taxEventLists
+@inject ToastService _toastService
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-content-center">
+        <h3>@(_isEditing ? "Edit" : "Record") @Title</h3>
+        @if (_isEditing)
+        {
+            <SfButton CssClass="e-flat e-small" OnClick="CancelEdit">Cancel Edit</SfButton>
+        }
+    </div>
+    <div class="card-body">
+        @if (!_tradeCalculationResult.CalculatedTrade.Any())
+        {
+            <div class="alert alert-warning">
+                Please run a tax calculation first to populate the list of available assets.
+            </div>
+        }
+        else
+        {
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">Date</label>
+                    <SfDatePicker TValue="DateTime" @bind-Value="@_date"></SfDatePicker>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Asset Ticker</label>
+                    <SfComboBox TValue="string" TItem="string" Placeholder="Select or Enter Ticker" DataSource="@_availableAssets" Value="@_ticker" AllowCustom="true">
+                        <ComboBoxEvents TItem="string" TValue="string" ValueChange="OnTickerChanged"></ComboBoxEvents>
+                    </SfComboBox>
+                    @if (!string.IsNullOrWhiteSpace(_ticker))
+                    {
+                        <div class="form-text text-info">
+                            Holding on @_date.ToShortDateString(): <strong>@_currentHolding.ToString("F4")</strong> shares
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">Quantity</label>
+                    <SfNumericTextBox TValue="decimal" @bind-Value="@_quantity" Min="0.00000001m" Decimals="8" Format="n8"></SfNumericTextBox>
+                </div>
+            </div>
+
+            @if (Direction == PartnerTransferDirection.ReceiveFromPartner)
+            {
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Transferred Cost Amount</label>
+                        <SfNumericTextBox TValue="decimal" @bind-Value="@_transferredCostAmount" Min="0" Decimals="4" Format="n4"></SfNumericTextBox>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Currency</label>
+                        <SfDropDownList TValue="string" TItem="CurrencyViewModel" Placeholder="Currency" DataSource="@_currencies" @bind-Value="@_transferredCostCurrency">
+                            <DropDownListFieldSettings Text="Display" Value="Code"></DropDownListFieldSettings>
+                        </SfDropDownList>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">FX Rate (to GBP)</label>
+                        <SfNumericTextBox TValue="decimal" @bind-Value="@_transferredCostFx" Min="0.00000001m" Decimals="8" Format="n8"></SfNumericTextBox>
+                    </div>
+                </div>
+            }
+
+            <div class="row">
+                <div class="col-12">
+                    <SfButton IsPrimary="true" OnClick="Submit">@(_isEditing ? "Update" : "Add") @Title</SfButton>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public PartnerTransferDirection Direction { get; set; }
+    [Parameter] public EventCallback OnCorporateActionAdded { get; set; }
+    [Parameter] public PartnerTransferCorporateAction? ActionToEdit { get; set; }
+
+    private DateTime _date = DateTime.Today;
+    private string? _ticker;
+    private decimal _quantity = 0m;
+    private decimal _transferredCostAmount = 0m;
+    private string _transferredCostCurrency = "GBP";
+    private decimal _transferredCostFx = 1m;
+    private decimal _currentHolding = 0m;
+    private List<string> _availableAssets = [];
+    private List<CurrencyViewModel> _currencies = [];
+    private PartnerTransferCorporateAction? _previousActionToEdit;
+    private bool _isEditing => ActionToEdit != null;
+    private string Title => Direction == PartnerTransferDirection.GiftToPartner ? "Gift to Partner" : "Receive from Partner";
+
+    protected override void OnInitialized()
+    {
+        _availableAssets = _ukSection104Pools.GetSection104s()
+            .Select(x => x.AssetName)
+            .OrderBy(x => x)
+            .ToList();
+        _currencies = CurrencyService.GetCurrencies();
+
+        if (ActionToEdit != null)
+        {
+            LoadAction(ActionToEdit);
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (ActionToEdit != null)
+        {
+            if (!ReferenceEquals(ActionToEdit, _previousActionToEdit))
+            {
+                LoadAction(ActionToEdit);
+            }
+        }
+        else if (_previousActionToEdit != null)
+        {
+            _previousActionToEdit = null;
+        }
+    }
+
+    private void LoadAction(PartnerTransferCorporateAction action)
+    {
+        _date = action.Date;
+        _ticker = action.AssetName;
+        _quantity = action.Quantity;
+        _transferredCostAmount = action.TransferredCost?.Amount.Amount ?? 0m;
+        _transferredCostCurrency = action.TransferredCost?.Amount.Currency ?? "GBP";
+        _transferredCostFx = action.TransferredCost?.FxRate ?? 1m;
+        _previousActionToEdit = action;
+        CalculateHolding();
+    }
+
+    private async Task CancelEdit()
+    {
+        _ticker = null;
+        _quantity = 0m;
+        _transferredCostAmount = 0m;
+        _transferredCostCurrency = "GBP";
+        _transferredCostFx = 1m;
+        _previousActionToEdit = null;
+        await OnCorporateActionAdded.InvokeAsync();
+    }
+
+    private void OnTickerChanged(ChangeEventArgs<string, string> args)
+    {
+        _ticker = args.Value;
+        CalculateHolding();
+    }
+
+    private void CalculateHolding()
+    {
+        _currentHolding = 0m;
+        if (string.IsNullOrWhiteSpace(_ticker)) return;
+        var pool = _ukSection104Pools.GetExistingOrInitialise(_ticker!);
+        var history = pool.GetLastSection104History(DateOnly.FromDateTime(_date));
+        _currentHolding = history?.NewQuantity ?? 0m;
+    }
+
+    private async Task Submit()
+    {
+        if (string.IsNullOrWhiteSpace(_ticker))
+        {
+            _toastService.ShowError("Please enter an asset ticker.");
+            return;
+        }
+        if (_quantity <= 0)
+        {
+            _toastService.ShowError("Quantity must be greater than zero.");
+            return;
+        }
+
+        CalculateHolding();
+
+        if (Direction == PartnerTransferDirection.GiftToPartner && _quantity > _currentHolding)
+        {
+            _toastService.ShowError($"Cannot gift {_quantity:0.####} shares because the holding is {_currentHolding:0.####} on {_date:d}.");
+            return;
+        }
+
+        DescribedMoney? transferredCost = null;
+        if (Direction == PartnerTransferDirection.ReceiveFromPartner)
+        {
+            if (_transferredCostAmount < 0)
+            {
+                _toastService.ShowError("Transferred cost amount must not be negative.");
+                return;
+            }
+            if (_transferredCostFx <= 0)
+            {
+                _toastService.ShowError("FX rate must be greater than zero.");
+                return;
+            }
+            transferredCost = new DescribedMoney(_transferredCostAmount, _transferredCostCurrency, _transferredCostFx, "Transferred partner cost");
+        }
+
+        var action = new PartnerTransferCorporateAction
+        {
+            Date = _date,
+            AssetName = _ticker,
+            Direction = Direction,
+            Quantity = _quantity,
+            TransferredCost = transferredCost
+        };
+
+        if (_isEditing)
+        {
+            bool removed = _taxEventLists.CorporateActions.Remove(ActionToEdit!);
+            if (!removed)
+            {
+                _toastService.ShowWarning("Unable to update event because the original entry could not be found.");
+                return;
+            }
+        }
+
+        _taxEventLists.CorporateActions.Add(action);
+        _toastService.ShowInformation(_isEditing ? $"{Title} updated successfully." : $"{Title} added successfully.");
+        await OnCorporateActionAdded.InvokeAsync();
+    }
+}

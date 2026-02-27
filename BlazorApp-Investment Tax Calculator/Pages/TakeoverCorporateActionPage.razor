@@ -14,8 +14,8 @@
         <div class="col-lg-10 mx-auto">
             <!-- Page Header -->
             <div class="page-header text-center mb-5">
-                <h1 class="page-title">Corporate Actions</h1>
-                <p class="page-subtitle">Select an action type to configure and record events</p>
+                <h1 class="page-title">Corporate Actions and User Events</h1>
+                <p class="page-subtitle">Select an action/event type to configure and record entries</p>
             </div>
 
             <!-- Action Selector -->
@@ -23,8 +23,8 @@
                 <div class="col-md-5">
                     <div class="card bg-dark border-secondary shadow-sm">
                         <div class="card-body">
-                            <label class="form-label text-info fw-bold">Select Corporate Action Type</label>
-                            <SfDropDownList TValue="string" TItem="string" DataSource="@_actionTypes" @bind-Value="@_selectedAction" Placeholder="Choose an action type">
+                            <label class="form-label text-info fw-bold">Select Action/Event Type</label>
+                            <SfDropDownList TValue="string" TItem="string" DataSource="@_actionTypes" @bind-Value="@_selectedAction" Placeholder="Choose an action/event type">
                                 <DropDownListEvents TValue="string" TItem="string" ValueChange="@OnActionTypeChanged" />
                             </SfDropDownList>
                         </div>
@@ -46,9 +46,21 @@
                 {
                     <StockSplit OnCorporateActionAdded="OnActionModified" ActionToEdit="@(_actionToEdit as StockSplitAction)" />
                 }
+                else if (_selectedAction == "Gift to partner")
+                {
+                    <PartnerTransfer Direction="PartnerTransferDirection.GiftToPartner"
+                                     OnCorporateActionAdded="OnActionModified"
+                                     ActionToEdit="GetPartnerActionToEdit(PartnerTransferDirection.GiftToPartner)" />
+                }
+                else if (_selectedAction == "Receive from partner")
+                {
+                    <PartnerTransfer Direction="PartnerTransferDirection.ReceiveFromPartner"
+                                     OnCorporateActionAdded="OnActionModified"
+                                     ActionToEdit="GetPartnerActionToEdit(PartnerTransferDirection.ReceiveFromPartner)" />
+                }
             </div>
 
-            <!-- Corporate Actions History Section -->
+            <!-- Corporate Actions and Events History Section -->
             <div class="section">
                 <CorporateActionsList @ref="_historyList" OnActionDeleted="OnActionModified" OnActionEdit="HandleEdit" />
             </div>
@@ -61,7 +73,7 @@
     private bool _hasChanges = false;
     private IDisposable? _navigationRegistration;
     
-    private List<string> _actionTypes = new() { "Takeover / Merger", "Spinoff", "Stock Split / Reverse Split" };
+    private List<string> _actionTypes = new() { "Takeover / Merger", "Spinoff", "Stock Split / Reverse Split", "Gift to partner", "Receive from partner" };
     private string? _selectedAction = "Takeover / Merger";
 
     private CorporateAction? _actionToEdit;
@@ -82,12 +94,31 @@
     private void HandleEdit(CorporateAction action)
     {
         _actionToEdit = action;
-        
-        if (action is TakeoverCorporateAction) _selectedAction = "Takeover / Merger";
-        else if (action is SpinoffCorporateAction) _selectedAction = "Spinoff";
-        else if (action is StockSplitAction) _selectedAction = "Stock Split / Reverse Split";
+
+        switch (action)
+        {
+            case TakeoverCorporateAction:
+                _selectedAction = "Takeover / Merger";
+                break;
+            case SpinoffCorporateAction:
+                _selectedAction = "Spinoff";
+                break;
+            case StockSplitAction:
+                _selectedAction = "Stock Split / Reverse Split";
+                break;
+            case PartnerTransferCorporateAction partner:
+                _selectedAction = partner.Direction == PartnerTransferDirection.GiftToPartner ? "Gift to partner" : "Receive from partner";
+                break;
+        }
         
         StateHasChanged();
+    }
+
+    private PartnerTransferCorporateAction? GetPartnerActionToEdit(PartnerTransferDirection direction)
+    {
+        PartnerTransferCorporateAction? action = _actionToEdit as PartnerTransferCorporateAction;
+        if (action?.Direction != direction) return null;
+        return action;
     }
 
     private void OnActionModified()
