@@ -94,12 +94,22 @@
     private void HandleEdit(CorporateAction action)
     {
         _actionToEdit = action;
-        
-        if (action is TakeoverCorporateAction) _selectedAction = "Takeover / Merger";
-        else if (action is SpinoffCorporateAction) _selectedAction = "Spinoff";
-        else if (action is StockSplitAction) _selectedAction = "Stock Split / Reverse Split";
-        else if (action is PartnerTransferCorporateAction partner && partner.Direction == PartnerTransferDirection.GiftToPartner) _selectedAction = "Gift to partner";
-        else if (action is PartnerTransferCorporateAction partner2 && partner2.Direction == PartnerTransferDirection.ReceiveFromPartner) _selectedAction = "Receive from partner";
+
+        switch (action)
+        {
+            case TakeoverCorporateAction:
+                _selectedAction = "Takeover / Merger";
+                break;
+            case SpinoffCorporateAction:
+                _selectedAction = "Spinoff";
+                break;
+            case StockSplitAction:
+                _selectedAction = "Stock Split / Reverse Split";
+                break;
+            case PartnerTransferCorporateAction partner:
+                _selectedAction = partner.Direction == PartnerTransferDirection.GiftToPartner ? "Gift to partner" : "Receive from partner";
+                break;
+        }
         
         StateHasChanged();
     }
