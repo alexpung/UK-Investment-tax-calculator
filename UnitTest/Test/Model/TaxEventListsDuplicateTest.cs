@@ -123,4 +123,31 @@ public class TaxEventListsDuplicateTest
         // Assert
         list1.CashSettlements.Count.ShouldBe(1);
     }
+
+    [Fact]
+    public void AddData_WithSkipDuplicates_ShouldFilterPartnerTransfers()
+    {
+        var date = new DateTime(2023, 1, 1);
+        var transfer1 = new PartnerTransferCorporateAction
+        {
+            AssetName = "ABC",
+            Date = date,
+            Direction = PartnerTransferDirection.GiftToPartner,
+            Quantity = 10m
+        };
+        var transfer2 = new PartnerTransferCorporateAction
+        {
+            AssetName = "ABC",
+            Date = date,
+            Direction = PartnerTransferDirection.GiftToPartner,
+            Quantity = 10m
+        };
+
+        var list1 = new TaxEventLists { CorporateActions = [transfer1] };
+        var list2 = new TaxEventLists { CorporateActions = [transfer2] };
+
+        list1.AddData(list2, skipDuplicates: true);
+
+        list1.CorporateActions.Count.ShouldBe(1);
+    }
 }

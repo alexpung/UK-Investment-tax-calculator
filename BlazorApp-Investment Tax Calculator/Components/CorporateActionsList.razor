@@ -10,7 +10,7 @@
 
 <div class="card mt-4">
     <div class="card-header">
-        <h3>Corporate Actions History</h3>
+        <h3>Corporate Actions and Events History</h3>
     </div>
     <div class="card-body">
         <SfGrid @ref="_grid" DataSource="@_taxEventLists.CorporateActions" AllowPaging="true" AllowSorting="true">
@@ -55,7 +55,7 @@
     {
         if (_taxEventLists.CorporateActions.Remove(action))
         {
-            _toastService.ShowInformation("Corporate action removed.");
+            _toastService.ShowInformation("Event removed.");
             Refresh();
             await OnActionDeleted.InvokeAsync();
         }
