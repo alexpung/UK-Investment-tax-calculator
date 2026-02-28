@@ -114,7 +114,11 @@
         {
             _toastService.ShowInformation("Trade removed.");
             RefreshData();
-            _grid?.Refresh();
+            if (_grid != null)
+            {
+                await _grid.Refresh();
+            }
+
             await OnTradeDeleted.InvokeAsync();
             return;
         }

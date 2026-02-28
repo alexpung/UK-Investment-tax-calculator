@@ -39,8 +39,8 @@
     {
         if (_hasChanges)
         {
-            _hasChanges = false;
             await _taxCalculationService.CalculateAsync(CalculationTrigger.NavigationRefresh);
+            _hasChanges = false;
         }
     }
 
