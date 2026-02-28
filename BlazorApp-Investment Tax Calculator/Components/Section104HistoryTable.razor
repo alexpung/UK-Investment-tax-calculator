@@ -9,11 +9,10 @@
 @using InvestmentTaxCalculator.Enumerations
 @using InvestmentTaxCalculator.Components
 @using InvestmentTaxCalculator.Services
+@inherits TaxCalculationRefreshComponentBase
 
 @inject UkSection104Pools section104Pools
 @inject SfGridToolBarHandlingService _toolbarHandlingService
-@inject TaxCalculationService TaxCalculationService
-@implements IDisposable
 
 <div class="bg-dark text-light">
     <div class="row my-4">
@@ -54,12 +53,6 @@
     private SfGrid<Section104HistoryViewModel>? section104HistoryGrid;
     private List<Section104HistoryViewModel> _section104HistoryViewModels = [];
 
-    protected override void OnInitialized()
-    {
-        RefreshData();
-        TaxCalculationService.OnStateChanged += HandleTaxCalculationStateChanged;
-    }
-
     public async Task ToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)
     {
         if (section104HistoryGrid != null)
@@ -68,25 +61,7 @@
         }
     }
 
-    private void HandleTaxCalculationStateChanged()
-    {
-        _ = InvokeAsync(async () =>
-        {
-            if (TaxCalculationService.IsCalculating)
-            {
-                return;
-            }
-
-            RefreshData();
-            StateHasChanged();
-            if (section104HistoryGrid != null)
-            {
-                await section104HistoryGrid.Refresh();
-            }
-        });
-    }
-
-    private void RefreshData()
+    protected override void RefreshData()
     {
         _section104HistoryViewModels = Section104HistoryViewModel
             .GetSection104Data(section104Pools)
@@ -95,10 +70,7 @@
             .ToList();
     }
 
-    public void Dispose()
-    {
-        TaxCalculationService.OnStateChanged -= HandleTaxCalculationStateChanged;
-    }
+    protected override Task RefreshRenderedGridsAsync() => RefreshGridAsync(section104HistoryGrid);
 }
 
 

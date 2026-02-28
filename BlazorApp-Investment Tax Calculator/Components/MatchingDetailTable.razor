@@ -1,4 +1,4 @@
-﻿@using InvestmentTaxCalculator.Model
+@using InvestmentTaxCalculator.Model
 @using InvestmentTaxCalculator.Model.Interfaces
 @using Syncfusion.Blazor.DropDowns
 @using Syncfusion.Blazor.Grids
@@ -9,6 +9,7 @@
 @using InvestmentTaxCalculator.Enumerations
 @using InvestmentTaxCalculator.Components
 @using InvestmentTaxCalculator.Services
+@inherits TaxCalculationRefreshComponentBase
 
 @inject TradeCalculationResult tradeCalculationResult
 @inject SfGridToolBarHandlingService _toolbarHandlingService
@@ -33,7 +34,6 @@
             <SfGrid ID="TradeMatchesGrid" @ref="tradeMatchesGrid" DataSource="@_tradeMatches"
                     AllowPaging="true" AllowSorting="true" AllowPdfExport="true" AllowExcelExport="true" AllowResizing="true" AllowFiltering="true" AllowTextWrap="true"
                     Toolbar="@(new List<string>() { "PdfExport", "ExcelExport", "Print" })">
-                <!-- Enable editing on the grid, but disable editing per-column except AdditionalInformation -->
                 <GridEditSettings AllowEditing="true"></GridEditSettings>
                 <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
                 <GridPageSettings PageSizes=@(new List<int>() {25, 50, 100}) PageSize="25"></GridPageSettings>
@@ -41,7 +41,7 @@
                 <GridColumns>
                     <GridColumn Field=@nameof(TradeMatch.PersistedId) Visible="false" IsPrimaryKey="true"></GridColumn>
                     <GridColumn HeaderText="Disposal Date" Field=@nameof(TradeMatch.Date) AllowEditing="false"></GridColumn>
-                    <GridColumn Field=@nameof(TradeMatch.AssetCategoryType) HeaderText="Asset Type"AllowEditing="false">
+                    <GridColumn Field=@nameof(TradeMatch.AssetCategoryType) HeaderText="Asset Type" AllowEditing="false">
                         <Template>
                             @{
                                 var data = (context as TradeMatch);
@@ -67,7 +67,6 @@
                     <GridColumn Field=@nameof(TradeMatch.BaseCurrencyMatchDisposalProceed) HeaderText="Disposal Proceed" AllowEditing="false"></GridColumn>
                     <GridColumn Field=@nameof(TradeMatch.BaseCurrencyMatchAllowableCost) HeaderText="Allowable Cost" AllowEditing="false"></GridColumn>
                     <GridColumn Field=@nameof(TradeMatch.MatchGain) HeaderText="Gain" AllowEditing="false"></GridColumn>
-                    <!-- Only this column is editable -->
                     <GridColumn Field=@nameof(TradeMatch.AdditionalInformation) HeaderText="Additional Information" AllowEditing="true"></GridColumn>
                 </GridColumns>
             </SfGrid>
@@ -76,22 +75,24 @@
 </div>
 
 @code {
-    private SfGrid<TradeMatch> tradeMatchesGrid = default!;
-
-    // Data source: flatten match history into TradeMatch records
-    private IEnumerable<TradeMatch> _tradeMatches => GetTradeMatches();
+    private SfGrid<TradeMatch>? tradeMatchesGrid;
+    private List<TradeMatch> _tradeMatches = [];
 
     public async Task ToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)
     {
-        await _toolbarHandlingService.ToolbarClickHandler(args, tradeMatchesGrid);
+        if (tradeMatchesGrid != null)
+        {
+            await _toolbarHandlingService.ToolbarClickHandler(args, tradeMatchesGrid);
+        }
     }
 
-    public IEnumerable<TradeMatch> GetTradeMatches()
+    protected override void RefreshData()
     {
-        // Each calculated trade (disposal) contains zero or more TradeMatch entries in MatchHistory
-        return tradeCalculationResult.CalculatedTrade
+        _tradeMatches = tradeCalculationResult.CalculatedTrade
             .Where(trade => trade.AcquisitionDisposal == TradeType.DISPOSAL)
             .SelectMany(trade => trade.MatchHistory)
             .ToList();
     }
+
+    protected override Task RefreshRenderedGridsAsync() => RefreshGridAsync(tradeMatchesGrid);
 }

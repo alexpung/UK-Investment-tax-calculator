@@ -31,6 +31,7 @@ public class NavigationLinkTests : PlaywrightTestBase
             ("/DividendYearlyTaxSummaryPage", "Dividend"),
             ("/CalculationViewPage", "Disposal"),
             ("/TradeMatchPage", "Trade"),
+            ("/ImportedTradesDataPage", "Imported Trades"),
             ("/DividendDataPage", "Dividend"),
             ("/Section104DataPage", "Section 104"),
             ("/AddTradePage", "Trade"),

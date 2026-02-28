@@ -1,4 +1,4 @@
-﻿@using InvestmentTaxCalculator.Model
+@using InvestmentTaxCalculator.Model
 @using InvestmentTaxCalculator.ViewModel
 @using InvestmentTaxCalculator.Model.TaxEvents
 @using InvestmentTaxCalculator.Model.Interfaces
@@ -6,6 +6,7 @@
 @using InvestmentTaxCalculator.Enumerations
 @using System.Globalization
 @using InvestmentTaxCalculator.Services
+@inherits TaxCalculationRefreshComponentBase
 
 @inject IDividendLists _dividendList
 @inject SfGridToolBarHandlingService _toolbarHandlingService
@@ -19,7 +20,7 @@
 
     <div class="row mt-3 me-3">
         <div class="col">
-            <SfGrid ID="ImportedDividendGrid" @ref="importedDividendGrid" DataSource="@DividendViewModels"
+            <SfGrid ID="ImportedDividendGrid" @ref="importedDividendGrid" DataSource="@_dividendViewModels"
                     AllowPaging="true" AllowSorting="true" AllowPdfExport="true" AllowExcelExport="true" AllowResizing="true" AllowFiltering=true AllowTextWrap="true"
                     Toolbar="@(new List<string>() { "PdfExport", "ExcelExport", "Print"})">
                 <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
@@ -43,13 +44,21 @@
 
 
 @code {
-    public IEnumerable<DividendViewModel> DividendViewModels => _dividendList.Dividends.Select(dividend => new DividendViewModel(dividend)) ?? [];
-
-    private SfGrid<DividendViewModel> importedDividendGrid = new();
+    private SfGrid<DividendViewModel>? importedDividendGrid;
+    private List<DividendViewModel> _dividendViewModels = [];
 
     public async Task ToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)
     {
-        await _toolbarHandlingService.ToolbarClickHandler(args, importedDividendGrid);
+        if (importedDividendGrid != null)
+        {
+            await _toolbarHandlingService.ToolbarClickHandler(args, importedDividendGrid);
+        }
     }
-}
 
+    protected override void RefreshData()
+    {
+        _dividendViewModels = _dividendList.Dividends.Select(dividend => new DividendViewModel(dividend)).ToList();
+    }
+
+    protected override Task RefreshRenderedGridsAsync() => RefreshGridAsync(importedDividendGrid);
+}

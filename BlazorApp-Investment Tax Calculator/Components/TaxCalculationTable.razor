@@ -9,6 +9,7 @@
 @using InvestmentTaxCalculator.Enumerations
 @using InvestmentTaxCalculator.Components
 @using InvestmentTaxCalculator.Services
+@inherits TaxCalculationRefreshComponentBase
 
 @inject TradeCalculationResult tradeCalculationResult
 @inject SfGridToolBarHandlingService _toolbarHandlingService
@@ -170,10 +171,7 @@
     private SfGrid<TradeTaxCalculationViewModel>? overviewGrid;
     private SfGrid<TradeTaxCalculationViewModel>? matchingGrid;
     private SfGrid<TradeTaxCalculationViewModel>? calculationGrid;
-
-    private IEnumerable<TradeTaxCalculationViewModel> _trades => tradeCalculationResult.CalculatedTrade
-                                                                .Select(trade => new TradeTaxCalculationViewModel(trade))
-                                                                .DefaultIfEmpty()!;
+    private List<TradeTaxCalculationViewModel> _trades = [];
 
     public async Task OverviewToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)
     {
@@ -191,5 +189,19 @@
     {
         if (calculationGrid != null)
             await _toolbarHandlingService.ToolbarClickHandler(args, calculationGrid);
+    }
+
+    protected override void RefreshData()
+    {
+        _trades = tradeCalculationResult.CalculatedTrade
+            .Select(trade => new TradeTaxCalculationViewModel(trade))
+            .ToList();
+    }
+
+    protected override async Task RefreshRenderedGridsAsync()
+    {
+        await RefreshGridAsync(overviewGrid);
+        await RefreshGridAsync(matchingGrid);
+        await RefreshGridAsync(calculationGrid);
     }
 }

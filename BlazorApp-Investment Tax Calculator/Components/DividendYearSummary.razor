@@ -1,7 +1,8 @@
-﻿@using InvestmentTaxCalculator.Model
+@using InvestmentTaxCalculator.Model
 @using System.Globalization
 @using Syncfusion.Blazor.Grids
 @using InvestmentTaxCalculator.Services
+@inherits TaxCalculationRefreshComponentBase
 
 @inject DividendCalculationResult _dividendCalculationResult
 @inject SfGridToolBarHandlingService _toolbarHandlingService
@@ -15,7 +16,7 @@
 
     <div class="row mt-3 me-3">
         <div class="col">
-            <SfGrid ID="DividendSummaryGrid" @ref="dividendSummaryGrid" AllowGrouping="true" DataSource="@DividendSummaries"
+            <SfGrid ID="DividendSummaryGrid" @ref="dividendSummaryGrid" AllowGrouping="true" DataSource="@_dividendSummaries"
                     AllowPaging="true" AllowSorting="true" AllowPdfExport="true" AllowExcelExport="true" AllowResizing="true" AllowFiltering=true AllowTextWrap="true"
                     Toolbar="@(new List<string>() { "PdfExport", "ExcelExport", "Print"})">
                 <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
@@ -50,13 +51,22 @@
 </div>
 
 @code {
-    public IEnumerable<DividendSummary> DividendSummaries => _dividendCalculationResult.DividendSummary;
-
-    private SfGrid<DividendSummary> dividendSummaryGrid = new();
+    private SfGrid<DividendSummary>? dividendSummaryGrid;
+    private List<DividendSummary> _dividendSummaries = [];
     public string[] InitialGrouping = ["TaxYear"];
 
     public async Task ToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)
     {
-        await _toolbarHandlingService.ToolbarClickHandler(args, dividendSummaryGrid);
+        if (dividendSummaryGrid != null)
+        {
+            await _toolbarHandlingService.ToolbarClickHandler(args, dividendSummaryGrid);
+        }
     }
+
+    protected override void RefreshData()
+    {
+        _dividendSummaries = _dividendCalculationResult.DividendSummary.ToList();
+    }
+
+    protected override Task RefreshRenderedGridsAsync() => RefreshGridAsync(dividendSummaryGrid);
 }
