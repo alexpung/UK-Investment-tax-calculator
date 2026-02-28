@@ -9,6 +9,7 @@
 @using InvestmentTaxCalculator.Components
 @using InvestmentTaxCalculator.Services
 @using InvestmentTaxCalculator.Model.UkTaxModel.Options;
+@inherits TaxCalculationRefreshComponentBase
 
 @inject TradeCalculationResult tradeCalculationResult
 @inject SfGridToolBarHandlingService _toolbarHandlingService
@@ -41,14 +42,25 @@
 </div>
 
 @code {
-    private SfGrid<TaxRepay> taxRefundGrid = new();
-    private IEnumerable<TaxRepay> _trades => tradeCalculationResult.CalculatedTrade
-                                                                .OfType<OptionTradeTaxCalculation>()
-                                                                .SelectMany(trade => trade.TaxRepayList);
+    private SfGrid<TaxRepay>? taxRefundGrid;
+    private List<TaxRepay> _trades = [];
 
     public async Task ToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)
     {
-        await _toolbarHandlingService.ToolbarClickHandler(args, taxRefundGrid);
+        if (taxRefundGrid != null)
+        {
+            await _toolbarHandlingService.ToolbarClickHandler(args, taxRefundGrid);
+        }
     }
+
+    protected override void RefreshData()
+    {
+        _trades = tradeCalculationResult.CalculatedTrade
+            .OfType<OptionTradeTaxCalculation>()
+            .SelectMany(trade => trade.TaxRepayList)
+            .ToList();
+    }
+
+    protected override Task RefreshRenderedGridsAsync() => RefreshGridAsync(taxRefundGrid);
 }
 

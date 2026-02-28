@@ -1,0 +1,135 @@
+@using InvestmentTaxCalculator.Model
+@using InvestmentTaxCalculator.Model.Interfaces
+@using InvestmentTaxCalculator.Model.TaxEvents
+@using InvestmentTaxCalculator.Services
+@using Syncfusion.Blazor.Buttons
+@using Syncfusion.Blazor.Grids
+
+@inject ITradeAndCorporateActionList _taxEventLists
+@inject ToastService _toastService
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h3>Imported Trades (Stock/FX/Option/Future)</h3>
+    </div>
+    <div class="card-body">
+        <SfGrid ID="ImportedTradesGrid" TValue="ImportedTradeRow" @ref="_grid" DataSource="@_allImportedTrades" AllowPaging="true" AllowSorting="true" AllowFiltering="true" AllowResizing="true">
+            <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
+            <GridPageSettings PageSizes="@(new List<int>() { 25, 50, 100 })" PageSize="25"></GridPageSettings>
+            <GridColumns>
+                <GridColumn Field="@nameof(ImportedTradeRow.Date)" HeaderText="Date / Time" Width="180">
+                    <Template>
+                        @{
+                            var row = (ImportedTradeRow)context;
+                            <span>@FormatTradeDate(row.Date)</span>
+                        }
+                    </Template>
+                </GridColumn>
+                <GridColumn Field="@nameof(ImportedTradeRow.AssetName)" HeaderText="Asset" Width="140"></GridColumn>
+                <GridColumn Field="@nameof(ImportedTradeRow.AssetType)" HeaderText="Asset Type" Width="120"></GridColumn>
+                <GridColumn Field="@nameof(ImportedTradeRow.AcquisitionDisposal)" HeaderText="Type" Width="130"></GridColumn>
+                <GridColumn Field="@nameof(ImportedTradeRow.Quantity)" HeaderText="Quantity" Width="120" TextAlign="TextAlign.Right"></GridColumn>
+                <GridColumn HeaderText="Gross Proceed" Width="160">
+                    <Template>
+                        @{
+                            var trade = ((ImportedTradeRow)context).Trade;
+                            <span>@trade.GrossProceed.Display()</span>
+                        }
+                    </Template>
+                </GridColumn>
+                <GridColumn HeaderText="Net Proceed" Width="140">
+                    <Template>
+                        @{
+                            var trade = ((ImportedTradeRow)context).Trade;
+                            <span>@trade.NetProceed</span>
+                        }
+                    </Template>
+                </GridColumn>
+                <GridColumn Field="@nameof(ImportedTradeRow.Description)" HeaderText="Description"></GridColumn>
+                <GridColumn HeaderText="Actions" Width="140" TextAlign="TextAlign.Center">
+                    <Template>
+                        @{
+                            var row = (ImportedTradeRow)context;
+                            <SfButton IconCss="e-icons e-delete"
+                                      CssClass="e-danger e-small"
+                                      OnClick="@(() => DeleteTrade(row))"
+                                      Content="Delete"></SfButton>
+                        }
+                    </Template>
+                </GridColumn>
+            </GridColumns>
+        </SfGrid>
+    </div>
+</div>
+
+@code {
+    [Parameter] public EventCallback OnTradeDeleted { get; set; }
+
+    private SfGrid<ImportedTradeRow> _grid = default!;
+    private List<ImportedTradeRow> _allImportedTrades = [];
+
+    protected override void OnInitialized()
+    {
+        RefreshData();
+    }
+
+    private static string FormatTradeDate(DateTime date)
+    {
+        return date.TimeOfDay == TimeSpan.Zero
+            ? date.ToString("d")
+            : date.ToString("dd-MMM-yyyy HH:mm:ss");
+    }
+
+    private void RefreshData()
+    {
+        _allImportedTrades = _taxEventLists.Trades
+            .Concat<Trade>(_taxEventLists.OptionTrades)
+            .Concat(_taxEventLists.FutureContractTrades)
+            .OrderByDescending(t => t.Date)
+            .ThenByDescending(t => t.Id)
+            .Select(t => new ImportedTradeRow
+            {
+                Trade = t,
+                Date = t.Date,
+                AssetName = t.AssetName,
+                AssetType = t.AssetType.ToString(),
+                AcquisitionDisposal = t.AcquisitionDisposal.ToString(),
+                Quantity = t.Quantity,
+                Description = t.Description
+            })
+            .ToList();
+    }
+
+    private async Task DeleteTrade(ImportedTradeRow row)
+    {
+        Trade trade = row.Trade;
+        bool removed = trade switch
+        {
+            OptionTrade optionTrade => _taxEventLists.OptionTrades.Remove(optionTrade),
+            FutureContractTrade futureContractTrade => _taxEventLists.FutureContractTrades.Remove(futureContractTrade),
+            _ => _taxEventLists.Trades.Remove(trade)
+        };
+
+        if (removed)
+        {
+            _toastService.ShowInformation("Trade removed.");
+            RefreshData();
+            _grid?.Refresh();
+            await OnTradeDeleted.InvokeAsync();
+            return;
+        }
+
+        _toastService.ShowWarning("Unable to remove trade because the entry could not be found.");
+    }
+
+    public sealed class ImportedTradeRow
+    {
+        public Trade Trade { get; set; } = default!;
+        public DateTime Date { get; set; }
+        public string AssetName { get; set; } = string.Empty;
+        public string AssetType { get; set; } = string.Empty;
+        public string AcquisitionDisposal { get; set; } = string.Empty;
+        public decimal Quantity { get; set; }
+        public string Description { get; set; } = string.Empty;
+    }
+}

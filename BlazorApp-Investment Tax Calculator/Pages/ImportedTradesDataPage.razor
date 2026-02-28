@@ -1,0 +1,51 @@
+@page "/ImportedTradesDataPage"
+
+@using InvestmentTaxCalculator.Components
+@using InvestmentTaxCalculator.Services
+@implements IDisposable
+@inject TaxCalculationService _taxCalculationService
+@inject NavigationManager _navigationManager
+
+<div class="container-fluid py-5">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <div class="page-header text-center mb-5">
+                <h1 class="page-title">Imported Trades</h1>
+                <p class="page-subtitle">Review imported trades and remove entries you do not want included</p>
+            </div>
+
+            <div class="section">
+                <ImportedTradesList OnTradeDeleted="OnTradeDeleted" />
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool _hasChanges = false;
+    private IDisposable? _navigationRegistration;
+
+    protected override void OnInitialized()
+    {
+        _navigationRegistration = _navigationManager.RegisterLocationChangingHandler(OnLocationChanging);
+    }
+
+    private void OnTradeDeleted()
+    {
+        _hasChanges = true;
+    }
+
+    private async ValueTask OnLocationChanging(LocationChangingContext _)
+    {
+        if (_hasChanges)
+        {
+            _hasChanges = false;
+            await _taxCalculationService.CalculateAsync(CalculationTrigger.NavigationRefresh);
+        }
+    }
+
+    public void Dispose()
+    {
+        _navigationRegistration?.Dispose();
+    }
+}

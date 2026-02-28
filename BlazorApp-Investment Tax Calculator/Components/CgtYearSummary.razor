@@ -1,6 +1,7 @@
-﻿@using InvestmentTaxCalculator.Model
+@using InvestmentTaxCalculator.Model
 @using Syncfusion.Blazor.Grids
 @using InvestmentTaxCalculator.Services
+@inherits TaxCalculationRefreshComponentBase
 
 @inject TaxYearReportService _taxYearReportService
 @inject SfGridToolBarHandlingService _toolbarHandlingService
@@ -14,7 +15,7 @@
 
     <div class="row mt-3 me-3">
         <div class="col">
-            <SfGrid ID="TaxYearReportGrid" @ref="taxYearReportGrid" DataSource="@TaxYearReports"
+            <SfGrid ID="TaxYearReportGrid" @ref="taxYearReportGrid" DataSource="@_taxYearReports"
                     AllowPaging="true" AllowSorting="true" AllowPdfExport="true" AllowExcelExport="true" AllowResizing="true" AllowFiltering=true AllowTextWrap="true"
                     Toolbar="@(new List<string>() { "PdfExport", "ExcelExport", "Print"})">
                 <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
@@ -36,13 +37,21 @@
 </div>
 
 @code {
-    public IEnumerable<TaxYearCgtReport> TaxYearReports => _taxYearReportService.GetTaxYearReports();
-
-    private SfGrid<TaxYearCgtReport> taxYearReportGrid = new();
+    private SfGrid<TaxYearCgtReport>? taxYearReportGrid;
+    private List<TaxYearCgtReport> _taxYearReports = [];
 
     public async Task ToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)
     {
-        await _toolbarHandlingService.ToolbarClickHandler(args, taxYearReportGrid);
+        if (taxYearReportGrid != null)
+        {
+            await _toolbarHandlingService.ToolbarClickHandler(args, taxYearReportGrid);
+        }
     }
-}
 
+    protected override void RefreshData()
+    {
+        _taxYearReports = _taxYearReportService.GetTaxYearReports().ToList();
+    }
+
+    protected override Task RefreshRenderedGridsAsync() => RefreshGridAsync(taxYearReportGrid);
+}
