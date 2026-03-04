@@ -1,0 +1,306 @@
+@using System.Collections.Immutable
+@using InvestmentTaxCalculator.Enumerations
+@using InvestmentTaxCalculator.Model
+@using InvestmentTaxCalculator.Model.TaxEvents
+@using InvestmentTaxCalculator.Services
+@using Syncfusion.Blazor.Buttons
+@using Syncfusion.Blazor.Calendars
+@using Syncfusion.Blazor.DropDowns
+@using Syncfusion.Blazor.Inputs
+
+@inject TaxEventLists TaxEventLists
+@inject CurrencyService CurrencyService
+@inject ToastService ToastService
+
+<div class="card bg-secondary text-white">
+    <div class="card-header bg-success text-white">
+        <h5 class="mb-0">Add Option Trade</h5>
+    </div>
+    <div class="card-body">
+        <ManualEntryCommonFields Date="@_date"
+                                 DateChanged="@((DateTime value) => _date = value)"
+                                 AssetName="@_assetName"
+                                 AssetNameChanged="@((string value) => _assetName = value)"
+                                 AssetSuggestions="@_assetSuggestions"
+                                 AssetLabel="Option Contract Name"
+                                 AssetPlaceholder="e.g. AAPL 2026-12-18 C 200" />
+
+        <div class="row g-3 mt-1">
+            <div class="col-md-4">
+                <label class="form-label">Underlying Asset</label>
+                <SfTextBox @bind-Value="@_underlying" Placeholder="e.g. AAPL" FloatLabelType="FloatLabelType.Never"></SfTextBox>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Expiry Date</label>
+                <SfDatePicker TValue="DateTime" @bind-Value="@_expiryDate" Format="d" CssClass="e-outline e-small"></SfDatePicker>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Put / Call</label>
+                <SfDropDownList TValue="PUTCALL" TItem="EnumDescriptionPair<PUTCALL>" DataSource="@_putCallTypes" @bind-Value="@_putCall" CssClass="e-outline e-small">
+                    <DropDownListFieldSettings Text="Description" Value="EnumValue"></DropDownListFieldSettings>
+                </SfDropDownList>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">Trade Type</label>
+                <SfDropDownList TValue="TradeType" TItem="EnumDescriptionPair<TradeType>" DataSource="@_tradeTypes" @bind-Value="@_tradeType" CssClass="e-outline e-small">
+                    <DropDownListFieldSettings Text="Description" Value="EnumValue"></DropDownListFieldSettings>
+                </SfDropDownList>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Quantity (contracts)</label>
+                <SfNumericTextBox TValue="decimal" @bind-Value="@_quantity" Min="0" Decimals="8" Format="N8" ShowSpinButton="false" CssClass="e-outline e-small"></SfNumericTextBox>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Multiplier</label>
+                <SfNumericTextBox TValue="decimal" @bind-Value="@_multiplier" Min="0" Decimals="4" Format="N4" ShowSpinButton="false" CssClass="e-outline e-small"></SfNumericTextBox>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">Strike Price</label>
+                <SfNumericTextBox TValue="decimal" @bind-Value="@_strikePriceAmount" Min="0" Decimals="8" Format="N8" ShowSpinButton="false" CssClass="e-outline e-small"></SfNumericTextBox>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Strike Currency</label>
+                <SfDropDownList TValue="string" TItem="CurrencyViewModel" DataSource="@_currencies" @bind-Value="@_strikeCurrency" CssClass="e-outline e-small">
+                    <DropDownListFieldSettings Text="Code" Value="Code"></DropDownListFieldSettings>
+                </SfDropDownList>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Settlement Method</label>
+                <SfDropDownList TValue="SettlementMethods" TItem="EnumDescriptionPair<SettlementMethods>" DataSource="@_settlementMethods" @bind-Value="@_settlementMethod" CssClass="e-outline e-small">
+                    <DropDownListFieldSettings Text="Description" Value="EnumValue"></DropDownListFieldSettings>
+                </SfDropDownList>
+            </div>
+
+            <div class="col-md-8">
+                <label class="form-label">Description</label>
+                <SfTextBox @bind-Value="@_description" Placeholder="Optional note" FloatLabelType="FloatLabelType.Never"></SfTextBox>
+            </div>
+        </div>
+
+        <AmountCurrencyFxInputRow AmountLabel="Premium"
+                                  FxRateLabel="Premium FX Rate (to GBP)"
+                                  @bind-Amount="@_premiumAmount"
+                                  @bind-Currency="@_premiumCurrency"
+                                  @bind-FxRate="@_premiumFxRate"
+                                  Currencies="@_currencies"
+                                  AdditionalCssClass="mt-3" />
+
+        <AmountCurrencyFxInputRow AmountLabel="Commission"
+                                  FxRateLabel="Commission FX Rate (to GBP)"
+                                  @bind-Amount="@_commissionAmount"
+                                  @bind-Currency="@_commissionCurrency"
+                                  @bind-FxRate="@_commissionFxRate"
+                                  Currencies="@_currencies"
+                                  AdditionalCssClass="mt-2" />
+
+        <AmountCurrencyFxInputRow AmountLabel="Tax"
+                                  FxRateLabel="Tax FX Rate (to GBP)"
+                                  @bind-Amount="@_taxAmount"
+                                  @bind-Currency="@_taxCurrency"
+                                  @bind-FxRate="@_taxFxRate"
+                                  Currencies="@_currencies"
+                                  AdditionalCssClass="mt-2" />
+
+        @if (CanShowCalculationPreview)
+        {
+            <div class="alert alert-dark border-success mt-4 mb-0">
+                <div class="row g-2">
+                    <div class="col-md-3"><strong>Premium (GBP):</strong> @PremiumInGbp.ToString("N2")</div>
+                    <div class="col-md-3"><strong>Costs (GBP):</strong> @TotalCostsInGbp.ToString("N2")</div>
+                    <div class="col-md-3"><strong>Net Premium (GBP):</strong> @EstimatedNetPremiumInGbp.ToString("N2")</div>
+                    <div class="col-md-3"><strong>Strike Notional:</strong> @(StrikeNotionalLocal.ToString("N2")) @_strikeCurrency</div>
+                </div>
+            </div>
+        }
+
+        <div class="col-12 mt-4 d-flex justify-content-center">
+            <SfButton IsPrimary="true" OnClick="@AddEntry" CssClass="e-success e-large">Add Option Trade</SfButton>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public EventCallback OnEntryAdded { get; set; }
+
+    private DateTime _date = DateTime.Today;
+    private string _assetName = string.Empty;
+    private string _underlying = string.Empty;
+    private DateTime _expiryDate = DateTime.Today.AddMonths(1);
+    private PUTCALL _putCall = PUTCALL.CALL;
+    private TradeType _tradeType = TradeType.ACQUISITION;
+    private SettlementMethods _settlementMethod = SettlementMethods.DELIVERY;
+    private decimal _quantity = 1m;
+    private decimal _multiplier = 100m;
+    private decimal _premiumAmount;
+    private string _premiumCurrency = "USD";
+    private decimal _premiumFxRate = 1m;
+    private decimal _strikePriceAmount = 1m;
+    private string _strikeCurrency = "USD";
+    private decimal _commissionAmount;
+    private string _commissionCurrency = "GBP";
+    private decimal _commissionFxRate = 1m;
+    private decimal _taxAmount;
+    private string _taxCurrency = "GBP";
+    private decimal _taxFxRate = 1m;
+    private string _description = string.Empty;
+
+    private List<CurrencyViewModel> _currencies = [];
+    private List<string> _assetSuggestions = [];
+    private List<EnumDescriptionPair<TradeType>> _tradeTypes = [];
+    private List<EnumDescriptionPair<PUTCALL>> _putCallTypes = [];
+    private List<EnumDescriptionPair<SettlementMethods>> _settlementMethods = [];
+
+    private decimal PremiumInGbp => _premiumAmount * _premiumFxRate;
+    private decimal TotalCostsInGbp => (_commissionAmount * _commissionFxRate) + (_taxAmount * _taxFxRate);
+    private decimal EstimatedNetPremiumInGbp => _tradeType == TradeType.ACQUISITION
+        ? PremiumInGbp + TotalCostsInGbp
+        : PremiumInGbp - TotalCostsInGbp;
+    private decimal StrikeNotionalLocal => _strikePriceAmount * _quantity * _multiplier;
+    private bool CanShowCalculationPreview => _premiumFxRate > 0 && _quantity > 0 && _multiplier > 0;
+
+    protected override void OnInitialized()
+    {
+        _currencies = CurrencyService.GetCurrencies();
+        _tradeTypes = EnumExtensions.GetEnumDescriptionPair<TradeType>(typeof(TradeType));
+        _putCallTypes = EnumExtensions.GetEnumDescriptionPair<PUTCALL>(typeof(PUTCALL));
+        _settlementMethods = EnumExtensions.GetEnumDescriptionPair<SettlementMethods>(typeof(SettlementMethods))
+            .Where(e => e.EnumValue != SettlementMethods.UNKNOWN).ToList();
+        RefreshAssetSuggestions();
+    }
+
+    private async Task AddEntry()
+    {
+        if (!ValidateInputs())
+        {
+            return;
+        }
+
+        List<DescribedMoney> expenses = [];
+        if (_commissionAmount != 0)
+        {
+            expenses.Add(new DescribedMoney(_commissionAmount, _commissionCurrency, _commissionFxRate, "Commission"));
+        }
+        if (_taxAmount != 0)
+        {
+            expenses.Add(new DescribedMoney(_taxAmount, _taxCurrency, _taxFxRate, "Tax"));
+        }
+
+        var trade = new OptionTrade
+        {
+            AssetName = _assetName.Trim(),
+            Date = _date,
+            Quantity = _quantity,
+            AcquisitionDisposal = _tradeType,
+            AssetType = AssetCategoryType.OPTION,
+            GrossProceed = new DescribedMoney(_premiumAmount, _premiumCurrency, _premiumFxRate, "Option premium"),
+            Expenses = expenses.ToImmutableList(),
+            Description = _description.Trim(),
+            Underlying = _underlying.Trim(),
+            StrikePrice = new WrappedMoney(_strikePriceAmount, _strikeCurrency),
+            ExpiryDate = _expiryDate,
+            PUTCALL = _putCall,
+            Multiplier = _multiplier,
+            SettlementMethod = _settlementMethod
+        };
+
+        TaxEventLists.OptionTrades.Add(trade);
+        RefreshAssetSuggestions();
+        ResetForm();
+
+        ToastService.ShowSuccess($"Option trade added. Estimated net premium: {trade.NetProceed}.");
+        await OnEntryAdded.InvokeAsync();
+    }
+
+    private bool ValidateInputs()
+    {
+        if (string.IsNullOrWhiteSpace(_assetName))
+        {
+            ToastService.ShowError("Option contract name is required.");
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(_underlying))
+        {
+            ToastService.ShowError("Underlying asset is required.");
+            return false;
+        }
+
+        if (_quantity <= 0)
+        {
+            ToastService.ShowError("Quantity must be greater than 0.");
+            return false;
+        }
+
+        if (_multiplier <= 0)
+        {
+            ToastService.ShowError("Multiplier must be greater than 0.");
+            return false;
+        }
+
+        if (_premiumAmount < 0)
+        {
+            ToastService.ShowError("Premium cannot be negative.");
+            return false;
+        }
+
+        if (_premiumFxRate <= 0)
+        {
+            ToastService.ShowError("Premium FX rate must be greater than 0.");
+            return false;
+        }
+
+        if (_strikePriceAmount <= 0)
+        {
+            ToastService.ShowError("Strike price must be greater than 0.");
+            return false;
+        }
+
+        if (_commissionAmount != 0 && _commissionFxRate <= 0)
+        {
+            ToastService.ShowError("Commission FX rate must be greater than 0.");
+            return false;
+        }
+
+        if (_taxAmount != 0 && _taxFxRate <= 0)
+        {
+            ToastService.ShowError("Tax FX rate must be greater than 0.");
+            return false;
+        }
+
+        if (_expiryDate.Date < _date.Date)
+        {
+            ToastService.ShowWarning("Expiry date is before trade date. Please verify.");
+        }
+
+        return true;
+    }
+
+    private void ResetForm()
+    {
+        _assetName = string.Empty;
+        _underlying = string.Empty;
+        _expiryDate = DateTime.Today.AddMonths(1);
+        _quantity = 1m;
+        _multiplier = 100m;
+        _premiumAmount = 0m;
+        _premiumFxRate = 1m;
+        _strikePriceAmount = 1m;
+        _commissionAmount = 0m;
+        _commissionFxRate = 1m;
+        _taxAmount = 0m;
+        _taxFxRate = 1m;
+        _description = string.Empty;
+    }
+
+    private void RefreshAssetSuggestions()
+    {
+        _assetSuggestions = TaxEventLists.AllEvents
+            .Select(i => i.AssetName)
+            .Where(i => !string.IsNullOrWhiteSpace(i))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(i => i, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+}

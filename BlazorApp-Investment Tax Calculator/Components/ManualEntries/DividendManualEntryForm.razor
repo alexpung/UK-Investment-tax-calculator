@@ -1,0 +1,182 @@
+@using InvestmentTaxCalculator.Enumerations
+@using InvestmentTaxCalculator.Model
+@using InvestmentTaxCalculator.Model.TaxEvents
+@using InvestmentTaxCalculator.Services
+@using Syncfusion.Blazor.Buttons
+@using Syncfusion.Blazor.DropDowns
+@using Syncfusion.Blazor.Inputs
+
+@inject TaxEventLists TaxEventLists
+@inject CurrencyService CurrencyService
+@inject ToastService ToastService
+
+<div class="card bg-secondary text-white">
+    <div class="card-header bg-info text-dark">
+        <h5 class="mb-0">Add Dividend</h5>
+    </div>
+    <div class="card-body">
+        <ManualEntryCommonFields Date="@_date"
+                                 DateChanged="@((DateTime value) => _date = value)"
+                                 AssetName="@_assetName"
+                                 AssetNameChanged="@((string value) => _assetName = value)"
+                                 AssetSuggestions="@_assetSuggestions" />
+
+        <div class="row g-3 mt-1">
+            <div class="col-md-4">
+                <label class="form-label">Dividend Type</label>
+                <SfDropDownList TValue="DividendType" TItem="EnumDescriptionPair<DividendType>" DataSource="@_dividendTypes" @bind-Value="@_dividendType" CssClass="e-outline e-small">
+                    <DropDownListFieldSettings Text="Description" Value="EnumValue"></DropDownListFieldSettings>
+                </SfDropDownList>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Company Location</label>
+                <SfDropDownList TValue="string" TItem="CountryCodeOption" DataSource="@_countryCodes" @bind-Value="@_companyLocationCode" CssClass="e-outline e-small" PopupHeight="260px" AllowFiltering="true" Placeholder="Select country">
+                    <DropDownListFieldSettings Text="Display" Value="ThreeDigitCode"></DropDownListFieldSettings>
+                </SfDropDownList>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">ISIN (optional)</label>
+                <SfTextBox @bind-Value="@_isin" Placeholder="Optional ISIN" FloatLabelType="FloatLabelType.Never"></SfTextBox>
+            </div>
+            <div class="col-md-8">
+                <label class="form-label">Description</label>
+                <SfTextBox @bind-Value="@_description" Placeholder="Optional note" FloatLabelType="FloatLabelType.Never"></SfTextBox>
+            </div>
+        </div>
+
+        <AmountCurrencyFxInputRow AmountLabel="Amount"
+                                  FxRateLabel="FX Rate (to GBP)"
+                                  @bind-Amount="@_amount"
+                                  @bind-Currency="@_currency"
+                                  @bind-FxRate="@_fxRate"
+                                  Currencies="@_currencies"
+                                  AdditionalCssClass="mt-3" />
+
+        @if (CanShowCalculationPreview)
+        {
+            <div class="alert alert-dark border-info mt-4 mb-0">
+                <div class="row g-2">
+                    <div class="col-md-4"><strong>Amount (GBP):</strong> @AmountInGbp.ToString("N2")</div>
+                    <div class="col-md-4"><strong>Dividend Received (GBP):</strong> @DividendReceivedInGbp.ToString("N2")</div>
+                    <div class="col-md-4"><strong>Withholding Tax (GBP):</strong> @WithholdingTaxInGbp.ToString("N2")</div>
+                </div>
+            </div>
+        }
+
+        <div class="col-12 mt-4 d-flex justify-content-center">
+            <SfButton IsPrimary="true" OnClick="@AddEntry" CssClass="e-info e-large text-dark">Add Dividend</SfButton>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public EventCallback OnEntryAdded { get; set; }
+
+    private DateTime _date = DateTime.Today;
+    private string _assetName = string.Empty;
+    private DividendType _dividendType = DividendType.DIVIDEND;
+    private decimal _amount;
+    private string _currency = "GBP";
+    private decimal _fxRate = 1m;
+    private string _companyLocationCode = CountryCode.UnknownRegion.ThreeDigitCode;
+    private string _isin = string.Empty;
+    private string _description = string.Empty;
+
+    private List<CurrencyViewModel> _currencies = [];
+    private List<string> _assetSuggestions = [];
+    private List<EnumDescriptionPair<DividendType>> _dividendTypes = [];
+    private List<CountryCodeOption> _countryCodes = [];
+
+    private decimal AmountInGbp => _amount * _fxRate;
+    private decimal DividendReceivedInGbp => _dividendType is DividendType.DIVIDEND or DividendType.DIVIDEND_IN_LIEU or DividendType.EXCESS_REPORTABLE_INCOME or DividendType.RETURN_OF_CAPITAL
+        ? AmountInGbp
+        : 0m;
+    private decimal WithholdingTaxInGbp => _dividendType == DividendType.WITHHOLDING ? AmountInGbp : 0m;
+    private bool CanShowCalculationPreview => _amount != 0 && _fxRate > 0;
+
+    protected override void OnInitialized()
+    {
+        _currencies = CurrencyService.GetCurrencies();
+        _dividendTypes = EnumExtensions.GetEnumDescriptionPair<DividendType>(typeof(DividendType));
+        _countryCodes = CountryCode.GetAllRegions()
+            .Select(c => new CountryCodeOption(c.ThreeDigitCode, c.CountryName))
+            .ToList();
+        RefreshAssetSuggestions();
+    }
+
+    private async Task AddEntry()
+    {
+        if (!ValidateInputs(out CountryCode countryCode))
+        {
+            return;
+        }
+
+        var dividend = new Dividend
+        {
+            AssetName = _assetName.Trim(),
+            Date = _date,
+            DividendType = _dividendType,
+            CompanyLocation = countryCode,
+            Isin = _isin.Trim(),
+            Proceed = new DescribedMoney(_amount, _currency, _fxRate, _description.Trim())
+        };
+
+        TaxEventLists.Dividends.Add(dividend);
+        RefreshAssetSuggestions();
+        ResetForm();
+
+        ToastService.ShowSuccess($"Dividend added. Amount in GBP: {dividend.Proceed.BaseCurrencyAmount}.");
+        await OnEntryAdded.InvokeAsync();
+    }
+
+    private bool ValidateInputs(out CountryCode countryCode)
+    {
+        countryCode = CountryCode.UnknownRegion;
+
+        if (string.IsNullOrWhiteSpace(_assetName))
+        {
+            ToastService.ShowError("Asset name is required.");
+            return false;
+        }
+
+        if (_amount == 0)
+        {
+            ToastService.ShowError("Amount cannot be 0.");
+            return false;
+        }
+
+        if (_fxRate <= 0)
+        {
+            ToastService.ShowError("FX rate must be greater than 0.");
+            return false;
+        }
+
+        countryCode = CountryCode.GetRegionByThreeDigitCode(_companyLocationCode);
+        return true;
+    }
+
+    private void ResetForm()
+    {
+        _assetName = string.Empty;
+        _amount = 0m;
+        _fxRate = 1m;
+        _companyLocationCode = CountryCode.UnknownRegion.ThreeDigitCode;
+        _isin = string.Empty;
+        _description = string.Empty;
+    }
+
+    private void RefreshAssetSuggestions()
+    {
+        _assetSuggestions = TaxEventLists.AllEvents
+            .Select(i => i.AssetName)
+            .Where(i => !string.IsNullOrWhiteSpace(i))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(i => i, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
+    private sealed record CountryCodeOption(string ThreeDigitCode, string CountryName)
+    {
+        public string Display => $"{ThreeDigitCode} - {CountryName}";
+    }
+}

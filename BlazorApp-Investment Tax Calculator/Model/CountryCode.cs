@@ -24,7 +24,29 @@ public record CountryCode(string ThreeDigitCode, string CountryName)
         }
     }
 
-    private static readonly Dictionary<string, string> CountryCodes = new()
+    public static CountryCode GetRegionByThreeDigitCode(string threeDigitCode)
+    {
+        if (string.IsNullOrWhiteSpace(threeDigitCode))
+        {
+            return UnknownRegion;
+        }
+
+        if (CountryCodes.TryGetValue(threeDigitCode.ToUpperInvariant(), out string? countryName))
+        {
+            return new CountryCode(threeDigitCode.ToUpperInvariant(), countryName);
+        }
+
+        return UnknownRegion;
+    }
+
+    public static IReadOnlyList<CountryCode> GetAllRegions()
+    {
+        return [UnknownRegion, .. CountryCodes
+            .OrderBy(kv => kv.Value)
+            .Select(kv => new CountryCode(kv.Key, kv.Value))];
+    }
+
+    public static readonly Dictionary<string, string> CountryCodes = new()
     {
         { "AFG", "Afghanistan"},
         { "ALB", "Albania"},

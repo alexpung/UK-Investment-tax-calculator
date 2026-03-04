@@ -1,0 +1,186 @@
+@using System.Collections.Immutable
+@using InvestmentTaxCalculator.Enumerations
+@using InvestmentTaxCalculator.Model
+@using InvestmentTaxCalculator.Model.TaxEvents
+@using InvestmentTaxCalculator.Services
+@using Syncfusion.Blazor.Buttons
+@using Syncfusion.Blazor.Calendars
+@using Syncfusion.Blazor.DropDowns
+@using Syncfusion.Blazor.Inputs
+
+@inject TaxEventLists TaxEventLists
+@inject CurrencyService CurrencyService
+@inject ToastService ToastService
+
+<div class="card bg-secondary text-white">
+    <div class="card-header bg-info text-dark">
+        <h5 class="mb-0">Add FX Trade</h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Date</label>
+                <SfDatePicker TValue="DateTime" @bind-Value="@_date" Format="d" CssClass="e-outline e-small"></SfDatePicker>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">FX Asset Name</label>
+                <SfDropDownList TValue="string" TItem="CurrencyViewModel" DataSource="@_currencies" @bind-Value="@_assetCurrency" CssClass="e-outline e-small" PopupHeight="260px">
+                    <DropDownListFieldSettings Text="Code" Value="Code"></DropDownListFieldSettings>
+                </SfDropDownList>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Trade Type</label>
+                <SfDropDownList TValue="TradeType" TItem="EnumDescriptionPair<TradeType>" DataSource="@_tradeTypes" @bind-Value="@_tradeType" CssClass="e-outline e-small">
+                    <DropDownListFieldSettings Text="Description" Value="EnumValue"></DropDownListFieldSettings>
+                </SfDropDownList>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Quantity</label>
+                <SfNumericTextBox TValue="decimal" @bind-Value="@_quantity" Min="0" Decimals="8" Format="N8" ShowSpinButton="false" CssClass="e-outline e-small"></SfNumericTextBox>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Description</label>
+                <SfTextBox @bind-Value="@_description" Placeholder="Optional note" FloatLabelType="FloatLabelType.Never"></SfTextBox>
+            </div>
+        </div>
+
+        <AmountCurrencyFxInputRow AmountLabel="Gross Proceed"
+                                  FxRateLabel="FX Rate (to GBP)"
+                                  @bind-Amount="@_grossProceedAmount"
+                                  @bind-Currency="@_assetCurrency"
+                                  @bind-FxRate="@_grossProceedFxRate"
+                                  Currencies="@_currencies"
+                                  AdditionalCssClass="mt-3" />
+
+        <AmountCurrencyFxInputRow AmountLabel="Commission"
+                                  FxRateLabel="Commission FX Rate (to GBP)"
+                                  @bind-Amount="@_commissionAmount"
+                                  @bind-Currency="@_commissionCurrency"
+                                  @bind-FxRate="@_commissionFxRate"
+                                  Currencies="@_currencies"
+                                  AdditionalCssClass="mt-2" />
+
+        @if (CanShowCalculationPreview)
+        {
+            <div class="alert alert-dark border-info mt-4 mb-0">
+                <div class="row g-2">
+                    <div class="col-md-4"><strong>Gross (GBP):</strong> @GrossProceedInGbp.ToString("N2")</div>
+                    <div class="col-md-4"><strong>Commission (GBP):</strong> @CommissionInGbp.ToString("N2")</div>
+                    <div class="col-md-4"><strong>Estimated Net (GBP):</strong> @EstimatedNetProceedInGbp.ToString("N2")</div>
+                </div>
+            </div>
+        }
+
+        <div class="col-12 mt-4 d-flex justify-content-center">
+            <SfButton IsPrimary="true" OnClick="@AddEntry" CssClass="e-info e-large text-dark">Add FX Trade</SfButton>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public EventCallback OnEntryAdded { get; set; }
+
+    private DateTime _date = DateTime.Today;
+    private string _assetCurrency = "USD";
+    private TradeType _tradeType = TradeType.ACQUISITION;
+    private decimal _quantity = 1m;
+    private decimal _grossProceedAmount;
+    private decimal _grossProceedFxRate = 1m;
+    private decimal _commissionAmount;
+    private string _commissionCurrency = "GBP";
+    private decimal _commissionFxRate = 1m;
+    private string _description = string.Empty;
+
+    private List<CurrencyViewModel> _currencies = [];
+    private List<EnumDescriptionPair<TradeType>> _tradeTypes = [];
+
+    private decimal GrossProceedInGbp => _grossProceedAmount * _grossProceedFxRate;
+    private decimal CommissionInGbp => _commissionAmount * _commissionFxRate;
+    private decimal EstimatedNetProceedInGbp => _tradeType == TradeType.ACQUISITION
+        ? GrossProceedInGbp + CommissionInGbp
+        : GrossProceedInGbp - CommissionInGbp;
+    private bool CanShowCalculationPreview => _grossProceedAmount > 0 && _grossProceedFxRate > 0;
+
+    protected override void OnInitialized()
+    {
+        _currencies = CurrencyService.GetCurrencies();
+        _tradeTypes = EnumExtensions.GetEnumDescriptionPair<TradeType>(typeof(TradeType));
+    }
+
+    private async Task AddEntry()
+    {
+        if (!ValidateInputs())
+        {
+            return;
+        }
+
+        List<DescribedMoney> expenses = [];
+        if (_commissionAmount != 0)
+        {
+            expenses.Add(new DescribedMoney(_commissionAmount, _commissionCurrency, _commissionFxRate, "Commission"));
+        }
+
+        var trade = new FxTrade
+        {
+            AssetName = _assetCurrency,
+            Date = _date,
+            Quantity = _quantity,
+            AcquisitionDisposal = _tradeType,
+            AssetType = AssetCategoryType.FX,
+            GrossProceed = new DescribedMoney(_grossProceedAmount, _assetCurrency, _grossProceedFxRate, "FX gross proceed"),
+            Expenses = expenses.ToImmutableList(),
+            Description = _description.Trim()
+        };
+
+        TaxEventLists.Trades.Add(trade);
+        ResetForm();
+
+        ToastService.ShowSuccess($"FX trade added. Estimated net amount: {trade.NetProceed}.");
+        await OnEntryAdded.InvokeAsync();
+    }
+
+    private bool ValidateInputs()
+    {
+        if (string.IsNullOrWhiteSpace(_assetCurrency))
+        {
+            ToastService.ShowError("FX asset currency is required.");
+            return false;
+        }
+
+        if (_quantity <= 0)
+        {
+            ToastService.ShowError("Quantity must be greater than 0.");
+            return false;
+        }
+
+        if (_grossProceedAmount <= 0)
+        {
+            ToastService.ShowError("Gross proceed must be greater than 0.");
+            return false;
+        }
+
+        if (_grossProceedFxRate <= 0)
+        {
+            ToastService.ShowError("FX rate must be greater than 0.");
+            return false;
+        }
+
+        if (_commissionAmount != 0 && _commissionFxRate <= 0)
+        {
+            ToastService.ShowError("Commission FX rate must be greater than 0.");
+            return false;
+        }
+
+        return true;
+    }
+
+    private void ResetForm()
+    {
+        _quantity = 1m;
+        _grossProceedAmount = 0m;
+        _grossProceedFxRate = 1m;
+        _commissionAmount = 0m;
+        _commissionFxRate = 1m;
+        _description = string.Empty;
+    }
+}
