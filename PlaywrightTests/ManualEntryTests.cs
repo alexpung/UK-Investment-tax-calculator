@@ -17,6 +17,7 @@ public class ManualEntryTests : PlaywrightTestBase
     {
         await NavigateAndWaitForBlazorAsync(PagePath);
         await WaitForTextAsync("Add Stock Trade");
+        int preCount = await GetCurrentGridRowCount();
 
         await FillComboBox("Enter ticker or asset name", "TESTSTOCK");
         await FillNumericByLabel("Quantity", "10");
@@ -24,7 +25,7 @@ public class ManualEntryTests : PlaywrightTestBase
 
         await ClickButtonByText("Add Stock Trade");
         await VerifySuccessToast("added");
-        await VerifyGridRowCount(1);
+        await VerifyGridRowCount(preCount + 1);
         await VerifyGridContainsText("TESTSTOCK");
     }
 
@@ -34,6 +35,7 @@ public class ManualEntryTests : PlaywrightTestBase
         await NavigateAndWaitForBlazorAsync(PagePath);
         await SelectEntryType("Option Trade");
         await WaitForTextAsync("Add Option Trade");
+        int preCount = await GetCurrentGridRowCount();
 
         await FillFirstComboBox("AAPL C 200 TEST");
         await FillTextByLabel("Underlying Asset", "AAPL");
@@ -42,7 +44,7 @@ public class ManualEntryTests : PlaywrightTestBase
 
         await ClickButtonByText("Add Option Trade");
         await VerifySuccessToast("added");
-        await VerifyGridRowCount(1);
+        await VerifyGridRowCount(preCount + 1);
         await VerifyGridContainsText("Option Trade");
     }
 
@@ -52,13 +54,14 @@ public class ManualEntryTests : PlaywrightTestBase
         await NavigateAndWaitForBlazorAsync(PagePath);
         await SelectEntryType("Future Contract");
         await WaitForTextAsync("Add Future Contract Trade");
+        int preCount = await GetCurrentGridRowCount();
 
         await FillComboBox("Enter ticker or asset name", "ES-TEST");
         await FillMoneyAmountByTitle("Contract Value", "5000");
 
         await ClickButtonByText("Add Future Trade");
         await VerifySuccessToast("added");
-        await VerifyGridRowCount(1);
+        await VerifyGridRowCount(preCount + 1);
         await VerifyGridContainsText("Future Contract");
     }
 
@@ -68,6 +71,7 @@ public class ManualEntryTests : PlaywrightTestBase
         await NavigateAndWaitForBlazorAsync(PagePath);
         await SelectEntryType("FX Trade");
         await WaitForTextAsync("Add FX Trade");
+        int preCount = await GetCurrentGridRowCount();
 
         // FX Trade defaults asset name to "USD"
         await FillNumericByLabel("Quantity", "1000");
@@ -75,7 +79,7 @@ public class ManualEntryTests : PlaywrightTestBase
 
         await ClickButtonByText("Add FX Trade");
         await VerifySuccessToast("added");
-        await VerifyGridRowCount(1);
+        await VerifyGridRowCount(preCount + 1);
         await VerifyGridContainsText("FX Trade");
     }
 
@@ -85,13 +89,14 @@ public class ManualEntryTests : PlaywrightTestBase
         await NavigateAndWaitForBlazorAsync(PagePath);
         await SelectEntryType("Dividend");
         await WaitForTextAsync("Add Dividend");
+        int preCount = await GetCurrentGridRowCount();
 
         await FillComboBox("Enter ticker or asset name", "MSFT-TEST");
         await FillMoneyAmountByTitle("Amount", "50");
 
         await ClickButtonByText("Add Dividend");
         await VerifySuccessToast("added");
-        await VerifyGridRowCount(1);
+        await VerifyGridRowCount(preCount + 1);
         await VerifyGridContainsText("MSFT-TEST");
     }
 
@@ -101,13 +106,14 @@ public class ManualEntryTests : PlaywrightTestBase
         await NavigateAndWaitForBlazorAsync(PagePath);
         await SelectEntryType("Interest Income");
         await WaitForTextAsync("Add Interest Income");
+        int preCount = await GetCurrentGridRowCount();
 
         await FillComboBox("Enter ticker or asset name", "SAVINGS-TEST");
         await FillMoneyAmountByTitle("Amount", "100");
 
         await ClickButtonByText("Add Interest Income");
         await VerifySuccessToast("added");
-        await VerifyGridRowCount(1);
+        await VerifyGridRowCount(preCount + 1);
         await VerifyGridContainsText("SAVINGS-TEST");
     }
 
@@ -239,6 +245,36 @@ public class ManualEntryTests : PlaywrightTestBase
         TestContext.WriteLine($"Grid row count: {count}");
         Assert.That(count, Is.EqualTo(expectedCount),
             $"Expected {expectedCount} rows in the Added Entries grid, but found {count}");
+    }
+
+    /// <summary>
+    /// Gets the current number of data rows in the Added Entries grid.
+    /// </summary>
+    private async Task<int> GetCurrentGridRowCount()
+    {
+        // The section can render either:
+        // 1) an empty-state alert (no grid), or
+        // 2) the Syncfusion grid with rows.
+        // Poll until one of the states appears, then return the baseline row count.
+        var emptyState = Page.Locator(".alert:has-text('No entries have been added on this page yet.')").First;
+        var grid = Page.Locator(".e-grid").First;
+
+        for (int i = 0; i < 20; i++)
+        {
+            if (await emptyState.CountAsync() > 0 && await emptyState.IsVisibleAsync())
+            {
+                return 0;
+            }
+
+            if (await grid.CountAsync() > 0 && await grid.IsVisibleAsync())
+            {
+                return await Page.Locator(".e-grid .e-row").CountAsync();
+            }
+
+            await Task.Delay(500);
+        }
+
+        throw new TimeoutException("Timed out waiting for either empty-state alert or added-entries grid to appear.");
     }
 
     /// <summary>
