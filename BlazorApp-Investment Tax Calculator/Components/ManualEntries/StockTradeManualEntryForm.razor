@@ -13,7 +13,7 @@
 
 <div class="card bg-secondary text-white">
     <div class="card-header bg-primary text-white">
-        <h5 class="mb-0">Add Stock Trade</h5>
+        <h5 class="mb-0">@(IsEditing ? "Edit Stock Trade" : "Add Stock Trade")</h5>
     </div>
     <div class="card-body">
         <ManualEntryCommonFields Date="@_date"
@@ -71,19 +71,20 @@
                     <div class="col-md-3"><strong>Gross (GBP):</strong> @GrossProceedInGbp.ToString("N2")</div>
                     <div class="col-md-3"><strong>Commission (GBP):</strong> @CommissionInGbp.ToString("N2")</div>
                     <div class="col-md-3"><strong>Tax (GBP):</strong> @TaxInGbp.ToString("N2")</div>
-                    <div class="col-md-3"><strong>Estimated Net (GBP):</strong> @EstimatedNetProceedInGbp.ToString("N2")</div>
+                    <div class="col-md-3"><strong>Net (GBP):</strong> @NetProceedInGbp.ToString("N2")</div>
                 </div>
             </div>
         }
 
         <div class="col-12 mt-4 d-flex justify-content-center">
-            <SfButton IsPrimary="true" OnClick="@AddEntry" CssClass="e-primary e-large">Add Stock Trade</SfButton>
+            <SfButton IsPrimary="true" OnClick="@AddEntry" CssClass="e-primary e-large">@(IsEditing ? "Update Stock Trade" : "Add Stock Trade")</SfButton>
         </div>
     </div>
 </div>
 
 @code {
-    [Parameter] public EventCallback OnEntryAdded { get; set; }
+    [Parameter] public EventCallback<int> OnEntryAdded { get; set; }
+    [Parameter] public int? EditingTaxEventId { get; set; }
 
     private DateTime _date = DateTime.Today;
     private string _assetName = string.Empty;
@@ -103,11 +104,13 @@
     private List<CurrencyViewModel> _currencies = [];
     private List<EnumDescriptionPair<TradeType>> _tradeTypes = [];
     private static readonly List<AssetCategoryType> _assetCategoryFilter = [AssetCategoryType.STOCK];
+    private int? _loadedEditingTaxEventId;
+    private bool IsEditing => EditingTaxEventId.HasValue;
 
     private decimal GrossProceedInGbp => _grossProceedAmount * _grossProceedFxRate;
     private decimal CommissionInGbp => _commissionAmount * _commissionFxRate;
     private decimal TaxInGbp => _taxAmount * _taxFxRate;
-    private decimal EstimatedNetProceedInGbp => _tradeType == TradeType.ACQUISITION
+    private decimal NetProceedInGbp => _tradeType == TradeType.ACQUISITION
         ? GrossProceedInGbp + CommissionInGbp + TaxInGbp
         : GrossProceedInGbp - CommissionInGbp - TaxInGbp;
     private bool CanShowCalculationPreview => _grossProceedAmount > 0 && _grossProceedFxRate > 0;
@@ -118,11 +121,30 @@
         _tradeTypes = EnumExtensions.GetEnumDescriptionPair<TradeType>(typeof(TradeType));
     }
 
+    protected override void OnParametersSet()
+    {
+        if (_loadedEditingTaxEventId != EditingTaxEventId)
+        {
+            _loadedEditingTaxEventId = EditingTaxEventId;
+            LoadForEdit();
+        }
+    }
+
     private async Task AddEntry()
     {
         if (!ValidateInputs())
         {
             return;
+        }
+
+        if (EditingTaxEventId.HasValue)
+        {
+            int removed = TaxEventLists.Trades.RemoveAll(t => t.Id == EditingTaxEventId.Value && t.AssetType == AssetCategoryType.STOCK);
+            if (removed == 0)
+            {
+                ToastService.ShowError("Unable to update stock trade because the original entry could not be found.");
+                return;
+            }
         }
 
         List<DescribedMoney> expenses = [];
@@ -150,8 +172,45 @@
         TaxEventLists.Trades.Add(trade);
         ResetForm();
 
-        ToastService.ShowSuccess($"Stock trade added. Estimated net amount: {trade.NetProceed}.");
-        await OnEntryAdded.InvokeAsync();
+        ToastService.ShowSuccess($"Stock trade added. Net amount: {trade.NetProceed}.");
+        await OnEntryAdded.InvokeAsync(trade.Id);
+    }
+
+    private void LoadForEdit()
+    {
+        if (!EditingTaxEventId.HasValue)
+        {
+            return;
+        }
+
+        Trade? trade = TaxEventLists.Trades
+            .Where(t => t.AssetType == AssetCategoryType.STOCK)
+            .FirstOrDefault(t => t.Id == EditingTaxEventId.Value);
+
+        if (trade == null)
+        {
+            return;
+        }
+
+        _date = trade.Date;
+        _assetName = trade.AssetName;
+        _tradeType = trade.AcquisitionDisposal;
+        _quantity = trade.Quantity;
+        _grossProceedAmount = trade.GrossProceed.Amount.Amount;
+        _grossProceedCurrency = trade.GrossProceed.Amount.Currency;
+        _grossProceedFxRate = trade.GrossProceed.FxRate;
+
+        DescribedMoney? commission = trade.Expenses.FirstOrDefault(e => string.Equals(e.Description, "Commission", StringComparison.OrdinalIgnoreCase));
+        _commissionAmount = commission?.Amount.Amount ?? 0m;
+        _commissionCurrency = commission?.Amount.Currency ?? "GBP";
+        _commissionFxRate = commission?.FxRate ?? 1m;
+
+        DescribedMoney? tax = trade.Expenses.FirstOrDefault(e => string.Equals(e.Description, "Tax", StringComparison.OrdinalIgnoreCase));
+        _taxAmount = tax?.Amount.Amount ?? 0m;
+        _taxCurrency = tax?.Amount.Currency ?? "GBP";
+        _taxFxRate = tax?.FxRate ?? 1m;
+
+        _description = trade.Description;
     }
 
     private bool ValidateInputs()

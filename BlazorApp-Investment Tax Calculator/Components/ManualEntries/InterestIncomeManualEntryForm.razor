@@ -12,7 +12,7 @@
 
 <div class="card bg-secondary text-white">
     <div class="card-header bg-primary text-white">
-        <h5 class="mb-0">Add Interest Income</h5>
+        <h5 class="mb-0">@(IsEditing ? "Edit Interest Income" : "Add Interest Income")</h5>
     </div>
     <div class="card-body">
         <ManualEntryCommonFields Date="@_date"
@@ -78,13 +78,14 @@
         }
 
         <div class="col-12 mt-4 d-flex justify-content-center">
-            <SfButton IsPrimary="true" OnClick="@AddEntry" CssClass="e-primary e-large">Add Interest Income</SfButton>
+            <SfButton IsPrimary="true" OnClick="@AddEntry" CssClass="e-primary e-large">@(IsEditing ? "Update Interest Income" : "Add Interest Income")</SfButton>
         </div>
     </div>
 </div>
 
 @code {
-    [Parameter] public EventCallback OnEntryAdded { get; set; }
+    [Parameter] public EventCallback<int> OnEntryAdded { get; set; }
+    [Parameter] public int? EditingTaxEventId { get; set; }
 
     private DateTime _date = DateTime.Today;
     private string _assetName = string.Empty;
@@ -101,6 +102,8 @@
     private List<EnumDescriptionPair<InterestType>> _interestTypes = [];
     private List<CountryCodeOption> _countryCodes = [];
     private static readonly List<AssetCategoryType> _assetCategoryFilter = [AssetCategoryType.STOCK];
+    private int? _loadedEditingTaxEventId;
+    private bool IsEditing => EditingTaxEventId.HasValue;
 
     private bool IsAccruedIncomeType => _interestType is InterestType.ACCURREDINCOMEPROFIT or InterestType.ACCURREDINCOMELOSS;
     private bool IsTaxDeferred => IsAccruedIncomeType && !_isNextPaymentInSameTaxYear;
@@ -118,11 +121,30 @@
             .ToList();
     }
 
+    protected override void OnParametersSet()
+    {
+        if (_loadedEditingTaxEventId != EditingTaxEventId)
+        {
+            _loadedEditingTaxEventId = EditingTaxEventId;
+            LoadForEdit();
+        }
+    }
+
     private async Task AddEntry()
     {
         if (!ValidateInputs(out CountryCode countryCode))
         {
             return;
+        }
+
+        if (EditingTaxEventId.HasValue)
+        {
+            int removed = TaxEventLists.InterestIncomes.RemoveAll(i => i.Id == EditingTaxEventId.Value);
+            if (removed == 0)
+            {
+                ToastService.ShowError("Unable to update interest income because the original entry could not be found.");
+                return;
+            }
         }
 
         var interestIncome = new InterestIncome
@@ -140,7 +162,32 @@
         ResetForm();
 
         ToastService.ShowSuccess($"Interest income added. Amount in GBP: {interestIncome.Amount.BaseCurrencyAmount}.");
-        await OnEntryAdded.InvokeAsync();
+        await OnEntryAdded.InvokeAsync(interestIncome.Id);
+    }
+
+    private void LoadForEdit()
+    {
+        if (!EditingTaxEventId.HasValue)
+        {
+            return;
+        }
+
+        InterestIncome? interestIncome = TaxEventLists.InterestIncomes.FirstOrDefault(i => i.Id == EditingTaxEventId.Value);
+        if (interestIncome == null)
+        {
+            return;
+        }
+
+        _date = interestIncome.Date;
+        _assetName = interestIncome.AssetName;
+        _interestType = interestIncome.InterestType;
+        _amount = interestIncome.Amount.Amount.Amount;
+        _currency = interestIncome.Amount.Amount.Currency;
+        _fxRate = interestIncome.Amount.FxRate;
+        _incomeLocationCode = interestIncome.IncomeLocation.ThreeDigitCode;
+        _isin = interestIncome.Isin;
+        _isNextPaymentInSameTaxYear = interestIncome.IsNextPaymentInSameTaxYear;
+        _description = interestIncome.Amount.Description;
     }
 
     private bool ValidateInputs(out CountryCode countryCode)

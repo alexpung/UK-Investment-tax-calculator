@@ -12,7 +12,7 @@
 
 <div class="card bg-secondary text-white">
     <div class="card-header bg-info text-dark">
-        <h5 class="mb-0">Add Dividend</h5>
+        <h5 class="mb-0">@(IsEditing ? "Edit Dividend" : "Add Dividend")</h5>
     </div>
     <div class="card-body">
         <ManualEntryCommonFields Date="@_date"
@@ -65,13 +65,14 @@
         }
 
         <div class="col-12 mt-4 d-flex justify-content-center">
-            <SfButton IsPrimary="true" OnClick="@AddEntry" CssClass="e-info e-large text-dark">Add Dividend</SfButton>
+            <SfButton IsPrimary="true" OnClick="@AddEntry" CssClass="e-info e-large text-dark">@(IsEditing ? "Update Dividend" : "Add Dividend")</SfButton>
         </div>
     </div>
 </div>
 
 @code {
-    [Parameter] public EventCallback OnEntryAdded { get; set; }
+    [Parameter] public EventCallback<int> OnEntryAdded { get; set; }
+    [Parameter] public int? EditingTaxEventId { get; set; }
 
     private DateTime _date = DateTime.Today;
     private string _assetName = string.Empty;
@@ -87,6 +88,8 @@
     private List<EnumDescriptionPair<DividendType>> _dividendTypes = [];
     private List<CountryCodeOption> _countryCodes = [];
     private static readonly List<AssetCategoryType> _assetCategoryFilter = [AssetCategoryType.STOCK];
+    private int? _loadedEditingTaxEventId;
+    private bool IsEditing => EditingTaxEventId.HasValue;
 
     private decimal AmountInGbp => _amount * _fxRate;
     private decimal DividendReceivedInGbp => _dividendType is DividendType.DIVIDEND or DividendType.DIVIDEND_IN_LIEU or DividendType.EXCESS_REPORTABLE_INCOME or DividendType.RETURN_OF_CAPITAL
@@ -104,11 +107,30 @@
             .ToList();
     }
 
+    protected override void OnParametersSet()
+    {
+        if (_loadedEditingTaxEventId != EditingTaxEventId)
+        {
+            _loadedEditingTaxEventId = EditingTaxEventId;
+            LoadForEdit();
+        }
+    }
+
     private async Task AddEntry()
     {
         if (!ValidateInputs(out CountryCode countryCode))
         {
             return;
+        }
+
+        if (EditingTaxEventId.HasValue)
+        {
+            int removed = TaxEventLists.Dividends.RemoveAll(d => d.Id == EditingTaxEventId.Value);
+            if (removed == 0)
+            {
+                ToastService.ShowError("Unable to update dividend because the original entry could not be found.");
+                return;
+            }
         }
 
         var dividend = new Dividend
@@ -125,7 +147,31 @@
         ResetForm();
 
         ToastService.ShowSuccess($"Dividend added. Amount in GBP: {dividend.Proceed.BaseCurrencyAmount}.");
-        await OnEntryAdded.InvokeAsync();
+        await OnEntryAdded.InvokeAsync(dividend.Id);
+    }
+
+    private void LoadForEdit()
+    {
+        if (!EditingTaxEventId.HasValue)
+        {
+            return;
+        }
+
+        Dividend? dividend = TaxEventLists.Dividends.FirstOrDefault(d => d.Id == EditingTaxEventId.Value);
+        if (dividend == null)
+        {
+            return;
+        }
+
+        _date = dividend.Date;
+        _assetName = dividend.AssetName;
+        _dividendType = dividend.DividendType;
+        _amount = dividend.Proceed.Amount.Amount;
+        _currency = dividend.Proceed.Amount.Currency;
+        _fxRate = dividend.Proceed.FxRate;
+        _companyLocationCode = dividend.CompanyLocation.ThreeDigitCode;
+        _isin = dividend.Isin;
+        _description = dividend.Proceed.Description;
     }
 
     private bool ValidateInputs(out CountryCode countryCode)

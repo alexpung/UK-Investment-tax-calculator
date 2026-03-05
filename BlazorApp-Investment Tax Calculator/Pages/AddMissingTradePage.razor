@@ -5,11 +5,13 @@
 @using InvestmentTaxCalculator.Model
 @using InvestmentTaxCalculator.Model.TaxEvents
 @using InvestmentTaxCalculator.Services
+@using Syncfusion.Blazor.Buttons
 @using Syncfusion.Blazor.DropDowns
 @using Syncfusion.Blazor.Grids
 @implements IDisposable
 @inject TaxEventLists TaxEventLists
 @inject TaxCalculationService TaxCalculationService
+@inject ManualEntryTrackerService ManualEntryTrackerService
 @inject NavigationManager NavigationManager
 
 <div class="container-fluid py-5">
@@ -36,6 +38,13 @@
             </div>
 
             <div class="section mb-5">
+                @if (_editingTaxEventId.HasValue)
+                {
+                    <div class="alert alert-warning d-flex justify-content-between align-items-center mb-3">
+                        <span>Editing existing entry (ID: @_editingTaxEventId.Value). Saving will replace it.</span>
+                        <button class="btn btn-sm btn-outline-dark" @onclick="CancelEdit">Cancel Edit</button>
+                    </div>
+                }
                 <DynamicComponent Type="@SelectedEntryType.ComponentType" Parameters="@DynamicComponentParameters"></DynamicComponent>
             </div>
 
@@ -87,6 +96,20 @@
                                 </Template>
                             </GridColumn>
                             <GridColumn Field="@nameof(AddedManualEntryRow.Detail)" HeaderText="Details"></GridColumn>
+                            <GridColumn HeaderText="Actions" Width="180" AllowSorting="false" TextAlign="TextAlign.Center">
+                                <Template>
+                                    @{
+                                        var row = context as AddedManualEntryRow;
+                                    }
+                                    @if (row != null)
+                                    {
+                                        <div class="d-flex gap-2 justify-content-center">
+                                            <SfButton IconCss="e-icons e-edit" CssClass="e-primary e-small" OnClick="@(() => StartEdit(row))" Content="Edit"></SfButton>
+                                            <SfButton IconCss="e-icons e-delete" CssClass="e-danger e-small" OnClick="@(() => DeleteEntry(row))" Content="Delete"></SfButton>
+                                        </div>
+                                    }
+                                </Template>
+                            </GridColumn>
                         </GridColumns>
                     </SfGrid>
                 }
@@ -107,7 +130,7 @@
     ];
 
     private string _selectedEntryKey = "stock";
-    private HashSet<int> _baselineTaxEventIds = [];
+    private int? _editingTaxEventId;
     private List<AddedManualEntryRow> _addedEntries = [];
     private Dictionary<string, int> _entryTypeCounts = new(StringComparer.OrdinalIgnoreCase);
     private bool _hasChanges = false;
@@ -115,14 +138,14 @@
 
     private EntryTypeDefinition SelectedEntryType => _entryTypes.FirstOrDefault(i => i.Key == _selectedEntryKey) ?? _entryTypes[0];
 
-    private Dictionary<string, object> DynamicComponentParameters => new()
+    private Dictionary<string, object?> DynamicComponentParameters => new()
     {
-        [nameof(StockTradeManualEntryForm.OnEntryAdded)] = EventCallback.Factory.Create(this, OnEntryAdded)
+        [nameof(StockTradeManualEntryForm.OnEntryAdded)] = EventCallback.Factory.Create<int>(this, OnEntryAdded),
+        [nameof(StockTradeManualEntryForm.EditingTaxEventId)] = _editingTaxEventId
     };
 
     protected override void OnInitialized()
     {
-        _baselineTaxEventIds = TaxEventLists.AllEvents.Select(i => i.Id).ToHashSet();
         RefreshAddedEntries();
         _navigationRegistration = NavigationManager.RegisterLocationChangingHandler(OnLocationChanging);
     }
@@ -132,20 +155,64 @@
         if (!string.IsNullOrWhiteSpace(args.Value))
         {
             _selectedEntryKey = args.Value;
+            _editingTaxEventId = null;
         }
     }
 
-    private void OnEntryAdded()
+    private void OnEntryAdded(int taxEventId)
     {
         _hasChanges = true;
+        if (_editingTaxEventId.HasValue)
+        {
+            ManualEntryTrackerService.Remove(_editingTaxEventId.Value);
+            _editingTaxEventId = null;
+        }
+        ManualEntryTrackerService.Add(taxEventId);
         RefreshAddedEntries();
         StateHasChanged();
     }
 
+    private void StartEdit(AddedManualEntryRow row)
+    {
+        TaxEvent? taxEvent = FindTaxEventById(row.TaxEventId);
+        if (taxEvent == null) return;
+
+        _selectedEntryKey = GetEntryKeyForTaxEvent(taxEvent);
+        _editingTaxEventId = row.TaxEventId;
+        StateHasChanged();
+    }
+
+    private void CancelEdit()
+    {
+        _editingTaxEventId = null;
+    }
+
+    private void DeleteEntry(AddedManualEntryRow row)
+    {
+        if (RemoveTaxEventById(row.TaxEventId))
+        {
+            _hasChanges = true;
+            ManualEntryTrackerService.Remove(row.TaxEventId);
+            if (_editingTaxEventId == row.TaxEventId)
+            {
+                _editingTaxEventId = null;
+            }
+
+            RefreshAddedEntries();
+            StateHasChanged();
+        }
+    }
+
     private void RefreshAddedEntries()
     {
+        var existingTaxEventIds = TaxEventLists.AllEvents.Select(i => i.Id).ToHashSet();
+        foreach (int staleId in ManualEntryTrackerService.ManualEntryIds.Where(id => !existingTaxEventIds.Contains(id)).ToList())
+        {
+            ManualEntryTrackerService.Remove(staleId);
+        }
+
         _addedEntries = TaxEventLists.AllEvents
-            .Where(i => !_baselineTaxEventIds.Contains(i.Id))
+            .Where(i => ManualEntryTrackerService.ManualEntryIds.Contains(i.Id))
             .Where(IsSupportedManualEntryType)
             .Select(MapToAddedEntryRow)
             .OrderByDescending(i => i.EventDate)
@@ -160,6 +227,43 @@
     private static bool IsSupportedManualEntryType(TaxEvent taxEvent)
     {
         return taxEvent is Trade or OptionTrade or FutureContractTrade or Dividend or InterestIncome;
+    }
+
+    private TaxEvent? FindTaxEventById(int taxEventId)
+    {
+        return TaxEventLists.AllEvents.FirstOrDefault(i => i.Id == taxEventId);
+    }
+
+    private static string GetEntryKeyForTaxEvent(TaxEvent taxEvent)
+    {
+        return taxEvent switch
+        {
+            OptionTrade => "option",
+            FutureContractTrade => "future",
+            FxTrade => "fx",
+            Trade => "stock",
+            Dividend => "dividend",
+            InterestIncome => "interest",
+            _ => "stock"
+        };
+    }
+
+    private bool RemoveTaxEventById(int taxEventId)
+    {
+        int optionRemoved = TaxEventLists.OptionTrades.RemoveAll(i => i.Id == taxEventId);
+        if (optionRemoved > 0) return true;
+
+        int futureRemoved = TaxEventLists.FutureContractTrades.RemoveAll(i => i.Id == taxEventId);
+        if (futureRemoved > 0) return true;
+
+        int dividendRemoved = TaxEventLists.Dividends.RemoveAll(i => i.Id == taxEventId);
+        if (dividendRemoved > 0) return true;
+
+        int interestRemoved = TaxEventLists.InterestIncomes.RemoveAll(i => i.Id == taxEventId);
+        if (interestRemoved > 0) return true;
+
+        int tradeRemoved = TaxEventLists.Trades.RemoveAll(i => i.Id == taxEventId);
+        return tradeRemoved > 0;
     }
 
     private static AddedManualEntryRow MapToAddedEntryRow(TaxEvent taxEvent)
