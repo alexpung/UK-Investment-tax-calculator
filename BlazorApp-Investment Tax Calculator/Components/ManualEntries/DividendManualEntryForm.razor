@@ -126,7 +126,7 @@
         if (EditingTaxEventId.HasValue)
         {
             int removed = TaxEventLists.Dividends.RemoveAll(d => d.Id == EditingTaxEventId.Value);
-            if (removed == 0)
+            if (removed != 1)
             {
                 ToastService.ShowError("Unable to update dividend because the original entry could not be found.");
                 return;

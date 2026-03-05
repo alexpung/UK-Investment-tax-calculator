@@ -129,7 +129,7 @@
         if (EditingTaxEventId.HasValue)
         {
             int removed = TaxEventLists.Trades.RemoveAll(t => t.Id == EditingTaxEventId.Value && t.AssetType == AssetCategoryType.FX);
-            if (removed == 0)
+            if (removed != 1)
             {
                 ToastService.ShowError("Unable to update FX trade because the original entry could not be found.");
                 return;

@@ -139,12 +139,15 @@
 
         if (EditingTaxEventId.HasValue)
         {
-            int removed = TaxEventLists.InterestIncomes.RemoveAll(i => i.Id == EditingTaxEventId.Value);
-            if (removed == 0)
+            int matches = TaxEventLists.InterestIncomes.Count(i => i.Id == EditingTaxEventId.Value);
+            if (matches != 1)
             {
                 ToastService.ShowError("Unable to update interest income because the original entry could not be found.");
                 return;
             }
+
+            int index = TaxEventLists.InterestIncomes.FindIndex(i => i.Id == EditingTaxEventId.Value);
+            TaxEventLists.InterestIncomes.RemoveAt(index);
         }
 
         var interestIncome = new InterestIncome
