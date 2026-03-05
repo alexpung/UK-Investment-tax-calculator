@@ -11,7 +11,7 @@ public record CountryCode(string ThreeDigitCode, string CountryName)
         try
         {
             RegionInfo region = new(twoDigitCode);
-            string countryName = CountryCodes[region.ThreeLetterISORegionName];
+            string countryName = _countryCodes[region.ThreeLetterISORegionName];
             return new CountryCode(region.ThreeLetterISORegionName, countryName);
         }
         catch (KeyNotFoundException)
@@ -31,7 +31,7 @@ public record CountryCode(string ThreeDigitCode, string CountryName)
             return UnknownRegion;
         }
 
-        if (CountryCodes.TryGetValue(threeDigitCode.ToUpperInvariant(), out string? countryName))
+        if (_countryCodes.TryGetValue(threeDigitCode.ToUpperInvariant(), out string? countryName))
         {
             return new CountryCode(threeDigitCode.ToUpperInvariant(), countryName);
         }
@@ -41,12 +41,12 @@ public record CountryCode(string ThreeDigitCode, string CountryName)
 
     public static IReadOnlyList<CountryCode> GetAllRegions()
     {
-        return [UnknownRegion, .. CountryCodes
+        return [UnknownRegion, .. _countryCodes
             .OrderBy(kv => kv.Value)
             .Select(kv => new CountryCode(kv.Key, kv.Value))];
     }
 
-    public static readonly Dictionary<string, string> CountryCodes = new()
+    private static readonly Dictionary<string, string> _countryCodes = new()
     {
         { "AFG", "Afghanistan"},
         { "ALB", "Albania"},
