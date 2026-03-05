@@ -1,0 +1,46 @@
+@using Syncfusion.Blazor.Calendars
+@using Syncfusion.Blazor.DropDowns
+@using InvestmentTaxCalculator.Components
+@using InvestmentTaxCalculator.Enumerations
+
+<div class="row g-3">
+    <div class="col-md-4">
+        <label class="form-label">@DateLabel</label>
+        <SfDatePicker TValue="DateTime"
+                      Value="@Date"
+                      Format="d"
+                      Placeholder="@DatePlaceholder"
+                      CssClass="e-outline">
+            <DatePickerEvents TValue="DateTime" ValueChange="@HandleDateChange" />
+        </SfDatePicker>
+    </div>
+    <div class="col-md-8">
+        <label class="form-label">@AssetLabel</label>
+        <AssetNameSelector Value="@AssetName"
+                           ValueChanged="@AssetNameChanged"
+                           AllowManualAssetNameInput="@AllowManualAssetNameInput"
+                           AssetCategoryFilter="@AssetCategoryFilter"
+                           Placeholder="@AssetPlaceholder"
+                           CssClass="e-outline" />
+    </div>
+</div>
+
+@code {
+    [Parameter] public DateTime Date { get; set; } = DateTime.Today;
+    [Parameter] public EventCallback<DateTime> DateChanged { get; set; }
+
+    [Parameter] public string AssetName { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> AssetNameChanged { get; set; }
+
+    [Parameter] public string DateLabel { get; set; } = "Date";
+    [Parameter] public string DatePlaceholder { get; set; } = "Select date";
+    [Parameter] public string AssetLabel { get; set; } = "Asset / Ticker";
+    [Parameter] public string AssetPlaceholder { get; set; } = "Enter ticker or asset name";
+    [Parameter] public bool AllowManualAssetNameInput { get; set; } = true;
+    [Parameter] public List<AssetCategoryType> AssetCategoryFilter { get; set; } = [];
+
+    private async Task HandleDateChange(Syncfusion.Blazor.Calendars.ChangedEventArgs<DateTime> args)
+    {
+        await DateChanged.InvokeAsync(args.Value);
+    }
+}

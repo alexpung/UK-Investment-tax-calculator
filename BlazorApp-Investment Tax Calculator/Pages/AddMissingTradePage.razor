@@ -1,25 +1,370 @@
-﻿@page "/AddTradePage"
+@page "/AddTradePage"
 
-@using InvestmentTaxCalculator.Components
+@using InvestmentTaxCalculator.Components.ManualEntries
+@using InvestmentTaxCalculator.Enumerations
+@using InvestmentTaxCalculator.Model
+@using InvestmentTaxCalculator.Model.TaxEvents
+@using InvestmentTaxCalculator.Services
+@using Syncfusion.Blazor.Buttons
+@using Syncfusion.Blazor.DropDowns
+@using Syncfusion.Blazor.Grids
+@implements IDisposable
+@inject TaxEventLists TaxEventLists
+@inject TaxCalculationService TaxCalculationService
+@inject ManualEntryTrackerService ManualEntryTrackerService
+@inject NavigationManager NavigationManager
 
 <div class="container-fluid py-5">
     <div class="row">
         <div class="col-lg-10 mx-auto">
-            <!-- Page Header -->
             <div class="page-header text-center mb-5">
                 <h1 class="page-title">Add Manual Entries</h1>
-                <p class="page-subtitle">Manually add dividends and trades not captured in broker statements</p>
+                <p class="page-subtitle">Manually add trades, dividends, and income entries that are not included in your imported data</p>
             </div>
 
-            <!-- Add Dividend Section -->
+            <div class="row mb-5 justify-content-center">
+                <div class="col-md-5">
+                    <div class="card bg-dark border-secondary shadow-sm">
+                        <div class="card-body">
+                            <label class="form-label text-info fw-bold">Select Manual Entry Type</label>
+                            <SfDropDownList TValue="string" TItem="EntryTypeDefinition" DataSource="@_entryTypes" Value="@_selectedEntryKey" Placeholder="Choose an entry type" CssClass="e-outline">
+                                <DropDownListFieldSettings Text="DisplayName" Value="Key"></DropDownListFieldSettings>
+                                <DropDownListEvents TValue="string" TItem="EntryTypeDefinition" ValueChange="@OnEntryTypeChanged"></DropDownListEvents>
+                            </SfDropDownList>
+                            <div class="small text-muted mt-2">@SelectedEntryType.Description</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="section mb-5">
-                <AddDividend/>
+                @if (_editingTaxEventId.HasValue)
+                {
+                    <div class="alert alert-warning d-flex justify-content-between align-items-center mb-3">
+                        <span>Editing existing entry (ID: @_editingTaxEventId.Value). Saving will replace it.</span>
+                        <button class="btn btn-sm btn-outline-dark" @onclick="CancelEdit">Cancel Edit</button>
+                    </div>
+                }
+                <DynamicComponent Type="@SelectedEntryType.ComponentType" Parameters="@DynamicComponentParameters"></DynamicComponent>
             </div>
 
-            <!-- Add Trade Section -->
             <div class="section">
-                <AddTrade/>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="mb-0">Entries Added This Session</h3>
+                    <span class="badge text-bg-info">@_addedEntries.Count</span>
+                </div>
+                <p class="text-muted small mb-3">Entries are saved automatically. Tax calculations refresh when you navigate away.</p>
+
+                @if (_entryTypeCounts.Count > 0)
+                {
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        @foreach (var count in _entryTypeCounts.OrderBy(i => i.Key))
+                        {
+                            <span class="badge text-bg-secondary">@count.Key: @count.Value</span>
+                        }
+                    </div>
+                }
+
+                @if (_addedEntries.Count == 0)
+                {
+                    <div class="alert alert-secondary alert-custom mb-0">
+                        No entries have been added on this page yet.
+                    </div>
+                }
+                else
+                {
+                    <SfGrid TValue="AddedManualEntryRow" DataSource="@_addedEntries" AllowPaging="true" AllowSorting="true">
+                        <GridPageSettings PageSize="10"></GridPageSettings>
+                        <GridColumns>
+                            <GridColumn Field="@nameof(AddedManualEntryRow.EventDate)" HeaderText="Event Date" Format="d" Type="ColumnType.Date" Width="130"></GridColumn>
+                            <GridColumn Field="@nameof(AddedManualEntryRow.EntryType)" HeaderText="Type" Width="160"></GridColumn>
+                            <GridColumn Field="@nameof(AddedManualEntryRow.AssetName)" HeaderText="Asset" Width="160"></GridColumn>
+                            <GridColumn Field="@nameof(AddedManualEntryRow.GrossProceedLocalValue)" HeaderText="Gross Proceed (Local)" Width="190">
+                                <Template>
+                                    @{
+                                        var row = context as AddedManualEntryRow;
+                                    }
+                                    @row?.GrossProceedLocal
+                                </Template>
+                            </GridColumn>
+                            <GridColumn Field="@nameof(AddedManualEntryRow.NetSterlingValue)" HeaderText="Net (GBP incl. tax & commission)" Width="240">
+                                <Template>
+                                    @{
+                                        var row = context as AddedManualEntryRow;
+                                    }
+                                    @row?.NetSterling
+                                </Template>
+                            </GridColumn>
+                            <GridColumn Field="@nameof(AddedManualEntryRow.Detail)" HeaderText="Details"></GridColumn>
+                            <GridColumn HeaderText="Actions" Width="180" AllowSorting="false" TextAlign="TextAlign.Center">
+                                <Template>
+                                    @{
+                                        var row = context as AddedManualEntryRow;
+                                    }
+                                    @if (row != null)
+                                    {
+                                        <div class="d-flex gap-2 justify-content-center">
+                                            <SfButton IconCss="e-icons e-edit" CssClass="e-primary e-small" OnClick="@(() => StartEdit(row))" Content="Edit"></SfButton>
+                                            <SfButton IconCss="e-icons e-delete" CssClass="e-danger e-small" OnClick="@(() => DeleteEntry(row))" Content="Delete"></SfButton>
+                                        </div>
+                                    }
+                                </Template>
+                            </GridColumn>
+                        </GridColumns>
+                    </SfGrid>
+                }
             </div>
         </div>
     </div>
 </div>
+
+@code {
+    private readonly List<EntryTypeDefinition> _entryTypes =
+    [
+        new("stock", "Stock Trade", "Add a manual stock acquisition or disposal.", typeof(StockTradeManualEntryForm)),
+        new("option", "Option Trade", "Add option premium trades with strike and expiry details.", typeof(OptionTradeManualEntryForm)),
+        new("future", "Future Contract", "Add future contract trades with contract value and position type.", typeof(FutureContractManualEntryForm)),
+        new("fx", "FX Trade", "Add foreign-currency acquisition/disposal entries.", typeof(FxTradeManualEntryForm)),
+        new("dividend", "Dividend", "Add dividend or withholding entries.", typeof(DividendManualEntryForm)),
+        new("interest", "Interest Income", "Add savings, bond, accrued, or ETF interest income.", typeof(InterestIncomeManualEntryForm))
+    ];
+
+    private string _selectedEntryKey = "stock";
+    private int? _editingTaxEventId;
+    private List<AddedManualEntryRow> _addedEntries = [];
+    private Dictionary<string, int> _entryTypeCounts = new(StringComparer.OrdinalIgnoreCase);
+    private bool _hasChanges = false;
+    private IDisposable? _navigationRegistration;
+
+    private EntryTypeDefinition SelectedEntryType => _entryTypes.FirstOrDefault(i => i.Key == _selectedEntryKey) ?? _entryTypes[0];
+
+    private Dictionary<string, object?> DynamicComponentParameters => new()
+    {
+        [nameof(StockTradeManualEntryForm.OnEntryAdded)] = EventCallback.Factory.Create<int>(this, OnEntryAdded),
+        [nameof(StockTradeManualEntryForm.EditingTaxEventId)] = _editingTaxEventId
+    };
+
+    protected override void OnInitialized()
+    {
+        RefreshAddedEntries();
+        _navigationRegistration = NavigationManager.RegisterLocationChangingHandler(OnLocationChanging);
+    }
+
+    private void OnEntryTypeChanged(ChangeEventArgs<string, EntryTypeDefinition> args)
+    {
+        if (!string.IsNullOrWhiteSpace(args.Value))
+        {
+            _selectedEntryKey = args.Value;
+            _editingTaxEventId = null;
+        }
+    }
+
+    private void OnEntryAdded(int taxEventId)
+    {
+        _hasChanges = true;
+        if (_editingTaxEventId.HasValue)
+        {
+            ManualEntryTrackerService.Remove(_editingTaxEventId.Value);
+            _editingTaxEventId = null;
+        }
+        ManualEntryTrackerService.Add(taxEventId);
+        RefreshAddedEntries();
+        StateHasChanged();
+    }
+
+    private void StartEdit(AddedManualEntryRow row)
+    {
+        TaxEvent? taxEvent = FindTaxEventById(row.TaxEventId);
+        if (taxEvent == null) return;
+
+        _selectedEntryKey = GetEntryKeyForTaxEvent(taxEvent);
+        _editingTaxEventId = row.TaxEventId;
+        StateHasChanged();
+    }
+
+    private void CancelEdit()
+    {
+        _editingTaxEventId = null;
+    }
+
+    private void DeleteEntry(AddedManualEntryRow row)
+    {
+        if (RemoveTaxEventById(row.TaxEventId))
+        {
+            _hasChanges = true;
+            ManualEntryTrackerService.Remove(row.TaxEventId);
+            if (_editingTaxEventId == row.TaxEventId)
+            {
+                _editingTaxEventId = null;
+            }
+
+            RefreshAddedEntries();
+            StateHasChanged();
+        }
+    }
+
+    private void RefreshAddedEntries()
+    {
+        var existingTaxEventIds = TaxEventLists.AllEvents.Select(i => i.Id).ToHashSet();
+        foreach (int staleId in ManualEntryTrackerService.ManualEntryIds.Where(id => !existingTaxEventIds.Contains(id)).ToList())
+        {
+            ManualEntryTrackerService.Remove(staleId);
+        }
+
+        _addedEntries = TaxEventLists.AllEvents
+            .Where(i => ManualEntryTrackerService.ManualEntryIds.Contains(i.Id))
+            .Where(IsSupportedManualEntryType)
+            .Select(MapToAddedEntryRow)
+            .OrderByDescending(i => i.EventDate)
+            .ThenByDescending(i => i.TaxEventId)
+            .ToList();
+
+        _entryTypeCounts = _addedEntries
+            .GroupBy(i => i.EntryType)
+            .ToDictionary(g => g.Key, g => g.Count(), StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static bool IsSupportedManualEntryType(TaxEvent taxEvent)
+    {
+        return taxEvent is Trade or OptionTrade or FutureContractTrade or Dividend or InterestIncome;
+    }
+
+    private TaxEvent? FindTaxEventById(int taxEventId)
+    {
+        return TaxEventLists.AllEvents.FirstOrDefault(i => i.Id == taxEventId);
+    }
+
+    private static string GetEntryKeyForTaxEvent(TaxEvent taxEvent)
+    {
+        return taxEvent switch
+        {
+            OptionTrade => "option",
+            FutureContractTrade => "future",
+            FxTrade => "fx",
+            Trade => "stock",
+            Dividend => "dividend",
+            InterestIncome => "interest",
+            _ => "stock"
+        };
+    }
+
+    private bool RemoveTaxEventById(int taxEventId)
+    {
+        int optionRemoved = TaxEventLists.OptionTrades.RemoveAll(i => i.Id == taxEventId);
+        if (optionRemoved > 0) return true;
+
+        int futureRemoved = TaxEventLists.FutureContractTrades.RemoveAll(i => i.Id == taxEventId);
+        if (futureRemoved > 0) return true;
+
+        int dividendRemoved = TaxEventLists.Dividends.RemoveAll(i => i.Id == taxEventId);
+        if (dividendRemoved > 0) return true;
+
+        int interestRemoved = TaxEventLists.InterestIncomes.RemoveAll(i => i.Id == taxEventId);
+        if (interestRemoved > 0) return true;
+
+        int tradeRemoved = TaxEventLists.Trades.RemoveAll(i => i.Id == taxEventId);
+        return tradeRemoved > 0;
+    }
+
+    private static AddedManualEntryRow MapToAddedEntryRow(TaxEvent taxEvent)
+    {
+        return taxEvent switch
+        {
+            OptionTrade optionTrade => new AddedManualEntryRow
+            {
+                TaxEventId = optionTrade.Id,
+                EventDate = optionTrade.Date,
+                EntryType = "Option Trade",
+                AssetName = optionTrade.AssetName,
+                GrossProceedLocal = optionTrade.GrossProceed.Amount,
+                NetSterling = optionTrade.NetProceed,
+                Detail = $"{optionTrade.PUTCALL} {FormatQuantity(optionTrade.Quantity)} x {FormatQuantity(optionTrade.Multiplier)}, exp {optionTrade.ExpiryDate:d}"
+            },
+            FutureContractTrade futureTrade => new AddedManualEntryRow
+            {
+                TaxEventId = futureTrade.Id,
+                EventDate = futureTrade.Date,
+                EntryType = "Future Contract",
+                AssetName = futureTrade.AssetName,
+                GrossProceedLocal = futureTrade.ContractValue.Amount,
+                NetSterling = futureTrade.ContractValue.BaseCurrencyAmount,
+                Detail = $"{futureTrade.PositionType.GetDescription()} - {futureTrade.AcquisitionDisposal.GetDescription()} {FormatQuantity(futureTrade.Quantity)}"
+            },
+            FxTrade fxTrade => new AddedManualEntryRow
+            {
+                TaxEventId = fxTrade.Id,
+                EventDate = fxTrade.Date,
+                EntryType = "FX Trade",
+                AssetName = fxTrade.AssetName,
+                GrossProceedLocal = fxTrade.GrossProceed.Amount,
+                NetSterling = fxTrade.NetProceed,
+                Detail = $"{fxTrade.AcquisitionDisposal.GetDescription()} {FormatQuantity(fxTrade.Quantity)}"
+            },
+            Trade stockTrade => new AddedManualEntryRow
+            {
+                TaxEventId = stockTrade.Id,
+                EventDate = stockTrade.Date,
+                EntryType = "Stock Trade",
+                AssetName = stockTrade.AssetName,
+                GrossProceedLocal = stockTrade.GrossProceed.Amount,
+                NetSterling = stockTrade.NetProceed,
+                Detail = $"{stockTrade.AcquisitionDisposal.GetDescription()} {FormatQuantity(stockTrade.Quantity)}"
+            },
+            Dividend dividend => new AddedManualEntryRow
+            {
+                TaxEventId = dividend.Id,
+                EventDate = dividend.Date,
+                EntryType = "Dividend",
+                AssetName = dividend.AssetName,
+                GrossProceedLocal = dividend.Proceed.Amount,
+                NetSterling = dividend.Proceed.BaseCurrencyAmount,
+                Detail = dividend.DividendType.GetDescription()
+            },
+            InterestIncome interestIncome => new AddedManualEntryRow
+            {
+                TaxEventId = interestIncome.Id,
+                EventDate = interestIncome.Date,
+                EntryType = "Interest Income",
+                AssetName = interestIncome.AssetName,
+                GrossProceedLocal = interestIncome.Amount.Amount,
+                NetSterling = interestIncome.Amount.BaseCurrencyAmount,
+                Detail = interestIncome.InterestType.GetDescription() + (interestIncome.IsTaxDeferred ? " (Tax Deferred)" : string.Empty)
+            },
+            _ => throw new InvalidOperationException($"Unsupported tax event type: {taxEvent.GetType().Name}")
+        };
+    }
+
+    private static string FormatQuantity(decimal quantity)
+    {
+        return quantity.ToString("0.########");
+    }
+
+    private async ValueTask OnLocationChanging(LocationChangingContext _)
+    {
+        if (_hasChanges)
+        {
+            _hasChanges = false;
+            await TaxCalculationService.CalculateAsync(CalculationTrigger.NavigationRefresh);
+        }
+    }
+
+    public void Dispose()
+    {
+        _navigationRegistration?.Dispose();
+    }
+
+    private sealed record EntryTypeDefinition(string Key, string DisplayName, string Description, Type ComponentType);
+
+    private sealed class AddedManualEntryRow
+    {
+        public int TaxEventId { get; init; }
+        public DateTime EventDate { get; init; }
+        public string EntryType { get; init; } = string.Empty;
+        public string AssetName { get; init; } = string.Empty;
+        public WrappedMoney GrossProceedLocal { get; init; } = WrappedMoney.GetBaseCurrencyZero();
+        public WrappedMoney NetSterling { get; init; } = WrappedMoney.GetBaseCurrencyZero();
+        public decimal GrossProceedLocalValue => GrossProceedLocal.Amount;
+        public decimal NetSterlingValue => NetSterling.Amount;
+        public string Detail { get; init; } = string.Empty;
+    }
+}

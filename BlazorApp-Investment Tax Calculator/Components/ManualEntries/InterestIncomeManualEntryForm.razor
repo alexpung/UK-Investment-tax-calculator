@@ -1,0 +1,264 @@
+@using InvestmentTaxCalculator.Enumerations
+@using InvestmentTaxCalculator.Model
+@using InvestmentTaxCalculator.Model.TaxEvents
+@using InvestmentTaxCalculator.Services
+@using Syncfusion.Blazor.Buttons
+@using Syncfusion.Blazor.DropDowns
+@using Syncfusion.Blazor.Inputs
+
+@inject TaxEventLists TaxEventLists
+@inject CurrencyService CurrencyService
+@inject ToastService ToastService
+
+<div class="card bg-secondary text-white">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">@(IsEditing ? "Edit Interest Income" : "Add Interest Income")</h5>
+    </div>
+    <div class="card-body">
+        <ManualEntryCommonFields Date="@_date"
+                                 DateChanged="@((DateTime value) => _date = value)"
+                                 AssetName="@_assetName"
+                                 AssetNameChanged="@((string value) => _assetName = value)"
+                                 AllowManualAssetNameInput="true"
+                                 AssetCategoryFilter="@_assetCategoryFilter" />
+
+        <div class="row g-3 mt-1">
+            <div class="col-md-4">
+                <label class="form-label">Interest Type</label>
+                <SfDropDownList TValue="InterestType" TItem="EnumDescriptionPair<InterestType>" DataSource="@_interestTypes" @bind-Value="@_interestType" CssClass="e-outline e-small">
+                    <DropDownListFieldSettings Text="Description" Value="EnumValue"></DropDownListFieldSettings>
+                </SfDropDownList>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Income Location</label>
+                <SfDropDownList TValue="string" TItem="CountryCodeOption" DataSource="@_countryCodes" @bind-Value="@_incomeLocationCode" CssClass="e-outline e-small" PopupHeight="260px" AllowFiltering="true" Placeholder="Select country">
+                    <DropDownListFieldSettings Text="Display" Value="ThreeDigitCode"></DropDownListFieldSettings>
+                </SfDropDownList>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">ISIN (optional)</label>
+                <SfTextBox @bind-Value="@_isin" Placeholder="Optional ISIN" FloatLabelType="FloatLabelType.Never"></SfTextBox>
+            </div>
+
+            @if (IsAccruedIncomeType)
+            {
+                <div class="col-md-6 d-flex align-items-center">
+                    <div class="form-check mt-4">
+                        <input class="form-check-input" type="checkbox" id="sameTaxYearCheckbox" @bind="_isNextPaymentInSameTaxYear" />
+                        <label class="form-check-label" for="sameTaxYearCheckbox">
+                            Next payment is in the same UK tax year
+                        </label>
+                    </div>
+                </div>
+            }
+
+            <div class="col-md-8">
+                <label class="form-label">Description</label>
+                <SfTextBox @bind-Value="@_description" Placeholder="Optional note" FloatLabelType="FloatLabelType.Never"></SfTextBox>
+            </div>
+        </div>
+
+        <AmountCurrencyFxInputRow AmountLabel="Amount"
+                                  FxRateLabel="FX Rate (to GBP)"
+                                  @bind-Amount="@_amount"
+                                  @bind-Currency="@_currency"
+                                  @bind-FxRate="@_fxRate"
+                                  Currencies="@_currencies"
+                                  AdditionalCssClass="mt-3" />
+
+        @if (CanShowCalculationPreview)
+        {
+            <div class="alert alert-dark border-primary mt-4 mb-0">
+                <div class="row g-2">
+                    <div class="col-md-4"><strong>Amount (GBP):</strong> @AmountInGbp.ToString("N2")</div>
+                    <div class="col-md-4"><strong>Tax Deferred:</strong> @(IsTaxDeferred ? "Yes" : "No")</div>
+                    <div class="col-md-4"><strong>Type:</strong> @_interestType.GetDescription()</div>
+                </div>
+            </div>
+        }
+
+        <div class="col-12 mt-4 d-flex justify-content-center">
+            <SfButton IsPrimary="true" OnClick="@AddEntry" CssClass="e-primary e-large">@(IsEditing ? "Update Interest Income" : "Add Interest Income")</SfButton>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public EventCallback<int> OnEntryAdded { get; set; }
+    [Parameter] public int? EditingTaxEventId { get; set; }
+
+    private DateTime _date = DateTime.Today;
+    private string _assetName = string.Empty;
+    private InterestType _interestType = InterestType.SAVINGS;
+    private decimal _amount;
+    private string _currency = "GBP";
+    private decimal _fxRate = 1m;
+    private string _incomeLocationCode = CountryCode.UnknownRegion.ThreeDigitCode;
+    private string _isin = string.Empty;
+    private bool _isNextPaymentInSameTaxYear = true;
+    private string _description = string.Empty;
+
+    private List<CurrencyViewModel> _currencies = [];
+    private List<EnumDescriptionPair<InterestType>> _interestTypes = [];
+    private List<CountryCodeOption> _countryCodes = [];
+    private static readonly List<AssetCategoryType> _assetCategoryFilter = [AssetCategoryType.STOCK];
+    private int? _loadedEditingTaxEventId;
+    private bool IsEditing => EditingTaxEventId.HasValue;
+
+    private bool IsAccruedIncomeType => _interestType is InterestType.ACCURREDINCOMEPROFIT or InterestType.ACCURREDINCOMELOSS;
+    private bool IsTaxDeferred => IsAccruedIncomeType && !_isNextPaymentInSameTaxYear;
+    private decimal AmountInGbp => _amount * _fxRate;
+    private bool CanShowCalculationPreview => IsAmountValidForSelectedType(showToast: false) && _fxRate > 0;
+
+    protected override void OnInitialized()
+    {
+        _currencies = CurrencyService.GetCurrencies();
+        _interestTypes = EnumExtensions.GetEnumDescriptionPair<InterestType>(typeof(InterestType))
+            .Where(i => i.EnumValue != InterestType.EXCESSREPORTABLEINCOME)
+            .ToList();
+        _countryCodes = CountryCode.GetAllRegions()
+            .Select(c => new CountryCodeOption(c.ThreeDigitCode, c.CountryName))
+            .ToList();
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (_loadedEditingTaxEventId != EditingTaxEventId)
+        {
+            _loadedEditingTaxEventId = EditingTaxEventId;
+            LoadForEdit();
+        }
+    }
+
+    private async Task AddEntry()
+    {
+        if (!ValidateInputs(out CountryCode countryCode))
+        {
+            return;
+        }
+
+        if (EditingTaxEventId.HasValue)
+        {
+            int matches = TaxEventLists.InterestIncomes.Count(i => i.Id == EditingTaxEventId.Value);
+            if (matches != 1)
+            {
+                ToastService.ShowError("Unable to update interest income because the original entry could not be found.");
+                return;
+            }
+
+            int index = TaxEventLists.InterestIncomes.FindIndex(i => i.Id == EditingTaxEventId.Value);
+            TaxEventLists.InterestIncomes.RemoveAt(index);
+        }
+
+        var interestIncome = new InterestIncome
+        {
+            AssetName = _assetName.Trim(),
+            Date = _date,
+            InterestType = _interestType,
+            IncomeLocation = countryCode,
+            Isin = _isin.Trim(),
+            IsNextPaymentInSameTaxYear = _isNextPaymentInSameTaxYear,
+            Amount = new DescribedMoney(_amount, _currency, _fxRate, _description.Trim())
+        };
+
+        TaxEventLists.InterestIncomes.Add(interestIncome);
+        ResetForm();
+
+        string verb = IsEditing ? "updated" : "added";
+        ToastService.ShowSuccess($"Interest income {verb}. Amount in GBP: {interestIncome.Amount.BaseCurrencyAmount}.");
+        await OnEntryAdded.InvokeAsync(interestIncome.Id);
+    }
+
+    private void LoadForEdit()
+    {
+        if (!EditingTaxEventId.HasValue)
+        {
+            return;
+        }
+
+        InterestIncome? interestIncome = TaxEventLists.InterestIncomes.FirstOrDefault(i => i.Id == EditingTaxEventId.Value);
+        if (interestIncome == null)
+        {
+            return;
+        }
+
+        _date = interestIncome.Date;
+        _assetName = interestIncome.AssetName;
+        _interestType = interestIncome.InterestType;
+        _amount = interestIncome.Amount.Amount.Amount;
+        _currency = interestIncome.Amount.Amount.Currency;
+        _fxRate = interestIncome.Amount.FxRate;
+        _incomeLocationCode = interestIncome.IncomeLocation.ThreeDigitCode;
+        _isin = interestIncome.Isin;
+        _isNextPaymentInSameTaxYear = interestIncome.IsNextPaymentInSameTaxYear;
+        _description = interestIncome.Amount.Description;
+    }
+
+    private bool ValidateInputs(out CountryCode countryCode)
+    {
+        countryCode = CountryCode.UnknownRegion;
+
+        if (string.IsNullOrWhiteSpace(_assetName))
+        {
+            ToastService.ShowError("Asset name is required.");
+            return false;
+        }
+
+        if (!IsAmountValidForSelectedType(showToast: true)) return false;
+
+        if (_fxRate <= 0)
+        {
+            ToastService.ShowError("FX rate must be greater than 0.");
+            return false;
+        }
+
+        countryCode = CountryCode.GetRegionByThreeDigitCode(_incomeLocationCode);
+
+        return true;
+    }
+
+    private bool IsAmountValidForSelectedType(bool showToast)
+    {
+        if (_interestType == InterestType.ACCURREDINCOMEPROFIT)
+        {
+            return _amount > 0
+                || FailAmountValidation("Accrued income profit amount must be greater than 0.", showToast);
+        }
+
+        if (_interestType == InterestType.ACCURREDINCOMELOSS)
+        {
+            // Loss entries are represented by negative amounts.
+            return _amount < 0
+                || FailAmountValidation("Accrued income loss amount must be less than 0.", showToast);
+        }
+
+        return _amount > 0
+            || FailAmountValidation($"{_interestType.GetDescription()} amount must be greater than 0.", showToast);
+    }
+
+    private bool FailAmountValidation(string errorMessage, bool showToast)
+    {
+        if (showToast)
+        {
+            ToastService.ShowError(errorMessage);
+        }
+
+        return false;
+    }
+
+    private void ResetForm()
+    {
+        _assetName = string.Empty;
+        _amount = 0m;
+        _fxRate = 1m;
+        _incomeLocationCode = CountryCode.UnknownRegion.ThreeDigitCode;
+        _isin = string.Empty;
+        _isNextPaymentInSameTaxYear = true;
+        _description = string.Empty;
+    }
+
+    private sealed record CountryCodeOption(string ThreeDigitCode, string CountryName)
+    {
+        public string Display => $"{ThreeDigitCode} - {CountryName}";
+    }
+}

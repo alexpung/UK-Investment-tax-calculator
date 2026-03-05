@@ -119,6 +119,27 @@
     color: var(--bs-heading-color);
 }
 
+.manual-money-entry {
+    border: 1px solid var(--bs-border-color);
+    border-radius: 0.375rem;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.manual-money-entry-title {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--bs-info);
+    margin-bottom: 0.5rem;
+}
+
+.manual-money-row .e-control-wrapper,
+.manual-money-row .e-ddl,
+.manual-money-row .e-numerictextbox {
+    width: 100%;
+}
+
 /* Utility Classes */
 .text-muted-custom {
     color: var(--bs-secondary-color) !important;

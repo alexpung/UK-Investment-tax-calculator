@@ -1,0 +1,133 @@
+@using InvestmentTaxCalculator.Enumerations
+@using InvestmentTaxCalculator.Model
+@using InvestmentTaxCalculator.Model.UkTaxModel
+@using Syncfusion.Blazor.DropDowns
+
+@inject UkSection104Pools Section104Pools
+@inject TaxEventLists TaxEventLists
+
+<SfComboBox TValue="string"
+            TItem="string"
+            DataSource="@_assetNames"
+            Value="@Value"
+            AllowCustom="@AllowManualAssetNameInput"
+            Placeholder="@Placeholder"
+            CssClass="@CssClass"
+            Enabled="@Enabled">
+    <ComboBoxEvents TValue="string" TItem="string" ValueChange="@OnValueChangedInternal" />
+</SfComboBox>
+
+@code {
+    [Parameter] public string Value { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+
+    [Parameter] public bool AllowManualAssetNameInput { get; set; } = true;
+    [Parameter] public List<AssetCategoryType> AssetCategoryFilter { get; set; } = [];
+    [Parameter] public List<string> IncludedAssetNames { get; set; } = [];
+    [Parameter] public DateTime? HoldingDate { get; set; }
+    [Parameter] public bool RequirePositiveHoldingOnDate { get; set; }
+
+    [Parameter] public string Placeholder { get; set; } = "Select asset";
+    [Parameter] public string CssClass { get; set; } = "e-outline";
+    [Parameter] public bool Enabled { get; set; } = true;
+
+    private List<string> _assetNames = [];
+    private string _lastDataSignature = string.Empty;
+
+    protected override void OnParametersSet()
+    {
+        var dataSignature = BuildDataSignature();
+        if (!string.Equals(_lastDataSignature, dataSignature, StringComparison.Ordinal))
+        {
+            RefreshAssetNames();
+            _lastDataSignature = dataSignature;
+        }
+    }
+
+    private void RefreshAssetNames()
+    {
+        var categoryFilter = AssetCategoryFilter?.Distinct().ToHashSet() ?? [];
+        bool hasCategoryFilter = categoryFilter.Count > 0;
+        var includedAssetNames = IncludedAssetNames?.ToHashSet(StringComparer.OrdinalIgnoreCase) ?? [];
+        bool hasIncludedAssetsFilter = includedAssetNames.Count > 0;
+
+        var allowedAssetNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        if (hasCategoryFilter)
+        {
+            if (categoryFilter.Contains(AssetCategoryType.STOCK))
+            {
+                foreach (string assetName in TaxEventLists.Trades.Where(t => t.AssetType == AssetCategoryType.STOCK).Select(t => t.AssetName))
+                {
+                    allowedAssetNames.Add(assetName);
+                }
+            }
+
+            if (categoryFilter.Contains(AssetCategoryType.OPTION))
+            {
+                foreach (string assetName in TaxEventLists.OptionTrades.Select(t => t.AssetName))
+                {
+                    allowedAssetNames.Add(assetName);
+                }
+            }
+
+            if (categoryFilter.Contains(AssetCategoryType.FUTURE))
+            {
+                foreach (string assetName in TaxEventLists.FutureContractTrades.Select(t => t.AssetName))
+                {
+                    allowedAssetNames.Add(assetName);
+                }
+            }
+
+            if (categoryFilter.Contains(AssetCategoryType.FX))
+            {
+                foreach (string assetName in TaxEventLists.Trades.Where(t => t.AssetType == AssetCategoryType.FX).Select(t => t.AssetName))
+                {
+                    allowedAssetNames.Add(assetName);
+                }
+            }
+        }
+
+        DateOnly? holdingDate = HoldingDate.HasValue ? DateOnly.FromDateTime(HoldingDate.Value) : null;
+
+        _assetNames = Section104Pools.GetSection104s()
+            .Where(pool => !hasCategoryFilter || allowedAssetNames.Contains(pool.AssetName))
+            .Where(pool => !hasIncludedAssetsFilter || includedAssetNames.Contains(pool.AssetName))
+            .Where(pool => !RequirePositiveHoldingOnDate || holdingDate == null || (pool.GetLastSection104History(holdingDate.Value)?.NewQuantity ?? 0) > 0)
+            .Select(pool => pool.AssetName)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(assetName => assetName, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
+    private string BuildDataSignature()
+    {
+        var orderedAssetCategories = (AssetCategoryFilter ?? [])
+            .Distinct()
+            .OrderBy(c => c)
+            .Select(c => c.ToString());
+        var orderedIncludedAssets = (IncludedAssetNames ?? [])
+            .Where(name => !string.IsNullOrWhiteSpace(name))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(name => name, StringComparer.OrdinalIgnoreCase);
+
+        int poolCount = Section104Pools.GetSection104s().Count;
+        return string.Join('|',
+            string.Join(',', orderedAssetCategories),
+            string.Join(',', orderedIncludedAssets),
+            HoldingDate?.Date.ToString("yyyy-MM-dd") ?? string.Empty,
+            RequirePositiveHoldingOnDate.ToString(),
+            poolCount.ToString(),
+            TaxEventLists.Trades.Count.ToString(),
+            TaxEventLists.OptionTrades.Count.ToString(),
+            TaxEventLists.FutureContractTrades.Count.ToString());
+    }
+
+    private async Task OnValueChangedInternal(ChangeEventArgs<string, string> args)
+    {
+        string nextValue = args.Value ?? string.Empty;
+        if (!string.Equals(nextValue, Value, StringComparison.Ordinal))
+        {
+            await ValueChanged.InvokeAsync(nextValue);
+        }
+    }
+}

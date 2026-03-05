@@ -1,12 +1,12 @@
 @using InvestmentTaxCalculator.Model
 @using InvestmentTaxCalculator.Model.UkTaxModel
 @using InvestmentTaxCalculator.Services
+@using InvestmentTaxCalculator.Enumerations
 @using Syncfusion.Blazor.Calendars
 @using Syncfusion.Blazor.DropDowns
 @using Syncfusion.Blazor.Inputs
 
 @inject UkSection104Pools _ukSection104Pools
-@inject TradeCalculationResult _tradeCalculationResult
 
 <div class="row mb-3">
     <div class="col-md-6">
@@ -20,10 +20,11 @@
 <div class="row mb-3">
     <div class="col-md-6">
         <label class="form-label">@SourceLabel</label>
-        <SfDropDownList TValue="string" TItem="string" Placeholder="Select Asset" DataSource="@_availableAssets" Value="@SourceTicker">
-            <DropDownListFieldSettings Text="" Value=""></DropDownListFieldSettings>
-            <DropDownListEvents TItem="string" TValue="string" ValueChange="@OnSourceTickerChangedInternal"></DropDownListEvents>
-        </SfDropDownList>
+        <AssetNameSelector Value="@SourceTicker"
+                           ValueChanged="@OnSourceTickerChangedInternal"
+                           AllowManualAssetNameInput="@AllowManualSourceAssetNameInput"
+                           AssetCategoryFilter="@AssetCategoryFilter"
+                           Placeholder="Select Asset" />
         @if (!string.IsNullOrEmpty(SourceTicker))
         {
             <div class="form-text text-info">
@@ -33,9 +34,12 @@
     </div>
     <div class="col-md-6">
         <label class="form-label">@DestinationLabel</label>
-        <SfComboBox TValue="string" TItem="string" Placeholder="Select or Enter Ticker" DataSource="@_availableAssets" Value="@DestinationTicker" AllowCustom="true" Enabled="@(!IsDestinationDisabled)">
-            <ComboBoxEvents TItem="string" TValue="string" ValueChange="@OnDestinationTickerChangedInternal"></ComboBoxEvents>
-        </SfComboBox>
+        <AssetNameSelector Value="@DestinationTicker"
+                           ValueChanged="@OnDestinationTickerChangedInternal"
+                           AllowManualAssetNameInput="@AllowManualDestinationAssetNameInput"
+                           AssetCategoryFilter="@AssetCategoryFilter"
+                           Placeholder="Select or Enter Ticker"
+                           Enabled="@(!IsDestinationDisabled)" />
     </div>
 </div>
 
@@ -95,34 +99,19 @@
     [Parameter] public string DestinationUnitLabel { get; set; } = "shares";
     [Parameter] public RenderFragment? DestinationInfo { get; set; }
     [Parameter] public bool IsDestinationDisabled { get; set; }
+    [Parameter] public bool AllowManualSourceAssetNameInput { get; set; }
+    [Parameter] public bool AllowManualDestinationAssetNameInput { get; set; } = true;
+    [Parameter] public List<AssetCategoryType> AssetCategoryFilter { get; set; } = [AssetCategoryType.STOCK];
     [Parameter] public int RatioDecimals { get; set; } = 4;
     [Parameter] public string RatioFormat { get; set; } = "n4";
     [Parameter] public decimal RatioMin { get; set; } = 0.0001m;
     [Parameter] public EventCallback OnInputsChanged { get; set; }
 
     public decimal CurrentHolding { get; private set; }
-    private List<string> _availableAssets = [];
-
-    protected override void OnInitialized()
-    {
-        RefreshAssets();
-        CalculateStats();
-    }
 
     protected override void OnParametersSet()
     {
         CalculateStats();
-    }
-
-    private void RefreshAssets()
-    {
-        if (_tradeCalculationResult.CalculatedTrade.Any())
-        {
-            _availableAssets = _ukSection104Pools.GetSection104s()
-                .Select(x => x.AssetName)
-                .OrderBy(x => x)
-                .ToList();
-        }
     }
 
     private void CalculateStats()
@@ -147,18 +136,18 @@
         await OnInputsChanged.InvokeAsync();
     }
 
-    private async Task OnSourceTickerChangedInternal(Syncfusion.Blazor.DropDowns.ChangeEventArgs<string, string> args)
+    private async Task OnSourceTickerChangedInternal(string ticker)
     {
-        SourceTicker = args.Value;
+        SourceTicker = ticker;
         CalculateStats();
-        await SourceTickerChanged.InvokeAsync(args.Value);
+        await SourceTickerChanged.InvokeAsync(ticker);
         await OnInputsChanged.InvokeAsync();
     }
 
-    private async Task OnDestinationTickerChangedInternal(Syncfusion.Blazor.DropDowns.ChangeEventArgs<string, string> args)
+    private async Task OnDestinationTickerChangedInternal(string ticker)
     {
-        DestinationTicker = args.Value;
-        await DestinationTickerChanged.InvokeAsync(args.Value);
+        DestinationTicker = ticker;
+        await DestinationTickerChanged.InvokeAsync(ticker);
         await OnInputsChanged.InvokeAsync();
     }
 

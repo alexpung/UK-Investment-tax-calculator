@@ -29,9 +29,15 @@
             {
                 <div class="col-md-6 col-lg-4">
                     <label class="form-label">Ticker</label>
-                    <SfDropDownList TValue="string" TItem="string" DataSource="@AvailableTickers" @bind-Value="@SelectedTicker" Placeholder="Select a ticker" CssClass="e-outline" Enabled="@(!IsCalculationMissing)">
-                        <DropDownListEvents TValue="string" TItem="string" ValueChange="OnTickerChanged"></DropDownListEvents>
-                    </SfDropDownList>
+                    <AssetNameSelector Value="@SelectedTicker"
+                                       ValueChanged="@OnTickerChanged"
+                                       AllowManualAssetNameInput="@AllowManualAssetNameInput"
+                                       AssetCategoryFilter="@AssetCategoryFilter"
+                                       HoldingDate="@PeriodEndDate"
+                                       RequirePositiveHoldingOnDate="true"
+                                       Placeholder="Select a ticker"
+                                       CssClass="e-outline"
+                                       Enabled="@(!IsCalculationMissing)" />
                 </div>
 
                 @if (!string.IsNullOrEmpty(SelectedTicker))
@@ -88,9 +94,10 @@
 @code {
     [Parameter] public bool IsCalculationMissing { get; set; }
     [Parameter] public EventCallback OnDataChanged { get; set; }
+    [Parameter] public bool AllowManualAssetNameInput { get; set; }
+    [Parameter] public List<AssetCategoryType> AssetCategoryFilter { get; set; } = [AssetCategoryType.STOCK];
 
     private DateTime? PeriodEndDate { get; set; }
-    private List<string> AvailableTickers { get; set; } = new();
     private string SelectedTicker { get; set; } = string.Empty;
     private decimal Quantity { get; set; }
     private decimal IncomePerShare { get; set; }
@@ -110,34 +117,24 @@
     {
         PeriodEndDate = date;
         SelectedTicker = string.Empty;
-        AvailableTickers.Clear();
-        if (date.HasValue)
-        {
-            var dateOnly = DateOnly.FromDateTime(date.Value);
-            var pools = Section104Pools.GetSection104s();
-            foreach (var pool in pools)
-            {
-                var history = pool.GetLastSection104History(dateOnly);
-                if (history != null && history.NewQuantity > 0)
-                {
-                    if (TaxEventLists.Trades.Any(t => t.AssetName == pool.AssetName && t.AssetType == AssetCategoryType.STOCK))
-                    {
-                        AvailableTickers.Add(pool.AssetName);
-                    }
-                }
-            }
-        }
+        Quantity = 0m;
     }
 
-    private void OnTickerChanged(ChangeEventArgs<string, string> args)
+    private Task OnTickerChanged(string ticker)
     {
-        SelectedTicker = args.Value;
+        SelectedTicker = ticker;
         if (!string.IsNullOrEmpty(SelectedTicker) && PeriodEndDate.HasValue)
         {
             var pool = Section104Pools.GetExistingOrInitialise(SelectedTicker);
             var history = pool.GetLastSection104History(DateOnly.FromDateTime(PeriodEndDate.Value));
             Quantity = history?.NewQuantity ?? 0;
         }
+        else
+        {
+            Quantity = 0m;
+        }
+
+        return Task.CompletedTask;
     }
 
     private string GetIsinForTicker(string ticker)
@@ -153,7 +150,7 @@
 
     private async Task OnSubmit()
     {
-        if (!PeriodEndDate.HasValue || string.IsNullOrEmpty(SelectedTicker) || IncomePerShare <= 0 || FxRate <= 0)
+        if (!PeriodEndDate.HasValue || string.IsNullOrEmpty(SelectedTicker) || Quantity <= 0 || IncomePerShare <= 0 || FxRate <= 0)
         {
             ToastService.ShowError("Please fill in all fields correctly.");
             return;

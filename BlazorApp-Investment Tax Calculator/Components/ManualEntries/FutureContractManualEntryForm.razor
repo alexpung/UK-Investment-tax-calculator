@@ -1,0 +1,267 @@
+@using System.Collections.Immutable
+@using InvestmentTaxCalculator.Enumerations
+@using InvestmentTaxCalculator.Model
+@using InvestmentTaxCalculator.Model.TaxEvents
+@using InvestmentTaxCalculator.Services
+@using Syncfusion.Blazor.Buttons
+@using Syncfusion.Blazor.DropDowns
+@using Syncfusion.Blazor.Inputs
+
+@inject TaxEventLists TaxEventLists
+@inject CurrencyService CurrencyService
+@inject ToastService ToastService
+
+<div class="card bg-secondary text-white">
+    <div class="card-header bg-warning text-dark">
+        <h5 class="mb-0">@(IsEditing ? "Edit Future Contract Trade" : "Add Future Contract Trade")</h5>
+    </div>
+    <div class="card-body">
+        <ManualEntryCommonFields Date="@_date"
+                                 DateChanged="@((DateTime value) => _date = value)"
+                                 AssetName="@_assetName"
+                                 AssetNameChanged="@((string value) => _assetName = value)"
+                                 AllowManualAssetNameInput="true"
+                                 AssetCategoryFilter="@_assetCategoryFilter" />
+
+        <div class="row g-3 mt-1">
+            <div class="col-md-4">
+                <label class="form-label">Direction</label>
+                <SfDropDownList TValue="string" TItem="DirectionOption" DataSource="@_directionOptions" @bind-Value="@_direction" CssClass="e-outline e-small">
+                    <DropDownListFieldSettings Text="Display" Value="Value"></DropDownListFieldSettings>
+                </SfDropDownList>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Quantity (contracts)</label>
+                <SfNumericTextBox TValue="decimal" @bind-Value="@_quantity" Min="0" Decimals="8" Format="0.########" ShowSpinButton="false" CssClass="e-outline e-small"></SfNumericTextBox>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Description</label>
+                <SfTextBox @bind-Value="@_description" Placeholder="Optional note" FloatLabelType="FloatLabelType.Never"></SfTextBox>
+            </div>
+        </div>
+
+        <AmountCurrencyFxInputRow AmountLabel="Contract Value"
+                                  FxRateLabel="Contract Value FX Rate (to GBP)"
+                                  @bind-Amount="@_contractValueAmount"
+                                  @bind-Currency="@_contractValueCurrency"
+                                  @bind-FxRate="@_contractValueFxRate"
+                                  Currencies="@_currencies"
+                                  AdditionalCssClass="mt-3" />
+
+        <AmountCurrencyFxInputRow AmountLabel="Commission"
+                                  FxRateLabel="Commission FX Rate (to GBP)"
+                                  @bind-Amount="@_commissionAmount"
+                                  @bind-Currency="@_commissionCurrency"
+                                  @bind-FxRate="@_commissionFxRate"
+                                  Currencies="@_currencies"
+                                  AdditionalCssClass="mt-2" />
+
+        <AmountCurrencyFxInputRow AmountLabel="Tax"
+                                  FxRateLabel="Tax FX Rate (to GBP)"
+                                  @bind-Amount="@_taxAmount"
+                                  @bind-Currency="@_taxCurrency"
+                                  @bind-FxRate="@_taxFxRate"
+                                  Currencies="@_currencies"
+                                  AdditionalCssClass="mt-2" />
+
+        @if (CanShowCalculationPreview)
+        {
+            <div class="alert alert-dark border-warning mt-4 mb-0">
+                <div class="row g-2">
+                    <div class="col-md-4"><strong>Contract Value (GBP):</strong> @ContractValueInGbp.ToString("N2")</div>
+                    <div class="col-md-4"><strong>Costs (GBP):</strong> @TotalCostsInGbp.ToString("N2")</div>
+                    <div class="col-md-4"><strong>Immediate Cash Impact (GBP):</strong> @(-TotalCostsInGbp).ToString("N2")</div>
+                </div>
+            </div>
+        }
+
+        <div class="col-12 mt-4 d-flex justify-content-center">
+            <SfButton IsPrimary="true" OnClick="@AddEntry" CssClass="e-warning e-large text-dark">@(IsEditing ? "Update Future Trade" : "Add Future Trade")</SfButton>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public EventCallback<int> OnEntryAdded { get; set; }
+    [Parameter] public int? EditingTaxEventId { get; set; }
+
+    private DateTime _date = DateTime.Today;
+    private string _assetName = string.Empty;
+    private string _direction = "Long";
+    private decimal _quantity = 1m;
+    private decimal _contractValueAmount;
+    private string _contractValueCurrency = "USD";
+    private decimal _contractValueFxRate = 1m;
+    private decimal _commissionAmount;
+    private string _commissionCurrency = "GBP";
+    private decimal _commissionFxRate = 1m;
+    private decimal _taxAmount;
+    private string _taxCurrency = "GBP";
+    private decimal _taxFxRate = 1m;
+    private string _description = string.Empty;
+
+    private List<CurrencyViewModel> _currencies = [];
+    private readonly List<DirectionOption> _directionOptions = [new("Long", "Long"), new("Short", "Short")];
+    private static readonly List<AssetCategoryType> _assetCategoryFilter = [AssetCategoryType.FUTURE];
+    private int? _loadedEditingTaxEventId;
+    private bool IsEditing => EditingTaxEventId.HasValue;
+
+    private decimal ContractValueInGbp => _contractValueAmount * _contractValueFxRate;
+    private decimal TotalCostsInGbp => (_commissionAmount * _commissionFxRate) + (_taxAmount * _taxFxRate);
+    private bool CanShowCalculationPreview => _contractValueAmount != 0 && _contractValueFxRate > 0;
+
+    protected override void OnInitialized()
+    {
+        _currencies = CurrencyService.GetCurrencies();
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (_loadedEditingTaxEventId != EditingTaxEventId)
+        {
+            _loadedEditingTaxEventId = EditingTaxEventId;
+            LoadForEdit();
+        }
+    }
+
+    private async Task AddEntry()
+    {
+        if (!ValidateInputs())
+        {
+            return;
+        }
+
+        if (EditingTaxEventId.HasValue)
+        {
+            int removed = TaxEventLists.FutureContractTrades.RemoveAll(t => t.Id == EditingTaxEventId.Value);
+            if (removed != 1)
+            {
+                ToastService.ShowError("Unable to update future contract trade because the original entry could not be found.");
+                return;
+            }
+        }
+
+        List<DescribedMoney> expenses = [];
+        if (_commissionAmount != 0)
+        {
+            expenses.Add(new DescribedMoney(_commissionAmount, _commissionCurrency, _commissionFxRate, "Commission"));
+        }
+        if (_taxAmount != 0)
+        {
+            expenses.Add(new DescribedMoney(_taxAmount, _taxCurrency, _taxFxRate, "Tax"));
+        }
+
+        bool isLong = _direction == "Long";
+
+        var trade = new FutureContractTrade
+        {
+            AssetName = _assetName.Trim(),
+            Date = _date,
+            Quantity = _quantity,
+            AcquisitionDisposal = isLong ? TradeType.ACQUISITION : TradeType.DISPOSAL,
+            PositionType = isLong ? PositionType.OPENLONG : PositionType.OPENSHORT,
+            AssetType = AssetCategoryType.FUTURE,
+            GrossProceed = new DescribedMoney(0m, "GBP", 1m, "Future gross proceed is set to 0"),
+            ContractValue = new DescribedMoney(_contractValueAmount, _contractValueCurrency, _contractValueFxRate, "Contract value"),
+            Expenses = expenses.ToImmutableList(),
+            Description = _description.Trim()
+        };
+
+        TaxEventLists.FutureContractTrades.Add(trade);
+        ResetForm();
+
+        string verb = IsEditing ? "updated" : "added";
+        ToastService.ShowSuccess($"Future contract trade {verb}. Contract value in GBP: {trade.ContractValue.BaseCurrencyAmount}.");
+        await OnEntryAdded.InvokeAsync(trade.Id);
+    }
+
+    private void LoadForEdit()
+    {
+        if (!EditingTaxEventId.HasValue)
+        {
+            return;
+        }
+
+        FutureContractTrade? trade = TaxEventLists.FutureContractTrades.FirstOrDefault(t => t.Id == EditingTaxEventId.Value);
+        if (trade == null)
+        {
+            return;
+        }
+
+        _date = trade.Date;
+        _assetName = trade.AssetName;
+        _direction = trade.PositionType == PositionType.OPENSHORT ? "Short" : "Long";
+        _quantity = trade.Quantity;
+        _contractValueAmount = trade.ContractValue.Amount.Amount;
+        _contractValueCurrency = trade.ContractValue.Amount.Currency;
+        _contractValueFxRate = trade.ContractValue.FxRate;
+
+        DescribedMoney? commission = trade.Expenses.FirstOrDefault(e => string.Equals(e.Description, "Commission", StringComparison.OrdinalIgnoreCase));
+        _commissionAmount = commission?.Amount.Amount ?? 0m;
+        _commissionCurrency = commission?.Amount.Currency ?? "GBP";
+        _commissionFxRate = commission?.FxRate ?? 1m;
+
+        DescribedMoney? tax = trade.Expenses.FirstOrDefault(e => string.Equals(e.Description, "Tax", StringComparison.OrdinalIgnoreCase));
+        _taxAmount = tax?.Amount.Amount ?? 0m;
+        _taxCurrency = tax?.Amount.Currency ?? "GBP";
+        _taxFxRate = tax?.FxRate ?? 1m;
+
+        _description = trade.Description;
+    }
+
+    private bool ValidateInputs()
+    {
+        if (string.IsNullOrWhiteSpace(_assetName))
+        {
+            ToastService.ShowError("Asset name is required.");
+            return false;
+        }
+
+        if (_quantity <= 0)
+        {
+            ToastService.ShowError("Quantity must be greater than 0.");
+            return false;
+        }
+
+        if (_contractValueAmount == 0)
+        {
+            ToastService.ShowError("Contract value cannot be 0.");
+            return false;
+        }
+
+        if (_contractValueFxRate <= 0)
+        {
+            ToastService.ShowError("Contract value FX rate must be greater than 0.");
+            return false;
+        }
+
+        if (_commissionAmount != 0 && _commissionFxRate <= 0)
+        {
+            ToastService.ShowError("Commission FX rate must be greater than 0.");
+            return false;
+        }
+
+        if (_taxAmount != 0 && _taxFxRate <= 0)
+        {
+            ToastService.ShowError("Tax FX rate must be greater than 0.");
+            return false;
+        }
+
+        return true;
+    }
+
+    private void ResetForm()
+    {
+        _assetName = string.Empty;
+        _quantity = 1m;
+        _contractValueAmount = 0m;
+        _contractValueFxRate = 1m;
+        _commissionAmount = 0m;
+        _commissionFxRate = 1m;
+        _taxAmount = 0m;
+        _taxFxRate = 1m;
+        _description = string.Empty;
+    }
+
+    private sealed record DirectionOption(string Value, string Display);
+}

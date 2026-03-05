@@ -1,0 +1,81 @@
+@using InvestmentTaxCalculator.Services
+@using Syncfusion.Blazor.DropDowns
+@using Syncfusion.Blazor.Inputs
+
+<div class="manual-money-entry @AdditionalCssClass">
+    <div class="manual-money-entry-title">@EntryTitle</div>
+    <div class="row g-2 manual-money-row">
+        <div class="col-12 col-md-4 col-lg-4">
+            <label class="form-label d-block">@AmountLabel</label>
+            <SfNumericTextBox TValue="decimal"
+                              Value="@Amount"
+                              Decimals="8"
+                              Format="0.########"
+                              ShowSpinButton="false"
+                              CssClass="e-outline e-small">
+                <NumericTextBoxEvents TValue="decimal" ValueChange="@OnAmountChanged"></NumericTextBoxEvents>
+            </SfNumericTextBox>
+        </div>
+
+        <div class="col-12 col-md-4 col-lg-4">
+            <label class="form-label d-block">@CurrencyLabel</label>
+            <SfDropDownList TValue="string"
+                            TItem="CurrencyViewModel"
+                            DataSource="@Currencies"
+                            Value="@Currency"
+                            CssClass="e-outline e-small"
+                            PopupHeight="260px">
+                <DropDownListFieldSettings Text="Code" Value="Code"></DropDownListFieldSettings>
+                <DropDownListEvents TValue="string" TItem="CurrencyViewModel" ValueChange="@OnCurrencyChanged"></DropDownListEvents>
+            </SfDropDownList>
+        </div>
+
+        <div class="col-12 col-md-4 col-lg-4">
+            <label class="form-label d-block">@FxRateLabel</label>
+            <SfNumericTextBox TValue="decimal"
+                              Value="@FxRate"
+                              Decimals="8"
+                              Format="0.########"
+                              ShowSpinButton="false"
+                              CssClass="e-outline e-small">
+                <NumericTextBoxEvents TValue="decimal" ValueChange="@OnFxRateChanged"></NumericTextBoxEvents>
+            </SfNumericTextBox>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string AmountLabel { get; set; } = "Amount";
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public string CurrencyLabel { get; set; } = "Currency";
+    [Parameter] public string FxRateLabel { get; set; } = "FX Rate (to GBP)";
+    [Parameter] public string AdditionalCssClass { get; set; } = string.Empty;
+
+    [Parameter] public decimal Amount { get; set; }
+    [Parameter] public EventCallback<decimal> AmountChanged { get; set; }
+
+    [Parameter] public string Currency { get; set; } = "GBP";
+    [Parameter] public EventCallback<string> CurrencyChanged { get; set; }
+
+    [Parameter] public decimal FxRate { get; set; } = 1m;
+    [Parameter] public EventCallback<decimal> FxRateChanged { get; set; }
+
+    [Parameter] public IEnumerable<CurrencyViewModel> Currencies { get; set; } = [];
+
+    private string EntryTitle => string.IsNullOrWhiteSpace(Title) ? AmountLabel : Title!;
+
+    private async Task OnAmountChanged(Syncfusion.Blazor.Inputs.ChangeEventArgs<decimal> args)
+    {
+        await AmountChanged.InvokeAsync(args.Value);
+    }
+
+    private async Task OnCurrencyChanged(Syncfusion.Blazor.DropDowns.ChangeEventArgs<string, CurrencyViewModel> args)
+    {
+        await CurrencyChanged.InvokeAsync(args.Value ?? "GBP");
+    }
+
+    private async Task OnFxRateChanged(Syncfusion.Blazor.Inputs.ChangeEventArgs<decimal> args)
+    {
+        await FxRateChanged.InvokeAsync(args.Value);
+    }
+}
