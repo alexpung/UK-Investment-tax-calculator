@@ -146,7 +146,8 @@
         TaxEventLists.Dividends.Add(dividend);
         ResetForm();
 
-        ToastService.ShowSuccess($"Dividend added. Amount in GBP: {dividend.Proceed.BaseCurrencyAmount}.");
+        string verb = IsEditing ? "updated" : "added";
+        ToastService.ShowSuccess($"Dividend {verb}. Amount in GBP: {dividend.Proceed.BaseCurrencyAmount}.");
         await OnEntryAdded.InvokeAsync(dividend.Id);
     }
 

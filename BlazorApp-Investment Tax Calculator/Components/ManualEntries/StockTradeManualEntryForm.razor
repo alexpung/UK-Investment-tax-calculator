@@ -172,7 +172,8 @@
         TaxEventLists.Trades.Add(trade);
         ResetForm();
 
-        ToastService.ShowSuccess($"Stock trade added. Net amount: {trade.NetProceed}.");
+        string verb = IsEditing ? "updated" : "added";
+        ToastService.ShowSuccess($"Stock trade {verb}. Net amount: {trade.NetProceed}.");
         await OnEntryAdded.InvokeAsync(trade.Id);
     }
 

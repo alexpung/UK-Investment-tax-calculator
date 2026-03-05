@@ -161,7 +161,8 @@
         TaxEventLists.InterestIncomes.Add(interestIncome);
         ResetForm();
 
-        ToastService.ShowSuccess($"Interest income added. Amount in GBP: {interestIncome.Amount.BaseCurrencyAmount}.");
+        string verb = IsEditing ? "updated" : "added";
+        ToastService.ShowSuccess($"Interest income {verb}. Amount in GBP: {interestIncome.Amount.BaseCurrencyAmount}.");
         await OnEntryAdded.InvokeAsync(interestIncome.Id);
     }
 

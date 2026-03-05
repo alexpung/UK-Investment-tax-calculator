@@ -170,7 +170,8 @@
         TaxEventLists.FutureContractTrades.Add(trade);
         ResetForm();
 
-        ToastService.ShowSuccess($"Future contract trade added. Contract value in GBP: {trade.ContractValue.BaseCurrencyAmount}.");
+        string verb = IsEditing ? "updated" : "added";
+        ToastService.ShowSuccess($"Future contract trade {verb}. Contract value in GBP: {trade.ContractValue.BaseCurrencyAmount}.");
         await OnEntryAdded.InvokeAsync(trade.Id);
     }
 

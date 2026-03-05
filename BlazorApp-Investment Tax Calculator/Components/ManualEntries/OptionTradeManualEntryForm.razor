@@ -230,7 +230,8 @@
         TaxEventLists.OptionTrades.Add(trade);
         ResetForm();
 
-        ToastService.ShowSuccess($"Option trade added. Net premium: {trade.NetProceed}.");
+        string verb = IsEditing ? "updated" : "added";
+        ToastService.ShowSuccess($"Option trade {verb}. Net premium: {trade.NetProceed}.");
         await OnEntryAdded.InvokeAsync(trade.Id);
     }
 
