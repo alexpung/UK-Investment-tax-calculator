@@ -192,7 +192,7 @@
         if (EditingTaxEventId.HasValue)
         {
             int removed = TaxEventLists.OptionTrades.RemoveAll(t => t.Id == EditingTaxEventId.Value);
-            if (removed == 0)
+            if (removed != 1)
             {
                 ToastService.ShowError("Unable to update option trade because the original entry could not be found.");
                 return;
