@@ -13,8 +13,7 @@
             AllowCustom="@AllowManualAssetNameInput"
             Placeholder="@Placeholder"
             CssClass="@CssClass"
-            Enabled="@Enabled"
-            AllowFiltering="true">
+            Enabled="@Enabled">
     <ComboBoxEvents TValue="string" TItem="string" ValueChange="@OnValueChangedInternal" />
 </SfComboBox>
 
@@ -33,10 +32,16 @@
     [Parameter] public bool Enabled { get; set; } = true;
 
     private List<string> _assetNames = [];
+    private string _lastDataSignature = string.Empty;
 
     protected override void OnParametersSet()
     {
-        RefreshAssetNames();
+        var dataSignature = BuildDataSignature();
+        if (!string.Equals(_lastDataSignature, dataSignature, StringComparison.Ordinal))
+        {
+            RefreshAssetNames();
+            _lastDataSignature = dataSignature;
+        }
     }
 
     private void RefreshAssetNames()
@@ -94,8 +99,35 @@
             .ToList();
     }
 
+    private string BuildDataSignature()
+    {
+        var orderedAssetCategories = (AssetCategoryFilter ?? [])
+            .Distinct()
+            .OrderBy(c => c)
+            .Select(c => c.ToString());
+        var orderedIncludedAssets = (IncludedAssetNames ?? [])
+            .Where(name => !string.IsNullOrWhiteSpace(name))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(name => name, StringComparer.OrdinalIgnoreCase);
+
+        int poolCount = Section104Pools.GetSection104s().Count;
+        return string.Join('|',
+            string.Join(',', orderedAssetCategories),
+            string.Join(',', orderedIncludedAssets),
+            HoldingDate?.Date.ToString("yyyy-MM-dd") ?? string.Empty,
+            RequirePositiveHoldingOnDate.ToString(),
+            poolCount.ToString(),
+            TaxEventLists.Trades.Count.ToString(),
+            TaxEventLists.OptionTrades.Count.ToString(),
+            TaxEventLists.FutureContractTrades.Count.ToString());
+    }
+
     private async Task OnValueChangedInternal(ChangeEventArgs<string, string> args)
     {
-        await ValueChanged.InvokeAsync(args.Value ?? string.Empty);
+        string nextValue = args.Value ?? string.Empty;
+        if (!string.Equals(nextValue, Value, StringComparison.Ordinal))
+        {
+            await ValueChanged.InvokeAsync(nextValue);
+        }
     }
 }
