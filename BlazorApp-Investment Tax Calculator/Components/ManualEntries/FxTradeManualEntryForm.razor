@@ -36,7 +36,7 @@
             </div>
             <div class="col-md-3">
                 <label class="form-label">Quantity</label>
-                <SfNumericTextBox TValue="decimal" @bind-Value="@_quantity" Min="0" Decimals="8" Format="N8" ShowSpinButton="false" CssClass="e-outline e-small"></SfNumericTextBox>
+                <SfNumericTextBox TValue="decimal" @bind-Value="@_quantity" Min="0" Decimals="8" Format="0.########" ShowSpinButton="false" CssClass="e-outline e-small"></SfNumericTextBox>
             </div>
             <div class="col-md-6">
                 <label class="form-label">Description</label>
@@ -235,4 +235,5 @@
         _commissionFxRate = 1m;
         _description = string.Empty;
     }
+
 }

@@ -9,8 +9,8 @@
             <label class="form-label d-block">Amount</label>
             <SfNumericTextBox TValue="decimal"
                               Value="@Amount"
-                              Decimals="@AmountDecimals"
-                              Format="@AmountFormat"
+                              Decimals="8"
+                              Format="0.########"
                               ShowSpinButton="false"
                               CssClass="e-outline e-small">
                 <NumericTextBoxEvents TValue="decimal" ValueChange="@OnAmountChanged"></NumericTextBoxEvents>
@@ -34,8 +34,8 @@
             <label class="form-label d-block">@FxRateLabel</label>
             <SfNumericTextBox TValue="decimal"
                               Value="@FxRate"
-                              Decimals="@FxRateDecimals"
-                              Format="@FxRateFormat"
+                              Decimals="8"
+                              Format="0.########"
                               ShowSpinButton="false"
                               CssClass="e-outline e-small">
                 <NumericTextBoxEvents TValue="decimal" ValueChange="@OnFxRateChanged"></NumericTextBoxEvents>
@@ -61,11 +61,6 @@
     [Parameter] public EventCallback<decimal> FxRateChanged { get; set; }
 
     [Parameter] public IEnumerable<CurrencyViewModel> Currencies { get; set; } = [];
-
-    [Parameter] public int AmountDecimals { get; set; } = 8;
-    [Parameter] public string AmountFormat { get; set; } = "N8";
-    [Parameter] public int FxRateDecimals { get; set; } = 8;
-    [Parameter] public string FxRateFormat { get; set; } = "N8";
 
     private string EntryTitle => string.IsNullOrWhiteSpace(Title) ? AmountLabel : Title!;
 

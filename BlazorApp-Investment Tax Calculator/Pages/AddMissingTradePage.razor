@@ -79,20 +79,20 @@
                             <GridColumn Field="@nameof(AddedManualEntryRow.EventDate)" HeaderText="Event Date" Format="d" Type="ColumnType.Date" Width="130"></GridColumn>
                             <GridColumn Field="@nameof(AddedManualEntryRow.EntryType)" HeaderText="Type" Width="160"></GridColumn>
                             <GridColumn Field="@nameof(AddedManualEntryRow.AssetName)" HeaderText="Asset" Width="160"></GridColumn>
-                            <GridColumn Field="@nameof(AddedManualEntryRow.LocalAmountValue)" HeaderText="Local Amount" Width="170">
+                            <GridColumn Field="@nameof(AddedManualEntryRow.GrossProceedLocalValue)" HeaderText="Gross Proceed (Local)" Width="190">
                                 <Template>
                                     @{
                                         var row = context as AddedManualEntryRow;
                                     }
-                                    @row?.LocalAmount
+                                    @row?.GrossProceedLocal
                                 </Template>
                             </GridColumn>
-                            <GridColumn Field="@nameof(AddedManualEntryRow.SterlingAmountValue)" HeaderText="GBP Amount" Width="170">
+                            <GridColumn Field="@nameof(AddedManualEntryRow.NetSterlingValue)" HeaderText="Net (GBP incl. tax & commission)" Width="240">
                                 <Template>
                                     @{
                                         var row = context as AddedManualEntryRow;
                                     }
-                                    @row?.SterlingAmount
+                                    @row?.NetSterling
                                 </Template>
                             </GridColumn>
                             <GridColumn Field="@nameof(AddedManualEntryRow.Detail)" HeaderText="Details"></GridColumn>
@@ -276,9 +276,9 @@
                 EventDate = optionTrade.Date,
                 EntryType = "Option Trade",
                 AssetName = optionTrade.AssetName,
-                LocalAmount = optionTrade.GrossProceed.Amount,
-                SterlingAmount = optionTrade.NetProceed,
-                Detail = $"{optionTrade.PUTCALL} {optionTrade.Quantity:N4} x {optionTrade.Multiplier:N2}, exp {optionTrade.ExpiryDate:d}"
+                GrossProceedLocal = optionTrade.GrossProceed.Amount,
+                NetSterling = optionTrade.NetProceed,
+                Detail = $"{optionTrade.PUTCALL} {FormatQuantity(optionTrade.Quantity)} x {FormatQuantity(optionTrade.Multiplier)}, exp {optionTrade.ExpiryDate:d}"
             },
             FutureContractTrade futureTrade => new AddedManualEntryRow
             {
@@ -286,9 +286,9 @@
                 EventDate = futureTrade.Date,
                 EntryType = "Future Contract",
                 AssetName = futureTrade.AssetName,
-                LocalAmount = futureTrade.ContractValue.Amount,
-                SterlingAmount = futureTrade.ContractValue.BaseCurrencyAmount,
-                Detail = $"{futureTrade.PositionType.GetDescription()} - {futureTrade.AcquisitionDisposal.GetDescription()} {futureTrade.Quantity:N4}"
+                GrossProceedLocal = futureTrade.ContractValue.Amount,
+                NetSterling = futureTrade.ContractValue.BaseCurrencyAmount,
+                Detail = $"{futureTrade.PositionType.GetDescription()} - {futureTrade.AcquisitionDisposal.GetDescription()} {FormatQuantity(futureTrade.Quantity)}"
             },
             FxTrade fxTrade => new AddedManualEntryRow
             {
@@ -296,9 +296,9 @@
                 EventDate = fxTrade.Date,
                 EntryType = "FX Trade",
                 AssetName = fxTrade.AssetName,
-                LocalAmount = fxTrade.GrossProceed.Amount,
-                SterlingAmount = fxTrade.NetProceed,
-                Detail = $"{fxTrade.AcquisitionDisposal.GetDescription()} {fxTrade.Quantity:N4}"
+                GrossProceedLocal = fxTrade.GrossProceed.Amount,
+                NetSterling = fxTrade.NetProceed,
+                Detail = $"{fxTrade.AcquisitionDisposal.GetDescription()} {FormatQuantity(fxTrade.Quantity)}"
             },
             Trade stockTrade => new AddedManualEntryRow
             {
@@ -306,9 +306,9 @@
                 EventDate = stockTrade.Date,
                 EntryType = "Stock Trade",
                 AssetName = stockTrade.AssetName,
-                LocalAmount = stockTrade.GrossProceed.Amount,
-                SterlingAmount = stockTrade.NetProceed,
-                Detail = $"{stockTrade.AcquisitionDisposal.GetDescription()} {stockTrade.Quantity:N4}"
+                GrossProceedLocal = stockTrade.GrossProceed.Amount,
+                NetSterling = stockTrade.NetProceed,
+                Detail = $"{stockTrade.AcquisitionDisposal.GetDescription()} {FormatQuantity(stockTrade.Quantity)}"
             },
             Dividend dividend => new AddedManualEntryRow
             {
@@ -316,8 +316,8 @@
                 EventDate = dividend.Date,
                 EntryType = "Dividend",
                 AssetName = dividend.AssetName,
-                LocalAmount = dividend.Proceed.Amount,
-                SterlingAmount = dividend.Proceed.BaseCurrencyAmount,
+                GrossProceedLocal = dividend.Proceed.Amount,
+                NetSterling = dividend.Proceed.BaseCurrencyAmount,
                 Detail = dividend.DividendType.GetDescription()
             },
             InterestIncome interestIncome => new AddedManualEntryRow
@@ -326,12 +326,17 @@
                 EventDate = interestIncome.Date,
                 EntryType = "Interest Income",
                 AssetName = interestIncome.AssetName,
-                LocalAmount = interestIncome.Amount.Amount,
-                SterlingAmount = interestIncome.Amount.BaseCurrencyAmount,
+                GrossProceedLocal = interestIncome.Amount.Amount,
+                NetSterling = interestIncome.Amount.BaseCurrencyAmount,
                 Detail = interestIncome.InterestType.GetDescription() + (interestIncome.IsTaxDeferred ? " (Tax Deferred)" : string.Empty)
             },
             _ => throw new InvalidOperationException($"Unsupported tax event type: {taxEvent.GetType().Name}")
         };
+    }
+
+    private static string FormatQuantity(decimal quantity)
+    {
+        return quantity.ToString("0.########");
     }
 
     private async ValueTask OnLocationChanging(LocationChangingContext _)
@@ -356,10 +361,10 @@
         public DateTime EventDate { get; init; }
         public string EntryType { get; init; } = string.Empty;
         public string AssetName { get; init; } = string.Empty;
-        public WrappedMoney LocalAmount { get; init; } = WrappedMoney.GetBaseCurrencyZero();
-        public WrappedMoney SterlingAmount { get; init; } = WrappedMoney.GetBaseCurrencyZero();
-        public decimal LocalAmountValue => LocalAmount.Amount;
-        public decimal SterlingAmountValue => SterlingAmount.Amount;
+        public WrappedMoney GrossProceedLocal { get; init; } = WrappedMoney.GetBaseCurrencyZero();
+        public WrappedMoney NetSterling { get; init; } = WrappedMoney.GetBaseCurrencyZero();
+        public decimal GrossProceedLocalValue => GrossProceedLocal.Amount;
+        public decimal NetSterlingValue => NetSterling.Amount;
         public string Detail { get; init; } = string.Empty;
     }
 }

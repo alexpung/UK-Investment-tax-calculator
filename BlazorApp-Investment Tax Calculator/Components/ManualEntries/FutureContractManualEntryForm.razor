@@ -32,7 +32,7 @@
             </div>
             <div class="col-md-4">
                 <label class="form-label">Quantity (contracts)</label>
-                <SfNumericTextBox TValue="decimal" @bind-Value="@_quantity" Min="0" Decimals="8" Format="N8" ShowSpinButton="false" CssClass="e-outline e-small"></SfNumericTextBox>
+                <SfNumericTextBox TValue="decimal" @bind-Value="@_quantity" Min="0" Decimals="8" Format="0.########" ShowSpinButton="false" CssClass="e-outline e-small"></SfNumericTextBox>
             </div>
             <div class="col-md-6">
                 <label class="form-label">Description</label>
@@ -261,5 +261,6 @@
         _taxFxRate = 1m;
         _description = string.Empty;
     }
+
     private sealed record DirectionOption(string Value, string Display);
 }

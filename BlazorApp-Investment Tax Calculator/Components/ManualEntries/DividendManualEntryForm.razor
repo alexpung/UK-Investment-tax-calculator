@@ -209,6 +209,7 @@
         _isin = string.Empty;
         _description = string.Empty;
     }
+
     private sealed record CountryCodeOption(string ThreeDigitCode, string CountryName)
     {
         public string Display => $"{ThreeDigitCode} - {CountryName}";

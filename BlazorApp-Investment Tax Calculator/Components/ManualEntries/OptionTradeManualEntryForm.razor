@@ -50,16 +50,16 @@
             </div>
             <div class="col-md-4">
                 <label class="form-label">Quantity (contracts)</label>
-                <SfNumericTextBox TValue="decimal" @bind-Value="@_quantity" Min="0" Decimals="8" Format="N8" ShowSpinButton="false" CssClass="e-outline e-small"></SfNumericTextBox>
+                <SfNumericTextBox TValue="decimal" @bind-Value="@_quantity" Min="0" Decimals="8" Format="0.########" ShowSpinButton="false" CssClass="e-outline e-small"></SfNumericTextBox>
             </div>
             <div class="col-md-4">
                 <label class="form-label">Multiplier</label>
-                <SfNumericTextBox TValue="decimal" @bind-Value="@_multiplier" Min="0" Decimals="4" Format="N4" ShowSpinButton="false" CssClass="e-outline e-small"></SfNumericTextBox>
+                <SfNumericTextBox TValue="decimal" @bind-Value="@_multiplier" Min="0" Decimals="8" Format="0.########" ShowSpinButton="false" CssClass="e-outline e-small"></SfNumericTextBox>
             </div>
 
             <div class="col-md-4">
                 <label class="form-label">Strike Price</label>
-                <SfNumericTextBox TValue="decimal" @bind-Value="@_strikePriceAmount" Min="0" Decimals="8" Format="N8" ShowSpinButton="false" CssClass="e-outline e-small"></SfNumericTextBox>
+                <SfNumericTextBox TValue="decimal" @bind-Value="@_strikePriceAmount" Min="0" Decimals="8" Format="0.########" ShowSpinButton="false" CssClass="e-outline e-small"></SfNumericTextBox>
             </div>
             <div class="col-md-4">
                 <label class="form-label">Strike Currency</label>
@@ -111,7 +111,7 @@
                     <div class="col-md-3"><strong>Premium (GBP):</strong> @PremiumInGbp.ToString("N2")</div>
                     <div class="col-md-3"><strong>Costs (GBP):</strong> @TotalCostsInGbp.ToString("N2")</div>
                     <div class="col-md-3"><strong>Net Premium (GBP):</strong> @NetPremiumInGbp.ToString("N2")</div>
-                    <div class="col-md-3"><strong>Strike Notional:</strong> @(StrikeNotionalLocal.ToString("N2")) @_strikeCurrency</div>
+                    <div class="col-md-3"><strong>Strike Notional:</strong> @StrikeNotionalLocal.ToString("N2") @_strikeCurrency</div>
                 </div>
             </div>
         }
@@ -355,4 +355,5 @@
         _taxFxRate = 1m;
         _description = string.Empty;
     }
+
 }
