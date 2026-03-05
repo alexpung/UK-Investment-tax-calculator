@@ -20,7 +20,8 @@
                                  DateChanged="@((DateTime value) => _date = value)"
                                  AssetName="@_assetName"
                                  AssetNameChanged="@((string value) => _assetName = value)"
-                                 AssetSuggestions="@_assetSuggestions" />
+                                 AllowManualAssetNameInput="true"
+                                 AssetCategoryFilter="@_assetCategoryFilter" />
 
         <div class="row g-3 mt-1">
             <div class="col-md-4">
@@ -100,8 +101,8 @@
     private string _description = string.Empty;
 
     private List<CurrencyViewModel> _currencies = [];
-    private List<string> _assetSuggestions = [];
     private List<EnumDescriptionPair<TradeType>> _tradeTypes = [];
+    private static readonly List<AssetCategoryType> _assetCategoryFilter = [AssetCategoryType.STOCK];
 
     private decimal GrossProceedInGbp => _grossProceedAmount * _grossProceedFxRate;
     private decimal CommissionInGbp => _commissionAmount * _commissionFxRate;
@@ -115,7 +116,6 @@
     {
         _currencies = CurrencyService.GetCurrencies();
         _tradeTypes = EnumExtensions.GetEnumDescriptionPair<TradeType>(typeof(TradeType));
-        RefreshAssetSuggestions();
     }
 
     private async Task AddEntry()
@@ -148,7 +148,6 @@
         };
 
         TaxEventLists.Trades.Add(trade);
-        RefreshAssetSuggestions();
         ResetForm();
 
         ToastService.ShowSuccess($"Stock trade added. Estimated net amount: {trade.NetProceed}.");
@@ -207,15 +206,5 @@
         _taxAmount = 0m;
         _taxFxRate = 1m;
         _description = string.Empty;
-    }
-
-    private void RefreshAssetSuggestions()
-    {
-        _assetSuggestions = TaxEventLists.AllEvents
-            .Select(i => i.AssetName)
-            .Where(i => !string.IsNullOrWhiteSpace(i))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .OrderBy(i => i, StringComparer.OrdinalIgnoreCase)
-            .ToList();
     }
 }

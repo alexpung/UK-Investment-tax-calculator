@@ -64,10 +64,16 @@
             <!-- ERI and Equalisation Controls -->
             <div class="row g-4 mb-5">
                 <div class="col-xl-6">
-                    <EriControl IsCalculationMissing="@_isCalculationMissing" OnDataChanged="RefreshAll" />
+                    <EriControl IsCalculationMissing="@_isCalculationMissing"
+                                OnDataChanged="RefreshAll"
+                                AllowManualAssetNameInput="false"
+                                AssetCategoryFilter="@_stockAssetCategoryFilter" />
                 </div>
                 <div class="col-xl-6">
-                    <EqualisationControl IsCalculationMissing="@_isCalculationMissing" OnDataChanged="RefreshAll" />
+                    <EqualisationControl IsCalculationMissing="@_isCalculationMissing"
+                                         OnDataChanged="RefreshAll"
+                                         AllowManualAssetNameInput="false"
+                                         AssetCategoryFilter="@_stockAssetCategoryFilter" />
                 </div>
             </div>
 
@@ -149,6 +155,7 @@
     private bool _isCalculationMissing = false;
     private bool _dataChanged = false;
     private IDisposable? _registration;
+    private static readonly List<AssetCategoryType> _stockAssetCategoryFilter = [AssetCategoryType.STOCK];
 
     protected override void OnInitialized()
     {

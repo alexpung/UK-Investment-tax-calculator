@@ -21,7 +21,8 @@
                                  DateChanged="@((DateTime value) => _date = value)"
                                  AssetName="@_assetName"
                                  AssetNameChanged="@((string value) => _assetName = value)"
-                                 AssetSuggestions="@_assetSuggestions"
+                                 AllowManualAssetNameInput="true"
+                                 AssetCategoryFilter="@_assetCategoryFilter"
                                  AssetLabel="Option Contract Name"
                                  AssetPlaceholder="e.g. AAPL 2026-12-18 C 200" />
 
@@ -147,10 +148,10 @@
     private string _description = string.Empty;
 
     private List<CurrencyViewModel> _currencies = [];
-    private List<string> _assetSuggestions = [];
     private List<EnumDescriptionPair<TradeType>> _tradeTypes = [];
     private List<EnumDescriptionPair<PUTCALL>> _putCallTypes = [];
     private List<EnumDescriptionPair<SettlementMethods>> _settlementMethods = [];
+    private static readonly List<AssetCategoryType> _assetCategoryFilter = [AssetCategoryType.OPTION];
 
     private decimal PremiumInGbp => _premiumAmount * _premiumFxRate;
     private decimal TotalCostsInGbp => (_commissionAmount * _commissionFxRate) + (_taxAmount * _taxFxRate);
@@ -167,7 +168,6 @@
         _putCallTypes = EnumExtensions.GetEnumDescriptionPair<PUTCALL>(typeof(PUTCALL));
         _settlementMethods = EnumExtensions.GetEnumDescriptionPair<SettlementMethods>(typeof(SettlementMethods))
             .Where(e => e.EnumValue != SettlementMethods.UNKNOWN).ToList();
-        RefreshAssetSuggestions();
     }
 
     private async Task AddEntry()
@@ -206,7 +206,6 @@
         };
 
         TaxEventLists.OptionTrades.Add(trade);
-        RefreshAssetSuggestions();
         ResetForm();
 
         ToastService.ShowSuccess($"Option trade added. Estimated net premium: {trade.NetProceed}.");
@@ -292,15 +291,5 @@
         _taxAmount = 0m;
         _taxFxRate = 1m;
         _description = string.Empty;
-    }
-
-    private void RefreshAssetSuggestions()
-    {
-        _assetSuggestions = TaxEventLists.AllEvents
-            .Select(i => i.AssetName)
-            .Where(i => !string.IsNullOrWhiteSpace(i))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .OrderBy(i => i, StringComparer.OrdinalIgnoreCase)
-            .ToList();
     }
 }

@@ -22,9 +22,14 @@
         <div class="row g-3">
             <div class="col-md-6 col-lg-4">
                 <label class="form-label">Ticker</label>
-                <SfDropDownList TValue="string" TItem="string" DataSource="@AvailableTickers" @bind-Value="@SelectedTicker" Placeholder="Select a ticker" CssClass="e-outline" Enabled="@(!IsCalculationMissing)">
-                    <DropDownListEvents TValue="string" TItem="string" ValueChange="OnTickerChanged"></DropDownListEvents>
-                </SfDropDownList>
+                <AssetNameSelector Value="@SelectedTicker"
+                                   ValueChanged="@OnTickerChanged"
+                                   AllowManualAssetNameInput="@AllowManualAssetNameInput"
+                                   AssetCategoryFilter="@AssetCategoryFilter"
+                                   IncludedAssetNames="@AvailableTickers"
+                                   Placeholder="Select a ticker"
+                                   CssClass="e-outline"
+                                   Enabled="@(!IsCalculationMissing)" />
             </div>
 
             @if (!string.IsNullOrEmpty(SelectedTicker))
@@ -70,6 +75,8 @@
 @code {
     [Parameter] public bool IsCalculationMissing { get; set; }
     [Parameter] public EventCallback OnDataChanged { get; set; }
+    [Parameter] public bool AllowManualAssetNameInput { get; set; }
+    [Parameter] public List<AssetCategoryType> AssetCategoryFilter { get; set; } = [AssetCategoryType.STOCK];
 
     private List<string> AvailableTickers { get; set; } = new();
     private string SelectedTicker { get; set; } = string.Empty;
@@ -104,13 +111,14 @@
         Currencies = CurrencyService.GetCurrencies();
     }
 
-    private void OnTickerChanged(ChangeEventArgs<string, string> args)
+    private Task OnTickerChanged(string ticker)
     {
-        SelectedTicker = args.Value;
+        SelectedTicker = ticker;
         SelectedEventId = null;
         Currency = "GBP";
         FxRate = 1.0m;
         RefreshAvailableEvents();
+        return Task.CompletedTask;
     }
 
     private void OnEventSelected(ChangeEventArgs<int?, IncomeEventVM> args)

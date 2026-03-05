@@ -19,7 +19,8 @@
                                  DateChanged="@((DateTime value) => _date = value)"
                                  AssetName="@_assetName"
                                  AssetNameChanged="@((string value) => _assetName = value)"
-                                 AssetSuggestions="@_assetSuggestions" />
+                                 AllowManualAssetNameInput="true"
+                                 AssetCategoryFilter="@_assetCategoryFilter" />
 
         <div class="row g-3 mt-1">
             <div class="col-md-4">
@@ -83,9 +84,9 @@
     private string _description = string.Empty;
 
     private List<CurrencyViewModel> _currencies = [];
-    private List<string> _assetSuggestions = [];
     private List<EnumDescriptionPair<DividendType>> _dividendTypes = [];
     private List<CountryCodeOption> _countryCodes = [];
+    private static readonly List<AssetCategoryType> _assetCategoryFilter = [AssetCategoryType.STOCK];
 
     private decimal AmountInGbp => _amount * _fxRate;
     private decimal DividendReceivedInGbp => _dividendType is DividendType.DIVIDEND or DividendType.DIVIDEND_IN_LIEU or DividendType.EXCESS_REPORTABLE_INCOME or DividendType.RETURN_OF_CAPITAL
@@ -101,7 +102,6 @@
         _countryCodes = CountryCode.GetAllRegions()
             .Select(c => new CountryCodeOption(c.ThreeDigitCode, c.CountryName))
             .ToList();
-        RefreshAssetSuggestions();
     }
 
     private async Task AddEntry()
@@ -122,7 +122,6 @@
         };
 
         TaxEventLists.Dividends.Add(dividend);
-        RefreshAssetSuggestions();
         ResetForm();
 
         ToastService.ShowSuccess($"Dividend added. Amount in GBP: {dividend.Proceed.BaseCurrencyAmount}.");
@@ -164,17 +163,6 @@
         _isin = string.Empty;
         _description = string.Empty;
     }
-
-    private void RefreshAssetSuggestions()
-    {
-        _assetSuggestions = TaxEventLists.AllEvents
-            .Select(i => i.AssetName)
-            .Where(i => !string.IsNullOrWhiteSpace(i))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .OrderBy(i => i, StringComparer.OrdinalIgnoreCase)
-            .ToList();
-    }
-
     private sealed record CountryCodeOption(string ThreeDigitCode, string CountryName)
     {
         public string Display => $"{ThreeDigitCode} - {CountryName}";

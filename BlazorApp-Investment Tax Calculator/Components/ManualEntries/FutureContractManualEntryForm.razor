@@ -20,7 +20,8 @@
                                  DateChanged="@((DateTime value) => _date = value)"
                                  AssetName="@_assetName"
                                  AssetNameChanged="@((string value) => _assetName = value)"
-                                 AssetSuggestions="@_assetSuggestions" />
+                                 AllowManualAssetNameInput="true"
+                                 AssetCategoryFilter="@_assetCategoryFilter" />
 
         <div class="row g-3 mt-1">
             <div class="col-md-4">
@@ -99,8 +100,8 @@
     private string _description = string.Empty;
 
     private List<CurrencyViewModel> _currencies = [];
-    private List<string> _assetSuggestions = [];
     private readonly List<DirectionOption> _directionOptions = [new("Long", "Long"), new("Short", "Short")];
+    private static readonly List<AssetCategoryType> _assetCategoryFilter = [AssetCategoryType.FUTURE];
 
     private decimal ContractValueInGbp => _contractValueAmount * _contractValueFxRate;
     private decimal TotalCostsInGbp => (_commissionAmount * _commissionFxRate) + (_taxAmount * _taxFxRate);
@@ -109,7 +110,6 @@
     protected override void OnInitialized()
     {
         _currencies = CurrencyService.GetCurrencies();
-        RefreshAssetSuggestions();
     }
 
     private async Task AddEntry()
@@ -146,7 +146,6 @@
         };
 
         TaxEventLists.FutureContractTrades.Add(trade);
-        RefreshAssetSuggestions();
         ResetForm();
 
         ToastService.ShowSuccess($"Future contract trade added. Contract value in GBP: {trade.ContractValue.BaseCurrencyAmount}.");
@@ -206,16 +205,5 @@
         _taxFxRate = 1m;
         _description = string.Empty;
     }
-
-    private void RefreshAssetSuggestions()
-    {
-        _assetSuggestions = TaxEventLists.AllEvents
-            .Select(i => i.AssetName)
-            .Where(i => !string.IsNullOrWhiteSpace(i))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .OrderBy(i => i, StringComparer.OrdinalIgnoreCase)
-            .ToList();
-    }
-
     private sealed record DirectionOption(string Value, string Display);
 }

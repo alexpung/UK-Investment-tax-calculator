@@ -2,6 +2,7 @@
 @using InvestmentTaxCalculator.Model.Interfaces
 @using InvestmentTaxCalculator.Model.TaxEvents
 @using InvestmentTaxCalculator.Model.UkTaxModel
+@using InvestmentTaxCalculator.Enumerations
 @using InvestmentTaxCalculator.Services
 @using Syncfusion.Blazor.Buttons
 @using Syncfusion.Blazor.Calendars
@@ -37,9 +38,11 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Asset Ticker</label>
-                    <SfComboBox TValue="string" TItem="string" Placeholder="Select or Enter Ticker" DataSource="@_availableAssets" Value="@_ticker" AllowCustom="true">
-                        <ComboBoxEvents TItem="string" TValue="string" ValueChange="OnTickerChanged"></ComboBoxEvents>
-                    </SfComboBox>
+                    <AssetNameSelector Value="@_ticker"
+                                       ValueChanged="@OnTickerChanged"
+                                       AllowManualAssetNameInput="@AllowManualAssetNameInput"
+                                       AssetCategoryFilter="@AssetCategoryFilter"
+                                       Placeholder="Select or Enter Ticker" />
                     @if (!string.IsNullOrWhiteSpace(_ticker))
                     {
                         <div class="form-text text-info">
@@ -89,6 +92,8 @@
     [Parameter] public PartnerTransferDirection Direction { get; set; }
     [Parameter] public EventCallback OnCorporateActionAdded { get; set; }
     [Parameter] public PartnerTransferCorporateAction? ActionToEdit { get; set; }
+    [Parameter] public bool AllowManualAssetNameInput { get; set; } = true;
+    [Parameter] public List<AssetCategoryType> AssetCategoryFilter { get; set; } = [AssetCategoryType.STOCK];
 
     private DateTime _date = DateTime.Today;
     private string? _ticker;
@@ -97,7 +102,6 @@
     private string _transferredCostCurrency = "GBP";
     private decimal _transferredCostFx = 1m;
     private decimal _currentHolding = 0m;
-    private List<string> _availableAssets = [];
     private List<CurrencyViewModel> _currencies = [];
     private PartnerTransferCorporateAction? _previousActionToEdit;
     private bool _isEditing => ActionToEdit != null;
@@ -105,10 +109,6 @@
 
     protected override void OnInitialized()
     {
-        _availableAssets = _ukSection104Pools.GetSection104s()
-            .Select(x => x.AssetName)
-            .OrderBy(x => x)
-            .ToList();
         _currencies = CurrencyService.GetCurrencies();
 
         if (ActionToEdit != null)
@@ -155,10 +155,11 @@
         await OnCorporateActionAdded.InvokeAsync();
     }
 
-    private void OnTickerChanged(ChangeEventArgs<string, string> args)
+    private Task OnTickerChanged(string ticker)
     {
-        _ticker = args.Value;
+        _ticker = ticker;
         CalculateHolding();
+        return Task.CompletedTask;
     }
 
     private void CalculateHolding()
