@@ -92,7 +92,7 @@
         ? AmountInGbp
         : 0m;
     private decimal WithholdingTaxInGbp => _dividendType == DividendType.WITHHOLDING ? AmountInGbp : 0m;
-    private bool CanShowCalculationPreview => _amount != 0 && _fxRate > 0;
+    private bool CanShowCalculationPreview => _amount > 0 && _fxRate > 0;
 
     protected override void OnInitialized()
     {
@@ -139,9 +139,9 @@
             return false;
         }
 
-        if (_amount == 0)
+        if (_amount <= 0)
         {
-            ToastService.ShowError("Amount cannot be 0.");
+            ToastService.ShowError("Amount must be greater than 0.");
             return false;
         }
 

@@ -104,7 +104,7 @@
     private bool IsAccruedIncomeType => _interestType is InterestType.ACCURREDINCOMEPROFIT or InterestType.ACCURREDINCOMELOSS;
     private bool IsTaxDeferred => IsAccruedIncomeType && !_isNextPaymentInSameTaxYear;
     private decimal AmountInGbp => _amount * _fxRate;
-    private bool CanShowCalculationPreview => _amount != 0 && _fxRate > 0;
+    private bool CanShowCalculationPreview => IsAmountValidForSelectedType(showToast: false) && _fxRate > 0;
 
     protected override void OnInitialized()
     {
@@ -154,11 +154,7 @@
             return false;
         }
 
-        if (_amount == 0)
-        {
-            ToastService.ShowError("Amount cannot be 0.");
-            return false;
-        }
+        if (!IsAmountValidForSelectedType(showToast: true)) return false;
 
         if (_fxRate <= 0)
         {
@@ -169,6 +165,35 @@
         countryCode = CountryCode.GetRegionByThreeDigitCode(_incomeLocationCode);
 
         return true;
+    }
+
+    private bool IsAmountValidForSelectedType(bool showToast)
+    {
+        if (_interestType == InterestType.ACCURREDINCOMEPROFIT)
+        {
+            return _amount > 0
+                || FailAmountValidation("Accrued income profit amount must be greater than 0.", showToast);
+        }
+
+        if (_interestType == InterestType.ACCURREDINCOMELOSS)
+        {
+            // Loss entries are represented by negative amounts.
+            return _amount < 0
+                || FailAmountValidation("Accrued income loss amount must be less than 0.", showToast);
+        }
+
+        return _amount > 0
+            || FailAmountValidation($"{_interestType.GetDescription()} amount must be greater than 0.", showToast);
+    }
+
+    private bool FailAmountValidation(string errorMessage, bool showToast)
+    {
+        if (showToast)
+        {
+            ToastService.ShowError(errorMessage);
+        }
+
+        return false;
     }
 
     private void ResetForm()
