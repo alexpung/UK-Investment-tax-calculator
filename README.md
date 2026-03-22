@@ -75,7 +75,7 @@ More corporate actions
 NEW: Customisable PDF export is now experimental.
 
 ## To use:
-File sample: [Interactive Brokers stock trades XML example](https://github.com/alexpung/UK-Investment-tax-calculator/blob/master/TaxExamples/Interactive%20Brokers/Stocks/InteractiveBrokersStockTradesExample.xml). You can download it and put it in the web app to see how it works.
+File sample: [Interactive Brokers stock trades XML example](https://github.com/alexpung/UK-Investment-tax-calculator/blob/master/TaxExamples/Stocks/InteractiveBrokersStockTradesExample.xml). You can download it and put it in the web app to see how it works.
 1. You should configure the base currency of your IBKR account to GBP.
 2. Configure flex query from interactive brokers. Following report required. Date format dd-MMM-yy, the date and time separator should be set to a single space and time format set to HH:mm:ss.
    1. Cash Transactions: Level of detail: Detail (for dividends)
