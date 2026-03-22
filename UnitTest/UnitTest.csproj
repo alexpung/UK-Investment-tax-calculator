@@ -33,16 +33,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="..\TaxExamples\Interactive Brokers\Outputs\InteractiveBrokersDividendSummaryExample.txt">
+    <None Update="..\TaxExamples\Outputs\InteractiveBrokersDividendSummaryExample.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="..\TaxExamples\Interactive Brokers\Outputs\InteractiveBrokersSection104Example.txt">
+    <None Update="..\TaxExamples\Outputs\InteractiveBrokersSection104Example.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="..\TaxExamples\Interactive Brokers\Stocks\InteractiveBrokersStockTradesExample.xml">
+    <None Update="..\TaxExamples\Stocks\InteractiveBrokersStockTradesExample.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="..\TaxExamples\Interactive Brokers\Outputs\InteractiveBrokersTradesCalculationExample.txt">
+    <None Update="..\TaxExamples\Outputs\InteractiveBrokersTradesCalculationExample.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Test\resource\InvalidFile.xml">
