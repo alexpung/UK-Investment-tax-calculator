@@ -26,6 +26,7 @@ public class DividendExportService(DividendCalculationResult dividendCalculation
             output.AppendLine($"\tBond interest: {dividendSummary.TotalTaxableBondInterest}");
             output.AppendLine($"\tAccrued income profit: {dividendSummary.TotalAccurredIncomeProfit}");
             output.AppendLine($"\tAccrued income loss: {dividendSummary.TotalAccurredIncomeLoss}");
+            output.AppendLine($"\tETF dividend income: {dividendSummary.TotalEtfDividendIncome}");
             output.AppendLine($"\tExcess Reportable Income (Interest): {dividendSummary.TotalExcessReportableIncomeInterest}");
             output.AppendLine($"\tTotal interest income: {dividendSummary.TotalInterestIncome}\n");
             output.AppendLine();
