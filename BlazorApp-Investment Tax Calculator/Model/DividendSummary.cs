@@ -45,6 +45,7 @@ public record DividendSummary
                                                            where interest.InterestType is InterestType.ETFDIVIDEND
                                                            select interest.Amount.BaseCurrencyAmount).Sum();
 
-    public virtual WrappedMoney TotalInterestIncome => TotalTaxableSavingInterest + TotalTaxableBondInterest + TotalAccurredIncomeProfit + TotalAccurredIncomeLoss + TotalExcessReportableIncomeInterest + TotalEtfDividendIncome;
+    public virtual WrappedMoney TotalInterestIncome => (from interest in RelatedInterestIncome
+                                                        select interest.Amount.BaseCurrencyAmount).Sum();
 
 }

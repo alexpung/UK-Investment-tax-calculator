@@ -27,4 +27,22 @@ public class DividendSummaryTest
 
         summary.TotalInterestIncome.ShouldBe(new WrappedMoney(145m));
     }
+
+    [Fact]
+    public void TotalInterestIncome_IncludesAllInterestEntries_EvenIfTypeIsNew()
+    {
+        DividendSummary summary = new()
+        {
+            CountryOfOrigin = CountryCode.GetRegionByTwoDigitCode("GB"),
+            TaxYear = 2024,
+            RelatedDividendsAndTaxes = [],
+            RelatedInterestIncome =
+            [
+                new InterestIncome { AssetName = "Known", Date = new DateTime(2025, 1, 1), InterestType = InterestType.SAVINGS, Amount = new DescribedMoney(10m, "GBP", 1m) },
+                new InterestIncome { AssetName = "FutureType", Date = new DateTime(2025, 1, 2), InterestType = (InterestType)999, Amount = new DescribedMoney(7m, "GBP", 1m) }
+            ]
+        };
+
+        summary.TotalInterestIncome.ShouldBe(new WrappedMoney(17m));
+    }
 }
