@@ -15,7 +15,7 @@ public class InterestIncomeSummarySection(DividendCalculationResult incomeCalcul
     {
         Paragraph paragraph = section.AddParagraph(Title);
         Style.StyleTitle(paragraph);
-        IEnumerable<DividendSummary> incomeSummaries = incomeCalculationResult.DividendSummary.Where(i => i.TaxYear == taxYear);
+        List<DividendSummary> incomeSummaries = incomeCalculationResult.DividendSummary.Where(i => i.TaxYear == taxYear).ToList();
         if (!incomeSummaries.Any() || incomeSummaries.All(s => s.RelatedInterestIncome.Count == 0))
         {
             section.AddParagraph($"No interest income received in the tax year {taxYear} - {taxYear + 1}.");
@@ -56,17 +56,16 @@ public class InterestIncomeSummarySection(DividendCalculationResult incomeCalcul
             row.Cells[7].AddParagraph(summary.TotalInterestIncome.ToString());
         }
 
-        Row totalRow = table.AddRow();
-        Style.StyleSumRow(totalRow);
-        totalRow.Cells[0].AddParagraph("Total");
-        totalRow.Cells[1].AddParagraph(incomeSummaries.Sum(summary => summary.TotalTaxableBondInterest).ToString());
-        totalRow.Cells[2].AddParagraph(incomeSummaries.Sum(summary => summary.TotalTaxableSavingInterest).ToString());
-        totalRow.Cells[3].AddParagraph(incomeSummaries.Sum(summary => summary.TotalAccurredIncomeProfit).ToString());
-        totalRow.Cells[4].AddParagraph(incomeSummaries.Sum(summary => summary.TotalAccurredIncomeLoss).ToString());
-        totalRow.Cells[5].AddParagraph(incomeSummaries.Sum(summary => summary.TotalEtfDividendIncome).ToString());
-        totalRow.Cells[6].AddParagraph(incomeSummaries.Sum(summary => summary.TotalExcessReportableIncomeInterest).ToString());
-        totalRow.Cells[7].AddParagraph(incomeSummaries.Sum(summary => summary.TotalInterestIncome).ToString());
-
+        Row summaryTotalRow = table.AddRow();
+        Style.StyleSumRow(summaryTotalRow);
+        summaryTotalRow.Cells[0].AddParagraph("Total");
+        summaryTotalRow.Cells[1].AddParagraph(incomeSummaries.Sum(summary => summary.TotalTaxableBondInterest).ToString());
+        summaryTotalRow.Cells[2].AddParagraph(incomeSummaries.Sum(summary => summary.TotalTaxableSavingInterest).ToString());
+        summaryTotalRow.Cells[3].AddParagraph(incomeSummaries.Sum(summary => summary.TotalAccurredIncomeProfit).ToString());
+        summaryTotalRow.Cells[4].AddParagraph(incomeSummaries.Sum(summary => summary.TotalAccurredIncomeLoss).ToString());
+        summaryTotalRow.Cells[5].AddParagraph(incomeSummaries.Sum(summary => summary.TotalEtfDividendIncome).ToString());
+        summaryTotalRow.Cells[6].AddParagraph(incomeSummaries.Sum(summary => summary.TotalExcessReportableIncomeInterest).ToString());
+        summaryTotalRow.Cells[7].AddParagraph(incomeSummaries.Sum(summary => summary.TotalInterestIncome).ToString());
         foreach (var summary in incomeSummaries)
         {
             if (summary.RelatedInterestIncome.Count == 0)
