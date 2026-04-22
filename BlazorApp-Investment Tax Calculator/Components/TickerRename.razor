@@ -1,0 +1,137 @@
+@using InvestmentTaxCalculator.Model.Interfaces
+@using InvestmentTaxCalculator.Model.TaxEvents
+@using InvestmentTaxCalculator.Services
+@using Syncfusion.Blazor.Buttons
+
+@inject ITradeAndCorporateActionList _taxEventLists
+@inject ToastService _toastService
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-content-center">
+        <h3>@(_isEditing ? "Edit" : "Record") Ticker Rename</h3>
+        @if (_isEditing)
+        {
+            <SfButton CssClass="e-flat e-small" OnClick="CancelEdit">Cancel Edit</SfButton>
+        }
+    </div>
+    <div class="card-body">
+        <CorporateActionHeader @bind-Date="@_date"
+                               @bind-SourceTicker="@_oldTicker"
+                               @bind-DestinationTicker="@_newTicker"
+                               @bind-SourceRatio="@_fixedRatio"
+                               @bind-DestinationRatio="@_fixedRatio"
+                               SourceLabel="Old Ticker"
+                               DestinationLabel="New Ticker"
+                               RatioLabel="Transition Ratio"
+                               SourceUnitLabel="old ticker shares"
+                               DestinationUnitLabel="new ticker shares"
+                               RatioDecimals="0"
+                               RatioFormat="n0"
+                               RatioMin="1m"
+                               IsDestinationDisabled="false" />
+
+        <div class="alert alert-info">
+            This action fully transfers the Section 104 pool from the old ticker to the new ticker on the event date. It does not create an acquisition.
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <SfButton IsPrimary="true" OnClick="Submit">@(_isEditing ? "Update" : "Add") Ticker Rename</SfButton>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public EventCallback OnCorporateActionAdded { get; set; }
+    [Parameter] public TickerRenameCorporateAction? ActionToEdit { get; set; }
+
+    private DateTime _date = DateTime.Today;
+    private string? _oldTicker;
+    private string? _newTicker;
+    private decimal _fixedRatio = 1m;
+    private bool _isEditing => ActionToEdit != null;
+    private TickerRenameCorporateAction? _previousActionToEdit;
+
+    protected override void OnInitialized()
+    {
+        if (ActionToEdit != null)
+        {
+            LoadAction(ActionToEdit);
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (ActionToEdit != null)
+        {
+            if (!ReferenceEquals(ActionToEdit, _previousActionToEdit))
+            {
+                LoadAction(ActionToEdit);
+            }
+        }
+        else if (_previousActionToEdit != null)
+        {
+            _previousActionToEdit = null;
+        }
+    }
+
+    private void LoadAction(TickerRenameCorporateAction action)
+    {
+        _date = action.Date;
+        _oldTicker = action.AssetName;
+        _newTicker = action.NewTicker;
+        _previousActionToEdit = action;
+    }
+
+    private async Task CancelEdit()
+    {
+        _oldTicker = null;
+        _newTicker = null;
+        _previousActionToEdit = null;
+        ActionToEdit = null;
+        await OnCorporateActionAdded.InvokeAsync();
+    }
+
+    private async Task Submit()
+    {
+        if (string.IsNullOrWhiteSpace(_oldTicker))
+        {
+            _toastService.ShowError("Please select the old ticker.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(_newTicker))
+        {
+            _toastService.ShowError("Please enter the new ticker.");
+            return;
+        }
+
+        if (_oldTicker == _newTicker)
+        {
+            _toastService.ShowError("Old and new tickers cannot be the same.");
+            return;
+        }
+
+        var action = new TickerRenameCorporateAction
+        {
+            Date = _date,
+            AssetName = _oldTicker,
+            NewTicker = _newTicker
+        };
+
+        if (_isEditing)
+        {
+            bool removed = _taxEventLists.CorporateActions.Remove(ActionToEdit!);
+            if (!removed)
+            {
+                _toastService.ShowWarning("Unable to update ticker rename because the original entry could not be found.");
+                return;
+            }
+        }
+
+        _taxEventLists.CorporateActions.Add(action);
+        _toastService.ShowInformation(_isEditing ? "Ticker rename updated successfully." : "Ticker rename added successfully.");
+        await OnCorporateActionAdded.InvokeAsync();
+    }
+}
