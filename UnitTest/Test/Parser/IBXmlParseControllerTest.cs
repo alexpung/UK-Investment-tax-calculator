@@ -5,8 +5,8 @@ namespace UnitTest.Test.Parser;
 
 public class IBXmlParseControllerTest
 {
-    private readonly string _taxExampleXml = File.ReadAllText(@".\Test\Resource\TaxExample.xml");
-    private readonly string _invalidFileXml = File.ReadAllText(@".\Test\Resource\InvalidFile.xml");
+    private readonly string _taxExampleXml = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Test", "resource", "TaxExample.xml"));
+    private readonly string _invalidFileXml = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Test", "resource", "InvalidFile.xml"));
 
     [Fact]
     public void TestCheckingInvalidIBXml()
