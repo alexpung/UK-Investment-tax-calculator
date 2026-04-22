@@ -47,6 +47,10 @@
                 {
                     <StockSplit OnCorporateActionAdded="OnActionModified" ActionToEdit="@(_actionToEdit as StockSplitAction)" />
                 }
+                else if (_selectedAction == "Ticker Rename")
+                {
+                    <TickerRename OnCorporateActionAdded="OnActionModified" ActionToEdit="@(_actionToEdit as TickerRenameCorporateAction)" />
+                }
                 else if (_selectedAction == "Gift to partner")
                 {
                     <PartnerTransfer Direction="PartnerTransferDirection.GiftToPartner"
@@ -79,7 +83,7 @@
     private IDisposable? _navigationRegistration;
     private static readonly List<AssetCategoryType> _stockAssetCategoryFilter = [AssetCategoryType.STOCK];
     
-    private List<string> _actionTypes = new() { "Takeover / Merger", "Spinoff", "Stock Split / Reverse Split", "Gift to partner", "Receive from partner" };
+    private List<string> _actionTypes = new() { "Takeover / Merger", "Spinoff", "Stock Split / Reverse Split", "Ticker Rename", "Gift to partner", "Receive from partner" };
     private string? _selectedAction = "Takeover / Merger";
 
     private CorporateAction? _actionToEdit;
@@ -111,6 +115,9 @@
                 break;
             case StockSplitAction:
                 _selectedAction = "Stock Split / Reverse Split";
+                break;
+            case TickerRenameCorporateAction:
+                _selectedAction = "Ticker Rename";
                 break;
             case PartnerTransferCorporateAction partner:
                 _selectedAction = partner.Direction == PartnerTransferDirection.GiftToPartner ? "Gift to partner" : "Receive from partner";
