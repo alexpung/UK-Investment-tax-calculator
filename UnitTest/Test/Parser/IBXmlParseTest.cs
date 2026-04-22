@@ -10,7 +10,7 @@ namespace UnitTest.Test.Parser;
 
 public class IBXmlParseTest
 {
-    private readonly XElement _xmlDoc = XElement.Load(@".\Test\Resource\TaxExample.xml");
+    private readonly XElement _xmlDoc = XElement.Load(Path.Combine(AppContext.BaseDirectory, "Test", "resource", "TaxExample.xml"));
 
     [Fact]
     public void TestReadingIBXmlDividends()
