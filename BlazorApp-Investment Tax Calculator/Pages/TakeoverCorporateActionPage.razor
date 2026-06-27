@@ -5,7 +5,6 @@
 @using InvestmentTaxCalculator.Model.TaxEvents
 @using StockSplitAction = InvestmentTaxCalculator.Model.TaxEvents.StockSplit
 @using InvestmentTaxCalculator.Services
-@using Syncfusion.Blazor.DropDowns
 @implements IDisposable
 @inject TaxCalculationService _taxCalculationService
 @inject NavigationManager _navigationManager
@@ -25,9 +24,8 @@
                     <div class="card bg-dark border-secondary shadow-sm">
                         <div class="card-body">
                             <label class="form-label text-info fw-bold">Select Action/Event Type</label>
-                            <SfDropDownList TValue="string" TItem="string" DataSource="@_actionTypes" @bind-Value="@_selectedAction" Placeholder="Choose an action/event type">
-                                <DropDownListEvents TValue="string" TItem="string" ValueChange="@OnActionTypeChanged" />
-                            </SfDropDownList>
+                            <RadzenDropDown TValue="string" Data="@_actionTypes" @bind-Value="@_selectedAction"
+                                            Placeholder="Choose an action/event type" Change="@OnActionTypeChanged" class="w-100" />
                         </div>
                     </div>
                 </div>
@@ -89,12 +87,10 @@
         _navigationRegistration = _navigationManager.RegisterLocationChangingHandler(OnLocationChanging);
     }
 
-    private void OnActionTypeChanged(Syncfusion.Blazor.DropDowns.ChangeEventArgs<string, string> args)
+    private void OnActionTypeChanged(object value)
     {
-        if (args.IsInteracted)
-        {
-            _actionToEdit = null; 
-        }
+        // User changed the selection: clear any in-progress edit.
+        _actionToEdit = null;
     }
 
     private void HandleEdit(CorporateAction action)

@@ -32,7 +32,7 @@ public class ImportedTradesGridTests : PlaywrightTestBase
         Assert.That(visibleAssetTypes.Any(type => type.Equals("FUTURE", StringComparison.OrdinalIgnoreCase)),
             Is.True, "Expected FUTURE rows to be visible in imported trades grid.");
 
-        var firstRow = Page.Locator("#ImportedTradesGrid .e-gridcontent tr.e-row").First;
+        var firstRow = Page.Locator("#ImportedTradesGrid tr.rz-data-row").First;
         var firstRowKey = (await firstRow.InnerTextAsync())?.Trim() ?? string.Empty;
         Assert.That(firstRowKey, Is.Not.Empty, "Could not capture a row key before delete.");
 
@@ -46,7 +46,7 @@ public class ImportedTradesGridTests : PlaywrightTestBase
 
     private async Task<List<string>> GetRenderedRowKeysAsync()
     {
-        return (await Page.Locator("#ImportedTradesGrid .e-gridcontent tr.e-row").AllInnerTextsAsync())
+        return (await Page.Locator("#ImportedTradesGrid tr.rz-data-row").AllInnerTextsAsync())
             .Select(text => text.Trim())
             .Where(text => !string.IsNullOrWhiteSpace(text))
             .ToList();
@@ -54,21 +54,21 @@ public class ImportedTradesGridTests : PlaywrightTestBase
 
     private async Task<List<string>> GetRenderedAssetTypesAsync()
     {
+        // Return the text of every data cell across all rows. The Asset Type column holds
+        // exact enum values (OPTION/FUTURE/STOCK/FX), so the test can match them directly
+        // without depending on column ordering.
         var values = await Page.EvaluateAsync<string[]>(@"() => {
             const gridEl = document.getElementById('ImportedTradesGrid');
             if (!gridEl) return [];
-            const headerCells = Array.from(gridEl.querySelectorAll('.e-headercontent th.e-headercell'));
-            const assetTypeIndex = headerCells.findIndex(h => ((h.textContent || '').trim().toLowerCase().includes('asset type')));
-            if (assetTypeIndex < 0) return [];
-
-            const rows = Array.from(gridEl.querySelectorAll('.e-gridcontent tr.e-row'));
-            return rows
-                .map(row => {
-                    const cells = Array.from(row.querySelectorAll('td.e-rowcell'));
-                    if (assetTypeIndex >= cells.length) return '';
-                    return (cells[assetTypeIndex].textContent || '').trim();
-                })
-                .filter(v => v.length > 0);
+            const rows = Array.from(gridEl.querySelectorAll('tr.rz-data-row'));
+            const cellTexts = [];
+            rows.forEach(row => {
+                Array.from(row.querySelectorAll('td')).forEach(td => {
+                    const t = (td.textContent || '').trim();
+                    if (t.length > 0) cellTexts.push(t);
+                });
+            });
+            return cellTexts;
         }");
         return values.ToList();
     }
@@ -77,15 +77,10 @@ public class ImportedTradesGridTests : PlaywrightTestBase
     {
         Assert.That(File.Exists(TestDataPath), Is.True, $"Test file should exist at {TestDataPath}");
 
+        // Native <InputFile> reads files on change; no separate upload button to click.
         var fileInput = Page.Locator("input[type='file']").First;
         await fileInput.SetInputFilesAsync(TestDataPath);
         await Task.Delay(1000);
-
-        var uploadButton = Page.Locator(".e-upload-actions .e-file-upload-btn, .e-upload button:has-text('Upload')");
-        if (await uploadButton.CountAsync() > 0 && await uploadButton.First.IsVisibleAsync())
-        {
-            await uploadButton.First.ClickAsync();
-        }
 
         var duplicateWarning = Page.Locator("text=Duplicate Import Warning");
         try

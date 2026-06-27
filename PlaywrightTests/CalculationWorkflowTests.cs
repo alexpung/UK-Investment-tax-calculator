@@ -15,8 +15,11 @@ public class CalculationWorkflowTests : PlaywrightTestBase
     // Expected values from TaxExample.xml
     private const int ExpectedTotalEvents = 34;
     private const int ExpectedTrades = 11;
-    private const int ExpectedCgtRows = 9;
-    private const int ExpectedDividendRows = 4;
+    // Counts reflect real data rows (rz-data-row). The previous Syncfusion baselines (9 / 4)
+    // were inflated by one because the old selector also counted the "No records" placeholder
+    // row of an empty sibling grid on each page (TaxRefundTable / InterestIncomeGrid).
+    private const int ExpectedCgtRows = 8;
+    private const int ExpectedDividendRows = 3;
     private const int ExpectedSection104Rows = 17;
     private const int ExpectedDisposals = 12;
     private const string ExpectedDisposalProceeds = "£3,617,218.00";
@@ -127,7 +130,7 @@ public class CalculationWorkflowTests : PlaywrightTestBase
         await Task.Delay(2000);
 
         // Check for data rows
-        var dataRows = Page.Locator(".e-grid .e-row, table tbody tr");
+        var dataRows = Page.Locator("tr.rz-data-row");
         var rowCount = await dataRows.CountAsync();
         TestContext.WriteLine($"CGT Summary page has {rowCount} data rows");
         
@@ -148,7 +151,7 @@ public class CalculationWorkflowTests : PlaywrightTestBase
         await Task.Delay(2000);
         
         // Check for data rows
-        var dataRows = Page.Locator(".e-grid .e-row, table tbody tr");
+        var dataRows = Page.Locator("tr.rz-data-row");
         var rowCount = await dataRows.CountAsync();
         TestContext.WriteLine($"Dividend Data page has {rowCount} data rows");
         
@@ -169,7 +172,7 @@ public class CalculationWorkflowTests : PlaywrightTestBase
         await Task.Delay(2000);
 
         // Check for data rows
-        var dataRows = Page.Locator(".e-grid .e-row, table tbody tr");
+        var dataRows = Page.Locator("tr.rz-data-row");
         var rowCount = await dataRows.CountAsync();
         TestContext.WriteLine($"Section 104 Data page has {rowCount} data rows");
         
@@ -208,31 +211,18 @@ public class CalculationWorkflowTests : PlaywrightTestBase
     }
 
     /// <summary>
-    /// Uploads the test XML file using Syncfusion uploader.
+    /// Uploads the test XML file using the native file input.
     /// </summary>
     private async Task UploadTestFileAsync()
     {
         TestContext.WriteLine($"Uploading file: {TestDataPath}");
         Assert.That(File.Exists(TestDataPath), Is.True, $"Test file should exist at {TestDataPath}");
         
+        // Native <InputFile> reads files on change; no separate upload button to click.
         var fileInput = Page.Locator("input[type='file']").First;
         await fileInput.SetInputFilesAsync(TestDataPath);
         TestContext.WriteLine("File set on input element");
-        
-        await Task.Delay(1000);
-        
-        var uploadButton = Page.Locator(".e-upload-actions .e-file-upload-btn, .e-upload button:has-text('Upload')");
-        if (await uploadButton.CountAsync() > 0)
-        {
-            var isVisible = await uploadButton.First.IsVisibleAsync();
-            TestContext.WriteLine($"Upload button visible: {isVisible}");
-            if (isVisible)
-            {
-                await uploadButton.First.ClickAsync();
-                TestContext.WriteLine("Clicked upload button");
-            }
-        }
-        
+
         await Task.Delay(3000);
         
         var spinner = Page.Locator(".spinner-border");

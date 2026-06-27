@@ -6,11 +6,6 @@
 @using InvestmentTaxCalculator.Services
 @using InvestmentTaxCalculator.Enumerations
 @using InvestmentTaxCalculator.Components
-@using Syncfusion.Blazor.Calendars
-@using Syncfusion.Blazor.DropDowns
-@using Syncfusion.Blazor.Inputs
-@using Syncfusion.Blazor.Buttons
-@using Syncfusion.Blazor.Grids
 
 @implements IDisposable
 @inject UkSection104Pools Section104Pools
@@ -80,63 +75,53 @@
             <!-- Corporate Action History Table -->
             <div class="section">
                 <h3 class="mb-3">Corporate Action History (ERI & Equalisation)</h3>
-                <SfGrid TValue="CorporateAction" DataSource="@History" AllowPaging="true">
-                    <GridPageSettings PageSize="10"></GridPageSettings>
-                    <GridColumns>
-                        <GridColumn Field="@nameof(CorporateAction.AssetName)" HeaderText="Ticker" Width="120"></GridColumn>
-                        <GridColumn Field="@nameof(CorporateAction.Date)" HeaderText="Date" Format="d" Type="ColumnType.Date" Width="150"></GridColumn>
-                        <GridColumn HeaderText="Type" Width="150">
-                            <Template>
-                                @{
-                                    var ca = context as CorporateAction;
-                                    if (ca is ExcessReportableIncome eri)
-                                    {
-                                        <span>ERI (@eri.IncomeType.GetDescription())</span>
-                                    }
-                                    else if (ca is FundEqualisation)
-                                    {
-                                        <span>Equalisation</span>
-                                    }
-                                    else
-                                    {
-                                        <span>@ca?.GetType().Name</span>
-                                    }
+                <RadzenDataGrid TItem="CorporateAction" Data="@History" AllowPaging="true" PageSize="10" AllowSorting="true" AllowColumnResize="true" class="w-100">
+                    <Columns>
+                        <RadzenDataGridColumn TItem="CorporateAction" Property="@nameof(CorporateAction.AssetName)" Title="Ticker" Width="120px" />
+                        <RadzenDataGridColumn TItem="CorporateAction" Property="@nameof(CorporateAction.Date)" Title="Date" FormatString="{0:d}" Width="150px" />
+                        <RadzenDataGridColumn TItem="CorporateAction" Title="Type" Width="150px" Sortable="false">
+                            <Template Context="ca">
+                                @if (ca is ExcessReportableIncome eri)
+                                {
+                                    <span>ERI (@eri.IncomeType.GetDescription())</span>
+                                }
+                                else if (ca is FundEqualisation)
+                                {
+                                    <span>Equalisation</span>
+                                }
+                                else
+                                {
+                                    <span>@ca.GetType().Name</span>
                                 }
                             </Template>
-                        </GridColumn>
-                        <GridColumn HeaderText="Amount (Local)" Width="150">
-                            <Template>
-                                @{
-                                    var ca = context as CorporateAction;
-                                    if (ca is ExcessReportableIncome eri)
-                                    {
-                                        <span>@eri.Amount.Amount.ToString()</span>
-                                    }
-                                    else if (ca is FundEqualisation fe)
-                                    {
-                                        <span>@fe.Amount.Amount.ToString()</span>
-                                    }
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="CorporateAction" Title="Amount (Local)" Width="150px" Sortable="false">
+                            <Template Context="ca">
+                                @if (ca is ExcessReportableIncome eri)
+                                {
+                                    <span>@eri.Amount.Amount.ToString()</span>
+                                }
+                                else if (ca is FundEqualisation fe)
+                                {
+                                    <span>@fe.Amount.Amount.ToString()</span>
                                 }
                             </Template>
-                        </GridColumn>
-                        <GridColumn HeaderText="Amount (GBP)" Width="150">
-                            <Template>
-                                @{
-                                    var ca = context as CorporateAction;
-                                    if (ca is ExcessReportableIncome eri)
-                                    {
-                                        <span>@eri.Amount.BaseCurrencyAmount.Amount.ToString("N2")</span>
-                                    }
-                                    else if (ca is FundEqualisation fe)
-                                    {
-                                        <span>@fe.Amount.BaseCurrencyAmount.Amount.ToString("N2")</span>
-                                    }
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="CorporateAction" Title="Amount (GBP)" Width="150px" Sortable="false">
+                            <Template Context="ca">
+                                @if (ca is ExcessReportableIncome eri)
+                                {
+                                    <span>@eri.Amount.BaseCurrencyAmount.Amount.ToString("N2")</span>
+                                }
+                                else if (ca is FundEqualisation fe)
+                                {
+                                    <span>@fe.Amount.BaseCurrencyAmount.Amount.ToString("N2")</span>
                                 }
                             </Template>
-                        </GridColumn>
-                        <GridColumn Field="@nameof(CorporateAction.Reason)" HeaderText="Details"></GridColumn>
-                    </GridColumns>
-                </SfGrid>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="CorporateAction" Property="@nameof(CorporateAction.Reason)" Title="Details" />
+                    </Columns>
+                </RadzenDataGrid>
             </div>
         </div>
     </div>
