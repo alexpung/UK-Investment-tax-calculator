@@ -17,7 +17,7 @@
     <PackageReference Include="CsvHelper" Version="33.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.1" PrivateAssets="all" />
-    <PackageReference Include="NMoneys" Version="7.4.0" />
+    <PackageReference Include="NMoneys" Version="7.5.0" />
     <PackageReference Include="PDFsharp" Version="6.1.1" />
     <PackageReference Include="PDFsharp-MigraDoc" Version="6.1.1" />
     <PackageReference Include="PublishSPAforGitHubPages.Build" Version="3.0.3" />
