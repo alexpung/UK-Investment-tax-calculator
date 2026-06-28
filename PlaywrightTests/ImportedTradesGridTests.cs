@@ -54,21 +54,21 @@ public class ImportedTradesGridTests : PlaywrightTestBase
 
     private async Task<List<string>> GetRenderedAssetTypesAsync()
     {
-        // Return the text of every data cell across all rows. The Asset Type column holds
-        // exact enum values (OPTION/FUTURE/STOCK/FX), so the test can match them directly
-        // without depending on column ordering.
+        // Read only the "Asset Type" column (located by its header text) for each row, so a
+        // bad asset-type render cannot be masked by matching text in another column.
         var values = await Page.EvaluateAsync<string[]>(@"() => {
             const gridEl = document.getElementById('ImportedTradesGrid');
             if (!gridEl) return [];
+            const headers = Array.from(gridEl.querySelectorAll('.rz-grid-table thead th'));
+            const colIndex = headers.findIndex(th => (th.textContent || '').trim().startsWith('Asset Type'));
+            if (colIndex < 0) return [];
             const rows = Array.from(gridEl.querySelectorAll('tr.rz-data-row'));
-            const cellTexts = [];
-            rows.forEach(row => {
-                Array.from(row.querySelectorAll('td')).forEach(td => {
-                    const t = (td.textContent || '').trim();
-                    if (t.length > 0) cellTexts.push(t);
-                });
-            });
-            return cellTexts;
+            return rows
+                .map(row => {
+                    const cell = row.querySelectorAll('td')[colIndex];
+                    return cell ? (cell.textContent || '').trim() : '';
+                })
+                .filter(t => t.length > 0);
         }");
         return values.ToList();
     }

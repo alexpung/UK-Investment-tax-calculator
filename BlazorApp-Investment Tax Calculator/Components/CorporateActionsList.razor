@@ -36,9 +36,12 @@
 
     private RadzenDataGrid<CorporateAction> _grid = default!;
 
-    public void Refresh()
+    public async Task Refresh()
     {
-        _ = _grid?.Reload();
+        if (_grid is not null)
+        {
+            await _grid.Reload();
+        }
     }
 
     private async Task EditAction(CorporateAction action)
@@ -51,7 +54,7 @@
         if (_taxEventLists.CorporateActions.Remove(action))
         {
             _toastService.ShowInformation("Event removed.");
-            Refresh();
+            await Refresh();
             await OnActionDeleted.InvokeAsync();
         }
     }

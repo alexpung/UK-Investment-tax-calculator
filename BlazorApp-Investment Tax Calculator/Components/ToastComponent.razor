@@ -28,7 +28,8 @@
                     _ => NotificationSeverity.Info
                 },
                 Summary = options.Title,
-                // Toast messages may contain simple HTML (e.g. <br>); render it as markup.
+                // Detail is rendered as escaped text; newlines in the content become line
+                // breaks via the `white-space: pre-line` rule on .rz-notification-message.
                 Detail = options.Content,
                 Duration = 5000d
             });

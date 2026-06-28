@@ -42,7 +42,7 @@
                     Trading 212 and Freetrade (CSV), and JSON files previously exported by this app.
                     Files are read locally in your browser.
                 </p>
-                <InputFile OnChange="LoadFiles" multiple class="form-control" />
+                <InputFile OnChange="LoadFiles" multiple class="form-control" disabled="@FileImportState.IsProcessing" />
             </div>
         </div>
 
@@ -59,7 +59,7 @@
                     Select a folder to import every supported statement file inside it (Interactive Brokers XML,
                     Trading 212 / Freetrade CSV, or app-exported JSON). Files are read locally in your browser.
                 </p>
-                <InputFile OnChange="LoadFiles" multiple webkitdirectory="" class="form-control" />
+                <InputFile OnChange="LoadFiles" multiple webkitdirectory="" class="form-control" disabled="@FileImportState.IsProcessing" />
             </div>
         </div>
 

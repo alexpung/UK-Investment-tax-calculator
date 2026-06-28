@@ -23,9 +23,17 @@ public partial class ImportFile : IDisposable
         FileImportState.OnChange -= StateHasChanged;
     }
 
+    private const int MaxImportFileCount = 1000;
+
     private async Task LoadFiles(InputFileChangeEventArgs args)
     {
-        var files = args.GetMultipleFiles(maximumFileCount: 1000);
+        if (args.FileCount > MaxImportFileCount)
+        {
+            toastService.ShowError($"Too many files selected ({args.FileCount}). Please import at most {MaxImportFileCount} files at a time.");
+            return;
+        }
+
+        var files = args.GetMultipleFiles(maximumFileCount: MaxImportFileCount);
         FileImportState.StartProcessing(files.Count);
 
         try
@@ -63,11 +71,10 @@ public partial class ImportFile : IDisposable
         var dividendWithUnknownRegions = events.Dividends.Where(x => x.CompanyLocation == CountryCode.UnknownRegion);
         foreach (var dividend in dividendWithUnknownRegions)
         {
-            string encodedAssetName = System.Net.WebUtility.HtmlEncode(dividend.AssetName);
-            string encodedDescription = System.Net.WebUtility.HtmlEncode(dividend.Proceed.Description);
-
-            toastService.ShowWarning($"Unknown region detected with dividend data with:<br> date: {dividend.Date.Date:d}<br>" +
-                $"company: {encodedAssetName}<br>description: {encodedDescription}<br> Please check the country for the company manually.");
+            // Plain text with line breaks; the toast renders Detail as escaped text, so the
+            // asset name/description below are shown safely without manual HTML encoding.
+            toastService.ShowWarning($"Unknown region detected with dividend data with:\n date: {dividend.Date.Date:d}\n" +
+                $"company: {dividend.AssetName}\ndescription: {dividend.Proceed.Description}\n Please check the country for the company manually.");
         }
     }
 

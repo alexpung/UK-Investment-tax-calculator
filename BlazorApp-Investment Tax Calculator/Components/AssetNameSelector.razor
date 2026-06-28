@@ -128,6 +128,9 @@ else
         string nextValue = value as string ?? string.Empty;
         if (!string.Equals(nextValue, Value, StringComparison.Ordinal))
         {
+            // Keep the bound selection in sync immediately; the parent only flows the new
+            // value back after its own (possibly async) re-render.
+            Value = nextValue;
             await ValueChanged.InvokeAsync(nextValue);
         }
     }

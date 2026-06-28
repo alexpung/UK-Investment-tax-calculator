@@ -145,6 +145,11 @@
     color: var(--bs-secondary-color) !important;
 }
 
+/* Preserve newlines in toast/notification messages so multi-line details wrap correctly */
+.rz-notification-message {
+    white-space: pre-line;
+}
+
 /* ===================================
    Radzen DataGrid optimisations for Full HD (1920x1080)
    The grids have many columns (the Matching Details table has 13). By default

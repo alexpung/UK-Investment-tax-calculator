@@ -123,11 +123,14 @@
         return action;
     }
 
-    private void OnActionModified()
+    private async Task OnActionModified()
     {
         _hasChanges = true;
-        _actionToEdit = null; 
-        _historyList?.Refresh();
+        _actionToEdit = null;
+        if (_historyList is not null)
+        {
+            await _historyList.Refresh();
+        }
         StateHasChanged();
     }
 

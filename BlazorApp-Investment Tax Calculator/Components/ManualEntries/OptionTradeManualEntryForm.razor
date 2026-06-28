@@ -42,16 +42,16 @@
             </div>
             <div class="col-md-4">
                 <label class="form-label">Quantity (contracts)</label>
-                <RadzenNumeric TValue="decimal" @bind-Value="@_quantity" Min="0" class="w-100" />
+                <RadzenNumeric TValue="decimal" @bind-Value="@_quantity" Min="0.00000001m" class="w-100" />
             </div>
             <div class="col-md-4">
                 <label class="form-label">Multiplier</label>
-                <RadzenNumeric TValue="decimal" @bind-Value="@_multiplier" Min="0" class="w-100" />
+                <RadzenNumeric TValue="decimal" @bind-Value="@_multiplier" Min="0.00000001m" class="w-100" />
             </div>
 
             <div class="col-md-4">
                 <label class="form-label">Strike Price</label>
-                <RadzenNumeric TValue="decimal" @bind-Value="@_strikePriceAmount" Min="0" class="w-100" />
+                <RadzenNumeric TValue="decimal" @bind-Value="@_strikePriceAmount" Min="0.00000001m" class="w-100" />
             </div>
             <div class="col-md-4">
                 <label class="form-label">Strike Currency</label>

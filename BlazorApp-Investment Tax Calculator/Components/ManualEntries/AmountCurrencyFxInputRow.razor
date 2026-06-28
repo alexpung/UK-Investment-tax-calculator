@@ -43,7 +43,7 @@
 
     private async Task OnAmountChanged(decimal value) => await AmountChanged.InvokeAsync(value);
 
-    private async Task OnCurrencyChanged(object value) => await CurrencyChanged.InvokeAsync(value as string ?? "GBP");
+    private async Task OnCurrencyChanged(object value) => await CurrencyChanged.InvokeAsync(value as string ?? Currency);
 
     private async Task OnFxRateChanged(decimal value) => await FxRateChanged.InvokeAsync(value);
 }
