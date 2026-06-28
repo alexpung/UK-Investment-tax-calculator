@@ -4,10 +4,6 @@
 @using InvestmentTaxCalculator.Model.UkTaxModel
 @using InvestmentTaxCalculator.Enumerations
 @using InvestmentTaxCalculator.Services
-@using Syncfusion.Blazor.Buttons
-@using Syncfusion.Blazor.Calendars
-@using Syncfusion.Blazor.DropDowns
-@using Syncfusion.Blazor.Inputs
 
 @inject UkSection104Pools _ukSection104Pools
 @inject TradeCalculationResult _tradeCalculationResult
@@ -19,7 +15,7 @@
         <h3>@(_isEditing ? "Edit" : "Record") @Title</h3>
         @if (_isEditing)
         {
-            <SfButton CssClass="e-flat e-small" OnClick="CancelEdit">Cancel Edit</SfButton>
+            <RadzenButton Variant="Variant.Text" Size="ButtonSize.Small" Click="CancelEdit" Text="Cancel Edit" />
         }
     </div>
     <div class="card-body">
@@ -34,7 +30,7 @@
             <div class="row mb-3">
                 <div class="col-md-6">
                     <label class="form-label">Date</label>
-                    <SfDatePicker TValue="DateTime" @bind-Value="@_date"></SfDatePicker>
+                    <RadzenDatePicker TValue="DateTime" @bind-Value="@_date" DateFormat="d" class="w-100" />
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Asset Ticker</label>
@@ -55,7 +51,7 @@
             <div class="row mb-3">
                 <div class="col-md-6">
                     <label class="form-label">Quantity</label>
-                    <SfNumericTextBox TValue="decimal" @bind-Value="@_quantity" Min="0.00000001m" Decimals="8" Format="n8"></SfNumericTextBox>
+                    <RadzenNumeric TValue="decimal" @bind-Value="@_quantity" Min="0.00000001m" Format="n8" class="w-100" />
                 </div>
             </div>
 
@@ -64,24 +60,22 @@
                 <div class="row mb-3">
                     <div class="col-md-4">
                         <label class="form-label">Transferred Cost Amount</label>
-                        <SfNumericTextBox TValue="decimal" @bind-Value="@_transferredCostAmount" Min="0" Decimals="4" Format="n4"></SfNumericTextBox>
+                        <RadzenNumeric TValue="decimal" @bind-Value="@_transferredCostAmount" Min="0" Format="n4" class="w-100" />
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Currency</label>
-                        <SfDropDownList TValue="string" TItem="CurrencyViewModel" Placeholder="Currency" DataSource="@_currencies" @bind-Value="@_transferredCostCurrency">
-                            <DropDownListFieldSettings Text="Display" Value="Code"></DropDownListFieldSettings>
-                        </SfDropDownList>
+                        <RadzenDropDown TValue="string" Placeholder="Currency" Data="@_currencies" TextProperty="Display" ValueProperty="Code" @bind-Value="@_transferredCostCurrency" AllowFiltering="true" class="w-100" />
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">FX Rate (to GBP)</label>
-                        <SfNumericTextBox TValue="decimal" @bind-Value="@_transferredCostFx" Min="0.00000001m" Decimals="8" Format="n8"></SfNumericTextBox>
+                        <RadzenNumeric TValue="decimal" @bind-Value="@_transferredCostFx" Min="0.00000001m" Format="n8" class="w-100" />
                     </div>
                 </div>
             }
 
             <div class="row">
                 <div class="col-12">
-                    <SfButton IsPrimary="true" OnClick="Submit">@(_isEditing ? "Update" : "Add") @Title</SfButton>
+                    <RadzenButton ButtonStyle="ButtonStyle.Primary" Click="Submit" Text="@($"{(_isEditing ? "Update" : "Add")} {Title}")" />
                 </div>
             </div>
         }

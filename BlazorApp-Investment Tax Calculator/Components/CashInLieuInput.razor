@@ -1,8 +1,5 @@
 @using InvestmentTaxCalculator.Model
 @using InvestmentTaxCalculator.Services
-@using Syncfusion.Blazor.DropDowns
-@using Syncfusion.Blazor.Inputs
-@using Syncfusion.Blazor.Buttons
 
 <div class="card mb-3 text-white" style="background-color: @CssBackgroundColor;">
     <div class="card-body">
@@ -14,28 +11,25 @@
         <div class="row mb-3">
              <div class="col-md-4">
                 <label class="form-label">Cash Received (Total)</label>
-                <SfNumericTextBox TValue="decimal" Value="@CashAmount" Min="0" Placeholder="Amount">
-                    <NumericTextBoxEvents TValue="decimal" ValueChange="@OnCashAmountChangedInternal"></NumericTextBoxEvents>
-                </SfNumericTextBox>
+                <RadzenNumeric TValue="decimal" Value="@CashAmount" Min="0" Placeholder="Amount"
+                               Change="@OnCashAmountChangedInternal" class="w-100" />
             </div>
             <div class="col-md-4">
                 <label class="form-label">Currency</label>
-                <SfDropDownList TValue="string" TItem="CurrencyViewModel" Placeholder="Currency" DataSource="@_currencies" Value="@CashCurrency">
-                    <DropDownListFieldSettings Text="Display" Value="Code"></DropDownListFieldSettings>
-                    <DropDownListEvents TItem="CurrencyViewModel" TValue="string" ValueChange="@OnCashCurrencyChangedInternal"></DropDownListEvents>
-                </SfDropDownList>
+                <RadzenDropDown TValue="string" Placeholder="Currency" Data="@_currencies" TextProperty="Display" ValueProperty="Code"
+                                Value="@CashCurrency" AllowFiltering="true" Change="@OnCashCurrencyChangedInternal" class="w-100" />
             </div>
              <div class="col-md-4">
                 <label class="form-label">FX Rate (to GBP)</label>
-                <SfNumericTextBox TValue="decimal" Value="@CashFx" Decimals="4" Format="n4" Min="0.000001m">
-                    <NumericTextBoxEvents TValue="decimal" ValueChange="@OnCashFxChangedInternal"></NumericTextBoxEvents>
-                </SfNumericTextBox>
+                <RadzenNumeric TValue="decimal" Value="@CashFx" Min="0.000001m" Format="n4"
+                               Change="@OnCashFxChangedInternal" class="w-100" />
             </div>
         </div>
 
         <div class="row mb-3">
             <div class="col-12">
-                <SfCheckBox Label="@CheckboxLabel" Checked="@ElectSmallCash" CheckedChanged="@(async (bool v) => await OnElectSmallCashChangedInternal(v))"></SfCheckBox>
+                <RadzenCheckBox TValue="bool" Value="@ElectSmallCash" Change="@OnElectSmallCashChangedInternal" Name="electSmallCash" />
+                <RadzenLabel Text="@CheckboxLabel" Component="electSmallCash" class="ms-2" />
                 @if (!string.IsNullOrEmpty(CheckboxHelpText))
                 {
                     <div class="form-text text-white-50">
@@ -44,7 +38,7 @@
                 }
             </div>
         </div>
-        
+
         @ChildContent
     </div>
 </div>
@@ -76,22 +70,23 @@
         _currencies = CurrencyService.GetCurrencies();
     }
 
-    private async Task OnCashAmountChangedInternal(Syncfusion.Blazor.Inputs.ChangeEventArgs<decimal> args)
+    private async Task OnCashAmountChangedInternal(decimal value)
     {
-        CashAmount = args.Value;
-        await CashAmountChanged.InvokeAsync(args.Value);
+        CashAmount = value;
+        await CashAmountChanged.InvokeAsync(value);
     }
 
-    private async Task OnCashCurrencyChangedInternal(Syncfusion.Blazor.DropDowns.ChangeEventArgs<string, CurrencyViewModel> args)
+    private async Task OnCashCurrencyChangedInternal(object value)
     {
-        CashCurrency = args.Value;
-        await CashCurrencyChanged.InvokeAsync(args.Value);
+        string code = value as string ?? "GBP";
+        CashCurrency = code;
+        await CashCurrencyChanged.InvokeAsync(code);
     }
 
-    private async Task OnCashFxChangedInternal(Syncfusion.Blazor.Inputs.ChangeEventArgs<decimal> args)
+    private async Task OnCashFxChangedInternal(decimal value)
     {
-        CashFx = args.Value;
-        await CashFxChanged.InvokeAsync(args.Value);
+        CashFx = value;
+        await CashFxChanged.InvokeAsync(value);
     }
 
     private async Task OnElectSmallCashChangedInternal(bool value)

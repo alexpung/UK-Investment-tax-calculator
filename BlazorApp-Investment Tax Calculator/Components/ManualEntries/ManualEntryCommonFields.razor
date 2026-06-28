@@ -1,18 +1,11 @@
-@using Syncfusion.Blazor.Calendars
-@using Syncfusion.Blazor.DropDowns
 @using InvestmentTaxCalculator.Components
 @using InvestmentTaxCalculator.Enumerations
 
 <div class="row g-3">
     <div class="col-md-4">
         <label class="form-label">@DateLabel</label>
-        <SfDatePicker TValue="DateTime"
-                      Value="@Date"
-                      Format="d"
-                      Placeholder="@DatePlaceholder"
-                      CssClass="e-outline">
-            <DatePickerEvents TValue="DateTime" ValueChange="@HandleDateChange" />
-        </SfDatePicker>
+        <RadzenDatePicker TValue="DateTime" Value="@Date" DateFormat="d" Placeholder="@DatePlaceholder"
+                          Change="@HandleDateChange" class="w-100" />
     </div>
     <div class="col-md-8">
         <label class="form-label">@AssetLabel</label>
@@ -20,8 +13,7 @@
                            ValueChanged="@AssetNameChanged"
                            AllowManualAssetNameInput="@AllowManualAssetNameInput"
                            AssetCategoryFilter="@AssetCategoryFilter"
-                           Placeholder="@AssetPlaceholder"
-                           CssClass="e-outline" />
+                           Placeholder="@AssetPlaceholder" />
     </div>
 </div>
 
@@ -39,8 +31,11 @@
     [Parameter] public bool AllowManualAssetNameInput { get; set; } = true;
     [Parameter] public List<AssetCategoryType> AssetCategoryFilter { get; set; } = [];
 
-    private async Task HandleDateChange(Syncfusion.Blazor.Calendars.ChangedEventArgs<DateTime> args)
+    private async Task HandleDateChange(DateTime? value)
     {
-        await DateChanged.InvokeAsync(args.Value);
+        if (value.HasValue)
+        {
+            await DateChanged.InvokeAsync(value.Value);
+        }
     }
 }

@@ -1,7 +1,4 @@
 ﻿@using InvestmentTaxCalculator.Enumerations
-@using Syncfusion.Blazor.Calendars
-@using Syncfusion.Blazor.DropDowns
-@using Syncfusion.Blazor.Grids
 @using InvestmentTaxCalculator.Model
 @using ResidencyEnum = InvestmentTaxCalculator.Enumerations.ResidencyStatus
 @using InvestmentTaxCalculator.Services
@@ -16,7 +13,7 @@
             <div class="col-md-4">
                 <label class="form-label d-block">Start date</label>
                 <div class="d-flex align-items-center gap-2">
-                    <SfDatePicker TValue="DateTime" @bind-Value="StartDateTime" Format="dd-MMM-yyyy" Enabled="@( !StartUnbounded )"></SfDatePicker>
+                    <RadzenDatePicker TValue="DateTime" @bind-Value="StartDateTime" DateFormat="dd-MMM-yyyy" Disabled="@StartUnbounded" />
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox" id="startUnbounded" @bind="StartUnbounded" />
                         <label class="form-check-label" for="startUnbounded">Unbounded (Min)</label>
@@ -26,7 +23,7 @@
             <div class="col-md-4">
                 <label class="form-label d-block">End date</label>
                 <div class="d-flex align-items-center gap-2">
-                    <SfDatePicker TValue="DateTime" @bind-Value="EndDateTime" Format="dd-MMM-yyyy" Enabled="@( !EndUnbounded )"></SfDatePicker>
+                    <RadzenDatePicker TValue="DateTime" @bind-Value="EndDateTime" DateFormat="dd-MMM-yyyy" Disabled="@EndUnbounded" />
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox" id="endUnbounded" @bind="EndUnbounded" />
                         <label class="form-check-label" for="endUnbounded">Unbounded (Max)</label>
@@ -35,8 +32,8 @@
             </div>
             <div class="col-md-4">
                 <label class="form-label">Residency status</label>
-                <SfDropDownList TValue="ResidencyEnum" TItem="ResidencyEnum" DataSource="ResidencyOptions"
-                                @bind-Value="SelectedStatus" Placeholder="Select status"></SfDropDownList>
+                <RadzenDropDown TValue="ResidencyEnum" Data="ResidencyOptions"
+                                @bind-Value="SelectedStatus" Placeholder="Select status" class="w-100" />
             </div>
         </div>
 
@@ -70,14 +67,13 @@
         <hr />
 
         <h6>Configured ranges</h6>
-        <SfGrid TValue="ResidencyStatusRecord.RangeEntry" DataSource="@GetRanges()" AllowPaging="true" Width="100%">
-            <GridPageSettings PageSize="10"></GridPageSettings>
-            <GridColumns>
-                <GridColumn Field=@nameof(ResidencyStatusRecord.RangeEntry.Start) HeaderText="Start" Format="dd-MMM-yyyy" TextAlign="TextAlign.Center" Width="150"></GridColumn>
-                <GridColumn Field=@nameof(ResidencyStatusRecord.RangeEntry.End) HeaderText="End" Format="dd-MMM-yyyy" TextAlign="TextAlign.Center" Width="150"></GridColumn>
-                <GridColumn Field=@nameof(ResidencyStatusRecord.RangeEntry.Status) HeaderText="Residency" Width="220"></GridColumn>
-            </GridColumns>
-        </SfGrid>
+        <RadzenDataGrid TItem="ResidencyStatusRecord.RangeEntry" Data="@GetRanges()" AllowPaging="true" PageSize="10" AllowSorting="true" class="w-100">
+            <Columns>
+                <RadzenDataGridColumn TItem="ResidencyStatusRecord.RangeEntry" Property="@nameof(ResidencyStatusRecord.RangeEntry.Start)" Title="Start" FormatString="{0:dd-MMM-yyyy}" TextAlign="TextAlign.Center" Width="150px" />
+                <RadzenDataGridColumn TItem="ResidencyStatusRecord.RangeEntry" Property="@nameof(ResidencyStatusRecord.RangeEntry.End)" Title="End" FormatString="{0:dd-MMM-yyyy}" TextAlign="TextAlign.Center" Width="150px" />
+                <RadzenDataGridColumn TItem="ResidencyStatusRecord.RangeEntry" Property="@nameof(ResidencyStatusRecord.RangeEntry.Status)" Title="Residency" Width="220px" />
+            </Columns>
+        </RadzenDataGrid>
     </div>
 </div>
 
@@ -120,7 +116,7 @@
 </style>
 
 @code {
-    // bound DateTime values for Syncfusion pickers; convert to DateOnly when calling model
+    // bound DateTime values for the date pickers; convert to DateOnly when calling model
     private DateTime StartDateTime { get; set; } = DateTime.Today;
     private DateTime EndDateTime { get; set; } = DateTime.Today;
 

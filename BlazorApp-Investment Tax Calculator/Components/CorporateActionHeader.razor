@@ -2,18 +2,13 @@
 @using InvestmentTaxCalculator.Model.UkTaxModel
 @using InvestmentTaxCalculator.Services
 @using InvestmentTaxCalculator.Enumerations
-@using Syncfusion.Blazor.Calendars
-@using Syncfusion.Blazor.DropDowns
-@using Syncfusion.Blazor.Inputs
 
 @inject UkSection104Pools _ukSection104Pools
 
 <div class="row mb-3">
     <div class="col-md-6">
         <label class="form-label">Date</label>
-        <SfDatePicker TValue="DateTime" Value="@Date" Format="d">
-            <DatePickerEvents TValue="DateTime" ValueChange="@OnDateChangeInternal"></DatePickerEvents>
-        </SfDatePicker>
+        <RadzenDatePicker TValue="DateTime" Value="@Date" DateFormat="d" Change="@OnDateChangeInternal" class="w-100" />
     </div>
 </div>
 
@@ -50,9 +45,7 @@
     <div class="col-md-5">
         <div class="input-group">
             <span class="input-group-text">For every</span>
-            <SfNumericTextBox TValue="decimal" Value="@SourceRatio" Min="@RatioMin" Placeholder="Qty" Decimals="@RatioDecimals" Format="@RatioFormat">
-                <NumericTextBoxEvents TValue="decimal" ValueChange="@OnSourceRatioChangedInternal"></NumericTextBoxEvents>
-            </SfNumericTextBox>
+            <RadzenNumeric TValue="decimal" Value="@SourceRatio" Min="@RatioMin" Placeholder="Qty" Format="@RatioFormat" Change="@OnSourceRatioChangedInternal" />
             <span class="input-group-text">@SourceUnitLabel</span>
         </div>
     </div>
@@ -62,9 +55,7 @@
     <div class="col-md-5">
         <div class="input-group">
             <span class="input-group-text">Receive</span>
-            <SfNumericTextBox TValue="decimal" Value="@DestinationRatio" Min="@RatioMin" Placeholder="Qty" Decimals="@RatioDecimals" Format="@RatioFormat">
-                <NumericTextBoxEvents TValue="decimal" ValueChange="@OnDestinationRatioChangedInternal"></NumericTextBoxEvents>
-            </SfNumericTextBox>
+            <RadzenNumeric TValue="decimal" Value="@DestinationRatio" Min="@RatioMin" Placeholder="Qty" Format="@RatioFormat" Change="@OnDestinationRatioChangedInternal" />
             <span class="input-group-text">@DestinationUnitLabel</span>
         </div>
         @if (DestinationInfo != null)
@@ -128,11 +119,12 @@
         }
     }
 
-    private async Task OnDateChangeInternal(Syncfusion.Blazor.Calendars.ChangedEventArgs<DateTime> args)
+    private async Task OnDateChangeInternal(DateTime? value)
     {
-        Date = args.Value;
+        if (!value.HasValue) return;
+        Date = value.Value;
         CalculateStats();
-        await DateChanged.InvokeAsync(args.Value);
+        await DateChanged.InvokeAsync(value.Value);
         await OnInputsChanged.InvokeAsync();
     }
 
@@ -151,17 +143,17 @@
         await OnInputsChanged.InvokeAsync();
     }
 
-    private async Task OnSourceRatioChangedInternal(Syncfusion.Blazor.Inputs.ChangeEventArgs<decimal> args)
+    private async Task OnSourceRatioChangedInternal(decimal value)
     {
-        SourceRatio = args.Value;
-        await SourceRatioChanged.InvokeAsync(args.Value);
+        SourceRatio = value;
+        await SourceRatioChanged.InvokeAsync(value);
         await OnInputsChanged.InvokeAsync();
     }
 
-    private async Task OnDestinationRatioChangedInternal(Syncfusion.Blazor.Inputs.ChangeEventArgs<decimal> args)
+    private async Task OnDestinationRatioChangedInternal(decimal value)
     {
-        DestinationRatio = args.Value;
-        await DestinationRatioChanged.InvokeAsync(args.Value);
+        DestinationRatio = value;
+        await DestinationRatioChanged.InvokeAsync(value);
         await OnInputsChanged.InvokeAsync();
     }
 }

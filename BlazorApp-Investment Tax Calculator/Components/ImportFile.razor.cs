@@ -3,8 +3,7 @@ using InvestmentTaxCalculator.Parser;
 using InvestmentTaxCalculator.Services;
 
 using Microsoft.AspNetCore.Components;
-
-using Syncfusion.Blazor.Inputs;
+using Microsoft.AspNetCore.Components.Forms;
 
 namespace InvestmentTaxCalculator.Components;
 
@@ -24,17 +23,18 @@ public partial class ImportFile : IDisposable
         FileImportState.OnChange -= StateHasChanged;
     }
 
-    private async Task LoadFiles(UploadChangeEventArgs args)
+    private async Task LoadFiles(InputFileChangeEventArgs args)
     {
-        FileImportState.StartProcessing(args.Files.Count);
+        var files = args.GetMultipleFiles(maximumFileCount: 1000);
+        FileImportState.StartProcessing(files.Count);
 
         try
         {
-            foreach (var file in args.Files)
+            foreach (var file in files)
             {
                 try
                 {
-                    TaxEventLists events = await fileParseController.ReadFile(file.File);
+                    TaxEventLists events = await fileParseController.ReadFile(file);
                     ShowDividendRegionUnknownWarning(events);
                     ExecutionState executionState = await CheckDuplicateAndConfirm(events);
                     if (executionState is ExecutionState.SKIP_FILE) continue;
@@ -55,7 +55,6 @@ public partial class ImportFile : IDisposable
         finally
         {
             FileImportState.CompleteProcessing();
-            args.Files.Clear();
         }
     }
 

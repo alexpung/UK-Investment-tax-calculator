@@ -4,10 +4,6 @@
 @using InvestmentTaxCalculator.Model.Interfaces
 @using InvestmentTaxCalculator.Services
 @using InvestmentTaxCalculator.Enumerations
-@using Syncfusion.Blazor.Calendars
-@using Syncfusion.Blazor.DropDowns
-@using Syncfusion.Blazor.Inputs
-@using Syncfusion.Blazor.Buttons
 
 @inject UkSection104Pools Section104Pools
 @inject TaxEventLists TaxEventLists
@@ -36,10 +32,8 @@
             {
                 <div class="col-md-6 col-lg-4">
                     <label class="form-label">Select Income Event to Reduce</label>
-                    <SfDropDownList TValue="int?" TItem="IncomeEventVM" DataSource="@AvailableIncomeEvents" Value="@SelectedEventId" Placeholder="Select dividend/ERI" CssClass="e-outline">
-                        <DropDownListFieldSettings Text="DisplayText" Value="EventId"></DropDownListFieldSettings>
-                        <DropDownListEvents TValue="int?" TItem="IncomeEventVM" ValueChange="OnEventSelected"></DropDownListEvents>
-                    </SfDropDownList>
+                    <RadzenDropDown TValue="int?" Data="@AvailableIncomeEvents" TextProperty="DisplayText" ValueProperty="EventId"
+                                    Value="@SelectedEventId" Placeholder="Select dividend/ERI" Change="@OnEventSelected" class="w-100" />
                 </div>
 
                 @if (SelectedEventId.HasValue)
@@ -49,7 +43,7 @@
                     {
                         <div class="col-md-6 col-lg-3">
                             <label class="form-label">Equalisation Amount (@Currency)</label>
-                            <SfNumericTextBox TValue="decimal" @bind-Value="@EqualisationAmount" Decimals="2" Format="N2" CssClass="e-outline" ShowSpinButton="false" Min="0"></SfNumericTextBox>
+                            <RadzenNumeric TValue="decimal" @bind-Value="@EqualisationAmount" Format="N2" Min="0" class="w-100" />
                         </div>
 
                         <div class="col-md-6 col-lg-2">
@@ -63,7 +57,7 @@
                         </div>
 
                         <div class="col-12 mt-4 d-flex justify-content-center">
-                            <SfButton IsPrimary="true" OnClick="() => OnSubmit(selectedEvent)" CssClass="e-warning e-large text-dark">Add Equalisation</SfButton>
+                            <RadzenButton ButtonStyle="ButtonStyle.Warning" Size="ButtonSize.Large" Click="() => OnSubmit(selectedEvent)" Text="Add Equalisation" />
                         </div>
                     }
                 }
@@ -121,10 +115,10 @@
         return Task.CompletedTask;
     }
 
-    private void OnEventSelected(ChangeEventArgs<int?, IncomeEventVM> args)
+    private void OnEventSelected(object value)
     {
-        SelectedEventId = args.Value;
-        var selectedEvent = args.ItemData?.Event;
+        SelectedEventId = value as int?;
+        var selectedEvent = AvailableIncomeEvents.FirstOrDefault(e => e.EventId == SelectedEventId)?.Event;
         if (selectedEvent != null)
         {
             if (selectedEvent is Dividend d)

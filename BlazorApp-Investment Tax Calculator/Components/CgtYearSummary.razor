@@ -1,10 +1,8 @@
 @using InvestmentTaxCalculator.Model
-@using Syncfusion.Blazor.Grids
 @using InvestmentTaxCalculator.Services
 @inherits TaxCalculationRefreshComponentBase
 
 @inject TaxYearReportService _taxYearReportService
-@inject SfGridToolBarHandlingService _toolbarHandlingService
 
 <div class="bg-dark text-light">
     <div class="row my-4">
@@ -15,38 +13,29 @@
 
     <div class="row mt-3 me-3">
         <div class="col">
-            <SfGrid ID="TaxYearReportGrid" @ref="taxYearReportGrid" DataSource="@_taxYearReports"
-                    AllowPaging="true" AllowSorting="true" AllowPdfExport="true" AllowExcelExport="true" AllowResizing="true" AllowFiltering=true AllowTextWrap="true"
-                    Toolbar="@(new List<string>() { "PdfExport", "ExcelExport", "Print"})">
-                <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
-                <GridPageSettings PageSizes=@(new List<int>() {25, 50, 100}) PageSize="25"></GridPageSettings>
-                <GridEvents OnToolbarClick="ToolbarClickHandler" TValue="TaxYearCgtReport"></GridEvents>
-                <GridColumns>
-                    <GridColumn Field=@nameof(TaxYearCgtReport.TaxYear) HeaderText="Tax Year" TextAlign="TextAlign.Right"></GridColumn>
-                    <GridColumn Field=@nameof(TaxYearCgtReport.TotalGainInYear) HeaderText="Total Gain in Year" Format="C2" TextAlign="TextAlign.Right"></GridColumn>
-                    <GridColumn Field=@nameof(TaxYearCgtReport.TotalLossInYear) HeaderText="Total Loss in Year" Format="C2" TextAlign="TextAlign.Right"></GridColumn>
-                    <GridColumn Field=@nameof(TaxYearCgtReport.NetCapitalGain) HeaderText="Net Gain in Year" Format="C2" TextAlign="TextAlign.Right"></GridColumn>
-                    <GridColumn Field=@nameof(TaxYearCgtReport.CapitalGainAllowance) HeaderText="Capital Gain Allowance" Format="C2" TextAlign="TextAlign.Right"></GridColumn>
-                    <GridColumn Field=@nameof(TaxYearCgtReport.CgtAllowanceBroughtForwardAndUsed) HeaderText="CGT Allowance Brought Forward and Used" Format="C2" TextAlign="TextAlign.Right"></GridColumn>
-                    <GridColumn Field=@nameof(TaxYearCgtReport.TaxableGainAfterAllowanceAndLossOffset) HeaderText="Taxable Gain After Allowance and Loss Offset" Format="C2" TextAlign="TextAlign.Right"></GridColumn>
-                    <GridColumn Field=@nameof(TaxYearCgtReport.LossesAvailableToBroughtForward) HeaderText="Losses Available to Brought Forward" Format="C2" TextAlign="TextAlign.Right"></GridColumn>
-                </GridColumns>
-            </SfGrid>
+            <RadzenDataGrid @ref="taxYearReportGrid" TItem="TaxYearCgtReport" Data="@_taxYearReports"
+                            AllowPaging="true" PageSize="25" PageSizeOptions="@_pageSizeOptions"
+                            AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Advanced"
+                            AllowColumnResize="true" class="w-100">
+                <Columns>
+                    <RadzenDataGridColumn TItem="TaxYearCgtReport" Property="@nameof(TaxYearCgtReport.TaxYear)" Title="Tax Year" TextAlign="TextAlign.Right" FilterMode="FilterMode.CheckBoxList" />
+                    <RadzenDataGridColumn TItem="TaxYearCgtReport" Property="@nameof(TaxYearCgtReport.TotalGainInYear)" Title="Total Gain in Year" FormatString="{0:C2}" TextAlign="TextAlign.Right" />
+                    <RadzenDataGridColumn TItem="TaxYearCgtReport" Property="@nameof(TaxYearCgtReport.TotalLossInYear)" Title="Total Loss in Year" FormatString="{0:C2}" TextAlign="TextAlign.Right" />
+                    <RadzenDataGridColumn TItem="TaxYearCgtReport" Property="@nameof(TaxYearCgtReport.NetCapitalGain)" Title="Net Gain in Year" FormatString="{0:C2}" TextAlign="TextAlign.Right" />
+                    <RadzenDataGridColumn TItem="TaxYearCgtReport" Property="@nameof(TaxYearCgtReport.CapitalGainAllowance)" Title="Capital Gain Allowance" FormatString="{0:C2}" TextAlign="TextAlign.Right" />
+                    <RadzenDataGridColumn TItem="TaxYearCgtReport" Property="@nameof(TaxYearCgtReport.CgtAllowanceBroughtForwardAndUsed)" Title="CGT Allowance Brought Forward and Used" FormatString="{0:C2}" TextAlign="TextAlign.Right" />
+                    <RadzenDataGridColumn TItem="TaxYearCgtReport" Property="@nameof(TaxYearCgtReport.TaxableGainAfterAllowanceAndLossOffset)" Title="Taxable Gain After Allowance and Loss Offset" FormatString="{0:C2}" TextAlign="TextAlign.Right" />
+                    <RadzenDataGridColumn TItem="TaxYearCgtReport" Property="@nameof(TaxYearCgtReport.LossesAvailableToBroughtForward)" Title="Losses Available to Brought Forward" FormatString="{0:C2}" TextAlign="TextAlign.Right" />
+                </Columns>
+            </RadzenDataGrid>
         </div>
     </div>
 </div>
 
 @code {
-    private SfGrid<TaxYearCgtReport>? taxYearReportGrid;
+    private RadzenDataGrid<TaxYearCgtReport>? taxYearReportGrid;
     private List<TaxYearCgtReport> _taxYearReports = [];
-
-    public async Task ToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)
-    {
-        if (taxYearReportGrid != null)
-        {
-            await _toolbarHandlingService.ToolbarClickHandler(args, taxYearReportGrid);
-        }
-    }
+    private readonly int[] _pageSizeOptions = { 25, 50, 100 };
 
     protected override void RefreshData()
     {

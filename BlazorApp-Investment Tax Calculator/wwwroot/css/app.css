@@ -145,6 +145,36 @@
     color: var(--bs-secondary-color) !important;
 }
 
+/* ===================================
+   Radzen DataGrid optimisations for Full HD (1920x1080)
+   The grids have many columns (the Matching Details table has 13). By default
+   Radzen truncates header titles with "…" and keeps them on a single line,
+   which both hides the header text and forces columns to be very wide.
+   Letting the header text wrap onto multiple lines makes every header readable
+   and lets columns shrink to the width of their data, so the wide tables fit.
+   =================================== */
+
+/* Allow multi-line header titles instead of the "…" truncation */
+.rz-data-grid .rz-grid-table thead th,
+.rz-data-grid .rz-grid-table thead th .rz-column-title,
+.rz-data-grid .rz-grid-table thead th .rz-column-title-content {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+}
+
+/* Top-align and tidy the wrapped header text */
+.rz-data-grid .rz-grid-table thead th .rz-column-title {
+    align-items: flex-start;
+    line-height: 1.2;
+    overflow-wrap: break-word;
+}
+
+/* Denser typography recovers horizontal room for many-column tables */
+.rz-data-grid .rz-grid-table {
+    font-size: 0.8125rem;
+}
+
 /* Loading Screen Styles */
 .app-loading {
     min-height: 100vh;

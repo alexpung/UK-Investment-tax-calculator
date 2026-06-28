@@ -1,18 +1,14 @@
 @using InvestmentTaxCalculator.Model
 @using InvestmentTaxCalculator.Model.Interfaces
-@using Syncfusion.Blazor.DropDowns
-@using Syncfusion.Blazor.Grids
 @using InvestmentTaxCalculator.Model.TaxEvents
 @using InvestmentTaxCalculator.Model.UkTaxModel
 @using InvestmentTaxCalculator.Model.UkTaxModel.Stocks
-@using Syncfusion.Blazor.SplitButtons
 @using InvestmentTaxCalculator.Enumerations
 @using InvestmentTaxCalculator.Components
 @using InvestmentTaxCalculator.Services
 @inherits TaxCalculationRefreshComponentBase
 
 @inject TradeCalculationResult tradeCalculationResult
-@inject SfGridToolBarHandlingService _toolbarHandlingService
 
 <div class="bg-dark text-light">
     <div class="row my-4">
@@ -31,60 +27,42 @@
 
     <div class="row me-3">
         <div class="col">
-            <SfGrid ID="TradeMatchesGrid" @ref="tradeMatchesGrid" DataSource="@_tradeMatches"
-                    AllowPaging="true" AllowSorting="true" AllowPdfExport="true" AllowExcelExport="true" AllowResizing="true" AllowFiltering="true" AllowTextWrap="true"
-                    Toolbar="@(new List<string>() { "PdfExport", "ExcelExport", "Print" })">
-                <GridEditSettings AllowEditing="true"></GridEditSettings>
-                <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
-                <GridPageSettings PageSizes=@(new List<int>() {25, 50, 100}) PageSize="25"></GridPageSettings>
-                <GridEvents OnToolbarClick="ToolbarClickHandler" TValue="TradeMatch"></GridEvents>
-                <GridColumns>
-                    <GridColumn Field=@nameof(TradeMatch.PersistedId) Visible="false" IsPrimaryKey="true"></GridColumn>
-                    <GridColumn HeaderText="Disposal Date" Field=@nameof(TradeMatch.Date) AllowEditing="false"></GridColumn>
-                    <GridColumn Field=@nameof(TradeMatch.AssetCategoryType) HeaderText="Asset Type" AllowEditing="false">
-                        <Template>
-                            @{
-                                var data = (context as TradeMatch);
-                                var type = data?.MatchedSellTrade?.AssetCategoryType ?? data?.MatchedBuyTrade?.AssetCategoryType;
-                            }
-                            <span>@type?.GetDescription()</span>
+            <RadzenDataGrid @ref="tradeMatchesGrid" TItem="TradeMatch" Data="@_tradeMatches"
+                            AllowPaging="true" PageSize="25" PageSizeOptions="@_pageSizeOptions"
+                            AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Advanced"
+                            AllowColumnResize="true" class="w-100">
+                <Columns>
+                    <RadzenDataGridColumn TItem="TradeMatch" Property="@nameof(TradeMatch.Date)" Title="Disposal Date" />
+                    <RadzenDataGridColumn TItem="TradeMatch" Property="@nameof(TradeMatch.AssetTypeDescription)" Title="Asset Type" Sortable="false" FilterMode="FilterMode.CheckBoxList" />
+                    <RadzenDataGridColumn TItem="TradeMatch" Property="@nameof(TradeMatch.AssetName)" Title="Asset Name" FilterMode="FilterMode.CheckBoxList" />
+                    <RadzenDataGridColumn TItem="TradeMatch" Property="@nameof(TradeMatch.TradeMatchTypeDescription)" Title="Match Type" Sortable="false" FilterMode="FilterMode.CheckBoxList" />
+                    <RadzenDataGridColumn TItem="TradeMatch" Property="@nameof(TradeMatch.IsTaxable)" Title="Taxable" FilterMode="FilterMode.CheckBoxList" />
+                    <RadzenDataGridColumn TItem="TradeMatch" Title="Acquisition trade ID" Sortable="false">
+                        <Template Context="data">@data.MatchedBuyTrade?.Id</Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="TradeMatch" Title="Disposal trade ID" Sortable="false">
+                        <Template Context="data">@data.MatchedSellTrade?.Id</Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="TradeMatch" Property="@nameof(TradeMatch.MatchAcquisitionQty)" Title="Matched Acquisition Quantity" />
+                    <RadzenDataGridColumn TItem="TradeMatch" Property="@nameof(TradeMatch.MatchDisposalQty)" Title="Matched Disposal Quantity" />
+                    <RadzenDataGridColumn TItem="TradeMatch" Property="@nameof(TradeMatch.BaseCurrencyMatchDisposalProceed)" Title="Disposal Proceed" />
+                    <RadzenDataGridColumn TItem="TradeMatch" Property="@nameof(TradeMatch.BaseCurrencyMatchAllowableCost)" Title="Allowable Cost" />
+                    <RadzenDataGridColumn TItem="TradeMatch" Property="@nameof(TradeMatch.MatchGain)" Title="Gain" />
+                    <RadzenDataGridColumn TItem="TradeMatch" Property="@nameof(TradeMatch.AdditionalInformation)" Title="Additional Information" Width="320px">
+                        <Template Context="data">
+                            <RadzenTextBox @bind-Value="data.AdditionalInformation" class="w-100" />
                         </Template>
-                    </GridColumn>
-                    <GridColumn Field=@nameof(TradeMatch.AssetName) HeaderText="Asset Name" AllowEditing="false"></GridColumn>
-                    <GridColumn Field=@nameof(TradeMatch.TradeMatchType) HeaderText="Match Type" AllowEditing="false">
-                        <Template>
-                            @{
-                                var data = (context as TradeMatch);
-                            }
-                            <span>@data?.TradeMatchType.GetDescription()</span>
-                        </Template>
-                    </GridColumn>
-                    <GridColumn Field=@nameof(TradeMatch.IsTaxable) HeaderText="Taxable" AllowEditing="false"></GridColumn>
-                    <GridColumn Field="@(nameof(TradeMatch.MatchedBuyTrade) + "." + nameof(ITradeTaxCalculation.Id))" HeaderText="Acquisition trade ID" AllowEditing="false"></GridColumn>
-                    <GridColumn Field="@(nameof(TradeMatch.MatchedSellTrade) + "." + nameof(ITradeTaxCalculation.Id))" HeaderText="Disposal trade ID" AllowEditing="false"></GridColumn>
-                    <GridColumn Field=@nameof(TradeMatch.MatchAcquisitionQty) HeaderText="Matched Acquisition Quantity" AllowEditing="false"></GridColumn>
-                    <GridColumn Field=@nameof(TradeMatch.MatchDisposalQty) HeaderText="Matched Disposal Quantity" AllowEditing="false"></GridColumn>
-                    <GridColumn Field=@nameof(TradeMatch.BaseCurrencyMatchDisposalProceed) HeaderText="Disposal Proceed" AllowEditing="false"></GridColumn>
-                    <GridColumn Field=@nameof(TradeMatch.BaseCurrencyMatchAllowableCost) HeaderText="Allowable Cost" AllowEditing="false"></GridColumn>
-                    <GridColumn Field=@nameof(TradeMatch.MatchGain) HeaderText="Gain" AllowEditing="false"></GridColumn>
-                    <GridColumn Field=@nameof(TradeMatch.AdditionalInformation) HeaderText="Additional Information" AllowEditing="true"></GridColumn>
-                </GridColumns>
-            </SfGrid>
+                    </RadzenDataGridColumn>
+                </Columns>
+            </RadzenDataGrid>
         </div>
     </div>
 </div>
 
 @code {
-    private SfGrid<TradeMatch>? tradeMatchesGrid;
+    private RadzenDataGrid<TradeMatch>? tradeMatchesGrid;
     private List<TradeMatch> _tradeMatches = [];
-
-    public async Task ToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)
-    {
-        if (tradeMatchesGrid != null)
-        {
-            await _toolbarHandlingService.ToolbarClickHandler(args, tradeMatchesGrid);
-        }
-    }
+    private readonly int[] _pageSizeOptions = { 25, 50, 100 };
 
     protected override void RefreshData()
     {

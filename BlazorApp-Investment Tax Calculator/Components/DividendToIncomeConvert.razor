@@ -1,4 +1,3 @@
-@using Syncfusion.Blazor.Lists
 @using System.Linq
 @using InvestmentTaxCalculator.ViewModel
 @using InvestmentTaxCalculator.Model.TaxEvents
@@ -14,9 +13,16 @@
             form, any distribution or excess of reported income is treated as a payment of yearly interest</p>
         <p class="card-text"> You will need to run calculation again after conversion</p>
         <div class="mb-3" id="container">
-            <SfListView @ref="TickerList" TValue="Dividend" DataSource="@AvailableTickers" ShowCheckBox="true">
-                <ListViewFieldSettings TValue="Dividend" Id="Id" Text="AssetName"></ListViewFieldSettings>
-            </SfListView>
+            <div class="d-flex flex-wrap gap-3">
+                @foreach (var dividend in AvailableTickers)
+                {
+                    <div class="d-flex align-items-center" style="min-width:160px;">
+                        <RadzenCheckBox TValue="bool" Value="_selected.Contains(dividend.AssetName)"
+                                        Change="@(v => Toggle(dividend.AssetName, v))" Name="@($"chk_{dividend.Id}")" />
+                        <RadzenLabel Text="@dividend.AssetName" Component="@($"chk_{dividend.Id}")" class="ms-2" />
+                    </div>
+                }
+            </div>
         </div>
 
         <div class="d-flex gap-2">
@@ -77,20 +83,25 @@
 </style>
 
 @code {
-    public SfListView<Dividend> TickerList = new();
+    private readonly HashSet<string> _selected = new(StringComparer.OrdinalIgnoreCase);
 
     private IEnumerable<Dividend> AvailableTickers => _dividendToIncomeViewModel.SelectableTickers;
 
+    private void Toggle(string assetName, bool isChecked)
+    {
+        if (isChecked) _selected.Add(assetName);
+        else _selected.Remove(assetName);
+    }
+
     private async Task ConvertSelected()
     {
-        if (!_dividendToIncomeViewModel.SelectableTickers.Any()) return;
+        if (!_dividendToIncomeViewModel.SelectableTickers.Any() || _selected.Count == 0) return;
         try
         {
-            var items = await TickerList.GetCheckedItemsAsync();
-            HashSet<string> selectedTickers = items.Data.Select(i => i.AssetName).ToHashSet();
+            HashSet<string> selectedTickers = _selected.ToHashSet(StringComparer.OrdinalIgnoreCase);
             _dividendToIncomeViewModel.ConvertDividendsToIncome(selectedTickers);
-            _toastService.ShowInformation($"Converted {selectedTickers.Count()} ticker(s).");
-            await TickerList.UncheckItemsAsync();
+            _toastService.ShowInformation($"Converted {selectedTickers.Count} ticker(s).");
+            _selected.Clear();
 
             // notify UI and other components (they bind to shared TaxEventLists)
             await InvokeAsync(StateHasChanged);
@@ -101,5 +112,5 @@
         }
     }
 
-    private async Task ClearSelection() => await TickerList.UncheckItemsAsync();
+    private void ClearSelection() => _selected.Clear();
 }

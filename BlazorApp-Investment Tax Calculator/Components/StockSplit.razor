@@ -3,11 +3,6 @@
 @using InvestmentTaxCalculator.Model.UkTaxModel
 @using InvestmentTaxCalculator.Services
 @using InvestmentTaxCalculator.Model.Interfaces
-@using Syncfusion.Blazor.Calendars
-@using Syncfusion.Blazor.DropDowns
-@using Syncfusion.Blazor.Inputs
-@using Syncfusion.Blazor.Buttons
-@using Syncfusion.Blazor.Notifications
 @using InvestmentTaxCalculator.Enumerations
 @using StockSplitAction = InvestmentTaxCalculator.Model.TaxEvents.StockSplit
 
@@ -21,7 +16,7 @@
         <h3>@(_isEditing ? "Edit" : "Record") Stock Split / Reverse Split</h3>
         @if (_isEditing)
         {
-            <SfButton CssClass="e-flat e-small" OnClick="CancelEdit">Cancel Edit</SfButton>
+            <RadzenButton Variant="Variant.Text" Size="ButtonSize.Small" Click="CancelEdit" Text="Cancel Edit" />
         }
     </div>
     <div class="card-body">
@@ -54,7 +49,8 @@
 
             <div class="row mb-3">
                  <div class="col-12">
-                     <SfCheckBox Label="Cash-in-lieu received (for fractional shares)" @bind-Checked="@_hasCash"></SfCheckBox>
+                     <RadzenCheckBox TValue="bool" @bind-Value="@_hasCash" Name="hasCashSplit" />
+                     <RadzenLabel Text="Cash-in-lieu received (for fractional shares)" Component="hasCashSplit" class="ms-2" />
                  </div>
             </div>
 
@@ -81,7 +77,7 @@
 
             <div class="row">
                 <div class="col-12">
-                    <SfButton IsPrimary="true" OnClick="Submit">@(_isEditing ? "Update" : "Add") Stock Split</SfButton>
+                    <RadzenButton ButtonStyle="ButtonStyle.Primary" Click="Submit" Text="@($"{(_isEditing ? "Update" : "Add")} Stock Split")" />
                 </div>
             </div>
         }

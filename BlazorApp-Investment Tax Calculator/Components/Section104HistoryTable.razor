@@ -1,18 +1,14 @@
 @using InvestmentTaxCalculator.Model
 @using InvestmentTaxCalculator.ViewModel
 @using InvestmentTaxCalculator.Model.Interfaces
-@using Syncfusion.Blazor.DropDowns
-@using Syncfusion.Blazor.Grids
 @using InvestmentTaxCalculator.Model.TaxEvents
 @using InvestmentTaxCalculator.Model.UkTaxModel
-@using Syncfusion.Blazor.SplitButtons
 @using InvestmentTaxCalculator.Enumerations
 @using InvestmentTaxCalculator.Components
 @using InvestmentTaxCalculator.Services
 @inherits TaxCalculationRefreshComponentBase
 
 @inject UkSection104Pools section104Pools
-@inject SfGridToolBarHandlingService _toolbarHandlingService
 
 <div class="bg-dark text-light">
     <div class="row my-4">
@@ -22,44 +18,34 @@
     </div>
     <div class="row me-3">
         <div class="col">
-            <SfGrid ID="Section104HistoryGrid" @ref="section104HistoryGrid" DataSource="@_section104HistoryViewModels"
-                    AllowPaging="true" AllowSorting="true" AllowPdfExport="true" AllowExcelExport="true" AllowResizing="true" AllowFiltering="true" AllowTextWrap="true"
-                    Toolbar="@(new List<string>() { "PdfExport", "ExcelExport", "Print" })">
-                <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
-                <GridPageSettings PageSizes=@(new List<int>() {25, 50, 100}) PageSize="25"></GridPageSettings>
-                <GridEvents OnToolbarClick="ToolbarClickHandler" TValue="Section104HistoryViewModel"></GridEvents>
-                <GridColumns>
-                    <GridColumn Field=@nameof(Section104HistoryViewModel.AssetName) HeaderText="Asset Name"></GridColumn>
-                    <GridColumn Field=@nameof(Section104HistoryViewModel.TradeId) HeaderText="Trade ID"></GridColumn>
-                    <GridColumn Field=@nameof(Section104HistoryViewModel.Date) HeaderText="Date" Format="d"></GridColumn>
-                    <GridColumn Field=@nameof(Section104HistoryViewModel.OldQuantity) HeaderText="Old Quantity"></GridColumn>
-                    <GridColumn Field=@nameof(Section104HistoryViewModel.QuantityChange) HeaderText="Quantity Change"></GridColumn>
-                    <GridColumn Field=@nameof(Section104HistoryViewModel.NewQuantity) HeaderText="New Quantity"></GridColumn>
-                    <GridColumn Field=@nameof(Section104HistoryViewModel.OldValue) HeaderText="Old Value"></GridColumn>
-                    <GridColumn Field=@nameof(Section104HistoryViewModel.ValueChange) HeaderText="Value Change"></GridColumn>
-                    <GridColumn Field=@nameof(Section104HistoryViewModel.NewValue) HeaderText="New Value"></GridColumn>
-                    <GridColumn Field=@nameof(Section104HistoryViewModel.OldContractValue) HeaderText="Old Contract Value"></GridColumn>
-                    <GridColumn Field=@nameof(Section104HistoryViewModel.ContractValueChange) HeaderText="Contract Value Change"></GridColumn>
-                    <GridColumn Field=@nameof(Section104HistoryViewModel.NewContractValue) HeaderText="New Contract Value"></GridColumn>
-                    <GridColumn Field=@nameof(Section104HistoryViewModel.Explaination) HeaderText="Explaination"></GridColumn>
-                </GridColumns>
-            </SfGrid>
+            <RadzenDataGrid @ref="section104HistoryGrid" TItem="Section104HistoryViewModel" Data="@_section104HistoryViewModels"
+                            AllowPaging="true" PageSize="25" PageSizeOptions="@_pageSizeOptions"
+                            AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Advanced"
+                            AllowColumnResize="true" class="w-100">
+                <Columns>
+                    <RadzenDataGridColumn TItem="Section104HistoryViewModel" Property="@nameof(Section104HistoryViewModel.AssetName)" Title="Asset Name" FilterMode="FilterMode.CheckBoxList" />
+                    <RadzenDataGridColumn TItem="Section104HistoryViewModel" Property="@nameof(Section104HistoryViewModel.TradeId)" Title="Trade ID" />
+                    <RadzenDataGridColumn TItem="Section104HistoryViewModel" Property="@nameof(Section104HistoryViewModel.Date)" Title="Date" FormatString="{0:d}" />
+                    <RadzenDataGridColumn TItem="Section104HistoryViewModel" Property="@nameof(Section104HistoryViewModel.OldQuantity)" Title="Old Quantity" />
+                    <RadzenDataGridColumn TItem="Section104HistoryViewModel" Property="@nameof(Section104HistoryViewModel.QuantityChange)" Title="Quantity Change" />
+                    <RadzenDataGridColumn TItem="Section104HistoryViewModel" Property="@nameof(Section104HistoryViewModel.NewQuantity)" Title="New Quantity" />
+                    <RadzenDataGridColumn TItem="Section104HistoryViewModel" Property="@nameof(Section104HistoryViewModel.OldValue)" Title="Old Value" />
+                    <RadzenDataGridColumn TItem="Section104HistoryViewModel" Property="@nameof(Section104HistoryViewModel.ValueChange)" Title="Value Change" />
+                    <RadzenDataGridColumn TItem="Section104HistoryViewModel" Property="@nameof(Section104HistoryViewModel.NewValue)" Title="New Value" />
+                    <RadzenDataGridColumn TItem="Section104HistoryViewModel" Property="@nameof(Section104HistoryViewModel.OldContractValue)" Title="Old Contract Value" />
+                    <RadzenDataGridColumn TItem="Section104HistoryViewModel" Property="@nameof(Section104HistoryViewModel.ContractValueChange)" Title="Contract Value Change" />
+                    <RadzenDataGridColumn TItem="Section104HistoryViewModel" Property="@nameof(Section104HistoryViewModel.NewContractValue)" Title="New Contract Value" />
+                    <RadzenDataGridColumn TItem="Section104HistoryViewModel" Property="@nameof(Section104HistoryViewModel.Explaination)" Title="Explaination" />
+                </Columns>
+            </RadzenDataGrid>
         </div>
     </div>
 </div>
 
-
 @code {
-    private SfGrid<Section104HistoryViewModel>? section104HistoryGrid;
+    private RadzenDataGrid<Section104HistoryViewModel>? section104HistoryGrid;
     private List<Section104HistoryViewModel> _section104HistoryViewModels = [];
-
-    public async Task ToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)
-    {
-        if (section104HistoryGrid != null)
-        {
-            await _toolbarHandlingService.ToolbarClickHandler(args, section104HistoryGrid);
-        }
-    }
+    private readonly int[] _pageSizeOptions = { 25, 50, 100 };
 
     protected override void RefreshData()
     {
@@ -72,6 +58,3 @@
 
     protected override Task RefreshRenderedGridsAsync() => RefreshGridAsync(section104HistoryGrid);
 }
-
-
-

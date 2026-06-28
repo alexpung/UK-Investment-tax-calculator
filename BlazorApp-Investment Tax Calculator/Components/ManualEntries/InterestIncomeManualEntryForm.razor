@@ -2,9 +2,6 @@
 @using InvestmentTaxCalculator.Model
 @using InvestmentTaxCalculator.Model.TaxEvents
 @using InvestmentTaxCalculator.Services
-@using Syncfusion.Blazor.Buttons
-@using Syncfusion.Blazor.DropDowns
-@using Syncfusion.Blazor.Inputs
 
 @inject TaxEventLists TaxEventLists
 @inject CurrencyService CurrencyService
@@ -25,19 +22,15 @@
         <div class="row g-3 mt-1">
             <div class="col-md-4">
                 <label class="form-label">Interest Type</label>
-                <SfDropDownList TValue="InterestType" TItem="EnumDescriptionPair<InterestType>" DataSource="@_interestTypes" @bind-Value="@_interestType" CssClass="e-outline e-small">
-                    <DropDownListFieldSettings Text="Description" Value="EnumValue"></DropDownListFieldSettings>
-                </SfDropDownList>
+                <RadzenDropDown TValue="InterestType" Data="@_interestTypes" TextProperty="Description" ValueProperty="EnumValue" @bind-Value="@_interestType" class="w-100" />
             </div>
             <div class="col-md-4">
                 <label class="form-label">Income Location</label>
-                <SfDropDownList TValue="string" TItem="CountryCodeOption" DataSource="@_countryCodes" @bind-Value="@_incomeLocationCode" CssClass="e-outline e-small" PopupHeight="260px" AllowFiltering="true" Placeholder="Select country">
-                    <DropDownListFieldSettings Text="Display" Value="ThreeDigitCode"></DropDownListFieldSettings>
-                </SfDropDownList>
+                <RadzenDropDown TValue="string" Data="@_countryCodes" TextProperty="Display" ValueProperty="ThreeDigitCode" @bind-Value="@_incomeLocationCode" AllowFiltering="true" Placeholder="Select country" class="w-100" />
             </div>
             <div class="col-md-4">
                 <label class="form-label">ISIN (optional)</label>
-                <SfTextBox @bind-Value="@_isin" Placeholder="Optional ISIN" FloatLabelType="FloatLabelType.Never"></SfTextBox>
+                <RadzenTextBox @bind-Value="@_isin" Placeholder="Optional ISIN" class="w-100" />
             </div>
 
             @if (IsAccruedIncomeType)
@@ -54,7 +47,7 @@
 
             <div class="col-md-8">
                 <label class="form-label">Description</label>
-                <SfTextBox @bind-Value="@_description" Placeholder="Optional note" FloatLabelType="FloatLabelType.Never"></SfTextBox>
+                <RadzenTextBox @bind-Value="@_description" Placeholder="Optional note" class="w-100" />
             </div>
         </div>
 
@@ -78,7 +71,7 @@
         }
 
         <div class="col-12 mt-4 d-flex justify-content-center">
-            <SfButton IsPrimary="true" OnClick="@AddEntry" CssClass="e-primary e-large">@(IsEditing ? "Update Interest Income" : "Add Interest Income")</SfButton>
+            <RadzenButton Click="@AddEntry" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Large" Text="@(IsEditing ? "Update Interest Income" : "Add Interest Income")" />
         </div>
     </div>
 </div>

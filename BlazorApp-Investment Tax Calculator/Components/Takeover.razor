@@ -3,11 +3,6 @@
 @using InvestmentTaxCalculator.Model.UkTaxModel
 @using InvestmentTaxCalculator.Services
 @using InvestmentTaxCalculator.Model.Interfaces
-@using Syncfusion.Blazor.Calendars
-@using Syncfusion.Blazor.DropDowns
-@using Syncfusion.Blazor.Inputs
-@using Syncfusion.Blazor.Buttons
-@using Syncfusion.Blazor.Notifications
 @using InvestmentTaxCalculator.Enumerations
 
 @inject UkSection104Pools _ukSection104Pools
@@ -20,7 +15,7 @@
         <h3>@(_isEditing ? "Edit" : "Record") Takeover / Merger</h3>
         @if (_isEditing)
         {
-            <SfButton CssClass="e-flat e-small" OnClick="CancelEdit">Cancel Edit</SfButton>
+            <RadzenButton Variant="Variant.Text" Size="ButtonSize.Small" Click="CancelEdit" Text="Cancel Edit" />
         }
     </div>
     <div class="card-body">
@@ -35,10 +30,12 @@
             <div class="row mb-3">
                 <div class="col-md-6 offset-md-6">
                     <label class="form-label">Type</label>
-                    <div class="d-flex gap-3">
-                         <SfRadioButton Label="Share for Share" Name="takeoverType" Value="ShareForShare" @bind-Checked="@_takeoverType" TChecked="string"></SfRadioButton>
-                         <SfRadioButton Label="Share + Cash" Name="takeoverType" Value="SharePlusCash" @bind-Checked="@_takeoverType" TChecked="string"></SfRadioButton>
-                    </div>
+                    <RadzenRadioButtonList @bind-Value="@_takeoverType" TValue="string" class="d-flex gap-3">
+                        <Items>
+                            <RadzenRadioButtonListItem Text="Share for Share" Value="@("ShareForShare")" />
+                            <RadzenRadioButtonListItem Text="Share + Cash" Value="@("SharePlusCash")" />
+                        </Items>
+                    </RadzenRadioButtonList>
                 </div>
             </div>
 
@@ -74,17 +71,15 @@
                         <div class="row mb-3">
                             <div class="col-md-4">
                                 <label class="form-label">Total Market Value of New Share Holding</label>
-                                <SfNumericTextBox TValue="decimal" @bind-Value="@_newShareMv" Min="0" Placeholder="Amount"></SfNumericTextBox>
+                                <RadzenNumeric TValue="decimal" @bind-Value="@_newShareMv" Min="0" Placeholder="Amount" class="w-100" />
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">Currency</label>
-                                <SfDropDownList TValue="string" TItem="CurrencyViewModel" Placeholder="Currency" DataSource="@_currencies" @bind-Value="@_newShareMvCurrency">
-                                    <DropDownListFieldSettings Text="Display" Value="Code"></DropDownListFieldSettings>
-                                </SfDropDownList>
+                                <RadzenDropDown TValue="string" Placeholder="Currency" Data="@_currencies" TextProperty="Display" ValueProperty="Code" @bind-Value="@_newShareMvCurrency" AllowFiltering="true" class="w-100" />
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">FX Rate (to GBP)</label>
-                                <SfNumericTextBox TValue="decimal" @bind-Value="@_newShareMvFx" Decimals="4" Format="n4" Min="0.000001m"></SfNumericTextBox>
+                                <RadzenNumeric TValue="decimal" @bind-Value="@_newShareMvFx" Format="n4" Min="0.000001m" class="w-100" />
                             </div>
                         </div>
                     </ChildContent>
@@ -93,7 +88,7 @@
 
             <div class="row">
                 <div class="col-12">
-                    <SfButton IsPrimary="true" OnClick="Submit">@(_isEditing ? "Update" : "Add") Takeover Action</SfButton>
+                    <RadzenButton ButtonStyle="ButtonStyle.Primary" Click="Submit" Text="@($"{(_isEditing ? "Update" : "Add")} Takeover Action")" />
                 </div>
             </div>
         }

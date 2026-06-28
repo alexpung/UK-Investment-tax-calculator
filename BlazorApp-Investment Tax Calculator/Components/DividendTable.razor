@@ -2,14 +2,12 @@
 @using InvestmentTaxCalculator.ViewModel
 @using InvestmentTaxCalculator.Model.TaxEvents
 @using InvestmentTaxCalculator.Model.Interfaces
-@using Syncfusion.Blazor.Grids
 @using InvestmentTaxCalculator.Enumerations
 @using System.Globalization
 @using InvestmentTaxCalculator.Services
 @inherits TaxCalculationRefreshComponentBase
 
 @inject IDividendLists _dividendList
-@inject SfGridToolBarHandlingService _toolbarHandlingService
 
 <div class="bg-dark text-light">
     <div class="row my-4">
@@ -20,40 +18,30 @@
 
     <div class="row mt-3 me-3">
         <div class="col">
-            <SfGrid ID="ImportedDividendGrid" @ref="importedDividendGrid" DataSource="@_dividendViewModels"
-                    AllowPaging="true" AllowSorting="true" AllowPdfExport="true" AllowExcelExport="true" AllowResizing="true" AllowFiltering=true AllowTextWrap="true"
-                    Toolbar="@(new List<string>() { "PdfExport", "ExcelExport", "Print"})">
-                <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
-                <GridPageSettings PageSizes=@(new List<int>() {25, 50, 100}) PageSize="25"></GridPageSettings>
-                <GridEvents OnToolbarClick="ToolbarClickHandler" TValue="DividendViewModel"></GridEvents>
-                <GridColumns>
-                    <GridColumn Field=@nameof(DividendViewModel.Date) HeaderText="Date" Format="d"></GridColumn>
-                    <GridColumn Field=@nameof(DividendViewModel.DividendType) HeaderText="Dividend/Withholding Tax"></GridColumn>
-                    <GridColumn Field=@nameof(DividendViewModel.AssetName) HeaderText="Asset Name"></GridColumn>
-                    <GridColumn Field=@nameof(DividendViewModel.CompanyLocaton) HeaderText="Company Location"></GridColumn>
-                    <GridColumn Field=@nameof(DividendViewModel.SterlingAmount) HeaderText="Sterling Amount"></GridColumn>
-                    <GridColumn Field=@nameof(DividendViewModel.Currency) HeaderText="Currency"></GridColumn>
-                    <GridColumn Field=@nameof(DividendViewModel.LocalCurrencyAmount) HeaderText="Local Currency Amount"></GridColumn>
-                    <GridColumn Field=@nameof(DividendViewModel.ExchangeRate) HeaderText="Exchange Rate"></GridColumn>
-                    <GridColumn Field=@nameof(DividendViewModel.Description) HeaderText="Description"></GridColumn>
-                </GridColumns>
-            </SfGrid>
+            <RadzenDataGrid @ref="importedDividendGrid" TItem="DividendViewModel" Data="@_dividendViewModels"
+                            AllowPaging="true" PageSize="25" PageSizeOptions="@_pageSizeOptions"
+                            AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Advanced"
+                            AllowColumnResize="true" class="w-100">
+                <Columns>
+                    <RadzenDataGridColumn TItem="DividendViewModel" Property="@nameof(DividendViewModel.Date)" Title="Date" FormatString="{0:d}" />
+                    <RadzenDataGridColumn TItem="DividendViewModel" Property="@nameof(DividendViewModel.DividendType)" Title="Dividend/Withholding Tax" FilterMode="FilterMode.CheckBoxList" />
+                    <RadzenDataGridColumn TItem="DividendViewModel" Property="@nameof(DividendViewModel.AssetName)" Title="Asset Name" FilterMode="FilterMode.CheckBoxList" />
+                    <RadzenDataGridColumn TItem="DividendViewModel" Property="@nameof(DividendViewModel.CompanyLocaton)" Title="Company Location" FilterMode="FilterMode.CheckBoxList" />
+                    <RadzenDataGridColumn TItem="DividendViewModel" Property="@nameof(DividendViewModel.SterlingAmount)" Title="Sterling Amount" />
+                    <RadzenDataGridColumn TItem="DividendViewModel" Property="@nameof(DividendViewModel.Currency)" Title="Currency" FilterMode="FilterMode.CheckBoxList" />
+                    <RadzenDataGridColumn TItem="DividendViewModel" Property="@nameof(DividendViewModel.LocalCurrencyAmount)" Title="Local Currency Amount" />
+                    <RadzenDataGridColumn TItem="DividendViewModel" Property="@nameof(DividendViewModel.ExchangeRate)" Title="Exchange Rate" />
+                    <RadzenDataGridColumn TItem="DividendViewModel" Property="@nameof(DividendViewModel.Description)" Title="Description" />
+                </Columns>
+            </RadzenDataGrid>
         </div>
     </div>
 </div>
 
-
 @code {
-    private SfGrid<DividendViewModel>? importedDividendGrid;
+    private RadzenDataGrid<DividendViewModel>? importedDividendGrid;
     private List<DividendViewModel> _dividendViewModels = [];
-
-    public async Task ToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)
-    {
-        if (importedDividendGrid != null)
-        {
-            await _toolbarHandlingService.ToolbarClickHandler(args, importedDividendGrid);
-        }
-    }
+    private readonly int[] _pageSizeOptions = { 25, 50, 100 };
 
     protected override void RefreshData()
     {
