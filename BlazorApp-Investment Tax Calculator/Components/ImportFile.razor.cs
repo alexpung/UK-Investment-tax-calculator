@@ -3,8 +3,7 @@ using InvestmentTaxCalculator.Parser;
 using InvestmentTaxCalculator.Services;
 
 using Microsoft.AspNetCore.Components;
-
-using Syncfusion.Blazor.Inputs;
+using Microsoft.AspNetCore.Components.Forms;
 
 namespace InvestmentTaxCalculator.Components;
 
@@ -24,17 +23,26 @@ public partial class ImportFile : IDisposable
         FileImportState.OnChange -= StateHasChanged;
     }
 
-    private async Task LoadFiles(UploadChangeEventArgs args)
+    private const int MaxImportFileCount = 1000;
+
+    private async Task LoadFiles(InputFileChangeEventArgs args)
     {
-        FileImportState.StartProcessing(args.Files.Count);
+        if (args.FileCount > MaxImportFileCount)
+        {
+            toastService.ShowError($"Too many files selected ({args.FileCount}). Please import at most {MaxImportFileCount} files at a time.");
+            return;
+        }
+
+        var files = args.GetMultipleFiles(maximumFileCount: MaxImportFileCount);
+        FileImportState.StartProcessing(files.Count);
 
         try
         {
-            foreach (var file in args.Files)
+            foreach (var file in files)
             {
                 try
                 {
-                    TaxEventLists events = await fileParseController.ReadFile(file.File);
+                    TaxEventLists events = await fileParseController.ReadFile(file);
                     ShowDividendRegionUnknownWarning(events);
                     ExecutionState executionState = await CheckDuplicateAndConfirm(events);
                     if (executionState is ExecutionState.SKIP_FILE) continue;
@@ -55,7 +63,6 @@ public partial class ImportFile : IDisposable
         finally
         {
             FileImportState.CompleteProcessing();
-            args.Files.Clear();
         }
     }
 
@@ -64,11 +71,10 @@ public partial class ImportFile : IDisposable
         var dividendWithUnknownRegions = events.Dividends.Where(x => x.CompanyLocation == CountryCode.UnknownRegion);
         foreach (var dividend in dividendWithUnknownRegions)
         {
-            string encodedAssetName = System.Net.WebUtility.HtmlEncode(dividend.AssetName);
-            string encodedDescription = System.Net.WebUtility.HtmlEncode(dividend.Proceed.Description);
-
-            toastService.ShowWarning($"Unknown region detected with dividend data with:<br> date: {dividend.Date.Date:d}<br>" +
-                $"company: {encodedAssetName}<br>description: {encodedDescription}<br> Please check the country for the company manually.");
+            // Plain text with line breaks; the toast renders Detail as escaped text, so the
+            // asset name/description below are shown safely without manual HTML encoding.
+            toastService.ShowWarning($"Unknown region detected with dividend data with:\n date: {dividend.Date.Date:d}\n" +
+                $"company: {dividend.AssetName}\ndescription: {dividend.Proceed.Description}\n Please check the country for the company manually.");
         }
     }
 

@@ -1,5 +1,4 @@
-﻿@using Syncfusion.Blazor.Buttons
-@using Microsoft.JSInterop;
+﻿@using Microsoft.JSInterop;
 @using Services
 
 @inject IJSRuntime JS
@@ -18,19 +17,16 @@
         
         <div class="row g-3 mb-4">
             <div class="col-md-4">
-                <SfButton @onclick="InvokeExportDividend" CssClass="btn btn-primary w-100">
-                    Export Dividends/Interest Income
-                </SfButton>
+                <RadzenButton Click="InvokeExportDividend" ButtonStyle="ButtonStyle.Primary" class="w-100"
+                              Text="Export Dividends/Interest Income" />
             </div>
             <div class="col-md-4">
-                <SfButton @onclick="InvokeExportTrades" CssClass="btn btn-primary w-100">
-                    Export Trades
-                </SfButton>
+                <RadzenButton Click="InvokeExportTrades" ButtonStyle="ButtonStyle.Primary" class="w-100"
+                              Text="Export Trades" />
             </div>
             <div class="col-md-4">
-                <SfButton @onclick="InvokeExportSection104" CssClass="btn btn-primary w-100">
-                    Export Section104
-                </SfButton>
+                <RadzenButton Click="InvokeExportSection104" ButtonStyle="ButtonStyle.Primary" class="w-100"
+                              Text="Export Section104" />
             </div>
         </div>
 
@@ -47,9 +43,8 @@
 
         <div class="row g-3">
             <div class="col-md-4">
-                <SfButton @onclick="InvokeExportTaxEvents" CssClass="btn btn-success w-100">
-                    Export data for future import
-                </SfButton>
+                <RadzenButton Click="InvokeExportTaxEvents" ButtonStyle="ButtonStyle.Success" class="w-100"
+                              Text="Export data for future import" />
             </div>
         </div>
     </div>

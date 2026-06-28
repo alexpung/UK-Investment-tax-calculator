@@ -26,6 +26,10 @@ public record TradeMatch : ITextFilePrintable
     public AssetCategoryType? AssetCategoryType => MatchedSellTrade?.AssetCategoryType ?? MatchedBuyTrade?.AssetCategoryType;
     public TaxableStatus IsTaxable { get; init; }
 
+    // Friendly text projections used for display and check-box list filtering in the matching details grid.
+    public string AssetTypeDescription => AssetCategoryType?.GetDescription() ?? string.Empty;
+    public string TradeMatchTypeDescription => TradeMatchType.GetDescription();
+
     public virtual string PrintToTextFile()
     {
         StringBuilder output = new();

@@ -3,10 +3,6 @@
 @using InvestmentTaxCalculator.Model
 @using InvestmentTaxCalculator.Model.TaxEvents
 @using InvestmentTaxCalculator.Services
-@using Syncfusion.Blazor.Buttons
-@using Syncfusion.Blazor.Calendars
-@using Syncfusion.Blazor.DropDowns
-@using Syncfusion.Blazor.Inputs
 
 @inject TaxEventLists TaxEventLists
 @inject CurrencyService CurrencyService
@@ -20,27 +16,23 @@
         <div class="row g-3">
             <div class="col-md-3">
                 <label class="form-label">Date</label>
-                <SfDatePicker TValue="DateTime" @bind-Value="@_date" Format="d" CssClass="e-outline e-small"></SfDatePicker>
+                <RadzenDatePicker TValue="DateTime" @bind-Value="@_date" DateFormat="d" class="w-100" />
             </div>
             <div class="col-md-3">
                 <label class="form-label">FX Asset Name</label>
-                <SfDropDownList TValue="string" TItem="CurrencyViewModel" DataSource="@_currencies" @bind-Value="@_assetCurrency" CssClass="e-outline e-small" PopupHeight="260px">
-                    <DropDownListFieldSettings Text="Code" Value="Code"></DropDownListFieldSettings>
-                </SfDropDownList>
+                <RadzenDropDown TValue="string" Data="@_currencies" TextProperty="Code" ValueProperty="Code" @bind-Value="@_assetCurrency" AllowFiltering="true" class="w-100" />
             </div>
             <div class="col-md-3">
                 <label class="form-label">Trade Type</label>
-                <SfDropDownList TValue="TradeType" TItem="EnumDescriptionPair<TradeType>" DataSource="@_tradeTypes" @bind-Value="@_tradeType" CssClass="e-outline e-small">
-                    <DropDownListFieldSettings Text="Description" Value="EnumValue"></DropDownListFieldSettings>
-                </SfDropDownList>
+                <RadzenDropDown TValue="TradeType" Data="@_tradeTypes" TextProperty="Description" ValueProperty="EnumValue" @bind-Value="@_tradeType" class="w-100" />
             </div>
             <div class="col-md-3">
                 <label class="form-label">Quantity</label>
-                <SfNumericTextBox TValue="decimal" @bind-Value="@_quantity" Min="0" Decimals="8" Format="0.########" ShowSpinButton="false" CssClass="e-outline e-small"></SfNumericTextBox>
+                <RadzenNumeric TValue="decimal" @bind-Value="@_quantity" Min="0" class="w-100" />
             </div>
             <div class="col-md-6">
                 <label class="form-label">Description</label>
-                <SfTextBox @bind-Value="@_description" Placeholder="Optional note" FloatLabelType="FloatLabelType.Never"></SfTextBox>
+                <RadzenTextBox @bind-Value="@_description" Placeholder="Optional note" class="w-100" />
             </div>
         </div>
 
@@ -72,7 +64,7 @@
         }
 
         <div class="col-12 mt-4 d-flex justify-content-center">
-            <SfButton IsPrimary="true" OnClick="@AddEntry" CssClass="e-info e-large text-dark">@(IsEditing ? "Update FX Trade" : "Add FX Trade")</SfButton>
+            <RadzenButton Click="@AddEntry" ButtonStyle="ButtonStyle.Info" Size="ButtonSize.Large" Text="@(IsEditing ? "Update FX Trade" : "Add FX Trade")" />
         </div>
     </div>
 </div>

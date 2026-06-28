@@ -3,9 +3,6 @@
 @using InvestmentTaxCalculator.Model
 @using InvestmentTaxCalculator.Model.TaxEvents
 @using InvestmentTaxCalculator.Services
-@using Syncfusion.Blazor.Buttons
-@using Syncfusion.Blazor.DropDowns
-@using Syncfusion.Blazor.Inputs
 
 @inject TaxEventLists TaxEventLists
 @inject CurrencyService CurrencyService
@@ -26,17 +23,15 @@
         <div class="row g-3 mt-1">
             <div class="col-md-4">
                 <label class="form-label">Trade Type</label>
-                <SfDropDownList TValue="TradeType" TItem="EnumDescriptionPair<TradeType>" DataSource="@_tradeTypes" @bind-Value="@_tradeType" CssClass="e-outline e-small">
-                    <DropDownListFieldSettings Text="Description" Value="EnumValue"></DropDownListFieldSettings>
-                </SfDropDownList>
+                <RadzenDropDown TValue="TradeType" Data="@_tradeTypes" TextProperty="Description" ValueProperty="EnumValue" @bind-Value="@_tradeType" class="w-100" />
             </div>
             <div class="col-md-4">
                 <label class="form-label">Quantity</label>
-                <SfNumericTextBox TValue="decimal" @bind-Value="@_quantity" Min="0" Decimals="8" Format="0.########" ShowSpinButton="false" CssClass="e-outline e-small"></SfNumericTextBox>
+                <RadzenNumeric TValue="decimal" @bind-Value="@_quantity" Min="0.00000001m" class="w-100" />
             </div>
             <div class="col-md-4">
                 <label class="form-label">Description</label>
-                <SfTextBox @bind-Value="@_description" Placeholder="Optional note" FloatLabelType="FloatLabelType.Never"></SfTextBox>
+                <RadzenTextBox @bind-Value="@_description" Placeholder="Optional note" class="w-100" />
             </div>
         </div>
 
@@ -77,7 +72,7 @@
         }
 
         <div class="col-12 mt-4 d-flex justify-content-center">
-            <SfButton IsPrimary="true" OnClick="@AddEntry" CssClass="e-primary e-large">@(IsEditing ? "Update Stock Trade" : "Add Stock Trade")</SfButton>
+            <RadzenButton Click="@AddEntry" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Large" Text="@(IsEditing ? "Update Stock Trade" : "Add Stock Trade")" />
         </div>
     </div>
 </div>

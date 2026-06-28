@@ -120,28 +120,28 @@ public class ManualEntryTests : PlaywrightTestBase
     // ───────────────────── Helper methods ─────────────────────
 
     /// <summary>
-    /// Selects an entry type from the page-level Syncfusion DropDownList.
+    /// Selects an entry type from the page-level Radzen DropDown.
     /// </summary>
     private async Task SelectEntryType(string entryTypeName)
     {
         // The entry type dropdown is inside .card.bg-dark
-        var dropdown = Page.Locator(".card.bg-dark .e-ddl");
+        var dropdown = Page.Locator(".card.bg-dark .rz-dropdown");
         await dropdown.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible, Timeout = 5000 });
         await dropdown.ClickAsync();
 
-        // Wait for popup and click the item
-        var listItem = Page.Locator($".e-dropdownbase .e-list-item:has-text('{entryTypeName}')").First;
+        // Wait for the popup panel (rendered at body level) and click the item
+        var listItem = Page.Locator($".rz-dropdown-item:has-text('{entryTypeName}')").First;
         await listItem.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible, Timeout = 5000 });
         await listItem.ClickAsync();
     }
 
     /// <summary>
-    /// Fills the first Syncfusion ComboBox on the form card (for asset name).
+    /// Fills the first Radzen AutoComplete on the form card (for asset name).
     /// Works regardless of placeholder text variations across entry types.
     /// </summary>
     private async Task FillFirstComboBox(string value)
     {
-        var input = Page.Locator(".card.bg-secondary input.e-combobox").First;
+        var input = Page.Locator(".card.bg-secondary .rz-autocomplete input").First;
         await input.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible, Timeout = 5000 });
         await input.ClickAsync();
         await input.FillAsync(value);
@@ -149,11 +149,11 @@ public class ManualEntryTests : PlaywrightTestBase
     }
 
     /// <summary>
-    /// Fills a Syncfusion ComboBox identified by its placeholder text.
+    /// Fills a Radzen AutoComplete identified by its placeholder text.
     /// </summary>
     private async Task FillComboBox(string placeholder, string value)
     {
-        var input = Page.Locator($"input.e-combobox[placeholder='{placeholder}']").First;
+        var input = Page.Locator($"input[placeholder='{placeholder}']").First;
         await input.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible, Timeout = 5000 });
         await input.ClickAsync();
         await input.FillAsync(value);
@@ -161,15 +161,15 @@ public class ManualEntryTests : PlaywrightTestBase
     }
 
     /// <summary>
-    /// Fills a Syncfusion NumericTextBox located near a label with the given text.
+    /// Fills a Radzen Numeric located near a label with the given text.
     /// Finds the label, then locates the sibling numeric input in the same container.
     /// </summary>
     private async Task FillNumericByLabel(string labelText, string value)
     {
-        // Find label, go to parent container, find the numeric input
+        // Find label, go to parent container, find the input
         var label = Page.Locator($".card.bg-secondary label.form-label:text-is('{labelText}')").First;
         var container = label.Locator("xpath=..");
-        var input = container.Locator("input.e-numerictextbox").First;
+        var input = container.Locator("input").First;
 
         await input.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible, Timeout = 5000 });
         await input.ClickAsync(new LocatorClickOptions { ClickCount = 3 });
@@ -185,7 +185,8 @@ public class ManualEntryTests : PlaywrightTestBase
         var rowTitleLocator = Page.Locator($".manual-money-entry-title:text-is('{rowTitle}')").First;
         await rowTitleLocator.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible, Timeout = 5000 });
         var rowContainer = rowTitleLocator.Locator("xpath=..");
-        var amountInput = rowContainer.Locator("input.e-numerictextbox").First;
+        // The amount is the first input in the money row (amount, currency, fx).
+        var amountInput = rowContainer.Locator("input").First;
 
         await amountInput.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible, Timeout = 5000 });
         await amountInput.ClickAsync(new LocatorClickOptions { ClickCount = 3 });
@@ -194,14 +195,13 @@ public class ManualEntryTests : PlaywrightTestBase
     }
 
     /// <summary>
-    /// Fills a Syncfusion TextBox located near a label with the given text.
-    /// Uses the e-textbox wrapper to disambiguate from numeric inputs.
+    /// Fills a Radzen TextBox located near a label with the given text.
     /// </summary>
     private async Task FillTextByLabel(string labelText, string value)
     {
         var label = Page.Locator($"label.form-label:has-text('{labelText}')").First;
         var container = label.Locator("xpath=..");
-        var input = container.Locator("input.e-textbox").First;
+        var input = container.Locator("input.rz-textbox").First;
 
         await input.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible, Timeout = 5000 });
         await input.ClickAsync();
@@ -214,18 +214,18 @@ public class ManualEntryTests : PlaywrightTestBase
     /// </summary>
     private async Task ClickButtonByText(string buttonText)
     {
-        var button = Page.Locator($"button.e-btn:has-text('{buttonText}')").First;
+        var button = Page.Locator($"button:has-text('{buttonText}')").First;
         await button.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible, Timeout = 5000 });
         await button.ScrollIntoViewIfNeededAsync();
         await button.ClickAsync();
     }
 
     /// <summary>
-    /// Verifies a Syncfusion toast containing expected text appeared.
+    /// Verifies a Radzen notification containing expected text appeared.
     /// </summary>
     private async Task VerifySuccessToast(string expectedText)
     {
-        var toast = Page.Locator($".e-toast:has-text('{expectedText}')").First;
+        var toast = Page.Locator($".rz-notification:has-text('{expectedText}')").First;
         await toast.WaitForAsync(new LocatorWaitForOptions
         {
             State = WaitForSelectorState.Visible,
@@ -239,7 +239,7 @@ public class ManualEntryTests : PlaywrightTestBase
     /// </summary>
     private async Task VerifyGridRowCount(int expectedCount)
     {
-        var rows = Page.Locator(".e-grid .e-row");
+        var rows = Page.Locator("tr.rz-data-row");
         await Expect(rows).ToHaveCountAsync(expectedCount, new LocatorAssertionsToHaveCountOptions { Timeout = 10000 });
         var count = await rows.CountAsync();
         TestContext.WriteLine($"Grid row count: {count}");
@@ -254,10 +254,10 @@ public class ManualEntryTests : PlaywrightTestBase
     {
         // The section can render either:
         // 1) an empty-state alert (no grid), or
-        // 2) the Syncfusion grid with rows.
+        // 2) the Radzen grid with rows.
         // Poll until one of the states appears, then return the baseline row count.
         var emptyState = Page.Locator(".alert:has-text('No entries have been added on this page yet.')").First;
-        var grid = Page.Locator(".e-grid").First;
+        var rows = Page.Locator("tr.rz-data-row");
 
         for (int i = 0; i < 20; i++)
         {
@@ -266,9 +266,9 @@ public class ManualEntryTests : PlaywrightTestBase
                 return 0;
             }
 
-            if (await grid.CountAsync() > 0 && await grid.IsVisibleAsync())
+            if (await rows.CountAsync() > 0)
             {
-                return await Page.Locator(".e-grid .e-row").CountAsync();
+                return await rows.CountAsync();
             }
 
             await Task.Delay(500);
@@ -278,11 +278,11 @@ public class ManualEntryTests : PlaywrightTestBase
     }
 
     /// <summary>
-    /// Verifies the grid contains a cell with the expected text.
+    /// Verifies the grid contains a row with the expected text.
     /// </summary>
     private async Task VerifyGridContainsText(string expectedText)
     {
-        var cell = Page.Locator($".e-grid .e-rowcell:has-text('{expectedText}')").First;
+        var cell = Page.Locator($"tr.rz-data-row:has-text('{expectedText}')").First;
         await Expect(cell).ToBeVisibleAsync(new LocatorAssertionsToBeVisibleOptions { Timeout = 5000 });
     }
 }

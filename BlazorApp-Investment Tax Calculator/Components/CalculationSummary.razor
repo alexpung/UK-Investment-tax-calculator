@@ -1,7 +1,6 @@
 ﻿@using Model
 @using Model.Interfaces
 @using Services
-@using Syncfusion.Blazor.DropDowns
 
 @inject TradeCalculationResult tradeCalculationResult
 @inject DividendCalculationResult dividendCalculationResult
@@ -19,16 +18,11 @@
         <p class="text-muted small mb-3">
             <i>For example, selecting <strong>2023</strong> covers the period 6 April 2023 to 5 April 2024.</i>
         </p>
-        <SfMultiSelect @bind-Value="yearOptions.SelectedOptions"
-                       Placeholder="Select Years"
-                       Mode="VisualMode.CheckBox"
-                       ShowSelectAll=true
-                       SelectAllText="Select All"
-                       UnSelectAllText="Unselect All"
-                       DataSource=@yearOptions.Options>
-            <MultiSelectFieldSettings Text="Years" Value="Years">
-            </MultiSelectFieldSettings>
-        </SfMultiSelect>
+        <RadzenDropDown @bind-Value="yearOptions.SelectedOptions"
+                        Multiple="true" AllowSelectAll="true" SelectAllText="Select All"
+                        Chips="true" Placeholder="Select Years"
+                        Data="@yearOptions.Options" TextProperty="Years" ValueProperty="Years"
+                        class="w-100" />
     </div>
 </div>
 

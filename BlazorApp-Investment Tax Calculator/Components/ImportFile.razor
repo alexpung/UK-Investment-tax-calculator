@@ -1,5 +1,4 @@
 ﻿@using Model.Interfaces
-@using Syncfusion.Blazor.Inputs
 @using Microsoft.AspNetCore.Components.Forms
 @using Model
 @using Parser
@@ -38,10 +37,12 @@
                 </h5>
             </div>
             <div class="card-body">
-                <p class="text-muted small mb-3">Upload individual broker statement files (XML format)</p>
-                <SfUploader AutoUpload="false" MaxFileSize="@FileParseController.MaxFileSize">
-                    <UploaderEvents ValueChange="LoadFiles"></UploaderEvents>
-                </SfUploader>
+                <p class="text-muted small mb-3">
+                    Select one or more statement files to import. Supported formats: Interactive Brokers (XML),
+                    Trading 212 and Freetrade (CSV), and JSON files previously exported by this app.
+                    Files are read locally in your browser.
+                </p>
+                <InputFile OnChange="LoadFiles" multiple class="form-control" disabled="@FileImportState.IsProcessing" />
             </div>
         </div>
 
@@ -54,10 +55,11 @@
                 </h5>
             </div>
             <div class="card-body">
-                <p class="text-muted small mb-3">Upload an entire folder containing multiple broker statement files</p>
-                <SfUploader ID="UploadFiles" AutoUpload="false" DirectoryUpload="true" MaxFileSize="@FileParseController.MaxFileSize">
-                    <UploaderEvents ValueChange="LoadFiles"></UploaderEvents>
-                </SfUploader>
+                <p class="text-muted small mb-3">
+                    Select a folder to import every supported statement file inside it (Interactive Brokers XML,
+                    Trading 212 / Freetrade CSV, or app-exported JSON). Files are read locally in your browser.
+                </p>
+                <InputFile OnChange="LoadFiles" multiple webkitdirectory="" class="form-control" disabled="@FileImportState.IsProcessing" />
             </div>
         </div>
 

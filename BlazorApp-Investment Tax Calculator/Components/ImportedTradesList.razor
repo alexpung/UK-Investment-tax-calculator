@@ -2,8 +2,6 @@
 @using InvestmentTaxCalculator.Model.Interfaces
 @using InvestmentTaxCalculator.Model.TaxEvents
 @using InvestmentTaxCalculator.Services
-@using Syncfusion.Blazor.Buttons
-@using Syncfusion.Blazor.Grids
 
 @inject ITradeAndCorporateActionList _taxEventLists
 @inject ToastService _toastService
@@ -12,61 +10,49 @@
     <div class="card-header">
         <h3>Imported Trades (Stock/FX/Option/Future)</h3>
     </div>
-    <div class="card-body">
-        <SfGrid ID="ImportedTradesGrid" TValue="ImportedTradeRow" @ref="_grid" DataSource="@_allImportedTrades" AllowPaging="true" AllowSorting="true" AllowFiltering="true" AllowResizing="true">
-            <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
-            <GridPageSettings PageSizes="@(new List<int>() { 25, 50, 100 })" PageSize="25"></GridPageSettings>
-            <GridColumns>
-                <GridColumn Field="@nameof(ImportedTradeRow.Date)" HeaderText="Date / Time" Width="180">
-                    <Template>
-                        @{
-                            var row = (ImportedTradeRow)context;
-                            <span>@FormatTradeDate(row.Date)</span>
-                        }
+    <div class="card-body" id="ImportedTradesGrid">
+        <RadzenDataGrid TItem="ImportedTradeRow" @ref="_grid" Data="@_allImportedTrades"
+                        AllowPaging="true" PageSize="25" PageSizeOptions="@_pageSizeOptions"
+                        AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Advanced"
+                        AllowColumnResize="true" class="w-100">
+            <Columns>
+                <RadzenDataGridColumn TItem="ImportedTradeRow" Property="@nameof(ImportedTradeRow.Date)" Title="Date / Time" Width="180px">
+                    <Template Context="row">
+                        <span>@FormatTradeDate(row.Date)</span>
                     </Template>
-                </GridColumn>
-                <GridColumn Field="@nameof(ImportedTradeRow.AssetName)" HeaderText="Asset" Width="140"></GridColumn>
-                <GridColumn Field="@nameof(ImportedTradeRow.AssetType)" HeaderText="Asset Type" Width="120"></GridColumn>
-                <GridColumn Field="@nameof(ImportedTradeRow.AcquisitionDisposal)" HeaderText="Type" Width="130"></GridColumn>
-                <GridColumn Field="@nameof(ImportedTradeRow.Quantity)" HeaderText="Quantity" Width="120" TextAlign="TextAlign.Right"></GridColumn>
-                <GridColumn HeaderText="Gross Proceed" Width="160">
-                    <Template>
-                        @{
-                            var trade = ((ImportedTradeRow)context).Trade;
-                            <span>@trade.GrossProceed.Display()</span>
-                        }
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="ImportedTradeRow" Property="@nameof(ImportedTradeRow.AssetName)" Title="Asset" Width="140px" FilterMode="FilterMode.CheckBoxList" />
+                <RadzenDataGridColumn TItem="ImportedTradeRow" Property="@nameof(ImportedTradeRow.AssetType)" Title="Asset Type" Width="120px" FilterMode="FilterMode.CheckBoxList" />
+                <RadzenDataGridColumn TItem="ImportedTradeRow" Property="@nameof(ImportedTradeRow.AcquisitionDisposal)" Title="Type" Width="130px" FilterMode="FilterMode.CheckBoxList" />
+                <RadzenDataGridColumn TItem="ImportedTradeRow" Property="@nameof(ImportedTradeRow.Quantity)" Title="Quantity" Width="120px" TextAlign="TextAlign.Right" />
+                <RadzenDataGridColumn TItem="ImportedTradeRow" Title="Gross Proceed" Width="160px" Sortable="false">
+                    <Template Context="row">
+                        <span>@row.Trade.GrossProceed.Display()</span>
                     </Template>
-                </GridColumn>
-                <GridColumn HeaderText="Net Proceed" Width="140">
-                    <Template>
-                        @{
-                            var trade = ((ImportedTradeRow)context).Trade;
-                            <span>@trade.NetProceed</span>
-                        }
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="ImportedTradeRow" Title="Net Proceed" Width="140px" Sortable="false">
+                    <Template Context="row">
+                        <span>@row.Trade.NetProceed</span>
                     </Template>
-                </GridColumn>
-                <GridColumn Field="@nameof(ImportedTradeRow.Description)" HeaderText="Description"></GridColumn>
-                <GridColumn HeaderText="Actions" Width="140" TextAlign="TextAlign.Center">
-                    <Template>
-                        @{
-                            var row = (ImportedTradeRow)context;
-                            <SfButton IconCss="e-icons e-delete"
-                                      CssClass="e-danger e-small"
-                                      OnClick="@(() => DeleteTrade(row))"
-                                      Content="Delete"></SfButton>
-                        }
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="ImportedTradeRow" Property="@nameof(ImportedTradeRow.Description)" Title="Description" />
+                <RadzenDataGridColumn TItem="ImportedTradeRow" Title="Actions" Width="140px" TextAlign="TextAlign.Center" Sortable="false" Filterable="false">
+                    <Template Context="row">
+                        <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small"
+                                      Click="@(() => DeleteTrade(row))" Text="Delete" />
                     </Template>
-                </GridColumn>
-            </GridColumns>
-        </SfGrid>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
     </div>
 </div>
 
 @code {
     [Parameter] public EventCallback OnTradeDeleted { get; set; }
 
-    private SfGrid<ImportedTradeRow> _grid = default!;
+    private RadzenDataGrid<ImportedTradeRow> _grid = default!;
     private List<ImportedTradeRow> _allImportedTrades = [];
+    private readonly int[] _pageSizeOptions = { 25, 50, 100 };
 
     protected override void OnInitialized()
     {
@@ -116,7 +102,7 @@
             RefreshData();
             if (_grid != null)
             {
-                await _grid.Refresh();
+                await _grid.Reload();
             }
 
             await OnTradeDeleted.InvokeAsync();

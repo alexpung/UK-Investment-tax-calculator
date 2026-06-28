@@ -1,21 +1,22 @@
 @using InvestmentTaxCalculator.Enumerations
 @using InvestmentTaxCalculator.Model
 @using InvestmentTaxCalculator.Model.UkTaxModel
-@using Syncfusion.Blazor.DropDowns
 
 @inject UkSection104Pools Section104Pools
 @inject TaxEventLists TaxEventLists
 
-<SfComboBox TValue="string"
-            TItem="string"
-            DataSource="@_assetNames"
-            Value="@Value"
-            AllowCustom="@AllowManualAssetNameInput"
-            Placeholder="@Placeholder"
-            CssClass="@CssClass"
-            Enabled="@Enabled">
-    <ComboBoxEvents TValue="string" TItem="string" ValueChange="@OnValueChangedInternal" />
-</SfComboBox>
+@* AllowCustom (free text) -> RadzenAutoComplete; restricted -> filterable RadzenDropDown *@
+@if (AllowManualAssetNameInput)
+{
+    <RadzenAutoComplete TValue="string" Data="@_assetNames" Value="@Value" Placeholder="@Placeholder"
+                        Disabled="@(!Enabled)" Change="@OnValueChangedInternal" Style="width:100%" />
+}
+else
+{
+    <RadzenDropDown TValue="string" Data="@_assetNames" Value="@Value" Placeholder="@Placeholder"
+                    Disabled="@(!Enabled)" AllowFiltering="true" AllowClear="true"
+                    Change="@OnValueChangedInternal" Style="width:100%" />
+}
 
 @code {
     [Parameter] public string Value { get; set; } = string.Empty;
@@ -122,11 +123,14 @@
             TaxEventLists.FutureContractTrades.Count.ToString());
     }
 
-    private async Task OnValueChangedInternal(ChangeEventArgs<string, string> args)
+    private async Task OnValueChangedInternal(object? value)
     {
-        string nextValue = args.Value ?? string.Empty;
+        string nextValue = value as string ?? string.Empty;
         if (!string.Equals(nextValue, Value, StringComparison.Ordinal))
         {
+            // Keep the bound selection in sync immediately; the parent only flows the new
+            // value back after its own (possibly async) re-render.
+            Value = nextValue;
             await ValueChanged.InvokeAsync(nextValue);
         }
     }

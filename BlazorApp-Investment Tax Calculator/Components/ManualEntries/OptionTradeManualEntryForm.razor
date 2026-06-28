@@ -3,10 +3,6 @@
 @using InvestmentTaxCalculator.Model
 @using InvestmentTaxCalculator.Model.TaxEvents
 @using InvestmentTaxCalculator.Services
-@using Syncfusion.Blazor.Buttons
-@using Syncfusion.Blazor.Calendars
-@using Syncfusion.Blazor.DropDowns
-@using Syncfusion.Blazor.Inputs
 
 @inject TaxEventLists TaxEventLists
 @inject CurrencyService CurrencyService
@@ -29,54 +25,46 @@
         <div class="row g-3 mt-1">
             <div class="col-md-4">
                 <label class="form-label">Underlying Asset</label>
-                <SfTextBox @bind-Value="@_underlying" Placeholder="e.g. AAPL" FloatLabelType="FloatLabelType.Never"></SfTextBox>
+                <RadzenTextBox @bind-Value="@_underlying" Placeholder="e.g. AAPL" class="w-100" />
             </div>
             <div class="col-md-4">
                 <label class="form-label">Expiry Date</label>
-                <SfDatePicker TValue="DateTime" @bind-Value="@_expiryDate" Format="d" CssClass="e-outline e-small"></SfDatePicker>
+                <RadzenDatePicker TValue="DateTime" @bind-Value="@_expiryDate" DateFormat="d" class="w-100" />
             </div>
             <div class="col-md-4">
                 <label class="form-label">Put / Call</label>
-                <SfDropDownList TValue="PUTCALL" TItem="EnumDescriptionPair<PUTCALL>" DataSource="@_putCallTypes" @bind-Value="@_putCall" CssClass="e-outline e-small">
-                    <DropDownListFieldSettings Text="Description" Value="EnumValue"></DropDownListFieldSettings>
-                </SfDropDownList>
+                <RadzenDropDown TValue="PUTCALL" Data="@_putCallTypes" TextProperty="Description" ValueProperty="EnumValue" @bind-Value="@_putCall" class="w-100" />
             </div>
 
             <div class="col-md-4">
                 <label class="form-label">Trade Type</label>
-                <SfDropDownList TValue="TradeType" TItem="EnumDescriptionPair<TradeType>" DataSource="@_tradeTypes" @bind-Value="@_tradeType" CssClass="e-outline e-small">
-                    <DropDownListFieldSettings Text="Description" Value="EnumValue"></DropDownListFieldSettings>
-                </SfDropDownList>
+                <RadzenDropDown TValue="TradeType" Data="@_tradeTypes" TextProperty="Description" ValueProperty="EnumValue" @bind-Value="@_tradeType" class="w-100" />
             </div>
             <div class="col-md-4">
                 <label class="form-label">Quantity (contracts)</label>
-                <SfNumericTextBox TValue="decimal" @bind-Value="@_quantity" Min="0" Decimals="8" Format="0.########" ShowSpinButton="false" CssClass="e-outline e-small"></SfNumericTextBox>
+                <RadzenNumeric TValue="decimal" @bind-Value="@_quantity" Min="0.00000001m" class="w-100" />
             </div>
             <div class="col-md-4">
                 <label class="form-label">Multiplier</label>
-                <SfNumericTextBox TValue="decimal" @bind-Value="@_multiplier" Min="0" Decimals="8" Format="0.########" ShowSpinButton="false" CssClass="e-outline e-small"></SfNumericTextBox>
+                <RadzenNumeric TValue="decimal" @bind-Value="@_multiplier" Min="0.00000001m" class="w-100" />
             </div>
 
             <div class="col-md-4">
                 <label class="form-label">Strike Price</label>
-                <SfNumericTextBox TValue="decimal" @bind-Value="@_strikePriceAmount" Min="0" Decimals="8" Format="0.########" ShowSpinButton="false" CssClass="e-outline e-small"></SfNumericTextBox>
+                <RadzenNumeric TValue="decimal" @bind-Value="@_strikePriceAmount" Min="0.00000001m" class="w-100" />
             </div>
             <div class="col-md-4">
                 <label class="form-label">Strike Currency</label>
-                <SfDropDownList TValue="string" TItem="CurrencyViewModel" DataSource="@_currencies" @bind-Value="@_strikeCurrency" CssClass="e-outline e-small">
-                    <DropDownListFieldSettings Text="Code" Value="Code"></DropDownListFieldSettings>
-                </SfDropDownList>
+                <RadzenDropDown TValue="string" Data="@_currencies" TextProperty="Code" ValueProperty="Code" @bind-Value="@_strikeCurrency" AllowFiltering="true" class="w-100" />
             </div>
             <div class="col-md-4">
                 <label class="form-label">Settlement Method</label>
-                <SfDropDownList TValue="SettlementMethods" TItem="EnumDescriptionPair<SettlementMethods>" DataSource="@_settlementMethods" @bind-Value="@_settlementMethod" CssClass="e-outline e-small">
-                    <DropDownListFieldSettings Text="Description" Value="EnumValue"></DropDownListFieldSettings>
-                </SfDropDownList>
+                <RadzenDropDown TValue="SettlementMethods" Data="@_settlementMethods" TextProperty="Description" ValueProperty="EnumValue" @bind-Value="@_settlementMethod" class="w-100" />
             </div>
 
             <div class="col-md-8">
                 <label class="form-label">Description</label>
-                <SfTextBox @bind-Value="@_description" Placeholder="Optional note" FloatLabelType="FloatLabelType.Never"></SfTextBox>
+                <RadzenTextBox @bind-Value="@_description" Placeholder="Optional note" class="w-100" />
             </div>
         </div>
 
@@ -117,7 +105,7 @@
         }
 
         <div class="col-12 mt-4 d-flex justify-content-center">
-            <SfButton IsPrimary="true" OnClick="@AddEntry" CssClass="e-success e-large">@(IsEditing ? "Update Option Trade" : "Add Option Trade")</SfButton>
+            <RadzenButton Click="@AddEntry" ButtonStyle="ButtonStyle.Success" Size="ButtonSize.Large" Text="@(IsEditing ? "Update Option Trade" : "Add Option Trade")" />
         </div>
     </div>
 </div>

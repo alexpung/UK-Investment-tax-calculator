@@ -1,25 +1,29 @@
-﻿@using Syncfusion.Blazor.Buttons
 @using Model;
 @inject AssetTypeToLoadSetting AssetSettings
 
 <div class="row g-3">
     <div class="col-md-6 col-lg-4">
-        <SfCheckBox Label="Load Stocks" @bind-Checked="@AssetSettings.LoadStocks"></SfCheckBox>
+        <RadzenCheckBox @bind-Value="@AssetSettings.LoadStocks" Name="loadStocks" />
+        <RadzenLabel Text="Load Stocks" Component="loadStocks" class="ms-2" />
     </div>
     <div class="col-md-6 col-lg-4">
-        <SfCheckBox Label="Load Options" @bind-Checked="@AssetSettings.LoadOptions"></SfCheckBox>
+        <RadzenCheckBox @bind-Value="@AssetSettings.LoadOptions" Name="loadOptions" />
+        <RadzenLabel Text="Load Options" Component="loadOptions" class="ms-2" />
     </div>
     <div class="col-md-6 col-lg-4">
-        <SfCheckBox Label="Load Futures" @bind-Checked="@AssetSettings.LoadFutures"></SfCheckBox>
+        <RadzenCheckBox @bind-Value="@AssetSettings.LoadFutures" Name="loadFutures" />
+        <RadzenLabel Text="Load Futures" Component="loadFutures" class="ms-2" />
     </div>
     <div class="col-md-6 col-lg-4">
-        <SfCheckBox Label="Load FX" @bind-Checked="@AssetSettings.LoadFx"></SfCheckBox>
+        <RadzenCheckBox @bind-Value="@AssetSettings.LoadFx" Name="loadFx" />
+        <RadzenLabel Text="Load FX" Component="loadFx" class="ms-2" />
     </div>
     <div class="col-md-6 col-lg-4">
-        <SfCheckBox Label="Load Dividends" @bind-Checked="@AssetSettings.LoadDividends"></SfCheckBox>
+        <RadzenCheckBox @bind-Value="@AssetSettings.LoadDividends" Name="loadDividends" />
+        <RadzenLabel Text="Load Dividends" Component="loadDividends" class="ms-2" />
     </div>
     <div class="col-md-6 col-lg-4">
-        <SfCheckBox Label="Load Interest Income" @bind-Checked="@AssetSettings.LoadInterestIncome"></SfCheckBox>
+        <RadzenCheckBox @bind-Value="@AssetSettings.LoadInterestIncome" Name="loadInterest" />
+        <RadzenLabel Text="Load Interest Income" Component="loadInterest" class="ms-2" />
     </div>
 </div>
-

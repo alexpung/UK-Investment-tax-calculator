@@ -30,6 +30,8 @@ https://alexpung.github.io/UK-Investment-tax-calculator/
 
 User can also add trades and corporate actions (like Takeovers/Spinoffs) manually using the "Add trades" page.
 
+You can also re-import a JSON file previously exported by this app (from the Import & Export page) to restore a saved session.
+
 An example is included (see below). For other brokers I suggest copying the xml example and modifying it manually if you only have small number of trades.
 Or if you can code new parsers are welcome.
 
@@ -85,7 +87,7 @@ File sample: [Interactive Brokers stock trades XML example](https://github.com/a
    5. Enable "Include exchange rates" at the bottom of the setting (for Fx transactions)"
 3. Download the flex query for each year in xml format using web browser.
 4. Open the web application.
-5. Go to the import sections and select the files, then press the "Upload" button.
+5. Go to the Import section and select your files (or a whole folder). They are imported as soon as you select them &mdash; there is no separate upload step, and the files are read locally in your browser.
 6. Press "Start Calculation".
 7. If you hold offshore reporting funds (ETFs), go to the **ERI and Equalisation** page to add any Excess Reportable Income. The system will automatically detect the region from the ISIN and calculate the total adjustment based on your holdings.
 8. Export the results by pressing the buttons at the export file section, or go to PDF export and create a report.

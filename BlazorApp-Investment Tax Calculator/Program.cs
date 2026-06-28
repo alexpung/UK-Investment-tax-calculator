@@ -8,6 +8,7 @@ using InvestmentTaxCalculator.Model.UkTaxModel.Stocks;
 using InvestmentTaxCalculator.Parser;
 using InvestmentTaxCalculator.Parser.FreeTradeCsv;
 using InvestmentTaxCalculator.Parser.InteractiveBrokersXml;
+using InvestmentTaxCalculator.Parser.Json;
 using InvestmentTaxCalculator.Parser.Trading212Csv;
 using InvestmentTaxCalculator.Services;
 using InvestmentTaxCalculator.Services.PdfExport;
@@ -16,11 +17,9 @@ using InvestmentTaxCalculator.ViewModel;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
-using InvestmentTaxCalculator.Parser.Json;
-
 using PdfSharp.Fonts;
 
-using Syncfusion.Blazor;
+using Radzen;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -30,7 +29,6 @@ builder.Services.AddSingleton<DividendExportService>();
 builder.Services.AddSingleton<FileParseController>();
 builder.Services.AddSingleton<YearOptions>();
 builder.Services.AddSingleton<ToastService>();
-builder.Services.AddSingleton<SfGridToolBarHandlingService>();
 builder.Services.AddSingleton<ExportTaxEventService>();
 builder.Services.AddSingleton<TaxYearReportService>();
 builder.Services.AddSingleton<TaxYearCgtByTypeReportService>();
@@ -39,6 +37,7 @@ builder.Services.AddSingleton<TaxCalculationService>();
 builder.Services.AddSingleton<CurrencyService>();
 builder.Services.AddSingleton<ManualEntryTrackerService>();
 builder.Services.AddScoped<FileImportStateService>();
+builder.Services.AddRadzenComponents();
 
 // UK tax specific components - replace if you want to calculate some other countries.
 builder.Services.AddSingleton<UkCalculationResultExportService>();
@@ -71,8 +70,6 @@ builder.Services.AddSingleton<TradeTaxCalculationFactory>();
 //ViewModels
 builder.Services.AddSingleton<InputGridDatas>();
 builder.Services.AddSingleton<DividendToIncomeConvertViewModel>();
-
-builder.Services.AddSyncfusionBlazor();
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 WebAssemblyHost hostInstance = builder.Build();

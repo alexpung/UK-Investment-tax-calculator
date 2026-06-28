@@ -1,5 +1,4 @@
-﻿@using Syncfusion.Blazor.Buttons
-@using System.Collections.ObjectModel
+﻿@using System.Collections.ObjectModel
 
 <div class="card">
     <div class="card-header">
@@ -18,9 +17,9 @@
             </div>
         }
         
-        <SfButton @onclick="OnStartCalculation" 
-                  CssClass="btn btn-primary btn-lg" 
-                  Disabled="@(TaxCalculationService.IsCalculating || FileImportState.IsProcessing)">
+        <RadzenButton Click="OnStartCalculation"
+                      ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Large"
+                      Disabled="@(TaxCalculationService.IsCalculating || FileImportState.IsProcessing)">
             @if (TaxCalculationService.IsCalculating)
             {
                 <span>Calculating...</span>
@@ -29,6 +28,6 @@
             {
                 <span>Start Calculation</span>
             }
-        </SfButton>
+        </RadzenButton>
     </div>
 </div>

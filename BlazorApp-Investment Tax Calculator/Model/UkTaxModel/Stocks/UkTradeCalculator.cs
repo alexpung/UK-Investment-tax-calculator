@@ -2,8 +2,6 @@
 using InvestmentTaxCalculator.Model.Interfaces;
 using InvestmentTaxCalculator.Model.TaxEvents;
 
-using Syncfusion.Blazor.Data;
-
 using System.Text;
 
 namespace InvestmentTaxCalculator.Model.UkTaxModel.Stocks;

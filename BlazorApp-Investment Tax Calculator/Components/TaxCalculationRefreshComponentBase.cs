@@ -1,7 +1,7 @@
 using InvestmentTaxCalculator.Services;
 
 using Microsoft.AspNetCore.Components;
-using Syncfusion.Blazor.Grids;
+using Radzen.Blazor;
 
 namespace InvestmentTaxCalculator.Components;
 
@@ -19,9 +19,9 @@ public abstract class TaxCalculationRefreshComponentBase : ComponentBase, IDispo
 
     protected virtual Task RefreshRenderedGridsAsync() => Task.CompletedTask;
 
-    protected static Task RefreshGridAsync<TGridItem>(SfGrid<TGridItem>? grid)
+    protected static Task RefreshGridAsync<TGridItem>(RadzenDataGrid<TGridItem>? grid) where TGridItem : notnull
     {
-        return grid is null ? Task.CompletedTask : grid.Refresh();
+        return grid is null ? Task.CompletedTask : grid.Reload();
     }
 
     private void HandleTaxCalculationStateChanged()

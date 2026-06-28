@@ -1,8 +1,6 @@
 @using InvestmentTaxCalculator.Model
 @using InvestmentTaxCalculator.Model.TaxEvents
 @using InvestmentTaxCalculator.Model.Interfaces
-@using Syncfusion.Blazor.Grids
-@using Syncfusion.Blazor.Buttons
 @using InvestmentTaxCalculator.Services
 
 @inject ITradeAndCorporateActionList _taxEventLists
@@ -13,37 +11,37 @@
         <h3>Corporate Actions and Events History</h3>
     </div>
     <div class="card-body">
-        <SfGrid @ref="_grid" DataSource="@_taxEventLists.CorporateActions" AllowPaging="true" AllowSorting="true">
-            <GridPageSettings PageSize="10"></GridPageSettings>
-            <GridColumns>
-                <GridColumn Field="@nameof(CorporateAction.Date)" HeaderText="Date" Format="d" Width="120"></GridColumn>
-                <GridColumn Field="@nameof(CorporateAction.AssetName)" HeaderText="Asset" Width="150"></GridColumn>
-                <GridColumn Field="@nameof(CorporateAction.Reason)" HeaderText="Reason/Description"></GridColumn>
-                <GridColumn HeaderText="Actions" Width="180" TextAlign="TextAlign.Center">
-                    <Template>
-                        @{
-                            var action = (CorporateAction)context;
-                            <div class="d-flex gap-2 justify-content-center">
-                                <SfButton IconCss="e-icons e-edit" CssClass="e-primary e-small" OnClick="@(() => EditAction(action))" Content="Edit"></SfButton>
-                                <SfButton IconCss="e-icons e-delete" CssClass="e-danger e-small" OnClick="@(() => DeleteAction(action))" Content="Delete"></SfButton>
-                            </div>
-                        }
+        <RadzenDataGrid @ref="_grid" TItem="CorporateAction" Data="@_taxEventLists.CorporateActions"
+                        AllowPaging="true" PageSize="10" AllowSorting="true" AllowColumnResize="true" class="w-100">
+            <Columns>
+                <RadzenDataGridColumn TItem="CorporateAction" Property="@nameof(CorporateAction.Date)" Title="Date" FormatString="{0:d}" Width="120px" />
+                <RadzenDataGridColumn TItem="CorporateAction" Property="@nameof(CorporateAction.AssetName)" Title="Asset" Width="150px" />
+                <RadzenDataGridColumn TItem="CorporateAction" Property="@nameof(CorporateAction.Reason)" Title="Reason/Description" />
+                <RadzenDataGridColumn TItem="CorporateAction" Title="Actions" Width="220px" TextAlign="TextAlign.Center" Sortable="false" Filterable="false">
+                    <Template Context="action">
+                        <div class="d-flex gap-2 justify-content-center">
+                            <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" Click="@(() => EditAction(action))" Text="Edit" class="flex-shrink-0" />
+                            <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small" Click="@(() => DeleteAction(action))" Text="Delete" class="flex-shrink-0" />
+                        </div>
                     </Template>
-                </GridColumn>
-            </GridColumns>
-        </SfGrid>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
     </div>
 </div>
 
 @code {
     [Parameter] public EventCallback OnActionDeleted { get; set; }
     [Parameter] public EventCallback<CorporateAction> OnActionEdit { get; set; }
-    
-    private SfGrid<CorporateAction> _grid = default!;
 
-    public void Refresh()
+    private RadzenDataGrid<CorporateAction> _grid = default!;
+
+    public async Task Refresh()
     {
-        _grid?.Refresh();
+        if (_grid is not null)
+        {
+            await _grid.Reload();
+        }
     }
 
     private async Task EditAction(CorporateAction action)
@@ -56,7 +54,7 @@
         if (_taxEventLists.CorporateActions.Remove(action))
         {
             _toastService.ShowInformation("Event removed.");
-            Refresh();
+            await Refresh();
             await OnActionDeleted.InvokeAsync();
         }
     }

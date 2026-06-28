@@ -1,7 +1,6 @@
-﻿@using InvestmentTaxCalculator.Model
+@using InvestmentTaxCalculator.Model
 @using InvestmentTaxCalculator.ViewModel
 @using InvestmentTaxCalculator.Model.Interfaces
-@using Syncfusion.Blazor.Grids
 @using InvestmentTaxCalculator.Model.TaxEvents
 @using InvestmentTaxCalculator.Model.UkTaxModel
 @using InvestmentTaxCalculator.Model.UkTaxModel.Stocks
@@ -12,46 +11,36 @@
 @inherits TaxCalculationRefreshComponentBase
 
 @inject TradeCalculationResult tradeCalculationResult
-@inject SfGridToolBarHandlingService _toolbarHandlingService
 
 <div class="bg-dark text-light">
     <div class="row my-4">
         <div class="col">
             <h3>Tax refund</h3>
             <p>
-                This indicates overpaid tax resulting from an open short option position held across tax years. 
-                The refund amount represents a reduction in disposal proceeds upon option settlement, or an increase in the allowable cost if the short option is subsequently repurchased. 
+                This indicates overpaid tax resulting from an open short option position held across tax years.
+                The refund amount represents a reduction in disposal proceeds upon option settlement, or an increase in the allowable cost if the short option is subsequently repurchased.
                 In both instances, the actual reclaimable tax should be manually calculated based on your marginal tax rate for the relevant tax year.
             </p>
         </div>
     </div>
         <div class="col">
-            <SfGrid ID="TaxRefundGrid" @ref="taxRefundGrid" DataSource="@_trades"
-                    AllowPaging="true" AllowSorting="true" AllowPdfExport="true" AllowExcelExport="true" AllowResizing="true" AllowFiltering="true" AllowTextWrap="true"
-                    Toolbar="@(new List<string>() { "PdfExport", "ExcelExport", "Print" })">
-                <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
-                <GridPageSettings PageSizes=@(new List<int>() {25, 50, 100}) PageSize="25"></GridPageSettings>
-                <GridEvents OnToolbarClick="ToolbarClickHandler" TValue="TaxRepay"></GridEvents>
-                <GridColumns>
-                    <GridColumn Field=@nameof(TaxRepay.TaxYear) HeaderText="Tax Year"></GridColumn>
-                    <GridColumn Field=@nameof(TaxRepay.RefundAmount) HeaderText="Refund Amount"></GridColumn>
-                    <GridColumn Field=@nameof(TaxRepay.Reason) HeaderText="Reason"></GridColumn>
-                </GridColumns>
-            </SfGrid>
+            <RadzenDataGrid @ref="taxRefundGrid" TItem="TaxRepay" Data="@_trades"
+                            AllowPaging="true" PageSize="25" PageSizeOptions="@_pageSizeOptions"
+                            AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Advanced"
+                            AllowColumnResize="true" class="w-100">
+                <Columns>
+                    <RadzenDataGridColumn TItem="TaxRepay" Property="@nameof(TaxRepay.TaxYear)" Title="Tax Year" FilterMode="FilterMode.CheckBoxList" />
+                    <RadzenDataGridColumn TItem="TaxRepay" Property="@nameof(TaxRepay.RefundAmount)" Title="Refund Amount" />
+                    <RadzenDataGridColumn TItem="TaxRepay" Property="@nameof(TaxRepay.Reason)" Title="Reason" />
+                </Columns>
+            </RadzenDataGrid>
         </div>
 </div>
 
 @code {
-    private SfGrid<TaxRepay>? taxRefundGrid;
+    private RadzenDataGrid<TaxRepay>? taxRefundGrid;
     private List<TaxRepay> _trades = [];
-
-    public async Task ToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)
-    {
-        if (taxRefundGrid != null)
-        {
-            await _toolbarHandlingService.ToolbarClickHandler(args, taxRefundGrid);
-        }
-    }
+    private readonly int[] _pageSizeOptions = { 25, 50, 100 };
 
     protected override void RefreshData()
     {
@@ -63,4 +52,3 @@
 
     protected override Task RefreshRenderedGridsAsync() => RefreshGridAsync(taxRefundGrid);
 }
-

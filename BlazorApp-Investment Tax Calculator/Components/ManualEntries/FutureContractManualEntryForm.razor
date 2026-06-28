@@ -3,9 +3,6 @@
 @using InvestmentTaxCalculator.Model
 @using InvestmentTaxCalculator.Model.TaxEvents
 @using InvestmentTaxCalculator.Services
-@using Syncfusion.Blazor.Buttons
-@using Syncfusion.Blazor.DropDowns
-@using Syncfusion.Blazor.Inputs
 
 @inject TaxEventLists TaxEventLists
 @inject CurrencyService CurrencyService
@@ -26,17 +23,15 @@
         <div class="row g-3 mt-1">
             <div class="col-md-4">
                 <label class="form-label">Direction</label>
-                <SfDropDownList TValue="string" TItem="DirectionOption" DataSource="@_directionOptions" @bind-Value="@_direction" CssClass="e-outline e-small">
-                    <DropDownListFieldSettings Text="Display" Value="Value"></DropDownListFieldSettings>
-                </SfDropDownList>
+                <RadzenDropDown TValue="string" Data="@_directionOptions" TextProperty="Display" ValueProperty="Value" @bind-Value="@_direction" class="w-100" />
             </div>
             <div class="col-md-4">
                 <label class="form-label">Quantity (contracts)</label>
-                <SfNumericTextBox TValue="decimal" @bind-Value="@_quantity" Min="0" Decimals="8" Format="0.########" ShowSpinButton="false" CssClass="e-outline e-small"></SfNumericTextBox>
+                <RadzenNumeric TValue="decimal" @bind-Value="@_quantity" Min="0" class="w-100" />
             </div>
             <div class="col-md-6">
                 <label class="form-label">Description</label>
-                <SfTextBox @bind-Value="@_description" Placeholder="Optional note" FloatLabelType="FloatLabelType.Never"></SfTextBox>
+                <RadzenTextBox @bind-Value="@_description" Placeholder="Optional note" class="w-100" />
             </div>
         </div>
 
@@ -76,7 +71,7 @@
         }
 
         <div class="col-12 mt-4 d-flex justify-content-center">
-            <SfButton IsPrimary="true" OnClick="@AddEntry" CssClass="e-warning e-large text-dark">@(IsEditing ? "Update Future Trade" : "Add Future Trade")</SfButton>
+            <RadzenButton Click="@AddEntry" ButtonStyle="ButtonStyle.Warning" Size="ButtonSize.Large" Text="@(IsEditing ? "Update Future Trade" : "Add Future Trade")" />
         </div>
     </div>
 </div>
