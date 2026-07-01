@@ -17,18 +17,18 @@ https://alexpung.github.io/UK-Investment-tax-calculator/
 7. Support for UK specific tax rules such as TCGA92/S122 for small distributions in corporate actions (automatic gain deferral).
 
 ## Supported import format and brokers
-| Category                | IB XML | FreeTrade CSV        | Trading212 CSV       | Example                                                                                                       |
-|-------------------------|--------|----------------------|-----------------------|----------------------------------------------------------------------------------------------------------------|
-| CashSettlement (Option) | O      |                      |                       | [CashSettledOptionExample.xml](TaxExamples/Options/CashSettledOptionExample.xml)                               |
-| StockSplit              | O      |                      |                       | [InteractiveBrokersStockTradesExample.xml](TaxExamples/Stocks/InteractiveBrokersStockTradesExample.xml)        |
-| Dividend                | O      | Total in GBP         | Total in GBP          | [InteractiveBrokersStockTradesExample.xml](TaxExamples/Stocks/InteractiveBrokersStockTradesExample.xml)        |
-| FutureContractTrade     | O      |                      |                       | [InteractiveBrokersFutureContractExample.xml](TaxExamples/Future%20Contract/InteractiveBrokersFutureContractExample.xml) |
-| FxTrade                 | O      |                      |                       | manual entry only, see [AllAssetTypesExample.json](TaxExamples/AllAssetTypesExample.json)                      |
-| InterestIncome          | O      | Saving income in GBP | Saving income in GBP  | manual entry only, see [AllAssetTypesExample.json](TaxExamples/AllAssetTypesExample.json)                      |
-| OptionTrade             | O      |                      |                       | [AssignmentOptionExample.xml](TaxExamples/Options/AssignmentOptionExample.xml)                                 |
-| Trade (Stock)           | O      | Total in GBP         | Total in GBP          | [InteractiveBrokersStockTradesExample.xml](TaxExamples/Stocks/InteractiveBrokersStockTradesExample.xml)        |
+| Category                | IB XML | FreeTrade CSV        | Trading212 CSV       |
+|-------------------------|--------|----------------------|-----------------------|
+| CashSettlement (Option) | O      |                      |                       |
+| StockSplit              | O      |                      |                       |
+| Dividend                | O      | Total in GBP         | Total in GBP          |
+| FutureContractTrade     | O      |                      |                       |
+| FxTrade                 | O      |                      |                       |
+| InterestIncome          | O      | Saving income in GBP | Saving income in GBP  |
+| OptionTrade             | O      |                      |                       |
+| Trade (Stock)           | O      | Total in GBP         | Total in GBP          |
 
-[AllAssetTypesExample.json](TaxExamples/AllAssetTypesExample.json) is a single exported session (via the Import & Export page) containing mock data for every asset type above — Stock trades, a stock split, Dividends, Future contracts, Options, a Cash Settlement, an FX trade and Interest income. Import it directly to explore the app with realistic data covering every category, or use it as a template for reporting a bug.
+[AllAssetTypesExample.xml](TaxExamples/AllAssetTypesExample.xml) is a single Interactive Brokers Flex Query file with realistic mock data (real tickers, prices and dates, all within one UK tax year) covering every row above except FxTrade and InterestIncome, which are entered manually rather than imported — those two are instead included in [AllAssetTypesExample.json](TaxExamples/AllAssetTypesExample.json), a full exported session (via the Import & Export page) with all of the above plus the manual entries. Import either file directly to explore the app with realistic data covering every category. See [Example](#example) below for a walkthrough of the resulting report.
 
 User can also add trades and corporate actions (like Takeovers/Spinoffs) manually using the "Add trades" page.
 
@@ -99,162 +99,258 @@ File sample: [Interactive Brokers stock trades XML example](https://github.com/a
 Your trade data is not uploaded anywhere. They never leave your browser thanks to Blazor WASM framework. The calculation is entirely done in your browser.  
 
 ## Example
-Examples can be found in https://github.com/alexpung/UK-Investment-tax-calculator/tree/master/TaxExamples
 
-### Output:
-Dividend Summary
+All the text and PDF excerpts below come from the same mock portfolio: [AllAssetTypesExample.xml](TaxExamples/AllAssetTypesExample.xml) (an Interactive Brokers Flex Query file with real tickers, realistic prices/dates and a real-world 3-for-1 Walmart stock split) plus two manually entered events, an FX trade and interest income, that can't be imported from a broker file — the combined session is [AllAssetTypesExample.json](TaxExamples/AllAssetTypesExample.json). Every trade below falls inside a single UK tax year (6 April 2023 to 5 April 2024) so it renders as one report.
 
-    Tax Year: 2020
-    Region: JPN (JP)
-    	Total dividends: £555.00
-    	Total withholding tax: -£166.50
-		
-    		Transactions:
-    		Asset Name: ABCD, Date: 02/02/2021, Type: Withholding Tax, Amount: -¥30,000, FxRate: 0.00555, Sterling Amount: -£166.50, Description: ABC CASH DIVIDEND - JP TAX
-    		Asset Name: ABCD, Date: 02/02/2021, Type: Dividend, Amount: ¥90,000, FxRate: 0.00555, Sterling Amount: £499.50, Description: ABC CASH DIVIDEND (Ordinary Dividend)
-    		Asset Name: ABCD, Date: 02/02/2021, Type: Payment In Lieu of a Dividend, Amount: ¥10,000, FxRate: 0.00555, Sterling Amount: £55.50, Description: ABC CASH DIVIDEND (Ordinary Dividend)
+The text on the left comes from the "Export Trades" / "Export Dividends/Interest Income" / "Export Section104" buttons on the Import & Export page (raw files in [TaxExamples/PdfReportExample/text-exports](TaxExamples/PdfReportExample/text-exports)); the PDF excerpt on the right is a screenshot from the same calculation, [SampleTaxReport-2023-2024.pdf](TaxExamples/PdfReportExample/SampleTaxReport-2023-2024.pdf). Both are generated from identical data, so the figures match exactly.
 
-### Trades Calculation
-    Summary for tax year 2021:
-    Number of disposals: 2
-    Total disposal proceeds: £2,693.00
-    Total allowable costs: £2,261.00
-    Total gains (excluding loss): £432.00
-    Total loss: £0.00
-    
-    Disposal 1: Sold 200 units of ABC on 03-May-2021 for £1,834.73.	Total gain (loss): £5.56
-    All units of the disposals are matched with acquitions
-    Trade details:
-    	Sold 200 unit(s) of ABC on 03-May-2021 for $2,200.00 = £1,870.00 Fx rate = 0.85 with total expense £35.28, Net proceed: £1,834.73
-    	Expenses: Commission: $1.50 = £1.28 Fx rate = 0.85	Tax: $40.00 = £34.00 Fx rate = 0.85	
-    Trade matching:
-    Same day: Matched 50 units of the disposal. Acquition cost is £460.28
-    Matched trade: Bought 50 unit(s) of ABC on 03-May-2021 for $510.00 = £433.50 Fx rate = 0.85 with total expense £26.78, Total cost: £460.28
-    	Expenses: Commission: $1.50 = £1.28 Fx rate = 0.85	Tax: $30.00 = £25.50 Fx rate = 0.85	
-    Gain for this match is £458.68 - £460.28 = -£1.59
-    
-    
-    
-    Bed and breakfast: Matched 50 units of the disposal. Acquition cost is £560.29
-    Matched trade: Bought 100 unit(s) of ABC on 04-May-2021 for $600.00 = £516.00 Fx rate = 0.86 with total expense £44.29, Total cost: £560.29
-    	Expenses: Commission: $1.50 = £1.29 Fx rate = 0.86	Tax: $50.00 = £43.00 Fx rate = 0.86	
-    Gain for this match is £458.68 - £560.29 = -£101.61
-    50 units of the earlier trade is matched with 100 units of later trade due to share split in between.
-    
-    At time of disposal, section 104 contains 200 units with value £1,617.20
-    Section 104: Matched 100 units of the disposal. Acquition cost is £808.60
-    Gain for this match is £917.36 - £808.60 = £108.76
-    
-    Disposal 2: Sold 100 units of DEF on 05-May-2021 for £858.71.	Total gain (loss): £427.42
-    All units of the disposals are matched with acquitions
-    Trade details:
-    	Sold 100 unit(s) of DEF on 05-May-2021 for $1,000.00 = £860.00 Fx rate = 0.86 with total expense £1.29, Net proceed: £858.71
-    	Expenses: Commission: $1.50 = £1.29 Fx rate = 0.86	
-    Trade matching:
-    Cover unmatched disposal: Matched 100 units of the disposal. Acquition cost is £431.29
-    Matched trade: Bought 100 unit(s) of DEF on 06-Dec-2021 for $500.00 = £430.00 Fx rate = 0.86 with total expense £1.29, Total cost: £431.29
-    	Expenses: Commission: $1.50 = £1.29 Fx rate = 0.86	
-    Gain for this match is £858.71 - £431.29 = £427.42
+### Trade calculation: text export vs PDF report
 
-### Section104
-    Section 104 detail history:
-    Asset Name ABC
-    Date		New Quantity (change)		New Value (change)
-    01/05/2021	200 (+200)			£1,617.20 (+£1,617.20)		
-    Involved trades:
-    Bought 200 unit(s) of ABC on 01-May-2021 for $2,000.00 = £1,600.00 Fx rate = 0.8 with total expense £17.20, Total cost: £1,617.20
-    	Expenses: Commission: $1.50 = £1.20 Fx rate = 0.8	Tax: $20.00 = £16.00 Fx rate = 0.8	
-    
-    03/05/2021	100 (-100)			£808.60 (-£808.60)		
-    Involved trades:
-    Sold 200 unit(s) of ABC on 03-May-2021 for $2,200.00 = £1,870.00 Fx rate = 0.85 with total expense £35.28, Net proceed: £1,834.73
-    	Expenses: Commission: $1.50 = £1.28 Fx rate = 0.85	Tax: $40.00 = £34.00 Fx rate = 0.85	
-    
-    03/05/2021	200 (+100)			£0.00 (+£0.00)		
-    Share adjustment on 03/05/2021 due to corporate action.
+<table>
+<tr><th>Asset type</th><th>Text export</th><th>PDF report</th></tr>
+<tr>
+<td>Stock<br/><sub>same day / bed-and-breakfast / Section 104 matching</sub></td>
+<td>
 
-### Future Contracts
-        Disposal 1: Close short position 2 units of NIYH4 on 05-Mar-2023.	Total gain (loss): -£28,011.90
-    Trade details:
-	    Bought 2 unit(s) of NIYH4 on 05-Mar-2023 12:35 with contract value ¥31,000,000 with total expense £6.30
-	    Expenses: Commission: ¥900 = £6.30 Fx rate = 0.007	
-    Trade matching:
-    Same day: Matched 2 units of the disposal. Acquisition contract value is ¥31,000,000 and disposal contract value is ¥27,000,000
-    Payment made to close the contract as loss is (¥27,000,000 - ¥31,000,000) * 0.007 = -£28,000.00, added to allowable cost
-    Total dealing cost is £11.90
-    Matched trade: Sold 2 unit(s) of NIYH4 on 05-Mar-2023 12:34 with contract value ¥27,000,000 with total expense £5.60
-	    Expenses: Commission: ¥700 = £5.60 Fx rate = 0.008	
-    Gain for this match is -£28,000.00 - £11.90  = -£28,011.90
+```text
+Disposal 1: Sold 150 units of AAPL on 09/05/2023 for £22,631.75.	Total gain (loss): £549.08
+All units of the disposals are matched with acquisitions
+Trade details:
+	Sold 150 unit(s) of AAPL on 05-Sep-2023 14:20 for $28,185.00 = £22,632.56 Fx rate = 0.803 with total expense £0.80, Net proceed: £22,631.75
+	Expenses: Commission: $1.00 = £0.80 Fx rate = 0.803	
+Trade matching:
+Tax status: Taxable
+Same day: 40 units of the acquisition trade against 40 units of the disposal trade. Acquisition cost is £6,023.30
+Matched trade: Bought 40 unit(s) of AAPL on 05-Sep-2023 14:15 for $7,500.00 = £6,022.50 Fx rate = 0.803 with total expense £0.80, Total cost: £6,023.30
+	Expenses: Commission: $1.00 = £0.80 Fx rate = 0.803	
+Gain for this match is £6,035.13 - £6,023.30 = £11.83
 
-    *******************************************************************************
-    Disposal 2: Close long position 2 units of NIYH6 on 07-Mar-2023.	Total gain (loss): -£42,009.00
-    Trade details:
-	    Sold 2 unit(s) of NIYH6 on 07-Mar-2023 12:34 with contract value ¥20,000,000 with total expense £4.80
-	    Expenses: Commission: ¥800 = £4.80 Fx rate = 0.006	
-    Trade matching:
-    At time of disposal, section 104 contains 2 units with contract value ¥27,000,000
-    Section 104: Matched 2 units of the disposal. Acquisition contract value is ¥27,000,000 and disposal contract value ¥20,000,000, proportioned dealing cost is £4.20
-    Payment made to close the contract as loss is (¥20,000,000 - ¥27,000,000) * 0.006 = -£42,000.00, added to allowable cost
-    Total dealing cost is £9.00
-    Gain for this match is -£42,000.00 - £9.00  = -£42,009.00
+Tax status: Taxable
+Bed and breakfast: 60 units of the acquisition trade against 60 units of the disposal trade. Acquisition cost is £8,882.47
+Matched trade: Bought 60 unit(s) of AAPL on 20-Sep-2023 10:05 for $10,938.00 = £8,881.66 Fx rate = 0.812 with total expense £0.81, Total cost: £8,882.47
+	Expenses: Commission: $1.00 = £0.81 Fx rate = 0.812	
+Gain for this match is £9,052.70 - £8,882.47 = £170.23
 
-### FX
-        Disposal 1: Dispose 375 units of USD on 17-Dec-2019 for £285.59.	Total gain (loss): -£1.14
-    All units of the disposals are matched with acquisitions
-    Trade details:
-	    Dispose 375 unit(s) of USD on 17-Dec-2019 00:00 for $375.00 = £285.59 Fx rate = 0.76158. Description: Testing
-    Trade matching:
-    Bed and breakfast: 375 units of the acquisition trade against 375 units of the disposal trade. Acquisition cost is £286.74
-    Matched trade: Acquire 425 unit(s) of USD on 18-Dec-2019 00:00 for $425.00 = £324.97 Fx rate = 0.76463. Description: Testing 2
-    Gain for this match is £285.59 - £286.74 = -£1.14
+Tax status: Taxable
+At time of disposal, section 104 contains 200 units with value £28,707.62
+Section 104: Matched 50 units of the disposal trade against the section 104 pool. Acquisition cost is £7,176.90
+Gain for this match is £7,543.92 - £7,176.90 = £367.01
 
-## Example PDF Report
+Resulting overall gain for this disposal: £11.83 + £170.23 + £367.01 = £549.08
+```
 
-The screenshots below are taken from PDF reports generated by the app's [PDF export feature](BlazorApp-Investment%20Tax%20Calculator/Pages/PdfReportPage.razor), using the mock data in [AllAssetTypesExample.json](TaxExamples/AllAssetTypesExample.json) (plus the bundled [CashSettledOptionExample.xml](TaxExamples/Options/CashSettledOptionExample.xml)). The full sample PDFs are in [TaxExamples/PdfReportExample](TaxExamples/PdfReportExample), one per tax year covered by the mock data.
+</td>
+<td>
 
-| Asset type covered                  | Report section                     | Screenshot |
-|--------------------------------------|-------------------------------------|------------|
-| Trade (Stock)                        | Trade Disposals Tax Calculation     | [stock-trade-disposal-detail.png](TaxExamples/PdfReportExample/screenshots/stock-trade-disposal-detail.png) |
-| StockSplit                           | Section 104 History                 | [section104-history-stock-split.png](TaxExamples/PdfReportExample/screenshots/section104-history-stock-split.png) |
-| Dividend                             | Dividend Summary                    | [dividend-summary.png](TaxExamples/PdfReportExample/screenshots/dividend-summary.png) |
-| InterestIncome                       | Interest Income Summary             | [interest-income-summary.png](TaxExamples/PdfReportExample/screenshots/interest-income-summary.png) |
-| OptionTrade / CashSettlement (Option) | Trade Disposals Tax Calculation     | [option-trade-disposal-detail.png](TaxExamples/PdfReportExample/screenshots/option-trade-disposal-detail.png) |
-| FutureContractTrade                  | Trade Disposals Tax Calculation     | [future-contract-disposal-detail.png](TaxExamples/PdfReportExample/screenshots/future-contract-disposal-detail.png) |
-| FxTrade                              | Trade Disposals Tax Calculation     | [fx-trade-disposal-detail.png](TaxExamples/PdfReportExample/screenshots/fx-trade-disposal-detail.png) |
-| All of the above                     | Capital Gain Tax Summary / List of all trades | [capital-gain-tax-summary.png](TaxExamples/PdfReportExample/screenshots/capital-gain-tax-summary.png), [all-trades-list.png](TaxExamples/PdfReportExample/screenshots/all-trades-list.png) |
+<img src="TaxExamples/PdfReportExample/screenshots/stock-trade-disposal-detail.png" width="480">
 
-Capital Gain Tax Summary:
+</td>
+</tr>
+<tr>
+<td>Options<br/><sub>short index put assigned and cash settled</sub></td>
+<td>
 
-![Capital Gain Tax Summary](TaxExamples/PdfReportExample/screenshots/capital-gain-tax-summary.png)
+```text
+Disposal 3: Sold 1 units of SPX   230915P04300000 on 09/01/2023 for £989.21.	Total gain (loss): -£3,030.79.
+All units of the disposals are matched with acquisitions
+Trade details:
+	Sold 1 unit(s) of SPX   230915P04300000 on 01-Sep-2023 09:35 for $1,250.00 = £990.00 Fx rate = 0.792 with total expense £0.79, Net proceed: £989.21
+	Expenses: Commission: $1.00 = £0.79 Fx rate = 0.792	
+	Option Details:
+	Underlying Asset: SPX
+	Option Type: PUT
+	Strike Price: $4,300.00
+	Expiry Date: 15-Sep-2023
+	Trade Reason: Ordered trade
 
-Dividend Summary:
+Trade matching:
+Tax status: Taxable
+Bed and breakfast: 1 units of the acquisition trade against 1 units of the disposal trade. Acquisition cost is £4,020.00
+Matched trade: Bought 1 unit(s) of SPX   230915P04300000 on 15-Sep-2023 16:00 for Option Cash Settlement for: Assignment: $5,000.00 = £4,020.00 Fx rate = 0.804 with total expense £0.00, Total cost: £4,020.00
+	Option Details:
+	Underlying Asset: SPX
+	Option Type: PUT
+	Strike Price: $4,300.00
+	Expiry Date: 15-Sep-2023
+	Trade Reason: Option assigned
 
-![Dividend Summary](TaxExamples/PdfReportExample/screenshots/dividend-summary.png)
+Gain for this match is £989.21 - £4,020.00 = -£3,030.79
+1.00 option is cash settled.
+```
+
+</td>
+<td>
+
+<img src="TaxExamples/PdfReportExample/screenshots/cash-settlement-disposal-detail.png" width="480">
+
+</td>
+</tr>
+<tr>
+<td>Future contract<br/><sub>Nikkei/USD future (NIY), Section 104 matching</sub></td>
+<td>
+
+```text
+Disposal 1: Close long position 1 units of NIYZ3 on 12/01/2023.	Total gain (loss): £4,943.22
+Trade details:
+	Sold 1 unit(s) of NIYZ3 on 01-Dec-2023 09:00 with contract value ¥16,700,000 with total expense £3.13
+	Expenses: Commission: ¥600 = £3.13 Fx rate = 0.00521	
+Trade matching:
+Tax status: Taxable
+At time of disposal, section 104 contains 1 units with contract value ¥15,750,000
+Section 104: Matched 1 units of the disposal. Acquisition contract value is ¥15,750,000 and disposal contract value ¥16,700,000, proportioned dealing cost is £3.16
+Payment received to close the contract as gain is (¥16,700,000 - ¥15,750,000) * 0.00521 = £4,949.50, added to disposal proceed.
+Total dealing cost is £6.28
+Gain for this match is £4,949.50 - £6.28  = £4,943.22
+```
+
+</td>
+<td>
+
+<img src="TaxExamples/PdfReportExample/screenshots/future-contract-disposal-detail.png" width="480">
+
+</td>
+</tr>
+<tr>
+<td>FX<br/><sub>USD cash balance, bed-and-breakfast matching</sub></td>
+<td>
+
+```text
+Disposal 2: Dispose 3250.75 units of USD on 10/18/2023 for £2,670.49.	Total gain (loss): £11.38
+All units of the disposals are matched with acquisitions
+Trade details:
+	Dispose 3250.75 unit(s) of USD on 18-Oct-2023 00:00 for FX gross proceed: $3,250.75 = £2,670.49 Fx rate = 0.8215. Description: Converted surplus USD trading cash back to GBP ahead of a property deposit
+Trade matching:
+Tax status: Taxable
+Bed and breakfast: 3250.75 units of the acquisition trade against 3250.75 units of the disposal trade. Acquisition cost is £2,659.11
+Matched trade: Acquire 5000 unit(s) of USD on 20-Oct-2023 00:00 for FX gross proceed: $5,000.00 = £4,090.00 Fx rate = 0.8180. Description: Wired USD consulting income into the brokerage account
+Gain for this match is £2,670.49 - £2,659.11 = £11.38
+```
+
+</td>
+<td>
+
+<img src="TaxExamples/PdfReportExample/screenshots/fx-trade-disposal-detail.png" width="480">
+
+</td>
+</tr>
+</table>
+
+### Report summaries: text export vs PDF report
+
+<table>
+<tr><th>Summary</th><th>Text export</th><th>PDF report</th></tr>
+<tr>
+<td>Capital Gain Summary</td>
+<td>
+
+```text
+Summary for tax year 2023:
+Total gain in year £8,988.00
+Total loss in year -£3,056.00
+Net gain in year £5,932.00
+Capital allowance available £6,000.00
+Capital loss brought forward and used £0.00
+Taxable gain after allowance and offset £0.00
+Loss available to bring forward £0.00
+
+Listed Shares and Securities:
+Number of Disposals 3
+Disposal Proceeds £48,905.00
+Allowable costs £45,048.00
+Gain excluding loss £3,857.00
+Loss £0.00
+
+Other assets:
+Number of Disposals 6
+Disposal Proceeds £10,191.00
+Allowable costs £8,117.00
+Gain excluding loss £5,131.00
+Loss -£3,056.00
+```
+
+</td>
+<td>
+
+<img src="TaxExamples/PdfReportExample/screenshots/capital-gain-tax-summary.png" width="480">
+
+</td>
+</tr>
+<tr>
+<td>Dividend Summary</td>
+<td>
+
+```text
+Tax Year: 2023
+Region: JPN (Japan)
+	Total dividends: £221.34
+		(Ordinary: £221.34)
+		(ERI: £0.00)
+	Total withholding tax: -£32.28
+
+	Savings interest: £0.00
+	Bond interest: £0.00
+	Accrued income profit: £0.00
+	Accrued income loss: £0.00
+	ETF dividend income: £0.00
+	Excess Reportable Income (Interest): £0.00
+	Total interest income: £0.00
+
+		Dividend Transactions:
+		Asset Name: 7203, Date: 12/01/2023, Type: Withholding Tax, Amount: -¥6,126, FxRate: 0.00527, Sterling Amount: -£32.28, Description: TOYOTA MOTOR CORP CASH DIVIDEND - JP TAX
+		Asset Name: 7203, Date: 12/01/2023, Type: Dividend, Amount: ¥40,000, FxRate: 0.00527, Sterling Amount: £210.80, Description: TOYOTA MOTOR CORP CASH DIVIDEND (Ordinary Dividend)
+		Asset Name: 7203, Date: 12/01/2023, Type: Payment in lieu of dividend, Amount: ¥2,000, FxRate: 0.00527, Sterling Amount: £10.54, Description: TOYOTA MOTOR CORP CASH DIVIDEND (Ordinary Dividend)
+```
+
+</td>
+<td>
+
+<img src="TaxExamples/PdfReportExample/screenshots/dividend-summary.png" width="480">
+
+</td>
+</tr>
+<tr>
+<td>Section 104<br/><sub>real 3-for-1 Walmart stock split, 26 Feb 2024</sub></td>
+<td>
+
+```text
+Asset Name WMT
+Date		New Quantity (change)		New Value (change)		Contract value (for futures)
+01/10/2024	30 (+30)				£3,797.53 (+£3,797.53)			
+Base cost: £3,796.74 ($4,806.00), Commission: £0.79 ($1.00)
+Involved trades:
+Bought 30 unit(s) of WMT on 10-Jan-2024 09:45 for $4,806.00 = £3,796.74 Fx rate = 0.790 with total expense £0.79, Total cost: £3,797.53
+	Expenses: Commission: $1.00 = £0.79 Fx rate = 0.790	
+
+02/26/2024	90 (+60)				£3,797.53 (+£0.00)			
+Stock split 3 for 1 on 02/26/2024
+
+03/15/2024	50 (-40)				£2,109.74 (-£1,687.79)			
+Involved trades:
+Sold 40 unit(s) of WMT on 15-Mar-2024 10:30 for $2,391.00 = £1,896.06 Fx rate = 0.793 with total expense £0.79, Net proceed: £1,895.27
+	Expenses: Commission: $1.00 = £0.79 Fx rate = 0.793	
+```
+
+</td>
+<td>
+
+<img src="TaxExamples/PdfReportExample/screenshots/section104-history-wmt-split.png" width="480">
+
+</td>
+</tr>
+</table>
+
+### Sections only available in the PDF report
+
+The PDF report has a few sections with no equivalent text export: an "Interest Income Summary" broken out separately from dividends, and a "List of all trades" appendix listing every acquisition and disposal grouped by asset category.
 
 Interest Income Summary:
 
 ![Interest Income Summary](TaxExamples/PdfReportExample/screenshots/interest-income-summary.png)
 
-Trade disposal detail for a stock (same day / bed-and-breakfast / Section 104 matching):
-
-![Stock trade disposal detail](TaxExamples/PdfReportExample/screenshots/stock-trade-disposal-detail.png)
-
-Trade disposal detail for an FX trade:
-
-![FX trade disposal detail](TaxExamples/PdfReportExample/screenshots/fx-trade-disposal-detail.png)
-
-Trade disposal detail for an assigned option (option premium carried over to the underlying assignment trade, which is also where a Cash Settlement adjustment is reflected):
-
-![Option trade disposal detail](TaxExamples/PdfReportExample/screenshots/option-trade-disposal-detail.png)
-
-Trade disposal detail for a future contract:
-
-![Future contract disposal detail](TaxExamples/PdfReportExample/screenshots/future-contract-disposal-detail.png)
-
-Section 104 history showing a stock split adjustment:
-
-![Section 104 history with stock split](TaxExamples/PdfReportExample/screenshots/section104-history-stock-split.png)
-
 List of all trades in the tax year:
 
 ![List of all trades](TaxExamples/PdfReportExample/screenshots/all-trades-list.png)
+
+An option that is exercised (rather than cash settled) also has its own disposal entry, with the premium carried over into the cost of the underlying share purchase:
+
+![Option trade disposal detail](TaxExamples/PdfReportExample/screenshots/option-trade-disposal-detail.png)

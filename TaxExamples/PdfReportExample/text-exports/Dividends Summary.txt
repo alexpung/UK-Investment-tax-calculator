@@ -1,0 +1,44 @@
+Tax Year: 2023
+Region: JPN (Japan)
+	Total dividends: £221.34
+		(Ordinary: £221.34)
+		(ERI: £0.00)
+	Total withholding tax: -£32.28
+
+	Savings interest: £0.00
+	Bond interest: £0.00
+	Accrued income profit: £0.00
+	Accrued income loss: £0.00
+	ETF dividend income: £0.00
+	Excess Reportable Income (Interest): £0.00
+	Total interest income: £0.00
+
+
+		Dividend Transactions:
+		Asset Name: 7203, Date: 12/01/2023, Type: Withholding Tax, Amount: -¥6,126, FxRate: 0.00527, Sterling Amount: -£32.28, Description: TOYOTA MOTOR CORP CASH DIVIDEND - JP TAX
+		Asset Name: 7203, Date: 12/01/2023, Type: Dividend, Amount: ¥40,000, FxRate: 0.00527, Sterling Amount: £210.80, Description: TOYOTA MOTOR CORP CASH DIVIDEND (Ordinary Dividend)
+		Asset Name: 7203, Date: 12/01/2023, Type: Payment in lieu of dividend, Amount: ¥2,000, FxRate: 0.00527, Sterling Amount: £10.54, Description: TOYOTA MOTOR CORP CASH DIVIDEND (Ordinary Dividend)
+		Interest Transactions:
+		None
+
+Tax Year: 2023
+Region: ZZZ (Unknown Region)
+	Total dividends: £0.00
+		(Ordinary: £0.00)
+		(ERI: £0.00)
+	Total withholding tax: £0.00
+
+	Savings interest: £169.35
+	Bond interest: £0.00
+	Accrued income profit: £0.00
+	Accrued income loss: £0.00
+	ETF dividend income: £0.00
+	Excess Reportable Income (Interest): £0.00
+	Total interest income: £169.35
+
+
+		Dividend Transactions:
+		None
+		Interest Transactions:
+		Asset Name: IBKR USD Cash Balance, Date: 12/31/2023, Type: Saving Interest Income, Amount: $214.37, FxRate: 0.790, Sterling Amount: £169.35, Description: Q4 2023 broker credit interest on USD cash balance
+
