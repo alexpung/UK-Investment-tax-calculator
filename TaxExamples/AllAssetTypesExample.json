@@ -1,0 +1,2216 @@
+{
+  "Trades": [
+    {
+      "AssetType": 0,
+      "AcquisitionDisposal": 0,
+      "Quantity": 200,
+      "GrossProceed": {
+        "Description": "",
+        "Amount": {
+          "Amount": 2000,
+          "Currency": "USD"
+        },
+        "FxRate": 0.8,
+        "BaseCurrencyAmount": {
+          "Amount": 1600.0,
+          "Currency": "GBP"
+        }
+      },
+      "Description": "ABC Example Stock",
+      "Expenses": [
+        {
+          "Description": "Commission",
+          "Amount": {
+            "Amount": 1.5,
+            "Currency": "USD"
+          },
+          "FxRate": 0.8,
+          "BaseCurrencyAmount": {
+            "Amount": 1.20,
+            "Currency": "GBP"
+          }
+        },
+        {
+          "Description": "Tax",
+          "Amount": {
+            "Amount": 20,
+            "Currency": "USD"
+          },
+          "FxRate": 0.8,
+          "BaseCurrencyAmount": {
+            "Amount": 16.0,
+            "Currency": "GBP"
+          }
+        }
+      ],
+      "TradeReason": 3,
+      "NetProceed": {
+        "Amount": 1617.20,
+        "Currency": "GBP"
+      },
+      "RawQuantity": 200,
+      "TradeEvents": [],
+      "AssetName": "ABC",
+      "Date": "2021-05-01T12:34:56",
+      "Isin": "US12345"
+    },
+    {
+      "AssetType": 0,
+      "AcquisitionDisposal": 0,
+      "Quantity": 50,
+      "GrossProceed": {
+        "Description": "",
+        "Amount": {
+          "Amount": 510,
+          "Currency": "USD"
+        },
+        "FxRate": 0.85,
+        "BaseCurrencyAmount": {
+          "Amount": 433.50,
+          "Currency": "GBP"
+        }
+      },
+      "Description": "ABC Example Stock",
+      "Expenses": [
+        {
+          "Description": "Commission",
+          "Amount": {
+            "Amount": 1.5,
+            "Currency": "USD"
+          },
+          "FxRate": 0.85,
+          "BaseCurrencyAmount": {
+            "Amount": 1.275,
+            "Currency": "GBP"
+          }
+        },
+        {
+          "Description": "Tax",
+          "Amount": {
+            "Amount": 30,
+            "Currency": "USD"
+          },
+          "FxRate": 0.85,
+          "BaseCurrencyAmount": {
+            "Amount": 25.50,
+            "Currency": "GBP"
+          }
+        }
+      ],
+      "TradeReason": 3,
+      "NetProceed": {
+        "Amount": 460.275,
+        "Currency": "GBP"
+      },
+      "RawQuantity": 50,
+      "TradeEvents": [],
+      "AssetName": "ABC",
+      "Date": "2021-05-03T12:33:56",
+      "Isin": "US12345"
+    },
+    {
+      "AssetType": 0,
+      "AcquisitionDisposal": 1,
+      "Quantity": 200,
+      "GrossProceed": {
+        "Description": "",
+        "Amount": {
+          "Amount": 2200,
+          "Currency": "USD"
+        },
+        "FxRate": 0.85,
+        "BaseCurrencyAmount": {
+          "Amount": 1870.00,
+          "Currency": "GBP"
+        }
+      },
+      "Description": "ABC Example Stock",
+      "Expenses": [
+        {
+          "Description": "Commission",
+          "Amount": {
+            "Amount": 1.5,
+            "Currency": "USD"
+          },
+          "FxRate": 0.85,
+          "BaseCurrencyAmount": {
+            "Amount": 1.275,
+            "Currency": "GBP"
+          }
+        },
+        {
+          "Description": "Tax",
+          "Amount": {
+            "Amount": 40,
+            "Currency": "USD"
+          },
+          "FxRate": 0.85,
+          "BaseCurrencyAmount": {
+            "Amount": 34.00,
+            "Currency": "GBP"
+          }
+        }
+      ],
+      "TradeReason": 3,
+      "NetProceed": {
+        "Amount": 1834.725,
+        "Currency": "GBP"
+      },
+      "RawQuantity": -200,
+      "TradeEvents": [],
+      "AssetName": "ABC",
+      "Date": "2021-05-03T12:34:56",
+      "Isin": "US12345"
+    },
+    {
+      "AssetType": 0,
+      "AcquisitionDisposal": 0,
+      "Quantity": 100,
+      "GrossProceed": {
+        "Description": "",
+        "Amount": {
+          "Amount": 600,
+          "Currency": "USD"
+        },
+        "FxRate": 0.86,
+        "BaseCurrencyAmount": {
+          "Amount": 516.00,
+          "Currency": "GBP"
+        }
+      },
+      "Description": "ABC Example Stock",
+      "Expenses": [
+        {
+          "Description": "Commission",
+          "Amount": {
+            "Amount": 1.5,
+            "Currency": "USD"
+          },
+          "FxRate": 0.86,
+          "BaseCurrencyAmount": {
+            "Amount": 1.290,
+            "Currency": "GBP"
+          }
+        },
+        {
+          "Description": "Tax",
+          "Amount": {
+            "Amount": 50,
+            "Currency": "USD"
+          },
+          "FxRate": 0.86,
+          "BaseCurrencyAmount": {
+            "Amount": 43.00,
+            "Currency": "GBP"
+          }
+        }
+      ],
+      "TradeReason": 3,
+      "NetProceed": {
+        "Amount": 560.290,
+        "Currency": "GBP"
+      },
+      "RawQuantity": 100,
+      "TradeEvents": [],
+      "AssetName": "ABC",
+      "Date": "2021-05-04T12:34:56",
+      "Isin": "US12345"
+    },
+    {
+      "AssetType": 0,
+      "AcquisitionDisposal": 1,
+      "Quantity": 100,
+      "GrossProceed": {
+        "Description": "",
+        "Amount": {
+          "Amount": 1000,
+          "Currency": "USD"
+        },
+        "FxRate": 0.86,
+        "BaseCurrencyAmount": {
+          "Amount": 860.00,
+          "Currency": "GBP"
+        }
+      },
+      "Description": "DEF Example Stock",
+      "Expenses": [
+        {
+          "Description": "Commission",
+          "Amount": {
+            "Amount": 1.5,
+            "Currency": "USD"
+          },
+          "FxRate": 0.86,
+          "BaseCurrencyAmount": {
+            "Amount": 1.290,
+            "Currency": "GBP"
+          }
+        }
+      ],
+      "TradeReason": 3,
+      "NetProceed": {
+        "Amount": 858.710,
+        "Currency": "GBP"
+      },
+      "RawQuantity": -100,
+      "TradeEvents": [],
+      "AssetName": "DEF",
+      "Date": "2021-05-05T12:34:56",
+      "Isin": "US12346"
+    },
+    {
+      "AssetType": 0,
+      "AcquisitionDisposal": 0,
+      "Quantity": 100,
+      "GrossProceed": {
+        "Description": "",
+        "Amount": {
+          "Amount": 500,
+          "Currency": "USD"
+        },
+        "FxRate": 0.86,
+        "BaseCurrencyAmount": {
+          "Amount": 430.00,
+          "Currency": "GBP"
+        }
+      },
+      "Description": "DEF Example Stock",
+      "Expenses": [
+        {
+          "Description": "Commission",
+          "Amount": {
+            "Amount": 1.5,
+            "Currency": "USD"
+          },
+          "FxRate": 0.86,
+          "BaseCurrencyAmount": {
+            "Amount": 1.290,
+            "Currency": "GBP"
+          }
+        }
+      ],
+      "TradeReason": 3,
+      "NetProceed": {
+        "Amount": 431.290,
+        "Currency": "GBP"
+      },
+      "RawQuantity": 100,
+      "TradeEvents": [],
+      "AssetName": "DEF",
+      "Date": "2021-12-06T12:34:56",
+      "Isin": "US12346"
+    },
+    {
+      "AssetType": 0,
+      "AcquisitionDisposal": 0,
+      "Quantity": 100,
+      "GrossProceed": {
+        "Description": "",
+        "Amount": {
+          "Amount": 80000,
+          "Currency": "USD"
+        },
+        "FxRate": 1,
+        "BaseCurrencyAmount": {
+          "Amount": 80000,
+          "Currency": "GBP"
+        }
+      },
+      "Description": "ALPHABET INC-CL C\nOption premium adjustment due to exercising option\n",
+      "Expenses": [],
+      "TradeReason": 0,
+      "NetProceed": {
+        "Amount": 80503,
+        "Currency": "GBP"
+      },
+      "RawQuantity": 100,
+      "TradeEvents": [
+        {
+          "NetProceedsAdjustment": {
+            "Amount": 503,
+            "Currency": "GBP"
+          },
+          "AllowableCostAdjustment": {
+            "Amount": 0,
+            "Currency": "GBP"
+          },
+          "Description": "Option premium adjustment due to exercising option"
+        }
+      ],
+      "AssetName": "GOOG",
+      "Date": "2018-01-19T16:20:00",
+      "Isin": "US02079K1079"
+    },
+    {
+      "AssetType": 0,
+      "AcquisitionDisposal": 1,
+      "Quantity": 100,
+      "GrossProceed": {
+        "Description": "",
+        "Amount": {
+          "Amount": 12500,
+          "Currency": "USD"
+        },
+        "FxRate": 0.5,
+        "BaseCurrencyAmount": {
+          "Amount": 6250.0,
+          "Currency": "GBP"
+        }
+      },
+      "Description": "APPLE\nOption premium adjustment due to exercising option\n",
+      "Expenses": [],
+      "TradeReason": 0,
+      "NetProceed": {
+        "Amount": 5747.0,
+        "Currency": "GBP"
+      },
+      "RawQuantity": -100,
+      "TradeEvents": [
+        {
+          "NetProceedsAdjustment": {
+            "Amount": -503.0,
+            "Currency": "GBP"
+          },
+          "AllowableCostAdjustment": {
+            "Amount": 0,
+            "Currency": "GBP"
+          },
+          "Description": "Option premium adjustment due to exercising option"
+        }
+      ],
+      "AssetName": "AAPL",
+      "Date": "2021-01-20T16:00:00",
+      "Isin": "US0378331005"
+    },
+    {
+      "AssetType": 0,
+      "AcquisitionDisposal": 0,
+      "Quantity": 100,
+      "GrossProceed": {
+        "Description": "",
+        "Amount": {
+          "Amount": 65000,
+          "Currency": "USD"
+        },
+        "FxRate": 0.1,
+        "BaseCurrencyAmount": {
+          "Amount": 6500.0,
+          "Currency": "GBP"
+        }
+      },
+      "Description": "Tesla\nOption premium adjustment due to option assignment. Premium received \u00A3149.30, assignment cost \u00A30.00\nOption premium adjustment due to option assignment. Premium received \u00A31,194.40, assignment cost \u00A30.00\n",
+      "Expenses": [
+        {
+          "Description": "Commission",
+          "Amount": {
+            "Amount": -2,
+            "Currency": "USD"
+          },
+          "FxRate": 0.1,
+          "BaseCurrencyAmount": {
+            "Amount": -0.2,
+            "Currency": "GBP"
+          }
+        }
+      ],
+      "TradeReason": 1,
+      "NetProceed": {
+        "Amount": 5156.1,
+        "Currency": "GBP"
+      },
+      "RawQuantity": 100,
+      "TradeEvents": [
+        {
+          "NetProceedsAdjustment": {
+            "Amount": -149.3,
+            "Currency": "GBP"
+          },
+          "AllowableCostAdjustment": {
+            "Amount": 0,
+            "Currency": "GBP"
+          },
+          "Description": "Option premium adjustment due to option assignment. Premium received \u00A3149.30, assignment cost \u00A30.00"
+        },
+        {
+          "NetProceedsAdjustment": {
+            "Amount": -1194.4,
+            "Currency": "GBP"
+          },
+          "AllowableCostAdjustment": {
+            "Amount": 0,
+            "Currency": "GBP"
+          },
+          "Description": "Option premium adjustment due to option assignment. Premium received \u00A31,194.40, assignment cost \u00A30.00"
+        }
+      ],
+      "AssetName": "TSLA",
+      "Date": "2021-03-20T16:20:00",
+      "Isin": "US88160R1014"
+    },
+    {
+      "AssetType": 2,
+      "AcquisitionDisposal": 0,
+      "Quantity": 4000,
+      "GrossProceed": {
+        "Description": "",
+        "Amount": {
+          "Amount": 4000,
+          "Currency": "DKK"
+        },
+        "FxRate": 0.11857,
+        "BaseCurrencyAmount": {
+          "Amount": 474.28000,
+          "Currency": "GBP"
+        }
+      },
+      "Description": "RTE(DK0010267129) Cash Dividend DKK 2.50 per Share (Ordinary Dividend)",
+      "Expenses": [],
+      "TradeReason": 3,
+      "NetProceed": {
+        "Amount": 474.28000,
+        "Currency": "GBP"
+      },
+      "RawQuantity": 4000,
+      "TradeEvents": [],
+      "AssetName": "DKK",
+      "Date": "2021-02-03T00:00:00",
+      "Isin": ""
+    },
+    {
+      "AssetType": 2,
+      "AcquisitionDisposal": 1,
+      "Quantity": 1080,
+      "GrossProceed": {
+        "Description": "",
+        "Amount": {
+          "Amount": 1080,
+          "Currency": "DKK"
+        },
+        "FxRate": 0.11857,
+        "BaseCurrencyAmount": {
+          "Amount": 128.05560,
+          "Currency": "GBP"
+        }
+      },
+      "Description": "RTE(DK0010267129) Cash Dividend DKK 2.50 per Share - DK Tax",
+      "Expenses": [],
+      "TradeReason": 3,
+      "NetProceed": {
+        "Amount": 128.05560,
+        "Currency": "GBP"
+      },
+      "RawQuantity": -1080,
+      "TradeEvents": [],
+      "AssetName": "DKK",
+      "Date": "2021-02-03T00:00:00",
+      "Isin": ""
+    },
+    {
+      "AssetType": 2,
+      "AcquisitionDisposal": 1,
+      "Quantity": 1200.00,
+      "GrossProceed": {
+        "Description": "",
+        "Amount": {
+          "Amount": 1200.00,
+          "Currency": "USD"
+        },
+        "FxRate": 0.75,
+        "BaseCurrencyAmount": {
+          "Amount": 900.0000,
+          "Currency": "GBP"
+        }
+      },
+      "Description": "Option Cash Settlement for: Assignment",
+      "Expenses": [],
+      "TradeReason": 3,
+      "NetProceed": {
+        "Amount": 900.0000,
+        "Currency": "GBP"
+      },
+      "RawQuantity": -1200.00,
+      "TradeEvents": [],
+      "AssetName": "USD",
+      "Date": "2021-03-20T00:00:00",
+      "Isin": ""
+    },
+    {
+      "AssetType": 2,
+      "AcquisitionDisposal": 1,
+      "Quantity": 500,
+      "GrossProceed": {
+        "Description": "FX gross proceed",
+        "Amount": {
+          "Amount": 400,
+          "Currency": "USD"
+        },
+        "FxRate": 0.79,
+        "BaseCurrencyAmount": {
+          "Amount": 316.00,
+          "Currency": "GBP"
+        }
+      },
+      "Description": "Disposal of USD cash balance held in brokerage account",
+      "Expenses": [],
+      "TradeReason": 3,
+      "NetProceed": {
+        "Amount": 316.00,
+        "Currency": "GBP"
+      },
+      "RawQuantity": -500,
+      "TradeEvents": [],
+      "AssetName": "USD",
+      "Date": "2021-06-15T00:00:00",
+      "Isin": ""
+    }
+  ],
+  "CorporateActions": [
+    {
+      "$type": "stockSplit",
+      "SplitTo": 2,
+      "SplitFrom": 1,
+      "CashInLieu": null,
+      "ElectTaxDeferral": true,
+      "Reason": "ABC undergoes a stock split 2 for 1 on 05/03/2021",
+      "AppliesToAssetCategoryType": 0,
+      "CompanyTickersInProcessingOrder": [
+        "ABC"
+      ],
+      "AssetName": "ABC",
+      "Date": "2021-05-03T20:25:00",
+      "Isin": ""
+    }
+  ],
+  "Dividends": [
+    {
+      "DividendType": 0,
+      "CompanyLocation": {
+        "ThreeDigitCode": "JPN",
+        "CountryName": "Japan"
+      },
+      "Proceed": {
+        "Description": "ABC CASH DIVIDEND - JP TAX",
+        "Amount": {
+          "Amount": -30000,
+          "Currency": "JPY"
+        },
+        "FxRate": 0.00555,
+        "BaseCurrencyAmount": {
+          "Amount": -166.50000,
+          "Currency": "GBP"
+        }
+      },
+      "WithholdingTaxPaid": {
+        "Amount": -166.50000,
+        "Currency": "GBP"
+      },
+      "DividendReceived": {
+        "Amount": 0,
+        "Currency": "GBP"
+      },
+      "AssetName": "ABCD",
+      "Date": "2021-02-02T00:00:00",
+      "Isin": "JP12345"
+    },
+    {
+      "DividendType": 1,
+      "CompanyLocation": {
+        "ThreeDigitCode": "JPN",
+        "CountryName": "Japan"
+      },
+      "Proceed": {
+        "Description": "ABC CASH DIVIDEND (Ordinary Dividend)",
+        "Amount": {
+          "Amount": 90000,
+          "Currency": "JPY"
+        },
+        "FxRate": 0.00555,
+        "BaseCurrencyAmount": {
+          "Amount": 499.50000,
+          "Currency": "GBP"
+        }
+      },
+      "WithholdingTaxPaid": {
+        "Amount": 0,
+        "Currency": "GBP"
+      },
+      "DividendReceived": {
+        "Amount": 499.50000,
+        "Currency": "GBP"
+      },
+      "AssetName": "ABCD",
+      "Date": "2021-02-02T00:00:00",
+      "Isin": "JP12345"
+    },
+    {
+      "DividendType": 2,
+      "CompanyLocation": {
+        "ThreeDigitCode": "JPN",
+        "CountryName": "Japan"
+      },
+      "Proceed": {
+        "Description": "ABC CASH DIVIDEND (Ordinary Dividend)",
+        "Amount": {
+          "Amount": 10000,
+          "Currency": "JPY"
+        },
+        "FxRate": 0.00555,
+        "BaseCurrencyAmount": {
+          "Amount": 55.50000,
+          "Currency": "GBP"
+        }
+      },
+      "WithholdingTaxPaid": {
+        "Amount": 0,
+        "Currency": "GBP"
+      },
+      "DividendReceived": {
+        "Amount": 55.50000,
+        "Currency": "GBP"
+      },
+      "AssetName": "ABCD",
+      "Date": "2021-02-02T00:00:00",
+      "Isin": "JP12345"
+    }
+  ],
+  "OptionTrades": [
+    {
+      "AssetType": 3,
+      "Underlying": "GOOG",
+      "StrikePrice": {
+        "Amount": 800,
+        "Currency": "USD"
+      },
+      "ExpiryDate": "2018-01-19T00:00:00",
+      "PUTCALL": 1,
+      "Multiplier": 100,
+      "ExerciseOrExercisedTrade": null,
+      "SettlementMethod": 2,
+      "AcquisitionDisposal": 0,
+      "Quantity": 1,
+      "GrossProceed": {
+        "Description": "",
+        "Amount": {
+          "Amount": 500,
+          "Currency": "USD"
+        },
+        "FxRate": 1,
+        "BaseCurrencyAmount": {
+          "Amount": 500,
+          "Currency": "GBP"
+        }
+      },
+      "Description": "GOOG 19JAN18 800.0 C",
+      "Expenses": [
+        {
+          "Description": "Commission",
+          "Amount": {
+            "Amount": 2,
+            "Currency": "USD"
+          },
+          "FxRate": 1,
+          "BaseCurrencyAmount": {
+            "Amount": 2,
+            "Currency": "GBP"
+          }
+        }
+      ],
+      "TradeReason": 3,
+      "NetProceed": {
+        "Amount": 502,
+        "Currency": "GBP"
+      },
+      "RawQuantity": 1,
+      "TradeEvents": [],
+      "AssetName": "GOOG  180119C00800000",
+      "Date": "2017-08-19T16:20:00",
+      "Isin": "US02079K1079"
+    },
+    {
+      "AssetType": 3,
+      "Underlying": "GOOG",
+      "StrikePrice": {
+        "Amount": 800,
+        "Currency": "USD"
+      },
+      "ExpiryDate": "2018-01-19T00:00:00",
+      "PUTCALL": 1,
+      "Multiplier": 100,
+      "ExerciseOrExercisedTrade": {
+        "AssetType": 0,
+        "AcquisitionDisposal": 0,
+        "Quantity": 100,
+        "GrossProceed": {
+          "Description": "",
+          "Amount": {
+            "Amount": 80000,
+            "Currency": "USD"
+          },
+          "FxRate": 1,
+          "BaseCurrencyAmount": {
+            "Amount": 80000,
+            "Currency": "GBP"
+          }
+        },
+        "Description": "ALPHABET INC-CL C\nOption premium adjustment due to exercising option\n",
+        "Expenses": [],
+        "TradeReason": 0,
+        "NetProceed": {
+          "Amount": 80503,
+          "Currency": "GBP"
+        },
+        "RawQuantity": 100,
+        "TradeEvents": [
+          {
+            "NetProceedsAdjustment": {
+              "Amount": 503,
+              "Currency": "GBP"
+            },
+            "AllowableCostAdjustment": {
+              "Amount": 0,
+              "Currency": "GBP"
+            },
+            "Description": "Option premium adjustment due to exercising option"
+          }
+        ],
+        "AssetName": "GOOG",
+        "Date": "2018-01-19T16:20:00",
+        "Isin": "US02079K1079"
+      },
+      "SettlementMethod": 2,
+      "AcquisitionDisposal": 1,
+      "Quantity": 1,
+      "GrossProceed": {
+        "Description": "",
+        "Amount": {
+          "Amount": 0,
+          "Currency": "USD"
+        },
+        "FxRate": 1,
+        "BaseCurrencyAmount": {
+          "Amount": 0,
+          "Currency": "GBP"
+        }
+      },
+      "Description": "GOOG 19JAN18 800.0 C",
+      "Expenses": [
+        {
+          "Description": "Commission",
+          "Amount": {
+            "Amount": 1,
+            "Currency": "USD"
+          },
+          "FxRate": 1,
+          "BaseCurrencyAmount": {
+            "Amount": 1,
+            "Currency": "GBP"
+          }
+        }
+      ],
+      "TradeReason": 0,
+      "NetProceed": {
+        "Amount": -1,
+        "Currency": "GBP"
+      },
+      "RawQuantity": -1,
+      "TradeEvents": [],
+      "AssetName": "GOOG  180119C00800000",
+      "Date": "2018-01-19T16:20:00",
+      "Isin": "US02079K1079"
+    },
+    {
+      "AssetType": 3,
+      "Underlying": "AAPL",
+      "StrikePrice": {
+        "Amount": 125,
+        "Currency": "USD"
+      },
+      "ExpiryDate": "2021-01-20T00:00:00",
+      "PUTCALL": 0,
+      "Multiplier": 100,
+      "ExerciseOrExercisedTrade": null,
+      "SettlementMethod": 2,
+      "AcquisitionDisposal": 0,
+      "Quantity": 1,
+      "GrossProceed": {
+        "Description": "",
+        "Amount": {
+          "Amount": 1000,
+          "Currency": "USD"
+        },
+        "FxRate": 0.5,
+        "BaseCurrencyAmount": {
+          "Amount": 500.0,
+          "Currency": "GBP"
+        }
+      },
+      "Description": "AAPL 20JAN21 125.0 P",
+      "Expenses": [
+        {
+          "Description": "Commission",
+          "Amount": {
+            "Amount": 5,
+            "Currency": "USD"
+          },
+          "FxRate": 0.5,
+          "BaseCurrencyAmount": {
+            "Amount": 2.5,
+            "Currency": "GBP"
+          }
+        }
+      ],
+      "TradeReason": 3,
+      "NetProceed": {
+        "Amount": 502.5,
+        "Currency": "GBP"
+      },
+      "RawQuantity": 1,
+      "TradeEvents": [],
+      "AssetName": "AAPL  210120P00125000",
+      "Date": "2021-01-10T16:00:00",
+      "Isin": "US0378331005"
+    },
+    {
+      "AssetType": 3,
+      "Underlying": "AAPL",
+      "StrikePrice": {
+        "Amount": 125,
+        "Currency": "USD"
+      },
+      "ExpiryDate": "2021-01-20T00:00:00",
+      "PUTCALL": 0,
+      "Multiplier": 100,
+      "ExerciseOrExercisedTrade": {
+        "AssetType": 0,
+        "AcquisitionDisposal": 1,
+        "Quantity": 100,
+        "GrossProceed": {
+          "Description": "",
+          "Amount": {
+            "Amount": 12500,
+            "Currency": "USD"
+          },
+          "FxRate": 0.5,
+          "BaseCurrencyAmount": {
+            "Amount": 6250.0,
+            "Currency": "GBP"
+          }
+        },
+        "Description": "APPLE\nOption premium adjustment due to exercising option\n",
+        "Expenses": [],
+        "TradeReason": 0,
+        "NetProceed": {
+          "Amount": 5747.0,
+          "Currency": "GBP"
+        },
+        "RawQuantity": -100,
+        "TradeEvents": [
+          {
+            "NetProceedsAdjustment": {
+              "Amount": -503.0,
+              "Currency": "GBP"
+            },
+            "AllowableCostAdjustment": {
+              "Amount": 0,
+              "Currency": "GBP"
+            },
+            "Description": "Option premium adjustment due to exercising option"
+          }
+        ],
+        "AssetName": "AAPL",
+        "Date": "2021-01-20T16:00:00",
+        "Isin": "US0378331005"
+      },
+      "SettlementMethod": 2,
+      "AcquisitionDisposal": 1,
+      "Quantity": 1,
+      "GrossProceed": {
+        "Description": "",
+        "Amount": {
+          "Amount": 0,
+          "Currency": "USD"
+        },
+        "FxRate": 0.5,
+        "BaseCurrencyAmount": {
+          "Amount": 0.0,
+          "Currency": "GBP"
+        }
+      },
+      "Description": "AAPL 20JAN21 125.0 P",
+      "Expenses": [
+        {
+          "Description": "Commission",
+          "Amount": {
+            "Amount": 4,
+            "Currency": "USD"
+          },
+          "FxRate": 0.5,
+          "BaseCurrencyAmount": {
+            "Amount": 2.0,
+            "Currency": "GBP"
+          }
+        },
+        {
+          "Description": "Tax",
+          "Amount": {
+            "Amount": -3,
+            "Currency": "USD"
+          },
+          "FxRate": 0.5,
+          "BaseCurrencyAmount": {
+            "Amount": -1.5,
+            "Currency": "GBP"
+          }
+        }
+      ],
+      "TradeReason": 0,
+      "NetProceed": {
+        "Amount": -0.5,
+        "Currency": "GBP"
+      },
+      "RawQuantity": -1,
+      "TradeEvents": [],
+      "AssetName": "AAPL  210120P00125000",
+      "Date": "2021-01-20T16:00:00",
+      "Isin": "US0378331005"
+    },
+    {
+      "AssetType": 3,
+      "Underlying": "TSLA",
+      "StrikePrice": {
+        "Amount": 650,
+        "Currency": "USD"
+      },
+      "ExpiryDate": "2021-03-20T00:00:00",
+      "PUTCALL": 0,
+      "Multiplier": 100,
+      "ExerciseOrExercisedTrade": null,
+      "SettlementMethod": 2,
+      "AcquisitionDisposal": 1,
+      "Quantity": 1,
+      "GrossProceed": {
+        "Description": "",
+        "Amount": {
+          "Amount": 1500,
+          "Currency": "USD"
+        },
+        "FxRate": 0.1,
+        "BaseCurrencyAmount": {
+          "Amount": 150.0,
+          "Currency": "GBP"
+        }
+      },
+      "Description": "TSLA 20MAR21 650.0 P",
+      "Expenses": [
+        {
+          "Description": "Commission",
+          "Amount": {
+            "Amount": 7,
+            "Currency": "USD"
+          },
+          "FxRate": 0.1,
+          "BaseCurrencyAmount": {
+            "Amount": 0.7,
+            "Currency": "GBP"
+          }
+        }
+      ],
+      "TradeReason": 3,
+      "NetProceed": {
+        "Amount": 149.3,
+        "Currency": "GBP"
+      },
+      "RawQuantity": -1,
+      "TradeEvents": [],
+      "AssetName": "TSLA  210320P00650000",
+      "Date": "2021-03-05T16:00:00",
+      "Isin": "US88160R1014"
+    },
+    {
+      "AssetType": 3,
+      "Underlying": "TSLA",
+      "StrikePrice": {
+        "Amount": 650,
+        "Currency": "USD"
+      },
+      "ExpiryDate": "2021-03-20T00:00:00",
+      "PUTCALL": 0,
+      "Multiplier": 100,
+      "ExerciseOrExercisedTrade": {
+        "AssetType": 0,
+        "AcquisitionDisposal": 0,
+        "Quantity": 100,
+        "GrossProceed": {
+          "Description": "",
+          "Amount": {
+            "Amount": 65000,
+            "Currency": "USD"
+          },
+          "FxRate": 0.1,
+          "BaseCurrencyAmount": {
+            "Amount": 6500.0,
+            "Currency": "GBP"
+          }
+        },
+        "Description": "Tesla\nOption premium adjustment due to option assignment. Premium received \u00A3149.30, assignment cost \u00A30.00\nOption premium adjustment due to option assignment. Premium received \u00A31,194.40, assignment cost \u00A30.00\n",
+        "Expenses": [
+          {
+            "Description": "Commission",
+            "Amount": {
+              "Amount": -2,
+              "Currency": "USD"
+            },
+            "FxRate": 0.1,
+            "BaseCurrencyAmount": {
+              "Amount": -0.2,
+              "Currency": "GBP"
+            }
+          }
+        ],
+        "TradeReason": 1,
+        "NetProceed": {
+          "Amount": 5156.1,
+          "Currency": "GBP"
+        },
+        "RawQuantity": 100,
+        "TradeEvents": [
+          {
+            "NetProceedsAdjustment": {
+              "Amount": -149.3,
+              "Currency": "GBP"
+            },
+            "AllowableCostAdjustment": {
+              "Amount": 0,
+              "Currency": "GBP"
+            },
+            "Description": "Option premium adjustment due to option assignment. Premium received \u00A3149.30, assignment cost \u00A30.00"
+          },
+          {
+            "NetProceedsAdjustment": {
+              "Amount": -1194.4,
+              "Currency": "GBP"
+            },
+            "AllowableCostAdjustment": {
+              "Amount": 0,
+              "Currency": "GBP"
+            },
+            "Description": "Option premium adjustment due to option assignment. Premium received \u00A31,194.40, assignment cost \u00A30.00"
+          }
+        ],
+        "AssetName": "TSLA",
+        "Date": "2021-03-20T16:20:00",
+        "Isin": "US88160R1014"
+      },
+      "SettlementMethod": 2,
+      "AcquisitionDisposal": 0,
+      "Quantity": 1,
+      "GrossProceed": {
+        "Description": "",
+        "Amount": {
+          "Amount": 0,
+          "Currency": "USD"
+        },
+        "FxRate": 0.1,
+        "BaseCurrencyAmount": {
+          "Amount": 0.0,
+          "Currency": "GBP"
+        }
+      },
+      "Description": "TSLA 20MAR21 650.0 P",
+      "Expenses": [],
+      "TradeReason": 1,
+      "NetProceed": {
+        "Amount": 0,
+        "Currency": "GBP"
+      },
+      "RawQuantity": 1,
+      "TradeEvents": [],
+      "AssetName": "TSLA  210320P00650000",
+      "Date": "2021-03-20T16:00:00",
+      "Isin": "US88160R1014"
+    },
+    {
+      "AssetType": 3,
+      "Underlying": "MSFT",
+      "StrikePrice": {
+        "Amount": 230,
+        "Currency": "USD"
+      },
+      "ExpiryDate": "2021-04-16T00:00:00",
+      "PUTCALL": 1,
+      "Multiplier": 100,
+      "ExerciseOrExercisedTrade": null,
+      "SettlementMethod": 0,
+      "AcquisitionDisposal": 0,
+      "Quantity": 1,
+      "GrossProceed": {
+        "Description": "",
+        "Amount": {
+          "Amount": 2000,
+          "Currency": "USD"
+        },
+        "FxRate": 0.7,
+        "BaseCurrencyAmount": {
+          "Amount": 1400.0,
+          "Currency": "GBP"
+        }
+      },
+      "Description": "MSFT 16APR21 230.0 C",
+      "Expenses": [
+        {
+          "Description": "Commission",
+          "Amount": {
+            "Amount": 3,
+            "Currency": "USD"
+          },
+          "FxRate": 0.7,
+          "BaseCurrencyAmount": {
+            "Amount": 2.1,
+            "Currency": "GBP"
+          }
+        }
+      ],
+      "TradeReason": 3,
+      "NetProceed": {
+        "Amount": 1402.1,
+        "Currency": "GBP"
+      },
+      "RawQuantity": 1,
+      "TradeEvents": [],
+      "AssetName": "MSFT  210416C00230000",
+      "Date": "2021-04-01T16:00:00",
+      "Isin": "US5949181045"
+    },
+    {
+      "AssetType": 3,
+      "Underlying": "MSFT",
+      "StrikePrice": {
+        "Amount": 230,
+        "Currency": "USD"
+      },
+      "ExpiryDate": "2021-04-16T00:00:00",
+      "PUTCALL": 1,
+      "Multiplier": 100,
+      "ExerciseOrExercisedTrade": null,
+      "SettlementMethod": 0,
+      "AcquisitionDisposal": 1,
+      "Quantity": 1,
+      "GrossProceed": {
+        "Description": "",
+        "Amount": {
+          "Amount": 0,
+          "Currency": "USD"
+        },
+        "FxRate": 0.7,
+        "BaseCurrencyAmount": {
+          "Amount": 0.0,
+          "Currency": "GBP"
+        }
+      },
+      "Description": "MSFT 16APR21 230.0 C",
+      "Expenses": [],
+      "TradeReason": 2,
+      "NetProceed": {
+        "Amount": 0,
+        "Currency": "GBP"
+      },
+      "RawQuantity": -1,
+      "TradeEvents": [],
+      "AssetName": "MSFT  210416C00230000",
+      "Date": "2021-04-16T16:00:00",
+      "Isin": "US5949181045"
+    },
+    {
+      "AssetType": 3,
+      "Underlying": "MSFT",
+      "StrikePrice": {
+        "Amount": 230,
+        "Currency": "USD"
+      },
+      "ExpiryDate": "2021-01-16T00:00:00",
+      "PUTCALL": 1,
+      "Multiplier": 100,
+      "ExerciseOrExercisedTrade": null,
+      "SettlementMethod": 0,
+      "AcquisitionDisposal": 1,
+      "Quantity": 1,
+      "GrossProceed": {
+        "Description": "",
+        "Amount": {
+          "Amount": 3000,
+          "Currency": "USD"
+        },
+        "FxRate": 0.8,
+        "BaseCurrencyAmount": {
+          "Amount": 2400.0,
+          "Currency": "GBP"
+        }
+      },
+      "Description": "MSFT 16JAN21 230.0 C",
+      "Expenses": [
+        {
+          "Description": "Commission",
+          "Amount": {
+            "Amount": 3,
+            "Currency": "USD"
+          },
+          "FxRate": 0.8,
+          "BaseCurrencyAmount": {
+            "Amount": 2.4,
+            "Currency": "GBP"
+          }
+        }
+      ],
+      "TradeReason": 3,
+      "NetProceed": {
+        "Amount": 2397.6,
+        "Currency": "GBP"
+      },
+      "RawQuantity": -1,
+      "TradeEvents": [],
+      "AssetName": "MSFT  210116C00230000",
+      "Date": "2021-01-01T16:00:00",
+      "Isin": "US5949181045"
+    },
+    {
+      "AssetType": 3,
+      "Underlying": "MSFT",
+      "StrikePrice": {
+        "Amount": 230,
+        "Currency": "USD"
+      },
+      "ExpiryDate": "2021-01-16T00:00:00",
+      "PUTCALL": 1,
+      "Multiplier": 100,
+      "ExerciseOrExercisedTrade": null,
+      "SettlementMethod": 0,
+      "AcquisitionDisposal": 0,
+      "Quantity": 1,
+      "GrossProceed": {
+        "Description": "",
+        "Amount": {
+          "Amount": 0,
+          "Currency": "USD"
+        },
+        "FxRate": 0.85,
+        "BaseCurrencyAmount": {
+          "Amount": 0.00,
+          "Currency": "GBP"
+        }
+      },
+      "Description": "MSFT 16JAN21 230.0 C",
+      "Expenses": [],
+      "TradeReason": 2,
+      "NetProceed": {
+        "Amount": 0,
+        "Currency": "GBP"
+      },
+      "RawQuantity": 1,
+      "TradeEvents": [],
+      "AssetName": "MSFT  210116C00230000",
+      "Date": "2021-01-16T16:00:00",
+      "Isin": "US5949181045"
+    },
+    {
+      "AssetType": 3,
+      "Underlying": "TSLA",
+      "StrikePrice": {
+        "Amount": 650,
+        "Currency": "USD"
+      },
+      "ExpiryDate": "2021-03-20T00:00:00",
+      "PUTCALL": 0,
+      "Multiplier": 100,
+      "ExerciseOrExercisedTrade": null,
+      "SettlementMethod": 2,
+      "AcquisitionDisposal": 1,
+      "Quantity": 1,
+      "GrossProceed": {
+        "Description": "",
+        "Amount": {
+          "Amount": 1500,
+          "Currency": "USD"
+        },
+        "FxRate": 0.8,
+        "BaseCurrencyAmount": {
+          "Amount": 1200.0,
+          "Currency": "GBP"
+        }
+      },
+      "Description": "TSLA 20MAR21 650.0 P",
+      "Expenses": [
+        {
+          "Description": "Commission",
+          "Amount": {
+            "Amount": 7,
+            "Currency": "USD"
+          },
+          "FxRate": 0.8,
+          "BaseCurrencyAmount": {
+            "Amount": 5.6,
+            "Currency": "GBP"
+          }
+        }
+      ],
+      "TradeReason": 3,
+      "NetProceed": {
+        "Amount": 1194.4,
+        "Currency": "GBP"
+      },
+      "RawQuantity": -1,
+      "TradeEvents": [],
+      "AssetName": "TSLA  210320P00650000",
+      "Date": "2021-01-05T16:00:00",
+      "Isin": "US12348"
+    },
+    {
+      "AssetType": 3,
+      "Underlying": "TSLA",
+      "StrikePrice": {
+        "Amount": 650,
+        "Currency": "USD"
+      },
+      "ExpiryDate": "2021-03-20T00:00:00",
+      "PUTCALL": 0,
+      "Multiplier": 100,
+      "ExerciseOrExercisedTrade": {
+        "AssetType": 0,
+        "AcquisitionDisposal": 0,
+        "Quantity": 100,
+        "GrossProceed": {
+          "Description": "",
+          "Amount": {
+            "Amount": 65000,
+            "Currency": "USD"
+          },
+          "FxRate": 0.1,
+          "BaseCurrencyAmount": {
+            "Amount": 6500.0,
+            "Currency": "GBP"
+          }
+        },
+        "Description": "Tesla\nOption premium adjustment due to option assignment. Premium received \u00A3149.30, assignment cost \u00A30.00\nOption premium adjustment due to option assignment. Premium received \u00A31,194.40, assignment cost \u00A30.00\n",
+        "Expenses": [
+          {
+            "Description": "Commission",
+            "Amount": {
+              "Amount": -2,
+              "Currency": "USD"
+            },
+            "FxRate": 0.1,
+            "BaseCurrencyAmount": {
+              "Amount": -0.2,
+              "Currency": "GBP"
+            }
+          }
+        ],
+        "TradeReason": 1,
+        "NetProceed": {
+          "Amount": 5156.1,
+          "Currency": "GBP"
+        },
+        "RawQuantity": 100,
+        "TradeEvents": [
+          {
+            "NetProceedsAdjustment": {
+              "Amount": -149.3,
+              "Currency": "GBP"
+            },
+            "AllowableCostAdjustment": {
+              "Amount": 0,
+              "Currency": "GBP"
+            },
+            "Description": "Option premium adjustment due to option assignment. Premium received \u00A3149.30, assignment cost \u00A30.00"
+          },
+          {
+            "NetProceedsAdjustment": {
+              "Amount": -1194.4,
+              "Currency": "GBP"
+            },
+            "AllowableCostAdjustment": {
+              "Amount": 0,
+              "Currency": "GBP"
+            },
+            "Description": "Option premium adjustment due to option assignment. Premium received \u00A31,194.40, assignment cost \u00A30.00"
+          }
+        ],
+        "AssetName": "TSLA",
+        "Date": "2021-03-20T16:20:00",
+        "Isin": "US88160R1014"
+      },
+      "SettlementMethod": 2,
+      "AcquisitionDisposal": 0,
+      "Quantity": 1,
+      "GrossProceed": {
+        "Description": "",
+        "Amount": {
+          "Amount": 0,
+          "Currency": "USD"
+        },
+        "FxRate": 0.75,
+        "BaseCurrencyAmount": {
+          "Amount": 0.00,
+          "Currency": "GBP"
+        }
+      },
+      "Description": "TSLA 20MAR21 650.0 P",
+      "Expenses": [],
+      "TradeReason": 1,
+      "NetProceed": {
+        "Amount": 0,
+        "Currency": "GBP"
+      },
+      "RawQuantity": 1,
+      "TradeEvents": [],
+      "AssetName": "TSLA  210320P00650000",
+      "Date": "2021-03-20T16:00:00",
+      "Isin": "US12348"
+    }
+  ],
+  "FutureContractTrades": [
+    {
+      "ContractValue": {
+        "Description": "",
+        "Amount": {
+          "Amount": 27000000,
+          "Currency": "JPY"
+        },
+        "FxRate": 0.006,
+        "BaseCurrencyAmount": {
+          "Amount": 162000.000,
+          "Currency": "GBP"
+        }
+      },
+      "AssetType": 1,
+      "PositionType": 0,
+      "AcquisitionDisposal": 0,
+      "Quantity": 2,
+      "GrossProceed": {
+        "Description": "",
+        "Amount": {
+          "Amount": 0,
+          "Currency": "GBP"
+        },
+        "FxRate": 1,
+        "BaseCurrencyAmount": {
+          "Amount": 0,
+          "Currency": "GBP"
+        }
+      },
+      "Description": "NIY 10MAR23",
+      "Expenses": [
+        {
+          "Description": "Commission",
+          "Amount": {
+            "Amount": 700,
+            "Currency": "JPY"
+          },
+          "FxRate": 0.006,
+          "BaseCurrencyAmount": {
+            "Amount": 4.200,
+            "Currency": "GBP"
+          }
+        }
+      ],
+      "TradeReason": 3,
+      "NetProceed": {
+        "Amount": 4.200,
+        "Currency": "GBP"
+      },
+      "RawQuantity": 2,
+      "TradeEvents": [],
+      "AssetName": "NIYH3",
+      "Date": "2023-03-05T12:34:56",
+      "Isin": "JP12343"
+    },
+    {
+      "ContractValue": {
+        "Description": "",
+        "Amount": {
+          "Amount": 29000000,
+          "Currency": "JPY"
+        },
+        "FxRate": 0.006,
+        "BaseCurrencyAmount": {
+          "Amount": 174000.000,
+          "Currency": "GBP"
+        }
+      },
+      "AssetType": 1,
+      "PositionType": 2,
+      "AcquisitionDisposal": 1,
+      "Quantity": 2,
+      "GrossProceed": {
+        "Description": "",
+        "Amount": {
+          "Amount": 0,
+          "Currency": "GBP"
+        },
+        "FxRate": 1,
+        "BaseCurrencyAmount": {
+          "Amount": 0,
+          "Currency": "GBP"
+        }
+      },
+      "Description": "NIY 10MAR23",
+      "Expenses": [
+        {
+          "Description": "Commission",
+          "Amount": {
+            "Amount": 800,
+            "Currency": "JPY"
+          },
+          "FxRate": 0.006,
+          "BaseCurrencyAmount": {
+            "Amount": 4.800,
+            "Currency": "GBP"
+          }
+        }
+      ],
+      "TradeReason": 3,
+      "NetProceed": {
+        "Amount": -4.800,
+        "Currency": "GBP"
+      },
+      "RawQuantity": -2,
+      "TradeEvents": [],
+      "AssetName": "NIYH3",
+      "Date": "2023-03-07T12:34:56",
+      "Isin": "JP12343"
+    },
+    {
+      "ContractValue": {
+        "Description": "",
+        "Amount": {
+          "Amount": 27000000,
+          "Currency": "JPY"
+        },
+        "FxRate": 0.8,
+        "BaseCurrencyAmount": {
+          "Amount": 21600000.0,
+          "Currency": "GBP"
+        }
+      },
+      "AssetType": 1,
+      "PositionType": 1,
+      "AcquisitionDisposal": 1,
+      "Quantity": 2,
+      "GrossProceed": {
+        "Description": "",
+        "Amount": {
+          "Amount": 0,
+          "Currency": "GBP"
+        },
+        "FxRate": 1,
+        "BaseCurrencyAmount": {
+          "Amount": 0,
+          "Currency": "GBP"
+        }
+      },
+      "Description": "NIY 12MAR23",
+      "Expenses": [
+        {
+          "Description": "Commission",
+          "Amount": {
+            "Amount": 700,
+            "Currency": "JPY"
+          },
+          "FxRate": 0.8,
+          "BaseCurrencyAmount": {
+            "Amount": 560.0,
+            "Currency": "GBP"
+          }
+        }
+      ],
+      "TradeReason": 3,
+      "NetProceed": {
+        "Amount": -560.0,
+        "Currency": "GBP"
+      },
+      "RawQuantity": -2,
+      "TradeEvents": [],
+      "AssetName": "Short NIYH4",
+      "Date": "2023-03-05T12:34:56",
+      "Isin": "JP12344"
+    },
+    {
+      "ContractValue": {
+        "Description": "",
+        "Amount": {
+          "Amount": 31000000,
+          "Currency": "JPY"
+        },
+        "FxRate": 0.7,
+        "BaseCurrencyAmount": {
+          "Amount": 21700000.0,
+          "Currency": "GBP"
+        }
+      },
+      "AssetType": 1,
+      "PositionType": 3,
+      "AcquisitionDisposal": 0,
+      "Quantity": 2,
+      "GrossProceed": {
+        "Description": "",
+        "Amount": {
+          "Amount": 0,
+          "Currency": "GBP"
+        },
+        "FxRate": 1,
+        "BaseCurrencyAmount": {
+          "Amount": 0,
+          "Currency": "GBP"
+        }
+      },
+      "Description": "NIY 12MAR23",
+      "Expenses": [
+        {
+          "Description": "Commission",
+          "Amount": {
+            "Amount": 900,
+            "Currency": "JPY"
+          },
+          "FxRate": 0.7,
+          "BaseCurrencyAmount": {
+            "Amount": 630.0,
+            "Currency": "GBP"
+          }
+        }
+      ],
+      "TradeReason": 3,
+      "NetProceed": {
+        "Amount": 630.0,
+        "Currency": "GBP"
+      },
+      "RawQuantity": 2,
+      "TradeEvents": [],
+      "AssetName": "Short NIYH4",
+      "Date": "2023-03-05T12:35:56",
+      "Isin": "JP12344"
+    },
+    {
+      "ContractValue": {
+        "Description": "",
+        "Amount": {
+          "Amount": 27000000,
+          "Currency": "JPY"
+        },
+        "FxRate": 1,
+        "BaseCurrencyAmount": {
+          "Amount": 27000000,
+          "Currency": "GBP"
+        }
+      },
+      "AssetType": 1,
+      "PositionType": 0,
+      "AcquisitionDisposal": 0,
+      "Quantity": 2,
+      "GrossProceed": {
+        "Description": "",
+        "Amount": {
+          "Amount": 0,
+          "Currency": "GBP"
+        },
+        "FxRate": 1,
+        "BaseCurrencyAmount": {
+          "Amount": 0,
+          "Currency": "GBP"
+        }
+      },
+      "Description": "NIY 14MAR23",
+      "Expenses": [
+        {
+          "Description": "Commission",
+          "Amount": {
+            "Amount": 700,
+            "Currency": "JPY"
+          },
+          "FxRate": 1,
+          "BaseCurrencyAmount": {
+            "Amount": 700,
+            "Currency": "GBP"
+          }
+        }
+      ],
+      "TradeReason": 3,
+      "NetProceed": {
+        "Amount": 700,
+        "Currency": "GBP"
+      },
+      "RawQuantity": 2,
+      "TradeEvents": [],
+      "AssetName": "NIYH5",
+      "Date": "2023-03-05T12:34:56",
+      "Isin": "JP12345"
+    },
+    {
+      "ContractValue": {
+        "Description": "",
+        "Amount": {
+          "Amount": 29000000,
+          "Currency": "JPY"
+        },
+        "FxRate": 0.9,
+        "BaseCurrencyAmount": {
+          "Amount": 26100000.0,
+          "Currency": "GBP"
+        }
+      },
+      "AssetType": 1,
+      "PositionType": 2,
+      "AcquisitionDisposal": 1,
+      "Quantity": 2,
+      "GrossProceed": {
+        "Description": "",
+        "Amount": {
+          "Amount": 0,
+          "Currency": "GBP"
+        },
+        "FxRate": 1,
+        "BaseCurrencyAmount": {
+          "Amount": 0,
+          "Currency": "GBP"
+        }
+      },
+      "Description": "NIY 14MAR23",
+      "Expenses": [
+        {
+          "Description": "Commission",
+          "Amount": {
+            "Amount": 500,
+            "Currency": "JPY"
+          },
+          "FxRate": 0.9,
+          "BaseCurrencyAmount": {
+            "Amount": 450.0,
+            "Currency": "GBP"
+          }
+        }
+      ],
+      "TradeReason": 3,
+      "NetProceed": {
+        "Amount": -450.0,
+        "Currency": "GBP"
+      },
+      "RawQuantity": -2,
+      "TradeEvents": [],
+      "AssetName": "NIYH5",
+      "Date": "2023-03-07T12:34:56",
+      "Isin": "JP12345"
+    },
+    {
+      "ContractValue": {
+        "Description": "",
+        "Amount": {
+          "Amount": 25000000,
+          "Currency": "JPY"
+        },
+        "FxRate": 0.9,
+        "BaseCurrencyAmount": {
+          "Amount": 22500000.0,
+          "Currency": "GBP"
+        }
+      },
+      "AssetType": 1,
+      "PositionType": 0,
+      "AcquisitionDisposal": 0,
+      "Quantity": 2,
+      "GrossProceed": {
+        "Description": "",
+        "Amount": {
+          "Amount": 0,
+          "Currency": "GBP"
+        },
+        "FxRate": 1,
+        "BaseCurrencyAmount": {
+          "Amount": 0,
+          "Currency": "GBP"
+        }
+      },
+      "Description": "NIY 14MAR23",
+      "Expenses": [
+        {
+          "Description": "Commission",
+          "Amount": {
+            "Amount": 800,
+            "Currency": "JPY"
+          },
+          "FxRate": 0.9,
+          "BaseCurrencyAmount": {
+            "Amount": 720.0,
+            "Currency": "GBP"
+          }
+        }
+      ],
+      "TradeReason": 3,
+      "NetProceed": {
+        "Amount": 720.0,
+        "Currency": "GBP"
+      },
+      "RawQuantity": 2,
+      "TradeEvents": [],
+      "AssetName": "NIYH5",
+      "Date": "2023-03-09T12:34:56",
+      "Isin": "JP12345"
+    },
+    {
+      "ContractValue": {
+        "Description": "",
+        "Amount": {
+          "Amount": 27000000,
+          "Currency": "JPY"
+        },
+        "FxRate": 0.6,
+        "BaseCurrencyAmount": {
+          "Amount": 16200000.0,
+          "Currency": "GBP"
+        }
+      },
+      "AssetType": 1,
+      "PositionType": 0,
+      "AcquisitionDisposal": 0,
+      "Quantity": 2,
+      "GrossProceed": {
+        "Description": "",
+        "Amount": {
+          "Amount": 0,
+          "Currency": "GBP"
+        },
+        "FxRate": 1,
+        "BaseCurrencyAmount": {
+          "Amount": 0,
+          "Currency": "GBP"
+        }
+      },
+      "Description": "NIY 15MAR23",
+      "Expenses": [
+        {
+          "Description": "Commission",
+          "Amount": {
+            "Amount": 700,
+            "Currency": "JPY"
+          },
+          "FxRate": 0.6,
+          "BaseCurrencyAmount": {
+            "Amount": 420.0,
+            "Currency": "GBP"
+          }
+        }
+      ],
+      "TradeReason": 3,
+      "NetProceed": {
+        "Amount": 420.0,
+        "Currency": "GBP"
+      },
+      "RawQuantity": 2,
+      "TradeEvents": [],
+      "AssetName": "NIYH6",
+      "Date": "2023-03-05T12:34:56",
+      "Isin": "JP12346"
+    },
+    {
+      "ContractValue": {
+        "Description": "",
+        "Amount": {
+          "Amount": 20000000,
+          "Currency": "JPY"
+        },
+        "FxRate": 0.6,
+        "BaseCurrencyAmount": {
+          "Amount": 12000000.0,
+          "Currency": "GBP"
+        }
+      },
+      "AssetType": 1,
+      "PositionType": 2,
+      "AcquisitionDisposal": 1,
+      "Quantity": 2,
+      "GrossProceed": {
+        "Description": "",
+        "Amount": {
+          "Amount": 0,
+          "Currency": "GBP"
+        },
+        "FxRate": 1,
+        "BaseCurrencyAmount": {
+          "Amount": 0,
+          "Currency": "GBP"
+        }
+      },
+      "Description": "NIY 15MAR23",
+      "Expenses": [
+        {
+          "Description": "Commission",
+          "Amount": {
+            "Amount": 800,
+            "Currency": "JPY"
+          },
+          "FxRate": 0.6,
+          "BaseCurrencyAmount": {
+            "Amount": 480.0,
+            "Currency": "GBP"
+          }
+        }
+      ],
+      "TradeReason": 3,
+      "NetProceed": {
+        "Amount": -480.0,
+        "Currency": "GBP"
+      },
+      "RawQuantity": -2,
+      "TradeEvents": [],
+      "AssetName": "NIYH6",
+      "Date": "2023-03-07T12:34:56",
+      "Isin": "JP12346"
+    }
+  ],
+  "CashSettlements": [
+    {
+      "Description": "Option Cash Settlement for: Assignment",
+      "Amount": {
+        "Description": "Option Cash Settlement for: Assignment",
+        "Amount": {
+          "Amount": -1200.00,
+          "Currency": "USD"
+        },
+        "FxRate": 0.75,
+        "BaseCurrencyAmount": {
+          "Amount": -900.0000,
+          "Currency": "GBP"
+        }
+      },
+      "TradeReason": 1,
+      "AssetName": "TSLA  210320P00650000",
+      "Date": "2021-03-20T00:00:00",
+      "Isin": ""
+    }
+  ],
+  "InterestIncomes": [
+    {
+      "Amount": {
+        "Description": "Annual savings account interest",
+        "Amount": {
+          "Amount": 125.40,
+          "Currency": "GBP"
+        },
+        "FxRate": 1,
+        "BaseCurrencyAmount": {
+          "Amount": 125.40,
+          "Currency": "GBP"
+        }
+      },
+      "InterestType": 0,
+      "IncomeLocation": {
+        "ThreeDigitCode": "ZZZ",
+        "CountryName": "Unknown Region"
+      },
+      "IsNextPaymentInSameTaxYear": true,
+      "IsTaxDeferred": false,
+      "AssetName": "Barclays UK Savings Account",
+      "Date": "2021-09-20T00:00:00",
+      "Isin": ""
+    }
+  ],
+  "AllEvents": [
+    {
+      "AssetName": "ABC",
+      "Date": "2021-05-01T12:34:56",
+      "Isin": "US12345"
+    },
+    {
+      "AssetName": "ABC",
+      "Date": "2021-05-03T12:33:56",
+      "Isin": "US12345"
+    },
+    {
+      "AssetName": "ABC",
+      "Date": "2021-05-03T12:34:56",
+      "Isin": "US12345"
+    },
+    {
+      "AssetName": "ABC",
+      "Date": "2021-05-04T12:34:56",
+      "Isin": "US12345"
+    },
+    {
+      "AssetName": "DEF",
+      "Date": "2021-05-05T12:34:56",
+      "Isin": "US12346"
+    },
+    {
+      "AssetName": "DEF",
+      "Date": "2021-12-06T12:34:56",
+      "Isin": "US12346"
+    },
+    {
+      "AssetName": "GOOG",
+      "Date": "2018-01-19T16:20:00",
+      "Isin": "US02079K1079"
+    },
+    {
+      "AssetName": "AAPL",
+      "Date": "2021-01-20T16:00:00",
+      "Isin": "US0378331005"
+    },
+    {
+      "AssetName": "TSLA",
+      "Date": "2021-03-20T16:20:00",
+      "Isin": "US88160R1014"
+    },
+    {
+      "AssetName": "DKK",
+      "Date": "2021-02-03T00:00:00",
+      "Isin": ""
+    },
+    {
+      "AssetName": "DKK",
+      "Date": "2021-02-03T00:00:00",
+      "Isin": ""
+    },
+    {
+      "AssetName": "USD",
+      "Date": "2021-03-20T00:00:00",
+      "Isin": ""
+    },
+    {
+      "AssetName": "USD",
+      "Date": "2021-06-15T00:00:00",
+      "Isin": ""
+    },
+    {
+      "AssetName": "ABC",
+      "Date": "2021-05-03T20:25:00",
+      "Isin": ""
+    },
+    {
+      "AssetName": "ABCD",
+      "Date": "2021-02-02T00:00:00",
+      "Isin": "JP12345"
+    },
+    {
+      "AssetName": "ABCD",
+      "Date": "2021-02-02T00:00:00",
+      "Isin": "JP12345"
+    },
+    {
+      "AssetName": "ABCD",
+      "Date": "2021-02-02T00:00:00",
+      "Isin": "JP12345"
+    },
+    {
+      "AssetName": "GOOG  180119C00800000",
+      "Date": "2017-08-19T16:20:00",
+      "Isin": "US02079K1079"
+    },
+    {
+      "AssetName": "GOOG  180119C00800000",
+      "Date": "2018-01-19T16:20:00",
+      "Isin": "US02079K1079"
+    },
+    {
+      "AssetName": "AAPL  210120P00125000",
+      "Date": "2021-01-10T16:00:00",
+      "Isin": "US0378331005"
+    },
+    {
+      "AssetName": "AAPL  210120P00125000",
+      "Date": "2021-01-20T16:00:00",
+      "Isin": "US0378331005"
+    },
+    {
+      "AssetName": "TSLA  210320P00650000",
+      "Date": "2021-03-05T16:00:00",
+      "Isin": "US88160R1014"
+    },
+    {
+      "AssetName": "TSLA  210320P00650000",
+      "Date": "2021-03-20T16:00:00",
+      "Isin": "US88160R1014"
+    },
+    {
+      "AssetName": "MSFT  210416C00230000",
+      "Date": "2021-04-01T16:00:00",
+      "Isin": "US5949181045"
+    },
+    {
+      "AssetName": "MSFT  210416C00230000",
+      "Date": "2021-04-16T16:00:00",
+      "Isin": "US5949181045"
+    },
+    {
+      "AssetName": "MSFT  210116C00230000",
+      "Date": "2021-01-01T16:00:00",
+      "Isin": "US5949181045"
+    },
+    {
+      "AssetName": "MSFT  210116C00230000",
+      "Date": "2021-01-16T16:00:00",
+      "Isin": "US5949181045"
+    },
+    {
+      "AssetName": "TSLA  210320P00650000",
+      "Date": "2021-01-05T16:00:00",
+      "Isin": "US12348"
+    },
+    {
+      "AssetName": "TSLA  210320P00650000",
+      "Date": "2021-03-20T16:00:00",
+      "Isin": "US12348"
+    },
+    {
+      "AssetName": "NIYH3",
+      "Date": "2023-03-05T12:34:56",
+      "Isin": "JP12343"
+    },
+    {
+      "AssetName": "NIYH3",
+      "Date": "2023-03-07T12:34:56",
+      "Isin": "JP12343"
+    },
+    {
+      "AssetName": "Short NIYH4",
+      "Date": "2023-03-05T12:34:56",
+      "Isin": "JP12344"
+    },
+    {
+      "AssetName": "Short NIYH4",
+      "Date": "2023-03-05T12:35:56",
+      "Isin": "JP12344"
+    },
+    {
+      "AssetName": "NIYH5",
+      "Date": "2023-03-05T12:34:56",
+      "Isin": "JP12345"
+    },
+    {
+      "AssetName": "NIYH5",
+      "Date": "2023-03-07T12:34:56",
+      "Isin": "JP12345"
+    },
+    {
+      "AssetName": "NIYH5",
+      "Date": "2023-03-09T12:34:56",
+      "Isin": "JP12345"
+    },
+    {
+      "AssetName": "NIYH6",
+      "Date": "2023-03-05T12:34:56",
+      "Isin": "JP12346"
+    },
+    {
+      "AssetName": "NIYH6",
+      "Date": "2023-03-07T12:34:56",
+      "Isin": "JP12346"
+    },
+    {
+      "AssetName": "TSLA  210320P00650000",
+      "Date": "2021-03-20T00:00:00",
+      "Isin": ""
+    },
+    {
+      "AssetName": "Barclays UK Savings Account",
+      "Date": "2021-09-20T00:00:00",
+      "Isin": ""
+    }
+  ]
+}
