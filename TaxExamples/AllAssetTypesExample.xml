@@ -1,0 +1,59 @@
+<FlexQueryResponse queryName="Tax" type="AF">
+	<FlexStatements count="1">
+		<FlexStatement accountId="U7654321" fromDate="01-Apr-23" toDate="30-Apr-24" period="Custom" whenGenerated="01-May-24 00:00:00">
+			<Trades>
+				<!-- Apple Inc (AAPL) - builds a Section 104 pool, then a disposal that is matched
+				     same day / bed and breakfast / Section 104 -->
+				<Order currency="USD" fxRateToBase="0.795" assetCategory="STK" symbol="AAPL" isin="US0378331005" description="APPLE INC" dateTime="12-Jun-23 12:30:00" quantity="100" proceeds="-18025.00" taxes="0" ibCommission="-1.00" ibCommissionCurrency="USD" notes="O" buySell="BUY" levelOfDetail="ORDER" />
+				<Order currency="USD" fxRateToBase="0.803" assetCategory="STK" symbol="AAPL" isin="US0378331005" description="APPLE INC" dateTime="05-Sep-23 14:15:00" quantity="40" proceeds="-7500.00" taxes="0" ibCommission="-1.00" ibCommissionCurrency="USD" notes="O" buySell="BUY" levelOfDetail="ORDER" />
+				<Order currency="USD" fxRateToBase="0.803" assetCategory="STK" symbol="AAPL" isin="US0378331005" description="APPLE INC" dateTime="05-Sep-23 14:20:00" quantity="-150" proceeds="28185.00" taxes="0" ibCommission="-1.00" ibCommissionCurrency="USD" notes="C" buySell="SELL" levelOfDetail="ORDER" />
+				<Order currency="USD" fxRateToBase="0.812" assetCategory="STK" symbol="AAPL" isin="US0378331005" description="APPLE INC" dateTime="20-Sep-23 10:05:00" quantity="60" proceeds="-10938.00" taxes="0" ibCommission="-1.00" ibCommissionCurrency="USD" notes="O" buySell="BUY" levelOfDetail="ORDER" />
+
+				<!-- Microsoft Corp (MSFT) - straightforward Section 104 disposal -->
+				<Order currency="USD" fxRateToBase="0.788" assetCategory="STK" symbol="MSFT" isin="US5949181045" description="MICROSOFT CORP" dateTime="03-Jul-23 11:00:00" quantity="80" proceeds="-27000.00" taxes="0" ibCommission="-1.00" ibCommissionCurrency="USD" notes="O" buySell="BUY" levelOfDetail="ORDER" />
+				<Order currency="USD" fxRateToBase="0.785" assetCategory="STK" symbol="MSFT" isin="US5949181045" description="MICROSOFT CORP" dateTime="12-Jan-24 13:45:00" quantity="-80" proceeds="31056.00" taxes="0" ibCommission="-1.00" ibCommissionCurrency="USD" notes="C" buySell="SELL" levelOfDetail="ORDER" />
+
+				<!-- Walmart Inc (WMT) - acquired before a real 3-for-1 stock split (26-Feb-2024), partially sold after -->
+				<Order currency="USD" fxRateToBase="0.790" assetCategory="STK" symbol="WMT" isin="US9311421039" description="WALMART INC" dateTime="10-Jan-24 09:45:00" quantity="30" proceeds="-4806.00" taxes="0" ibCommission="-1.00" ibCommissionCurrency="USD" notes="O" buySell="BUY" levelOfDetail="ORDER" />
+				<Order currency="USD" fxRateToBase="0.793" assetCategory="STK" symbol="WMT" isin="US9311421039" description="WALMART INC" dateTime="15-Mar-24 10:30:00" quantity="-40" proceeds="2391.00" taxes="0" ibCommission="-1.00" ibCommissionCurrency="USD" notes="C" buySell="SELL" levelOfDetail="ORDER" />
+
+				<!-- AAPL call option bought and exercised into a stock purchase -->
+				<Order currency="USD" fxRateToBase="0.797" assetCategory="OPT" symbol="AAPL  230616C00175000" isin="US0378331005" description="AAPL 16JUN23 175.0 C" underlyingSymbol="AAPL" multiplier="100" strike="175" expiry="16-Jun-23" putCall="C" dateTime="01-Jun-23 09:35:00" quantity="1" proceeds="-450.00" taxes="0" ibCommission="-1.00" ibCommissionCurrency="USD" buySell="BUY" notes="O" levelOfDetail="ORDER" />
+				<Order currency="USD" fxRateToBase="0.801" assetCategory="OPT" symbol="AAPL  230616C00175000" isin="US0378331005" description="AAPL 16JUN23 175.0 C" underlyingSymbol="AAPL" multiplier="100" strike="175" expiry="16-Jun-23" putCall="C" dateTime="16-Jun-23 16:00:00" quantity="-1" proceeds="0" taxes="0" ibCommission="0" ibCommissionCurrency="USD" buySell="SELL" notes="C;Ex" levelOfDetail="ORDER" />
+				<Order currency="USD" fxRateToBase="0.801" assetCategory="STK" symbol="AAPL" isin="US0378331005" description="APPLE INC" dateTime="16-Jun-23 16:00:00" quantity="100" proceeds="-17500.00" taxes="0" ibCommission="0" ibCommissionCurrency="USD" notes="O;Ex" buySell="BUY" levelOfDetail="ORDER"/>
+
+				<!-- SPY put option written (short) and expired worthless -->
+				<Order currency="USD" fxRateToBase="0.809" assetCategory="OPT" symbol="SPY   230818P00440000" isin="US78462F1030" description="SPY 18AUG23 440.0 P" underlyingSymbol="SPY" multiplier="100" strike="440" expiry="18-Aug-23" putCall="P" dateTime="01-Aug-23 09:35:00" quantity="-1" proceeds="220.00" taxes="0" ibCommission="-1.00" ibCommissionCurrency="USD" buySell="SELL" notes="O" levelOfDetail="ORDER" />
+				<Order currency="USD" fxRateToBase="0.786" assetCategory="OPT" symbol="SPY   230818P00440000" isin="US78462F1030" description="SPY 18AUG23 440.0 P" underlyingSymbol="SPY" multiplier="100" strike="440" expiry="18-Aug-23" putCall="P" dateTime="18-Aug-23 16:00:00" quantity="1" proceeds="0" taxes="0" ibCommission="0" ibCommissionCurrency="USD" buySell="BUY" notes="C;Ep" levelOfDetail="ORDER" />
+
+				<!-- SPX index put option written (short) and assigned - SPX is cash settled, generating a CashSettlement event -->
+				<Order currency="USD" fxRateToBase="0.792" assetCategory="OPT" symbol="SPX   230915P04300000" isin="" description="SPX 15SEP23 4300.0 P" underlyingSymbol="SPX" multiplier="100" strike="4300" expiry="15-Sep-23" putCall="P" dateTime="01-Sep-23 09:35:00" quantity="-1" proceeds="1250.00" taxes="0" ibCommission="-1.00" ibCommissionCurrency="USD" buySell="SELL" notes="O" levelOfDetail="ORDER" />
+				<Order currency="USD" fxRateToBase="0.804" assetCategory="OPT" symbol="SPX   230915P04300000" isin="" description="SPX 15SEP23 4300.0 P" underlyingSymbol="SPX" multiplier="100" strike="4300" expiry="15-Sep-23" putCall="P" dateTime="15-Sep-23 16:00:00" quantity="1" proceeds="0" taxes="0" ibCommission="0" ibCommissionCurrency="USD" buySell="BUY" notes="C;A" levelOfDetail="ORDER" />
+
+				<!-- Nikkei/USD future (NIY, CME) - opened and closed within the tax year -->
+				<Order currency="JPY" fxRateToBase="0.00526" assetCategory="FUT" symbol="NIYZ3" isin="" description="NIY 08DEC23" dateTime="01-Nov-23 09:00:00" quantity="1" proceeds="-15750000" taxes="0" ibCommission="-600" ibCommissionCurrency="JPY" buySell="BUY" levelOfDetail="ORDER"/>
+				<Order currency="JPY" fxRateToBase="0.00521" assetCategory="FUT" symbol="NIYZ3" isin="" description="NIY 08DEC23" dateTime="01-Dec-23 09:00:00" quantity="-1" proceeds="16700000" taxes="0" ibCommission="-600" ibCommissionCurrency="JPY" buySell="SELL" levelOfDetail="ORDER"/>
+			</Trades>
+			<CorporateActions>
+				<!-- Walmart 3-for-1 stock split, effective 26 Feb 2024 (real historical split) -->
+				<CorporateAction symbol="WMT" isin="US9311421039" description="WMT SPLIT 3 FOR 1" dateTime="26-Feb-24 20:25:00" type="FS"/>
+			</CorporateActions>
+			<CashTransactions>
+				<!-- Toyota Motor Corp (7203, Tokyo Stock Exchange) interim dividend with Japanese withholding tax
+				     and a small payment in lieu of dividend from a stock lending event -->
+				<CashTransaction settleDate="01-Dec-23" symbol="7203" isin="JP3633400001" description="TOYOTA MOTOR CORP CASH DIVIDEND - JP TAX" amount="-6126" type="Withholding Tax" currency="JPY" fxRateToBase="0.00527" levelOfDetail="DETAIL"/>
+				<CashTransaction settleDate="01-Dec-23" symbol="7203" isin="JP3633400001" description="TOYOTA MOTOR CORP CASH DIVIDEND (Ordinary Dividend)" amount="40000" type="Dividends" currency="JPY" fxRateToBase="0.00527" levelOfDetail="DETAIL"/>
+				<CashTransaction settleDate="01-Dec-23" symbol="7203" isin="JP3633400001" description="TOYOTA MOTOR CORP CASH DIVIDEND (Ordinary Dividend)" amount="2000" type="Payment In Lieu Of Dividends" currency="JPY" fxRateToBase="0.00527" levelOfDetail="DETAIL"/>
+			</CashTransactions>
+			<StatementOfFunds>
+				<!-- SPX put option assignment is cash settled rather than delivering the underlying -->
+				<StatementOfFundsLine assetCategory="OPT" symbol="SPX   230915P04300000" isin="" date="15-Sep-23" reportDate="15-Sep-23" activityDescription="Option Cash Settlement for: Assignment" amount="-5000.00" currency="USD" fxRateToBase="0.804" levelOfDetail="Currency" activityCode="ADJ"/>
+			</StatementOfFunds>
+			<ConversionRates>
+				<ConversionRate reportDate="01-Dec-23" fromCurrency="JPY" toCurrency="GBP" rate="0.00527" />
+				<ConversionRate reportDate="15-Sep-23" fromCurrency="USD" toCurrency="GBP" rate="0.804" />
+				<ConversionRate reportDate="01-Dec-23" fromCurrency="USD" toCurrency="GBP" rate="0.790" />
+			</ConversionRates>
+		</FlexStatement>
+	</FlexStatements>
+</FlexQueryResponse>

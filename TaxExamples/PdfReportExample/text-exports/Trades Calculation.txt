@@ -1,0 +1,202 @@
+Summary for tax year 2023:
+Total gain in year £8,988.00
+Total loss in year -£3,056.00
+Net gain in year £5,932.00
+Capital allowance available £6,000.00
+Capital loss brought forward and used £0.00
+Taxable gain after allowance and offset £0.00
+Loss available to bring forward £0.00
+
+Listed Shares and Securities:
+Number of Disposals 3
+Disposal Proceeds £48,905.00
+Allowable costs £45,048.00
+Gain excluding loss £3,857.00
+Loss £0.00
+
+Other assets:
+Number of Disposals 6
+Disposal Proceeds £10,191.00
+Allowable costs £8,117.00
+Gain excluding loss £5,131.00
+Loss -£3,056.00
+
+*******************************************************************************
+Disposal for Option
+*******************************************************************************
+Disposal 1: Sold 1 units of AAPL  230616C00175000 on 06/16/2023 for £0.00.	Total gain (loss): £0.00.
+All units of the disposals are matched with acquisitions
+Trade details:
+	Sold 1 unit(s) of AAPL  230616C00175000 on 16-Jun-2023 16:00 for $0.00 = £0.00 Fx rate = 0.801 with total expense £0.00, Net proceed: £0.00
+	Option Details:
+	Underlying Asset: AAPL
+	Option Type: CALL
+	Strike Price: $175.00
+	Expiry Date: 16-Jun-2023
+	Trade Reason: Option exercised
+	Associated Trade:
+		Executed Trade: Bought 100 unit(s) of AAPL on 16-Jun-2023 16:00 for $17,500.00 = £14,017.50 Fx rate = 0.801 with total expense £0.00, Total cost: £14,376.95
+
+Trade matching:
+Tax status: Taxable
+At time of disposal, section 104 contains 1 units with value £359.45
+Section 104: Matched 1 units of the disposal trade against the section 104 pool. Acquisition cost is £0.00
+Gain for this match is £0.00 - £0.00 = £0.00
+1.00 option exercised. Premium carries over to the underlying trade.
+
+
+*******************************************************************************
+Disposal 2: Sold 1 units of SPY   230818P00440000 on 08/01/2023 for £177.17.	Total gain (loss): £177.17.
+All units of the disposals are matched with acquisitions
+Trade details:
+	Sold 1 unit(s) of SPY   230818P00440000 on 01-Aug-2023 09:35 for $220.00 = £177.98 Fx rate = 0.809 with total expense £0.81, Net proceed: £177.17
+	Expenses: Commission: $1.00 = £0.81 Fx rate = 0.809	
+	Option Details:
+	Underlying Asset: SPY
+	Option Type: PUT
+	Strike Price: $440.00
+	Expiry Date: 18-Aug-2023
+	Trade Reason: Ordered trade
+
+Trade matching:
+Tax status: Taxable
+Bed and breakfast: 1 units of the acquisition trade against 1 units of the disposal trade. Acquisition cost is £0.00
+Matched trade: Bought 1 unit(s) of SPY   230818P00440000 on 18-Aug-2023 16:00 for $0.00 = £0.00 Fx rate = 0.786 with total expense £0.00, Total cost: £0.00
+	Option Details:
+	Underlying Asset: SPY
+	Option Type: PUT
+	Strike Price: $440.00
+	Expiry Date: 18-Aug-2023
+	Trade Reason: Option expired
+
+Gain for this match is £177.17 - £0.00 = £177.17
+The granted option expired. No allowable cost is added.
+
+
+*******************************************************************************
+Disposal 3: Sold 1 units of SPX   230915P04300000 on 09/01/2023 for £989.21.	Total gain (loss): -£3,030.79.
+All units of the disposals are matched with acquisitions
+Trade details:
+	Sold 1 unit(s) of SPX   230915P04300000 on 01-Sep-2023 09:35 for $1,250.00 = £990.00 Fx rate = 0.792 with total expense £0.79, Net proceed: £989.21
+	Expenses: Commission: $1.00 = £0.79 Fx rate = 0.792	
+	Option Details:
+	Underlying Asset: SPX
+	Option Type: PUT
+	Strike Price: $4,300.00
+	Expiry Date: 15-Sep-2023
+	Trade Reason: Ordered trade
+
+Trade matching:
+Tax status: Taxable
+Bed and breakfast: 1 units of the acquisition trade against 1 units of the disposal trade. Acquisition cost is £4,020.00
+Matched trade: Bought 1 unit(s) of SPX   230915P04300000 on 15-Sep-2023 16:00 for Option Cash Settlement for: Assignment: $5,000.00 = £4,020.00 Fx rate = 0.804 with total expense £0.00, Total cost: £4,020.00
+	Option Details:
+	Underlying Asset: SPX
+	Option Type: PUT
+	Strike Price: $4,300.00
+	Expiry Date: 15-Sep-2023
+	Trade Reason: Option assigned
+
+Gain for this match is £989.21 - £4,020.00 = -£3,030.79
+1.00 option is cash settled.
+
+
+*******************************************************************************
+Disposal for Stock
+*******************************************************************************
+Disposal 1: Sold 150 units of AAPL on 09/05/2023 for £22,631.75.	Total gain (loss): £549.08
+All units of the disposals are matched with acquisitions
+Trade details:
+	Sold 150 unit(s) of AAPL on 05-Sep-2023 14:20 for $28,185.00 = £22,632.56 Fx rate = 0.803 with total expense £0.80, Net proceed: £22,631.75
+	Expenses: Commission: $1.00 = £0.80 Fx rate = 0.803	
+Trade matching:
+Tax status: Taxable
+Same day: 40 units of the acquisition trade against 40 units of the disposal trade. Acquisition cost is £6,023.30
+Matched trade: Bought 40 unit(s) of AAPL on 05-Sep-2023 14:15 for $7,500.00 = £6,022.50 Fx rate = 0.803 with total expense £0.80, Total cost: £6,023.30
+	Expenses: Commission: $1.00 = £0.80 Fx rate = 0.803	
+Gain for this match is £6,035.13 - £6,023.30 = £11.83
+
+Tax status: Taxable
+Bed and breakfast: 60 units of the acquisition trade against 60 units of the disposal trade. Acquisition cost is £8,882.47
+Matched trade: Bought 60 unit(s) of AAPL on 20-Sep-2023 10:05 for $10,938.00 = £8,881.66 Fx rate = 0.812 with total expense £0.81, Total cost: £8,882.47
+	Expenses: Commission: $1.00 = £0.81 Fx rate = 0.812	
+Gain for this match is £9,052.70 - £8,882.47 = £170.23
+
+Tax status: Taxable
+At time of disposal, section 104 contains 200 units with value £28,707.62
+Section 104: Matched 50 units of the disposal trade against the section 104 pool. Acquisition cost is £7,176.90
+Gain for this match is £7,543.92 - £7,176.90 = £367.01
+
+Resulting overall gain for this disposal: £11.83 + £170.23 + £367.01 = £549.08
+
+*******************************************************************************
+Disposal 2: Sold 80 units of MSFT on 01/12/2024 for £24,378.18.	Total gain (loss): £3,101.39
+All units of the disposals are matched with acquisitions
+Trade details:
+	Sold 80 unit(s) of MSFT on 12-Jan-2024 13:45 for $31,056.00 = £24,378.96 Fx rate = 0.785 with total expense £0.79, Net proceed: £24,378.18
+	Expenses: Commission: $1.00 = £0.79 Fx rate = 0.785	
+Trade matching:
+Tax status: Taxable
+At time of disposal, section 104 contains 80 units with value £21,276.79
+Section 104: Matched 80 units of the disposal trade against the section 104 pool. Acquisition cost is £21,276.79
+Gain for this match is £24,378.18 - £21,276.79 = £3,101.39
+
+
+*******************************************************************************
+Disposal 3: Sold 40 units of WMT on 03/15/2024 for £1,895.27.	Total gain (loss): £207.48
+All units of the disposals are matched with acquisitions
+Trade details:
+	Sold 40 unit(s) of WMT on 15-Mar-2024 10:30 for $2,391.00 = £1,896.06 Fx rate = 0.793 with total expense £0.79, Net proceed: £1,895.27
+	Expenses: Commission: $1.00 = £0.79 Fx rate = 0.793	
+Trade matching:
+Tax status: Taxable
+At time of disposal, section 104 contains 90 units with value £3,797.53
+Section 104: Matched 40 units of the disposal trade against the section 104 pool. Acquisition cost is £1,687.79
+Gain for this match is £1,895.27 - £1,687.79 = £207.48
+
+
+*******************************************************************************
+Disposal for Foreign currency
+*******************************************************************************
+Disposal 1: Dispose 5000 units of USD on 09/15/2023 for £4,020.00.	Total gain (loss): -£24.49
+3250.75 units of disposals are not matched (short sale).
+Trade details:
+	Dispose 5000 unit(s) of USD on 15-Sep-2023 00:00 for $5,000.00 = £4,020.00 Fx rate = 0.804. Description: Option Cash Settlement for: Assignment
+Trade matching:
+Tax status: Taxable
+Cover unmatched disposal: 1749.25 units of the acquisition trade against 1749.25 units of the disposal trade. Acquisition cost is £1,430.89
+Matched trade: Acquire 5000 unit(s) of USD on 20-Oct-2023 00:00 for FX gross proceed: $5,000.00 = £4,090.00 Fx rate = 0.8180. Description: Wired USD consulting income into the brokerage account
+Gain for this match is £1,406.40 - £1,430.89 = -£24.49
+
+
+*******************************************************************************
+Disposal 2: Dispose 3250.75 units of USD on 10/18/2023 for £2,670.49.	Total gain (loss): £11.38
+All units of the disposals are matched with acquisitions
+Trade details:
+	Dispose 3250.75 unit(s) of USD on 18-Oct-2023 00:00 for FX gross proceed: $3,250.75 = £2,670.49 Fx rate = 0.8215. Description: Converted surplus USD trading cash back to GBP ahead of a property deposit
+Trade matching:
+Tax status: Taxable
+Bed and breakfast: 3250.75 units of the acquisition trade against 3250.75 units of the disposal trade. Acquisition cost is £2,659.11
+Matched trade: Acquire 5000 unit(s) of USD on 20-Oct-2023 00:00 for FX gross proceed: $5,000.00 = £4,090.00 Fx rate = 0.8180. Description: Wired USD consulting income into the brokerage account
+Gain for this match is £2,670.49 - £2,659.11 = £11.38
+
+
+*******************************************************************************
+Disposal for Future contract
+*******************************************************************************
+Disposal 1: Close long position 1 units of NIYZ3 on 12/01/2023.	Total gain (loss): £4,943.22
+Trade details:
+	Sold 1 unit(s) of NIYZ3 on 01-Dec-2023 09:00 with contract value ¥16,700,000 with total expense £3.13
+	Expenses: Commission: ¥600 = £3.13 Fx rate = 0.00521	
+Trade matching:
+Tax status: Taxable
+At time of disposal, section 104 contains 1 units with contract value ¥15,750,000
+Section 104: Matched 1 units of the disposal. Acquisition contract value is ¥15,750,000 and disposal contract value ¥16,700,000, proportioned dealing cost is £3.16
+Payment received to close the contract as gain is (¥16,700,000 - ¥15,750,000) * 0.00521 = £4,949.50, added to disposal proceed.
+Total dealing cost is £6.28
+Gain for this match is £4,949.50 - £6.28  = £4,943.22
+
+
+
+
+

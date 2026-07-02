@@ -1,0 +1,89 @@
+Section 104 detail history:
+Asset Name AAPL  230616C00175000
+Date		New Quantity (change)		New Value (change)		Contract value (for futures)
+06/01/2023	1 (+1)				£359.45 (+£359.45)			
+Base cost: £358.65 ($450.00), Commission: £0.80 ($1.00)
+Involved trades:
+Bought 1 unit(s) of AAPL  230616C00175000 on 01-Jun-2023 09:35 for $450.00 = £358.65 Fx rate = 0.797 with total expense £0.80, Total cost: £359.45
+	Expenses: Commission: $1.00 = £0.80 Fx rate = 0.797	
+	Option Details:
+	Underlying Asset: AAPL
+	Option Type: CALL
+	Strike Price: $175.00
+	Expiry Date: 16-Jun-2023
+	Trade Reason: Ordered trade
+
+
+06/16/2023	0 (-1)				£0.00 (-£359.45)			
+Involved trades:
+Sold 1 unit(s) of AAPL  230616C00175000 on 16-Jun-2023 16:00 for $0.00 = £0.00 Fx rate = 0.801 with total expense £0.00, Net proceed: £0.00
+	Option Details:
+	Underlying Asset: AAPL
+	Option Type: CALL
+	Strike Price: $175.00
+	Expiry Date: 16-Jun-2023
+	Trade Reason: Option exercised
+	Associated Trade:
+		Executed Trade: Bought 100 unit(s) of AAPL on 16-Jun-2023 16:00 for $17,500.00 = £14,017.50 Fx rate = 0.801 with total expense £0.00, Total cost: £14,376.95
+
+
+Asset Name AAPL
+Date		New Quantity (change)		New Value (change)		Contract value (for futures)
+06/12/2023	100 (+100)				£14,330.67 (+£14,330.67)			
+Base cost: £14,329.88 ($18,025.00), Commission: £0.80 ($1.00)
+Involved trades:
+Bought 100 unit(s) of AAPL on 12-Jun-2023 12:30 for $18,025.00 = £14,329.88 Fx rate = 0.795 with total expense £0.80, Total cost: £14,330.67
+	Expenses: Commission: $1.00 = £0.80 Fx rate = 0.795	
+
+06/16/2023	200 (+100)				£28,707.62 (+£14,376.95)			
+Base cost: £14,017.50 ($17,500.00), Option premium adjustment due to exercising option: £359.45
+Involved trades:
+Bought 100 unit(s) of AAPL on 16-Jun-2023 16:00 for $17,500.00 = £14,017.50 Fx rate = 0.801 with total expense £0.00, Total cost: £14,376.95
+
+09/05/2023	150 (-50)				£21,530.71 (-£7,176.90)			
+Involved trades:
+Sold 150 unit(s) of AAPL on 05-Sep-2023 14:20 for $28,185.00 = £22,632.56 Fx rate = 0.803 with total expense £0.80, Net proceed: £22,631.75
+	Expenses: Commission: $1.00 = £0.80 Fx rate = 0.803	
+
+Asset Name MSFT
+Date		New Quantity (change)		New Value (change)		Contract value (for futures)
+07/03/2023	80 (+80)				£21,276.79 (+£21,276.79)			
+Base cost: £21,276.00 ($27,000.00), Commission: £0.79 ($1.00)
+Involved trades:
+Bought 80 unit(s) of MSFT on 03-Jul-2023 11:00 for $27,000.00 = £21,276.00 Fx rate = 0.788 with total expense £0.79, Total cost: £21,276.79
+	Expenses: Commission: $1.00 = £0.79 Fx rate = 0.788	
+
+01/12/2024	0 (-80)				£0.00 (-£21,276.79)			
+Involved trades:
+Sold 80 unit(s) of MSFT on 12-Jan-2024 13:45 for $31,056.00 = £24,378.96 Fx rate = 0.785 with total expense £0.79, Net proceed: £24,378.18
+	Expenses: Commission: $1.00 = £0.79 Fx rate = 0.785	
+
+Asset Name WMT
+Date		New Quantity (change)		New Value (change)		Contract value (for futures)
+01/10/2024	30 (+30)				£3,797.53 (+£3,797.53)			
+Base cost: £3,796.74 ($4,806.00), Commission: £0.79 ($1.00)
+Involved trades:
+Bought 30 unit(s) of WMT on 10-Jan-2024 09:45 for $4,806.00 = £3,796.74 Fx rate = 0.790 with total expense £0.79, Total cost: £3,797.53
+	Expenses: Commission: $1.00 = £0.79 Fx rate = 0.790	
+
+02/26/2024	90 (+60)				£3,797.53 (+£0.00)			
+Stock split 3 for 1 on 02/26/2024
+
+03/15/2024	50 (-40)				£2,109.74 (-£1,687.79)			
+Involved trades:
+Sold 40 unit(s) of WMT on 15-Mar-2024 10:30 for $2,391.00 = £1,896.06 Fx rate = 0.793 with total expense £0.79, Net proceed: £1,895.27
+	Expenses: Commission: $1.00 = £0.79 Fx rate = 0.793	
+
+Asset Name NIYZ3
+Date		New Quantity (change)		New Value (change)		Contract value (for futures)
+11/01/2023	1 (+1)				£3.16 (+£3.16)			¥15,750,000 (+¥15,750,000)
+Base cost: £0.00, Contract Value: ¥15,750,000, Commission: £3.16 (¥600)
+Involved trades:
+Bought 1 unit(s) of NIYZ3 on 01-Nov-2023 09:00 with contract value ¥15,750,000 with total expense £3.16
+	Expenses: Commission: ¥600 = £3.16 Fx rate = 0.00526	
+
+12/01/2023	0 (-1)				£0.00 (-£3.16)			¥0 (-¥15,750,000)
+Involved trades:
+Sold 1 unit(s) of NIYZ3 on 01-Dec-2023 09:00 with contract value ¥16,700,000 with total expense £3.13
+	Expenses: Commission: ¥600 = £3.13 Fx rate = 0.00521	
+
