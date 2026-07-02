@@ -6,7 +6,12 @@
     <ImplicitUsings>enable</ImplicitUsings>
 	<PublishTrimmed>true</PublishTrimmed>
 	<BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
+    <Version>1.1.0</Version>
   </PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyMetadata Include="BuildDateUtc" Value="$([System.DateTime]::UtcNow.ToString('yyyy-MM-dd HH:mm'))" />
+  </ItemGroup>
 
   <ItemGroup>
     <Content Remove="Components\DividendYearlySummary.razor" />
