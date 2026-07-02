@@ -222,6 +222,45 @@ public class ExcessReportableIncomeTest
     }
 
     [Fact]
+    public void TestGiftThenDisposalInGapPeriodDoesNotOverAttributeToDisposal()
+    {
+        // 1000 units at period end; 400 gifted to a partner, then 500 sold, both in the gap period. The disposal
+        // can only ever carry its own 500 units' share of the uplift (500 * 0.5 = 250), never more, because the
+        // gift already reduced the tracked period end units to 600 before the disposal is apportioned.
+        TradeTaxCalculation buyTrade = MockTrade.CreateTradeTaxCalculation("ETF1", new DateTime(2023, 1, 1), 1000, 10000m, TradeType.ACQUISITION);
+        UkSection104 ukSection104 = new("ETF1");
+        buyTrade.MatchWithSection104(ukSection104);
+        PartnerTransferCorporateAction gift = new()
+        {
+            AssetName = "ETF1",
+            Date = new DateTime(2024, 2, 1),
+            Direction = PartnerTransferDirection.GiftToPartner,
+            Quantity = 400
+        };
+        gift.ChangeSection104(ukSection104);
+        TradeTaxCalculation sellTrade = MockTrade.CreateTradeTaxCalculation("ETF1", new DateTime(2024, 4, 30), 500, 6000m, TradeType.DISPOSAL);
+        sellTrade.MatchWithSection104(ukSection104);
+        sellTrade.TotalAllowableCost.ShouldBe(new WrappedMoney(5000m)); // 6000 * 500/600
+
+        ExcessReportableIncome eri = new()
+        {
+            AssetName = "ETF1",
+            Date = new DateTime(2024, 6, 30),
+            ReportingPeriodEndDate = new DateTime(2023, 12, 31),
+            IncomeType = ExcessReportableIncomeType.DIVIDEND,
+            Amount = new DescribedMoney(500m, "GBP", 1, "ERI") // 0.5 per unit for 1000 units held at period end
+        };
+        eri.ChangeSection104(ukSection104);
+
+        sellTrade.TotalAllowableCost.ShouldBe(new WrappedMoney(5250m)); // + 500 units * 0.5, capped at the disposal size
+        // Pool keeps the retained 100 units' share; the gifted 400 units' 200 is recorded but not applied
+        ukSection104.Quantity.ShouldBe(100m);
+        ukSection104.AcquisitionCostInBaseCurrency.ShouldBe(new WrappedMoney(1050m)); // 1000 + 100 * 0.5
+        ukSection104.Section104HistoryList.Last().ValueChange.ShouldBe(WrappedMoney.GetBaseCurrencyZero());
+        ukSection104.Section104HistoryList.Last().Explanation.ShouldContain("not applied");
+    }
+
+    [Fact]
     public void TestReverseSplitInGapPeriodStillAppliesFullUpliftToPool()
     {
         // A 1-for-2 reverse split in the gap period halves the unit count but the whole period end holding is
