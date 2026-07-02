@@ -20,6 +20,14 @@ public record FundEqualisation : CorporateAction, IChangeSection104
     /// </summary>
     public string? RelatedEventDescription { get; init; }
 
+    /// <summary>
+    /// The last day of the fund reporting period the related income event covers. When set, the cost reduction is
+    /// apportioned between units disposed of after this date but before the distribution date (adjusting those
+    /// disposals) and the retained section 104 pool. When null (older saved files or non-reporting fund income)
+    /// the whole amount reduces the pool on the distribution date, as before.
+    /// </summary>
+    public DateTime? ReportingPeriodEndDate { get; init; }
+
     public override string Reason => $"{AssetName} fund equalisation of {Amount.BaseCurrencyAmount} on {Date:d}" + (string.IsNullOrEmpty(RelatedEventDescription) ? "" : $" ({RelatedEventDescription})");
 
     public override AssetCategoryType AppliesToAssetCategoryType { get; } = AssetCategoryType.STOCK;
@@ -39,7 +47,14 @@ public record FundEqualisation : CorporateAction, IChangeSection104
             explanation += $" ({RelatedEventDescription})";
         }
         // Equalisation reduces the cost base, so we pass a negative adjustment
-        section104.AdjustAcquisitionCost(-Amount.BaseCurrencyAmount, Date, explanation);
+        if (ReportingPeriodEndDate is null)
+        {
+            section104.AdjustAcquisitionCost(-Amount.BaseCurrencyAmount, Date, explanation);
+            return;
+        }
+        // Units disposed of between the reporting period end and the distribution date take their share of the
+        // reduction at the disposal; only the retained units' share reduces the pool.
+        ReportingFundCostAllocator.Apply(section104, DateOnly.FromDateTime(ReportingPeriodEndDate.Value), Date, -Amount.BaseCurrencyAmount, explanation);
     }
     public override string GetDuplicateSignature()
     {
