@@ -189,12 +189,27 @@
         var desMoney = new DescribedMoney(EqualisationAmount, Currency, FxRate, $"{eventTypeDesc} on {selectedEvent.Date:d}");
 
         // 1. Create FundEqualisation Corporate Action
+        // For ERI-related equalisation, record the reporting period end so units disposed of between the period end
+        // and the distribution date take their share of the cost reduction at the disposal instead of the pool.
+        DateTime? reportingPeriodEnd = null;
+        bool isEriEvent = selectedEvent is Dividend { DividendType: DividendType.EXCESS_REPORTABLE_INCOME }
+            or InterestIncome { InterestType: InterestType.EXCESSREPORTABLEINCOME };
+        if (isEriEvent)
+        {
+            var relatedEri = TaxEventLists.CorporateActions.OfType<ExcessReportableIncome>()
+                .FirstOrDefault(e => e.AssetName == SelectedTicker && e.Date == selectedEvent.Date);
+            reportingPeriodEnd = relatedEri is not null
+                ? relatedEri.EffectiveReportingPeriodEndDate.ToDateTime(TimeOnly.MinValue)
+                : selectedEvent.Date.AddMonths(-6);
+        }
+
         var equalisation = new FundEqualisation
         {
             AssetName = SelectedTicker,
             Date = selectedEvent.Date,
             Amount = desMoney,
-            RelatedEventDescription = desMoney.Description
+            RelatedEventDescription = desMoney.Description,
+            ReportingPeriodEndDate = reportingPeriodEnd
         };
 
         TaxEventLists.CorporateActions.Add(equalisation);

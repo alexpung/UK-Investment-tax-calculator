@@ -160,6 +160,7 @@
         {
             AssetName = SelectedTicker,
             Date = distributionDate,
+            ReportingPeriodEndDate = PeriodEndDate.Value,
             IncomeType = SelectedIncomeType,
             Amount = new DescribedMoney(totalAmountLocal, Currency, FxRate, $"ERI for {Quantity:N4} shares (Period End: {PeriodEndDate.Value:d})"),
             Isin = isin,

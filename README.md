@@ -13,7 +13,7 @@ https://alexpung.github.io/UK-Investment-tax-calculator/
 3. Support trades and dividends in foreign currency.
 4. Support shorting and stock split corporate actions (forward and experimental support for reverse splits).
 5. Implementation of TCGA92/S105 (1)(a): Multiple trades in the same day for the same Buy/Sell side is treated as a single trade. This affect same day/bread and breakfast calculation.
-6. Support for **Excess Reportable Income (ERI) and Equalisation** for offshore funds/ETFs, including automatic cost base adjustment and region-based income reporting by detecting the ISIN country code.
+6. Support for **Excess Reportable Income (ERI) and Equalisation** for offshore funds/ETFs, including automatic cost base adjustment and region-based income reporting by detecting the ISIN country code. Units disposed of between the fund reporting period end and the fund distribution date take their share of the ERI/equalisation cost adjustment in the disposal computation (SI 2009/3001 reg. 99(5)); only the retained units' share is applied to the Section 104 pool on the fund distribution date (reg. 99(4)).
 7. Support for UK specific tax rules such as TCGA92/S122 for small distributions in corporate actions (automatic gain deferral).
 
 ## Supported import format and brokers
