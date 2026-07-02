@@ -102,15 +102,13 @@ Your trade data is not uploaded anywhere. They never leave your browser thanks t
 
 All the text and PDF excerpts below come from the same mock portfolio: [AllAssetTypesExample.xml](TaxExamples/AllAssetTypesExample.xml) (an Interactive Brokers Flex Query file with real tickers, realistic prices/dates and a real-world 3-for-1 Walmart stock split) plus two manually entered events, an FX trade and interest income, that can't be imported from a broker file — the combined session is [AllAssetTypesExample.json](TaxExamples/AllAssetTypesExample.json). Every trade below falls inside a single UK tax year (6 April 2023 to 5 April 2024) so it renders as one report.
 
-The text on the left comes from the "Export Trades" / "Export Dividends/Interest Income" / "Export Section104" buttons on the Import & Export page (raw files in [TaxExamples/PdfReportExample/text-exports](TaxExamples/PdfReportExample/text-exports)); the PDF excerpt on the right is a screenshot from the same calculation, [SampleTaxReport-2023-2024.pdf](TaxExamples/PdfReportExample/SampleTaxReport-2023-2024.pdf). Both are generated from identical data, so the figures match exactly.
+For each example the text export comes first, followed by the matching PDF excerpt. The text comes from the "Export Trades" / "Export Dividends/Interest Income" / "Export Section104" buttons on the Import & Export page (raw files in [TaxExamples/PdfReportExample/text-exports](TaxExamples/PdfReportExample/text-exports)); the PDF excerpt is a screenshot from the same calculation, [SampleTaxReport-2023-2024.pdf](TaxExamples/PdfReportExample/SampleTaxReport-2023-2024.pdf). Both are generated from identical data, so the figures match exactly.
 
 ### Trade calculation: text export vs PDF report
 
-<table>
-<tr><th>Asset type</th><th>Text export</th><th>PDF report</th></tr>
-<tr>
-<td>Stock<br/><sub>same day / bed-and-breakfast / Section 104 matching</sub></td>
-<td>
+#### Stock — same day / bed-and-breakfast / Section 104 matching
+
+Text export:
 
 ```text
 Disposal 1: Sold 150 units of AAPL on 09/05/2023 for £22,631.75.	Total gain (loss): £549.08
@@ -139,16 +137,13 @@ Gain for this match is £7,543.92 - £7,176.90 = £367.01
 Resulting overall gain for this disposal: £11.83 + £170.23 + £367.01 = £549.08
 ```
 
-</td>
-<td>
+PDF report:
 
-<img src="TaxExamples/PdfReportExample/screenshots/stock-trade-disposal-detail.png" width="480">
+<img src="TaxExamples/PdfReportExample/screenshots/stock-trade-disposal-detail.png" width="640">
 
-</td>
-</tr>
-<tr>
-<td>Options<br/><sub>short index put assigned and cash settled</sub></td>
-<td>
+#### Options — short index put assigned and cash settled
+
+Text export:
 
 ```text
 Disposal 3: Sold 1 units of SPX   230915P04300000 on 09/01/2023 for £989.21.	Total gain (loss): -£3,030.79.
@@ -178,16 +173,13 @@ Gain for this match is £989.21 - £4,020.00 = -£3,030.79
 1.00 option is cash settled.
 ```
 
-</td>
-<td>
+PDF report:
 
-<img src="TaxExamples/PdfReportExample/screenshots/cash-settlement-disposal-detail.png" width="480">
+<img src="TaxExamples/PdfReportExample/screenshots/cash-settlement-disposal-detail.png" width="640">
 
-</td>
-</tr>
-<tr>
-<td>Future contract<br/><sub>Nikkei/USD future (NIY), Section 104 matching</sub></td>
-<td>
+#### Future contract — Nikkei/USD future (NIY), Section 104 matching
+
+Text export:
 
 ```text
 Disposal 1: Close long position 1 units of NIYZ3 on 12/01/2023.	Total gain (loss): £4,943.22
@@ -203,16 +195,13 @@ Total dealing cost is £6.28
 Gain for this match is £4,949.50 - £6.28  = £4,943.22
 ```
 
-</td>
-<td>
+PDF report:
 
-<img src="TaxExamples/PdfReportExample/screenshots/future-contract-disposal-detail.png" width="480">
+<img src="TaxExamples/PdfReportExample/screenshots/future-contract-disposal-detail.png" width="640">
 
-</td>
-</tr>
-<tr>
-<td>FX<br/><sub>USD cash balance, bed-and-breakfast matching</sub></td>
-<td>
+#### FX — USD cash balance, bed-and-breakfast matching
+
+Text export:
 
 ```text
 Disposal 2: Dispose 3250.75 units of USD on 10/18/2023 for £2,670.49.	Total gain (loss): £11.38
@@ -226,22 +215,15 @@ Matched trade: Acquire 5000 unit(s) of USD on 20-Oct-2023 00:00 for FX gross pro
 Gain for this match is £2,670.49 - £2,659.11 = £11.38
 ```
 
-</td>
-<td>
+PDF report:
 
-<img src="TaxExamples/PdfReportExample/screenshots/fx-trade-disposal-detail.png" width="480">
-
-</td>
-</tr>
-</table>
+<img src="TaxExamples/PdfReportExample/screenshots/fx-trade-disposal-detail.png" width="640">
 
 ### Report summaries: text export vs PDF report
 
-<table>
-<tr><th>Summary</th><th>Text export</th><th>PDF report</th></tr>
-<tr>
-<td>Capital Gain Summary</td>
-<td>
+#### Capital Gain Summary
+
+Text export:
 
 ```text
 Summary for tax year 2023:
@@ -268,16 +250,13 @@ Gain excluding loss £5,131.00
 Loss -£3,056.00
 ```
 
-</td>
-<td>
+PDF report:
 
-<img src="TaxExamples/PdfReportExample/screenshots/capital-gain-tax-summary.png" width="480">
+<img src="TaxExamples/PdfReportExample/screenshots/capital-gain-tax-summary.png" width="640">
 
-</td>
-</tr>
-<tr>
-<td>Dividend Summary</td>
-<td>
+#### Dividend Summary
+
+Text export:
 
 ```text
 Tax Year: 2023
@@ -301,16 +280,13 @@ Region: JPN (Japan)
 		Asset Name: 7203, Date: 12/01/2023, Type: Payment in lieu of dividend, Amount: ¥2,000, FxRate: 0.00527, Sterling Amount: £10.54, Description: TOYOTA MOTOR CORP CASH DIVIDEND (Ordinary Dividend)
 ```
 
-</td>
-<td>
+PDF report:
 
-<img src="TaxExamples/PdfReportExample/screenshots/dividend-summary.png" width="480">
+<img src="TaxExamples/PdfReportExample/screenshots/dividend-summary.png" width="640">
 
-</td>
-</tr>
-<tr>
-<td>Section 104<br/><sub>real 3-for-1 Walmart stock split, 26 Feb 2024</sub></td>
-<td>
+#### Section 104 — real 3-for-1 Walmart stock split, 26 Feb 2024
+
+Text export:
 
 ```text
 Asset Name WMT
@@ -330,14 +306,9 @@ Sold 40 unit(s) of WMT on 15-Mar-2024 10:30 for $2,391.00 = £1,896.06 Fx rate =
 	Expenses: Commission: $1.00 = £0.79 Fx rate = 0.793	
 ```
 
-</td>
-<td>
+PDF report:
 
-<img src="TaxExamples/PdfReportExample/screenshots/section104-history-wmt-split.png" width="480">
-
-</td>
-</tr>
-</table>
+<img src="TaxExamples/PdfReportExample/screenshots/section104-history-wmt-split.png" width="640">
 
 ### Sections only available in the PDF report
 
