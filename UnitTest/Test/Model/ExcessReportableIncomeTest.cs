@@ -185,4 +185,105 @@ public class ExcessReportableIncomeTest
         ukSection104.Quantity.ShouldBe(600m);
         ukSection104.AcquisitionCostInBaseCurrency.ShouldBe(new WrappedMoney(6300m)); // 6000 + 300
     }
+
+    [Fact]
+    public void TestGiftToPartnerInGapPeriodDoesNotInflateRetainedPool()
+    {
+        // 400 of the 1000 period end units are gifted to a partner in the gap period. Their share of the ERI
+        // cannot uplift a disposal and must not inflate the cost of the 600 retained units either.
+        TradeTaxCalculation buyTrade = MockTrade.CreateTradeTaxCalculation("ETF1", new DateTime(2023, 1, 1), 1000, 10000m, TradeType.ACQUISITION);
+        UkSection104 ukSection104 = new("ETF1");
+        buyTrade.MatchWithSection104(ukSection104);
+        PartnerTransferCorporateAction gift = new()
+        {
+            AssetName = "ETF1",
+            Date = new DateTime(2024, 4, 30),
+            Direction = PartnerTransferDirection.GiftToPartner,
+            Quantity = 400
+        };
+        gift.ChangeSection104(ukSection104);
+        ukSection104.Quantity.ShouldBe(600m);
+        ukSection104.AcquisitionCostInBaseCurrency.ShouldBe(new WrappedMoney(6000m));
+
+        ExcessReportableIncome eri = new()
+        {
+            AssetName = "ETF1",
+            Date = new DateTime(2024, 6, 30),
+            ReportingPeriodEndDate = new DateTime(2023, 12, 31),
+            IncomeType = ExcessReportableIncomeType.DIVIDEND,
+            Amount = new DescribedMoney(500m, "GBP", 1, "ERI") // 0.5 per unit for 1000 units held at period end
+        };
+        eri.ChangeSection104(ukSection104);
+
+        // Only the retained 600 units' share is applied; the gifted units' 200 is recorded but not applied
+        ukSection104.AcquisitionCostInBaseCurrency.ShouldBe(new WrappedMoney(6300m));
+        ukSection104.Section104HistoryList.Last().ValueChange.ShouldBe(WrappedMoney.GetBaseCurrencyZero());
+        ukSection104.Section104HistoryList.Last().Explanation.ShouldContain("not applied");
+    }
+
+    [Fact]
+    public void TestReverseSplitInGapPeriodStillAppliesFullUpliftToPool()
+    {
+        // A 1-for-2 reverse split in the gap period halves the unit count but the whole period end holding is
+        // still retained, so the full ERI uplift belongs to the pool.
+        TradeTaxCalculation buyTrade = MockTrade.CreateTradeTaxCalculation("ETF1", new DateTime(2023, 1, 1), 1000, 10000m, TradeType.ACQUISITION);
+        UkSection104 ukSection104 = new("ETF1");
+        buyTrade.MatchWithSection104(ukSection104);
+        StockSplit reverseSplit = new()
+        {
+            AssetName = "ETF1",
+            Date = new DateTime(2024, 4, 30),
+            SplitTo = 1,
+            SplitFrom = 2
+        };
+        reverseSplit.ChangeSection104(ukSection104);
+        ukSection104.Quantity.ShouldBe(500m);
+
+        ExcessReportableIncome eri = new()
+        {
+            AssetName = "ETF1",
+            Date = new DateTime(2024, 6, 30),
+            ReportingPeriodEndDate = new DateTime(2023, 12, 31),
+            IncomeType = ExcessReportableIncomeType.DIVIDEND,
+            Amount = new DescribedMoney(500m, "GBP", 1, "ERI")
+        };
+        eri.ChangeSection104(ukSection104);
+
+        ukSection104.AcquisitionCostInBaseCurrency.ShouldBe(new WrappedMoney(10500m));
+    }
+
+    [Fact]
+    public void TestForwardSplitThenDisposalInGapPeriodApportionsInPostSplitUnits()
+    {
+        // A 2-for-1 split in the gap period doubles the unit count, then 800 post split units (= 400 period end
+        // units) are sold. The disposal takes 400 * 0.5 = 200 of the uplift, the pool the remaining 300.
+        TradeTaxCalculation buyTrade = MockTrade.CreateTradeTaxCalculation("ETF1", new DateTime(2023, 1, 1), 1000, 10000m, TradeType.ACQUISITION);
+        UkSection104 ukSection104 = new("ETF1");
+        buyTrade.MatchWithSection104(ukSection104);
+        StockSplit forwardSplit = new()
+        {
+            AssetName = "ETF1",
+            Date = new DateTime(2024, 2, 1),
+            SplitTo = 2,
+            SplitFrom = 1
+        };
+        forwardSplit.ChangeSection104(ukSection104);
+        TradeTaxCalculation sellTrade = MockTrade.CreateTradeTaxCalculation("ETF1", new DateTime(2024, 4, 30), 800, 5000m, TradeType.DISPOSAL);
+        sellTrade.MatchWithSection104(ukSection104);
+        sellTrade.TotalAllowableCost.ShouldBe(new WrappedMoney(4000m)); // 10000 * 800/2000
+
+        ExcessReportableIncome eri = new()
+        {
+            AssetName = "ETF1",
+            Date = new DateTime(2024, 6, 30),
+            ReportingPeriodEndDate = new DateTime(2023, 12, 31),
+            IncomeType = ExcessReportableIncomeType.DIVIDEND,
+            Amount = new DescribedMoney(500m, "GBP", 1, "ERI") // 0.5 per unit for 1000 pre split units
+        };
+        eri.ChangeSection104(ukSection104);
+
+        sellTrade.TotalAllowableCost.ShouldBe(new WrappedMoney(4200m)); // + 800 post split units * 0.25
+        ukSection104.Quantity.ShouldBe(1200m);
+        ukSection104.AcquisitionCostInBaseCurrency.ShouldBe(new WrappedMoney(6300m)); // 6000 + 1200 * 0.25
+    }
 }

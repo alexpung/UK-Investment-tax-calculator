@@ -30,47 +30,75 @@ public static class ReportingFundCostAllocator
             section104.AdjustAcquisitionCost(adjustmentAmount, adjustmentDate, description);
             return;
         }
+        // Both are tracked in the pool's current unit scale: quantity rescaling events (e.g. stock splits) in the
+        // gap period update the pair together so remaining * perUnit stays equal to the unallocated amount.
         WrappedMoney adjustmentPerUnit = adjustmentAmount / quantityAtPeriodEnd;
         decimal remainingPeriodEndUnits = quantityAtPeriodEnd;
-        List<Section104History> gapPeriodPoolDisposals = [.. section104.Section104HistoryList
-            .Where(history => DateOnly.FromDateTime(history.Date) > reportingPeriodEnd
-                              && history.QuantityChange < 0
-                              && history.TradeTaxCalculation is { AcquisitionDisposal: TradeType.DISPOSAL })];
-        foreach (Section104History history in gapPeriodPoolDisposals)
+        WrappedMoney unappliedAmount = WrappedMoney.GetBaseCurrencyZero();
+
+        List<Section104History> gapPeriodQuantityChanges = [.. section104.Section104HistoryList
+            .Where(history => DateOnly.FromDateTime(history.Date) > reportingPeriodEnd && history.QuantityChange != 0)];
+        foreach (Section104History history in gapPeriodQuantityChanges)
         {
             if (remainingPeriodEndUnits <= 0) break;
-            // The section 104 pool is fungible, so a pool disposal is treated as disposing of period end units in
-            // proportion to their share of the pool immediately before the disposal (just and reasonable apportionment).
-            decimal disposedQuantity = -history.QuantityChange;
-            decimal periodEndUnitsDisposed = history.OldQuantity > 0
-                ? Math.Min(remainingPeriodEndUnits, disposedQuantity * remainingPeriodEndUnits / history.OldQuantity)
+            if (history.TradeTaxCalculation is null && history.ValueChange.Amount == 0 && history.OldQuantity > 0 && history.NewQuantity > 0)
+            {
+                // Quantity rescaling (e.g. stock split): the same holding continues under a new unit count.
+                decimal rescaleFactor = history.NewQuantity / history.OldQuantity;
+                remainingPeriodEndUnits *= rescaleFactor;
+                adjustmentPerUnit /= rescaleFactor;
+                continue;
+            }
+            if (history.QuantityChange > 0) continue; // acquisitions dilute the pool but keep the period end units
+            // The section 104 pool is fungible, so a removal is treated as removing period end units in proportion
+            // to their share of the pool immediately before the removal (just and reasonable apportionment).
+            decimal removedQuantity = -history.QuantityChange;
+            decimal periodEndUnitsRemoved = history.OldQuantity > 0
+                ? Math.Min(remainingPeriodEndUnits, removedQuantity * remainingPeriodEndUnits / history.OldQuantity)
                 : 0m;
-            if (periodEndUnitsDisposed <= 0) continue;
-            TradeMatch? match = history.TradeTaxCalculation!.MatchHistory.FirstOrDefault(m => m.Section104HistorySnapshot == history);
-            // If the disposal match cannot be located the unallocated share stays with the pool remainder so no amount is lost.
-            if (match is null) continue;
-            WrappedMoney matchAdjustment = adjustmentPerUnit * periodEndUnitsDisposed;
-            match.BaseCurrencyMatchAllowableCost += matchAdjustment;
-            match.AdditionalInformation += $"{description}: allowable cost adjusted by {matchAdjustment} for {periodEndUnitsDisposed:0.####} unit(s) " +
-                $"held at the reporting period end {reportingPeriodEnd:d} and disposed of before the fund distribution date " +
-                $"(treated as received immediately before the disposal, SI 2009/3001 reg. 99(5)).\n";
-            remainingPeriodEndUnits -= periodEndUnitsDisposed;
+            if (periodEndUnitsRemoved <= 0) continue;
+            WrappedMoney removedUnitsShare = adjustmentPerUnit * periodEndUnitsRemoved;
+            TradeMatch? match = history.TradeTaxCalculation is { AcquisitionDisposal: TradeType.DISPOSAL } disposal
+                ? disposal.MatchHistory.FirstOrDefault(m => m.Section104HistorySnapshot == history)
+                : null;
+            if (match is not null)
+            {
+                match.BaseCurrencyMatchAllowableCost += removedUnitsShare;
+                match.AdditionalInformation += $"{description}: allowable cost adjusted by {removedUnitsShare} for {periodEndUnitsRemoved:0.####} unit(s) " +
+                    $"held at the reporting period end {reportingPeriodEnd:d} and disposed of before the fund distribution date " +
+                    $"(treated as received immediately before the disposal, SI 2009/3001 reg. 99(5)).\n";
+            }
+            else
+            {
+                // The units left the pool other than by a pool matched disposal (e.g. gift to partner, pool cleared
+                // by a corporate action): their share cannot uplift a disposal computation and must not inflate the
+                // cost of the retained units either, so it is only recorded.
+                unappliedAmount += removedUnitsShare;
+            }
+            remainingPeriodEndUnits -= periodEndUnitsRemoved;
         }
-        if (remainingPeriodEndUnits <= 0) return;
-        WrappedMoney poolAdjustment = adjustmentPerUnit * remainingPeriodEndUnits;
-        if (section104.Quantity > 0)
+
+        if (remainingPeriodEndUnits > 0)
         {
-            string poolExplanation = remainingPeriodEndUnits == quantityAtPeriodEnd
-                ? description
-                : $"{description} - {poolAdjustment} apportioned to the {remainingPeriodEndUnits:0.####} unit(s) retained after gap period disposal(s)";
-            section104.AdjustAcquisitionCost(poolAdjustment, adjustmentDate, poolExplanation);
+            WrappedMoney poolAdjustment = adjustmentPerUnit * remainingPeriodEndUnits;
+            if (section104.Quantity > 0)
+            {
+                string poolExplanation = remainingPeriodEndUnits == quantityAtPeriodEnd
+                    ? description
+                    : $"{description} - {poolAdjustment} apportioned to the {remainingPeriodEndUnits:0.####} unit(s) retained after gap period disposal(s)";
+                section104.AdjustAcquisitionCost(poolAdjustment, adjustmentDate, poolExplanation);
+            }
+            else
+            {
+                unappliedAmount += poolAdjustment;
+            }
         }
-        else
+        if (unappliedAmount.Amount != 0)
         {
-            // The pool is empty and no disposal can absorb the remainder (e.g. the units left the pool other than by
-            // disposal). Applying it would distort the cost of future unrelated acquisitions, so only record it.
+            // Record without changing the pool cost: applying it would distort the cost of units that never carried
+            // the entitlement (or of future unrelated acquisitions when the pool is empty).
             section104.AdjustAcquisitionCost(WrappedMoney.GetBaseCurrencyZero(), adjustmentDate,
-                $"{description} - {poolAdjustment} for {remainingPeriodEndUnits:0.####} unit(s) not applied: the section 104 pool is empty and no matching disposal was found.");
+                $"{description} - {unappliedAmount} attributable to unit(s) that left the section 104 pool other than by a matched disposal is not applied.");
         }
     }
 }
