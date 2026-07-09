@@ -81,18 +81,85 @@ NEW: Customisable PDF export is now experimental.
 ## To use:
 File sample: [Interactive Brokers stock trades XML example](https://github.com/alexpung/UK-Investment-tax-calculator/blob/master/TaxExamples/Stocks/InteractiveBrokersStockTradesExample.xml). You can download it and put it in the web app to see how it works.
 1. You should configure the base currency of your IBKR account to GBP.
-2. Configure flex query from interactive brokers. Following report required. Date format dd-MMM-yy, the date and time separator should be set to a single space and time format set to HH:mm:ss.
-   1. Cash Transactions: Level of detail: Detail (for dividends)
-   2. Corporate actions (for stocks)
-   3. Trades: Level of detail: Orders (for stocks)
-   4. Statement of Funds: Level of detail: Currency (for Fx transactions) 
-   5. Enable "Include exchange rates" at the bottom of the setting (for Fx transactions)"
+2. Create an Activity Flex Query in IBKR Client Portal. See [Interactive Brokers Flex Query configuration](#interactive-brokers-flex-query-configuration) below for the required sections, fields and settings.
 3. Download the flex query for each year in xml format using web browser.
 4. Open the web application.
 5. Go to the Import section and select your files (or a whole folder). They are imported as soon as you select them &mdash; there is no separate upload step, and the files are read locally in your browser.
 6. Press "Start Calculation".
 7. If you hold offshore reporting funds (ETFs), go to the **ERI and Equalisation** page to add any Excess Reportable Income. The system will automatically detect the region from the ISIN and calculate the total adjustment based on your holdings.
 8. Export the results by pressing the buttons at the export file section, or go to PDF export and create a report.
+
+## Interactive Brokers Flex Query configuration
+
+The calculator reads an Interactive Brokers **Activity Flex Query** downloaded in **XML** format. A regular activity statement will not work — a Flex Query is a separate, customisable report type that you configure once and can then run for any date range.
+
+Official IBKR documentation: [Create an Activity Flex Query](https://www.ibkrguides.com/clientportal/performanceandstatements/activityflex.htm). The screenshots below are taken from that guide.
+
+> **Important:** the base currency of your IBKR account should be GBP. The exchange rates in the file (`fxRateToBase`) are read as rates against sterling.
+
+### 1. Create a new Activity Flex Query
+
+Log in to [IBKR Client Portal](https://www.interactivebrokers.co.uk/portal) and go to **Performance & Reports → Flex Queries** (or **Menu → Reporting → Flex Queries**). Click the **+** icon next to *Activity Flex Query* and give the query a name (for example `UK tax calculator`).
+
+### 2. Select the report sections
+
+Add each of the sections listed below. Clicking a section opens a pop-up listing all the available fields for that section — the simplest approach is to press **Select All**. Extra fields and sections are ignored by the calculator, but if a required field is missing the import will show a parse error telling you which attribute to add to your query.
+
+<img src="https://www.ibkrguides.com/clientportal/resources/images/activityflexsections.jpg" width="640" alt="Flex Query section selection page in IBKR Client Portal">
+
+<img src="https://www.ibkrguides.com/clientportal/resources/images/activityflexfields.jpg" width="400" alt="Field selection pop-up for a Flex Query section, with Select All at the top">
+
+#### Trades — Level of detail: **Orders**
+
+Used for stock, future and option trades.
+
+Required fields: `levelOfDetail`, `assetCategory` (Asset Class), `buySell` (Buy/Sell), `symbol`, `isin`, `description`, `dateTime` (Date/Time), `quantity`, `proceeds`, `taxes`, `ibCommission` (IB Commission), `ibCommissionCurrency` (IB Commission Currency), `currency`, `fxRateToBase` (FX Rate to Base), `notes` (Notes/Codes).
+
+For options the following are also required: `underlyingSymbol` (Underlying Symbol), `strike`, `expiry`, `multiplier`, `putCall` (Put/Call).
+
+The Notes/Codes field is how the calculator tells an ordered trade from an option exercise ("Ex"), assignment ("A") or expiry ("Ep").
+
+#### Cash Transactions — Level of detail: **Detail**
+
+Used for dividends, payments in lieu of dividends, withholding tax and return of capital.
+
+Required fields: `levelOfDetail`, `type`, `symbol`, `isin`, `description`, `settleDate` (Settle Date), `amount`, `currency`, `fxRateToBase` (FX Rate to Base).
+
+ISIN must be included: the calculator detects the country of the dividend payer from the first two letters of the ISIN.
+
+#### Corporate Actions
+
+Used for forward and reverse stock splits. (Other corporate action types such as takeovers and spinoffs are not imported from the file — enter them manually in the app.)
+
+Required fields: `type`, `symbol`, `description`, `dateTime` (Date/Time).
+
+#### Statement of Funds — Level of detail: **Currency**
+
+Used for capital gains on foreign currency balances, interest income (broker interest, bond coupons and accrued interest) and option cash settlements.
+
+Required fields: `levelOfDetail`, `currency`, `activityCode` (Activity Code), `activityDescription` (Activity Description), `amount`, `date`, `reportDate` (Report Date), `settleDate` (Settle Date), `symbol`, `assetCategory` (Asset Class), `fxRateToBase` (FX Rate to Base), `issuerCountryCode` (Issuer Country Code).
+
+### 3. Delivery configuration
+
+- **Format: XML** — this is required, the calculator does not read the CSV or text formats.
+- **Period**: anything is fine here; you can override the dates each time you run the query. IBKR limits a custom date range to 365 days, so plan on one file per year (see [Run and download](#5-run-and-download-the-query) below).
+
+<img src="https://www.ibkrguides.com/clientportal/resources/images/deliveryconfiguration.jpg" width="640" alt="Flex Query delivery configuration with Format set to XML">
+
+### 4. General configuration
+
+- **Date Format: `dd-MMM-yy`** (`dd-MMM-yyyy` also works)
+- **Time Format: `HH:mm:ss`** (`HHmmss` also works)
+- **Date/Time Separator: single space**
+- **Include Currency Rates?: Yes** — this adds the `<ConversionRates>` section to the file, which is needed to convert foreign currency transactions in the Statement of Funds to sterling. Without it the import fails with a "No fx rate found" error.
+
+<img src="https://www.ibkrguides.com/clientportal/resources/images/generalconfig.jpg" width="640" alt="Flex Query general configuration showing Date Format, Time Format, Date/Time Separator and Include Currency Rates options">
+
+Press **Continue**, review the settings and press **Create**.
+
+### 5. Run and download the query
+
+Run the query from the Flex Queries page once for each year (IBKR limits a custom date range to 365 days), choose **XML** as the format, and save the file with your web browser. Import all the yearly files together into the calculator — full trade history from the very first trade is needed for the Section 104 pools to be correct.
 
 ## Privacy concerns:
 
