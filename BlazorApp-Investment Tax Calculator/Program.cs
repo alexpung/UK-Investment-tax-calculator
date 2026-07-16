@@ -8,6 +8,7 @@ using InvestmentTaxCalculator.Model.UkTaxModel.Stocks;
 using InvestmentTaxCalculator.Parser;
 using InvestmentTaxCalculator.Parser.FreeTradeCsv;
 using InvestmentTaxCalculator.Parser.InteractiveBrokersXml;
+using InvestmentTaxCalculator.Parser.InteractiveInvestorCsv;
 using InvestmentTaxCalculator.Parser.Json;
 using InvestmentTaxCalculator.Parser.Trading212Csv;
 using InvestmentTaxCalculator.Services;
@@ -53,6 +54,7 @@ builder.Services.AddSingleton<ITaxEventFileParser, IBParseController>();
 builder.Services.AddSingleton<ITaxEventFileParser, JsonParseController>();
 builder.Services.AddSingleton<ITaxEventFileParser, FreeTradeCsvParseController>();
 builder.Services.AddSingleton<ITaxEventFileParser, Trading212CsvParseController>();
+builder.Services.AddSingleton<ITaxEventFileParser, InteractiveInvestorCsvParseController>();
 
 // Models
 TaxEventLists taxEventLists = new();

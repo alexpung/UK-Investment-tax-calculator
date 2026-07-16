@@ -1,5 +1,5 @@
 ## UK investment tax calculator
-UK tax calculator for Interactive Broker (limited support for FreeTrade/Trading212).
+UK tax calculator for Interactive Broker (limited support for FreeTrade/Trading212/interactive investor).
 To help report UK tax for dividend and capital gain.
 
 ## What is included
@@ -17,16 +17,27 @@ https://alexpung.github.io/UK-Investment-tax-calculator/
 7. Support for UK specific tax rules such as TCGA92/S122 for small distributions in corporate actions (automatic gain deferral).
 
 ## Supported import format and brokers
-| Category                | IB XML | FreeTrade CSV        | Trading212 CSV       |
-|-------------------------|--------|----------------------|-----------------------|
-| CashSettlement (Option) | O      |                      |                       |
-| StockSplit              | O      |                      |                       |
-| Dividend                | O      | Total in GBP         | Total in GBP          |
-| FutureContractTrade     | O      |                      |                       |
-| FxTrade                 | O      |                      |                       |
-| InterestIncome          | O      | Saving income in GBP | Saving income in GBP  |
-| OptionTrade             | O      |                      |                       |
-| Trade (Stock)           | O      | Total in GBP         | Total in GBP          |
+| Category                | IB XML | FreeTrade CSV        | Trading212 CSV       | interactive investor CSV (experimental) |
+|-------------------------|--------|----------------------|-----------------------|------------------------------------------|
+| CashSettlement (Option) | O      |                      |                       |                                          |
+| StockSplit              | O      |                      |                       |                                          |
+| Dividend                | O      | Total in GBP         | Total in GBP          | Total in GBP (no withholding tax detail, company location unknown) |
+| FutureContractTrade     | O      |                      |                       |                                          |
+| FxTrade                 | O      |                      |                       |                                          |
+| InterestIncome          | O      | Saving income in GBP | Saving income in GBP  | Saving income in GBP                     |
+| OptionTrade             | O      |                      |                       |                                          |
+| Trade (Stock)           | O      | Total in GBP         | Total in GBP          | Total in GBP (charges included in cash amount) |
+
+### interactive investor (ii) CSV import — experimental
+Export from the ii website (desktop): **Portfolio → Transaction history**, select the widest date range, then download as CSV. Export the **Trading account only** — ISA and SIPP activity is not taxable and should not be imported.
+
+Notes and limitations:
+1. **This parser is experimental**: it was written against the publicly documented shape of the ii export (`Date, Settlement Date, Symbol, Sedol, Quantity, Price, Description, Reference, Debit, Credit, Running Balance`) but has not yet been verified against a wide range of real exports. If your file is not recognised or rows are missed, please open a GitHub issue and attach an **anonymised** sample (replace amounts/references, keep the structure).
+2. Buy/sell trades, dividends and cash interest are imported. Deposits, withdrawals, fees and transfers are ignored. Corporate actions (splits, takeovers etc.) are **not** in the ii export and must be entered manually on the "Add trades" page.
+3. Trade amounts are taken from the cash Debit/Credit column, so dealing charges and stamp duty are already included in the acquisition cost / netted off the disposal proceeds (this is the correct all-in treatment for CGT).
+4. The ii export has no ISIN, so the dividend company location is imported as *unknown* — review foreign dividends (e.g. for withholding tax, which ii does not itemise in this export; see your Consolidated Tax Certificate) and correct manually if needed.
+
+A constructed example file is at [TaxExamples/InteractiveInvestor/TransactionHistoryExample.csv](TaxExamples/InteractiveInvestor/TransactionHistoryExample.csv).
 
 [AllAssetTypesExample.xml](TaxExamples/AllAssetTypesExample.xml) is a single Interactive Brokers Flex Query file with realistic mock data (real tickers, prices and dates, all within one UK tax year) covering every row above except FxTrade and InterestIncome, which are entered manually rather than imported — those two are instead included in [AllAssetTypesExample.json](TaxExamples/AllAssetTypesExample.json), a full exported session (via the Import & Export page) with all of the above plus the manual entries. Import either file directly to explore the app with realistic data covering every category. See [Example](#example) below for a walkthrough of the resulting report.
 
