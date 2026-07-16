@@ -17,6 +17,7 @@ https://alexpung.github.io/UK-Investment-tax-calculator/
 7. Support for UK specific tax rules such as TCGA92/S122 for small distributions in corporate actions (automatic gain deferral).
 
 ## Supported import format and brokers
+
 | Category                | IB XML | FreeTrade CSV        | Trading212 CSV       | interactive investor CSV (experimental) |
 |-------------------------|--------|----------------------|-----------------------|------------------------------------------|
 | CashSettlement (Option) | O      |                      |                       |                                          |

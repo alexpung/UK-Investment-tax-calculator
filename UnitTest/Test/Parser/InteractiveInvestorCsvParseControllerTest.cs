@@ -117,6 +117,9 @@ public class InteractiveInvestorCsvParseControllerTest
         parser.CheckFileValidity(csvData, "text/csv").ShouldBeTrue();
         // Browsers with Excel installed frequently report CSV files with an Excel MIME type
         parser.CheckFileValidity(csvData, "application/vnd.ms-excel").ShouldBeTrue();
+        // Content type may carry parameters or differ in casing
+        parser.CheckFileValidity(csvData, "text/csv; charset=utf-8").ShouldBeTrue();
+        parser.CheckFileValidity(csvData, "Text/CSV").ShouldBeTrue();
         parser.CheckFileValidity(csvData, "text/xml").ShouldBeFalse();
     }
 

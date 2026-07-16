@@ -132,13 +132,14 @@ public partial class InteractiveInvestorCsvParseController : ITaxEventFileParser
 
     private static DateTime ParseDate(CsvReader csv)
     {
-        // ii is a GB platform: dates are dd/MM/yyyy and must not be parsed with invariant culture.
+        // ii is a GB platform: dates are day-first, so they are parsed with explicit dd/MM formats
+        // rather than culture-dependent parsing that could read them as MM/dd.
         string dateString = csv.GetFieldSafe(_dateName);
         if (DateTime.TryParseExact(dateString, _acceptedDateFormats, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime date))
         {
             return date;
         }
-        throw new InvalidDataException($"Invalid date '{dateString}' on row {csv.Context.Parser?.Row}, expected dd/MM/yyyy.");
+        throw new InvalidDataException($"Invalid date '{dateString}' on row {csv.Context.Parser?.Row}, expected one of: {string.Join(", ", _acceptedDateFormats)}.");
     }
 
     private static decimal? ParseNullableDecimal(string? value)
@@ -154,8 +155,10 @@ public partial class InteractiveInvestorCsvParseController : ITaxEventFileParser
 
     public bool CheckFileValidity(string data, string contentType)
     {
-        // Browsers on systems with Excel installed often report CSV as application/vnd.ms-excel.
-        if (!_acceptedContentTypes.Contains(contentType)) return false;
+        // Browsers on systems with Excel installed often report CSV as application/vnd.ms-excel,
+        // and content types may carry parameters (e.g. "text/csv; charset=utf-8") or differ in casing.
+        string mimeType = contentType?.Split(';')[0].Trim() ?? string.Empty;
+        if (!_acceptedContentTypes.Contains(mimeType, StringComparer.OrdinalIgnoreCase)) return false;
         try
         {
             using var reader = new StringReader(data);
