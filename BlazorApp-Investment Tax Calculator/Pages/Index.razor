@@ -158,18 +158,8 @@
 </div>
 
 @code {
-    private static readonly string AppVersion = GetAppVersion();
+    private static readonly string AppVersion = InvestmentTaxCalculator.Services.AppVersionInfo.Current;
     private static readonly string BuildDateUtc = typeof(Index).Assembly
         .GetCustomAttributes<AssemblyMetadataAttribute>()
         .FirstOrDefault(attribute => attribute.Key == "BuildDateUtc")?.Value ?? "unknown";
-
-    private static string GetAppVersion()
-    {
-        string? informationalVersion = typeof(Index).Assembly
-            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
-        if (string.IsNullOrEmpty(informationalVersion)) return "unknown";
-        // strip the source revision suffix (e.g. 1.1.0+abc123) that the SDK may append
-        int suffixStart = informationalVersion.IndexOf('+');
-        return suffixStart >= 0 ? informationalVersion[..suffixStart] : informationalVersion;
-    }
 }

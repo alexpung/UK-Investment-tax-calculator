@@ -120,7 +120,7 @@ public class PdfExportService
         footerParagraph.Format.AddTabStop(Unit.FromPoint(Style.GetContentWidth(section)), TabAlignment.Right);
         footerParagraph.Format.Borders.Top = new Border { Width = Unit.FromPoint(0.5), Color = Style.TableBorderColour };
         footerParagraph.Format.Borders.DistanceFromTop = Unit.FromPoint(3);
-        footerParagraph.AddText($"Generated on {DateTime.Now:d MMMM yyyy}");
+        footerParagraph.AddText($"Generated on {DateTime.Now:d MMMM yyyy} by https://alexpung.github.io/UK-Investment-tax-calculator/ version {AppVersionInfo.Current}");
         footerParagraph.AddTab();
         footerParagraph.AddText("Page ");
         footerParagraph.AddPageField();
