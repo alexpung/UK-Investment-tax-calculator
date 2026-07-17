@@ -56,9 +56,10 @@ public static class Style
         Table table = section.AddTable();
         ApplyTableStyle(table);
         double sectionWidth = GetContentWidth(section);
+        int totalWidth = columnProportionedWidth.Sum();
         foreach (var width in columnProportionedWidth)
         {
-            table.AddColumn(Unit.FromPoint(sectionWidth * width / columnProportionedWidth.Sum()));
+            table.AddColumn(Unit.FromPoint(sectionWidth * width / totalWidth));
         }
         return table;
     }
