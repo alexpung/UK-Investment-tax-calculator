@@ -48,17 +48,11 @@
 			<StatementOfFunds>
 				<!-- SPX put option assignment is cash settled rather than delivering the underlying -->
 				<StatementOfFundsLine assetCategory="OPT" symbol="SPX   230915P04300000" isin="" date="15-Sep-23" reportDate="15-Sep-23" activityDescription="Option Cash Settlement for: Assignment" amount="-5000.00" currency="USD" fxRateToBase="0.804" levelOfDetail="Currency" activityCode="ADJ"/>
-				<!-- Disposal of USD when converting surplus trading cash back to sterling -->
-				<StatementOfFundsLine assetCategory="CASH" symbol="" isin="" date="18-Oct-23" reportDate="18-Oct-23" activityDescription="Converted surplus USD trading cash back to GBP ahead of a property deposit" amount="-3250.75" currency="USD" fxRateToBase="0.8215" levelOfDetail="Currency" activityCode="FX"/>
-				<!-- Acquisition of USD from an income remittance - matched bed and breakfast against the disposal above -->
-				<StatementOfFundsLine assetCategory="CASH" symbol="" isin="" date="20-Oct-23" reportDate="20-Oct-23" activityDescription="Wired USD consulting income into the brokerage account" amount="5000.00" currency="USD" fxRateToBase="0.8180" levelOfDetail="Currency" activityCode="DEP"/>
 			</StatementOfFunds>
 			<ConversionRates>
 				<ConversionRate reportDate="01-Dec-23" fromCurrency="JPY" toCurrency="GBP" rate="0.00527" />
 				<ConversionRate reportDate="15-Sep-23" fromCurrency="USD" toCurrency="GBP" rate="0.804" />
 				<ConversionRate reportDate="01-Dec-23" fromCurrency="USD" toCurrency="GBP" rate="0.790" />
-				<ConversionRate reportDate="18-Oct-23" fromCurrency="USD" toCurrency="GBP" rate="0.8215" />
-				<ConversionRate reportDate="20-Oct-23" fromCurrency="USD" toCurrency="GBP" rate="0.8180" />
 			</ConversionRates>
 		</FlexStatement>
 	</FlexStatements>
