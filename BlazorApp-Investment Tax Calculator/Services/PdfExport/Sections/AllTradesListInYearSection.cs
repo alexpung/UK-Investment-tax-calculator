@@ -78,7 +78,7 @@ public class AllTradesListInYearSection(TradeCalculationResult tradeCalculationR
             if (trade.TradeList.Count >= 2)
             {
                 Row subrow = table.AddRow();
-                subrow.Shading.Color = Colors.LightGray;
+                subrow.Shading.Color = Style.SubRowShadingColour;
                 int subId = 1;
                 foreach (var subTrade in trade.TradeList)
                 {

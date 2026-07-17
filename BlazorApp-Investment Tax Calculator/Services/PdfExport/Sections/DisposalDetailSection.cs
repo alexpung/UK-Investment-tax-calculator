@@ -41,8 +41,14 @@ public class DisposalDetailSection(TradeCalculationResult tradeCalculationResult
             section.AddParagraph($"No disposals found for the tax year {taxYear}.");
             return section;
         }
+        bool isFirstDisposal = true;
         foreach (var disposal in disposals)
         {
+            if (!isFirstDisposal)
+            {
+                section.AddPageBreak();
+            }
+            isFirstDisposal = false;
             AddDisposalDetails(section, disposal);
             section.AddParagraph().Format.SpaceAfter = Unit.FromPoint(10);
             if (disposal is FutureTradeTaxCalculation futureDisposal)
@@ -77,7 +83,6 @@ public class DisposalDetailSection(TradeCalculationResult tradeCalculationResult
             {
                 AddAcquisitionTradeDetails(section, disposal);
             }
-            section.AddPageBreak();
         }
         return section;
     }
@@ -126,10 +131,9 @@ public class DisposalDetailSection(TradeCalculationResult tradeCalculationResult
             (10, ParagraphAlignment.Right),
             (10, ParagraphAlignment.Right)]);
         Row tradeDetailHeaderRow = table.AddRow();
-        Paragraph calcTitle = tradeDetailHeaderRow.Cells[0].AddParagraph("Calculation");
+        tradeDetailHeaderRow.Cells[0].AddParagraph("Calculation");
         tradeDetailHeaderRow.Format.Alignment = ParagraphAlignment.Center;
         tradeDetailHeaderRow.Cells[0].MergeRight = 4;
-        calcTitle.Format.Font.Color = Colors.DarkBlue;
         Row tradeDetailHeaderRow2 = table.AddRow();
         tradeDetailHeaderRow2.Cells[0].AddParagraph("Trade Details");
         tradeDetailHeaderRow2.Cells[1].AddParagraph("Disposal Date");
@@ -181,10 +185,9 @@ public class DisposalDetailSection(TradeCalculationResult tradeCalculationResult
             (10, ParagraphAlignment.Right),
             (10, ParagraphAlignment.Right)]);
         Row tradeDetailHeaderRow = table.AddRow();
-        Paragraph calcTitle = tradeDetailHeaderRow.Cells[0].AddParagraph("Calculation");
+        tradeDetailHeaderRow.Cells[0].AddParagraph("Calculation");
         tradeDetailHeaderRow.Format.Alignment = ParagraphAlignment.Center;
         tradeDetailHeaderRow.Cells[0].MergeRight = 4;
-        calcTitle.Format.Font.Color = Colors.DarkBlue;
         Row tradeDetailHeaderRow2 = table.AddRow();
         tradeDetailHeaderRow2.Cells[0].AddParagraph("Trade Details");
         tradeDetailHeaderRow2.Cells[1].AddParagraph("Disposal Date");
@@ -235,8 +238,6 @@ public class DisposalDetailSection(TradeCalculationResult tradeCalculationResult
         titleRow.Cells[0].MergeRight = 1;
         titleRow.Cells[0].AddParagraph("Corporate Action Details");
         titleRow.Format.Alignment = ParagraphAlignment.Center;
-        titleRow.Cells[0].Format.Font.Bold = true;
-        titleRow.Cells[0].Format.Font.Color = Colors.DarkBlue;
         Style.StyleHeaderRow(titleRow);
 
         Row reasonRow = table.AddRow();
@@ -341,8 +342,7 @@ public class DisposalDetailSection(TradeCalculationResult tradeCalculationResult
         titleRow.Cells[0].MergeRight = 3;
         titleRow.Format.Alignment = ParagraphAlignment.Center;
         Style.StyleHeaderRow(titleRow);
-        Paragraph title = titleRow.Cells[0].AddParagraph("Section 104 Pool Change");
-        title.Format.Font.Color = Colors.DarkBlue;
+        titleRow.Cells[0].AddParagraph("Section 104 Pool Change");
         Row headerRow = table.AddRow();
         Style.StyleHeaderRow(headerRow);
         headerRow.Cells[1].AddParagraph("Quantity");
@@ -376,8 +376,7 @@ public class DisposalDetailSection(TradeCalculationResult tradeCalculationResult
         titleRow.Cells[0].MergeRight = 2;
         titleRow.Format.Alignment = ParagraphAlignment.Center;
         Style.StyleHeaderRow(titleRow);
-        Paragraph title = titleRow.Cells[0].AddParagraph("Section 104 Pool Change");
-        title.Format.Font.Color = Colors.DarkBlue;
+        titleRow.Cells[0].AddParagraph("Section 104 Pool Change");
         Row headerRow = table.AddRow();
         Style.StyleHeaderRow(headerRow);
         headerRow.Cells[1].AddParagraph("Quantity");
