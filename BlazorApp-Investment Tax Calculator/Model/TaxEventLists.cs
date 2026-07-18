@@ -1,6 +1,8 @@
 ﻿using InvestmentTaxCalculator.Model.Interfaces;
 using InvestmentTaxCalculator.Model.TaxEvents;
 
+using System.Text.Json.Serialization;
+
 namespace InvestmentTaxCalculator.Model;
 
 public record TaxEventLists : IDividendLists, ITradeAndCorporateActionList
@@ -12,6 +14,7 @@ public record TaxEventLists : IDividendLists, ITradeAndCorporateActionList
     public List<FutureContractTrade> FutureContractTrades { get; set; } = [];
     public List<CashSettlement> CashSettlements { get; set; } = [];
     public List<InterestIncome> InterestIncomes { get; set; } = [];
+    [JsonIgnore]
     public IEnumerable<TaxEvent> AllEvents => Trades.Cast<TaxEvent>()
         .Concat(CorporateActions.Cast<TaxEvent>())
         .Concat(Dividends.Cast<TaxEvent>())
