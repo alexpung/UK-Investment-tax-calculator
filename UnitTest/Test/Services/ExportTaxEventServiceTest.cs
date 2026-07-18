@@ -31,6 +31,7 @@ public class ExportTaxEventServiceTest
         ExportTaxEventService exportService = new(taxEventLists, exportResidencyRecord);
 
         string json = exportService.SerialiseTaxEvents();
+        json.ShouldNotContain("\"AllEvents\"");
 
         ResidencyStatusRecord importResidencyRecord = new();
         JsonParseController importController = new(new AssetTypeToLoadSetting(), importResidencyRecord);
