@@ -12,7 +12,7 @@ namespace InvestmentTaxCalculator.Services.PdfExport;
 public class PdfExportService
 {
     public List<ISection> AllSections { get; set; }
-    public string[]? SelectedSections { get; set; } = [];
+    public string[]? SelectedSections { get; set; }
     public PdfExportService(TaxYearReportService taxYearReportService, TradeCalculationResult tradeCalculationResult,
         UkSection104Pools uKSection104Pools, DividendCalculationResult dividendCalculationResult)
     {
@@ -32,6 +32,7 @@ public class PdfExportService
             section104Section,
             allTradesListSection
             ];
+        SelectedSections = [.. AllSections.Select(section => section.Name)];
     }
     public MemoryStream CreatePdf(int year)
     {
