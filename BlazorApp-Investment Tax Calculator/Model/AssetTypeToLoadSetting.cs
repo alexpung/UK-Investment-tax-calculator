@@ -5,6 +5,7 @@ namespace InvestmentTaxCalculator.Model;
 public class AssetTypeToLoadSetting
 {
     public bool LoadStocks { get; set; } = true;
+    public bool LoadFunds { get; set; } = true;
     public bool LoadOptions { get; set; } = true;
     public bool LoadFutures { get; set; } = true;
     public bool LoadFx { get; set; } = true;
@@ -17,6 +18,7 @@ public class AssetTypeToLoadSetting
         if (LoadDividends) resultFiltered.Dividends.AddRange(taxEventLists.Dividends);
         resultFiltered.CorporateActions.AddRange(taxEventLists.CorporateActions);
         if (LoadStocks) resultFiltered.Trades.AddRange(taxEventLists.Trades.Where(trade => trade.AssetType == AssetCategoryType.STOCK));
+        if (LoadFunds) resultFiltered.Trades.AddRange(taxEventLists.Trades.Where(trade => trade.AssetType == AssetCategoryType.FUND));
         if (LoadFutures) resultFiltered.FutureContractTrades.AddRange(taxEventLists.FutureContractTrades);
         if (LoadFx) resultFiltered.Trades.AddRange(taxEventLists.Trades.Where(trade => trade.AssetType == AssetCategoryType.FX));
         if (LoadOptions) resultFiltered.OptionTrades.AddRange(taxEventLists.OptionTrades);

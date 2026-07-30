@@ -92,7 +92,7 @@
     [Parameter] public bool IsDestinationDisabled { get; set; }
     [Parameter] public bool AllowManualSourceAssetNameInput { get; set; }
     [Parameter] public bool AllowManualDestinationAssetNameInput { get; set; } = true;
-    [Parameter] public List<AssetCategoryType> AssetCategoryFilter { get; set; } = [AssetCategoryType.STOCK];
+    [Parameter] public List<AssetCategoryType> AssetCategoryFilter { get; set; } = [AssetCategoryType.STOCK, AssetCategoryType.FUND];
     [Parameter] public int RatioDecimals { get; set; } = 4;
     [Parameter] public string RatioFormat { get; set; } = "n4";
     [Parameter] public decimal RatioMin { get; set; } = 0.0001m;

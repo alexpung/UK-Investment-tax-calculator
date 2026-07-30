@@ -1,4 +1,5 @@
-﻿using InvestmentTaxCalculator.Model;
+﻿using InvestmentTaxCalculator.Enumerations;
+using InvestmentTaxCalculator.Model;
 using InvestmentTaxCalculator.Parser.InteractiveBrokersXml;
 
 namespace UnitTest.Test.Parser;
@@ -37,6 +38,33 @@ public class IBXmlParseControllerTest
         IBParseController iBParseController = new(assetTypeToLoadSetting);
         TaxEventLists results = iBParseController.ParseFile(_taxExampleXml);
 
+    }
+
+    [Fact]
+    public void TestFundTradesLoadedWhenLoadFundsEnabled()
+    {
+        AssetTypeToLoadSetting assetTypeToLoadSetting = new()
+        {
+            LoadStocks = false,
+            LoadOptions = false,
+            LoadFutures = false,
+            LoadFx = false,
+            LoadDividends = false,
+            LoadInterestIncome = false
+        };
+        IBParseController iBParseController = new(assetTypeToLoadSetting);
+        TaxEventLists results = iBParseController.ParseFile(_taxExampleXml);
+        results.Trades.Count.ShouldBe(2);
+        results.Trades.ShouldAllBe(trade => trade.AssetType == AssetCategoryType.FUND);
+    }
+
+    [Fact]
+    public void TestFundTradesNotLoadedWhenLoadFundsDisabled()
+    {
+        AssetTypeToLoadSetting assetTypeToLoadSetting = new() { LoadFunds = false };
+        IBParseController iBParseController = new(assetTypeToLoadSetting);
+        TaxEventLists results = iBParseController.ParseFile(_taxExampleXml);
+        results.Trades.ShouldAllBe(trade => trade.AssetType != AssetCategoryType.FUND);
     }
 }
 

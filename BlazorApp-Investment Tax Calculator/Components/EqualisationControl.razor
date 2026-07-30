@@ -70,7 +70,7 @@
     [Parameter] public bool IsCalculationMissing { get; set; }
     [Parameter] public EventCallback OnDataChanged { get; set; }
     [Parameter] public bool AllowManualAssetNameInput { get; set; }
-    [Parameter] public List<AssetCategoryType> AssetCategoryFilter { get; set; } = [AssetCategoryType.STOCK];
+    [Parameter] public List<AssetCategoryType> AssetCategoryFilter { get; set; } = [AssetCategoryType.STOCK, AssetCategoryType.FUND];
 
     private List<string> AvailableTickers { get; set; } = new();
     private string SelectedTicker { get; set; } = string.Empty;
@@ -95,7 +95,7 @@
             .ToHashSet();
 
         AvailableTickers = Section104Pools.GetSection104s()
-            .Where(p => TaxEventLists.Trades.Any(t => t.AssetName == p.AssetName && t.AssetType == AssetCategoryType.STOCK))
+            .Where(p => TaxEventLists.Trades.Any(t => t.AssetName == p.AssetName && t.AssetType is AssetCategoryType.STOCK or AssetCategoryType.FUND))
             .Select(p => p.AssetName)
             .Where(name => tickersWithIncome.Contains(name))
             .Distinct()

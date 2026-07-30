@@ -58,8 +58,9 @@ https://github.com/alexpung/UK-Investment-tax-calculator/tree/master/BlazorApp-I
 ### Parsed trade type:
 1. Trades:
     1. Stock orders
-    2. Future contracts (closed, not settled)
-    3. Capital gain from foreign currency
+    2. Fund orders (ETFs/mutual funds reported by IBKR with asset category "FUND", treated as listed securities)
+    3. Future contracts (closed, not settled)
+    4. Capital gain from foreign currency
 2. Dividend income
     1. Dividend cash income
     2. Witholding tax paid
@@ -123,7 +124,7 @@ Add each of the sections listed below. Clicking a section opens a pop-up listing
 
 #### Trades — Level of detail: **Orders**
 
-Used for stock, future and option trades.
+Used for stock, fund (ETF/mutual fund), future and option trades.
 
 Required fields: `levelOfDetail`, `assetCategory` (Asset Class), `buySell` (Buy/Sell), `symbol`, `isin`, `description`, `dateTime` (Date/Time), `quantity`, `proceeds`, `taxes`, `ibCommission` (IB Commission), `ibCommissionCurrency` (IB Commission Currency), `currency`, `fxRateToBase` (FX Rate to Base), `notes` (Notes/Codes).
 

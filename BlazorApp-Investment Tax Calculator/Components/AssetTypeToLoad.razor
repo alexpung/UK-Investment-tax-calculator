@@ -7,6 +7,10 @@
         <RadzenLabel Text="Load Stocks" Component="loadStocks" class="ms-2" />
     </div>
     <div class="col-md-6 col-lg-4">
+        <RadzenCheckBox @bind-Value="@AssetSettings.LoadFunds" Name="loadFunds" />
+        <RadzenLabel Text="Load Funds (ETF/Mutual Funds)" Component="loadFunds" class="ms-2" />
+    </div>
+    <div class="col-md-6 col-lg-4">
         <RadzenCheckBox @bind-Value="@AssetSettings.LoadOptions" Name="loadOptions" />
         <RadzenLabel Text="Load Options" Component="loadOptions" class="ms-2" />
     </div>

@@ -7,7 +7,7 @@ using System.Text;
 namespace InvestmentTaxCalculator.Model.UkTaxModel.Stocks;
 
 /// <summary>
-/// Calculate Fx and stock trades
+/// Calculate Fx, stock and fund (ETF/mutual fund) trades
 /// </summary>
 /// <param name="section104Pools"></param>
 /// <param name="tradeList"></param>
