@@ -1,4 +1,5 @@
 ﻿using InvestmentTaxCalculator.Model;
+using InvestmentTaxCalculator.Model.TaxEvents;
 
 using System.Xml.Linq;
 
@@ -17,8 +18,11 @@ public class IBParseController(AssetTypeToLoadSetting assetTypeToLoadSetting) : 
             if (assetTypeToLoadSetting.LoadDividends) result.Dividends.AddRange(IBXmlDividendParser.ParseXml(xml));
             if (assetTypeToLoadSetting.LoadDividends) result.CorporateActions.AddRange(IBXmlDividendParser.ParseReturnOfCapital(xml));
             result.CorporateActions.AddRange(IBXmlStockSplitParser.ParseXml(xml));
-            if (assetTypeToLoadSetting.LoadStocks) result.Trades.AddRange(IBXmlStockTradeParser.ParseXml(xml));
-            if (assetTypeToLoadSetting.LoadFunds) result.Trades.AddRange(IBXmlStockTradeParser.ParseFundXml(xml));
+            List<Trade> stockAndFundTrades = [];
+            if (assetTypeToLoadSetting.LoadStocks) stockAndFundTrades.AddRange(IBXmlStockTradeParser.ParseXml(xml));
+            if (assetTypeToLoadSetting.LoadFunds) stockAndFundTrades.AddRange(IBXmlStockTradeParser.ParseFundXml(xml));
+            IBXmlStockTradeParser.NormaliseAssetNamesByIsin(stockAndFundTrades);
+            result.Trades.AddRange(stockAndFundTrades);
             if (assetTypeToLoadSetting.LoadFutures) result.FutureContractTrades.AddRange(IBXmlFutureTradeParser.ParseXml(xml));
             if (assetTypeToLoadSetting.LoadFx) result.Trades.AddRange(_xmlFxParser.ParseXml(xml));
             if (assetTypeToLoadSetting.LoadOptions) result.OptionTrades.AddRange(IBXmlOptionTradeParser.ParseXml(xml));

@@ -52,6 +52,72 @@ public class IBXmlParseTest
         parsedData.First().Isin.ShouldBe("IE0000000001");
     }
 
+    [Theory]
+    [InlineData("CWR", "CWRl", "CWR")]
+    [InlineData("DIS", "DISm", "DIS")]
+    public void TestSameIsinWithLowercaseSuffixSymbolIsRenamedToBaseSymbol(string baseSymbol, string suffixedSymbol, string expectedSymbol)
+    {
+        List<Trade> trades =
+        [
+            CreateTrade(baseSymbol, "GB00B010V573"),
+            CreateTrade(suffixedSymbol, "GB00B010V573"),
+        ];
+        IBXmlStockTradeParser.NormaliseAssetNamesByIsin(trades);
+        trades.ShouldAllBe(trade => trade.AssetName == expectedSymbol);
+    }
+
+    [Fact]
+    public void TestDifferentIsinSymbolsAreNotRenamed()
+    {
+        List<Trade> trades =
+        [
+            CreateTrade("CWR", "GB00B010V573"),
+            CreateTrade("CWRl", "GB00B010V574"),
+        ];
+        IBXmlStockTradeParser.NormaliseAssetNamesByIsin(trades);
+        trades[0].AssetName.ShouldBe("CWR");
+        trades[1].AssetName.ShouldBe("CWRl");
+    }
+
+    [Fact]
+    public void TestSameIsinButUnrelatedSymbolsAreNotRenamed()
+    {
+        List<Trade> trades =
+        [
+            CreateTrade("ABC", "GB00B010V573"),
+            CreateTrade("XYZ", "GB00B010V573"),
+        ];
+        IBXmlStockTradeParser.NormaliseAssetNamesByIsin(trades);
+        trades[0].AssetName.ShouldBe("ABC");
+        trades[1].AssetName.ShouldBe("XYZ");
+    }
+
+    [Fact]
+    public void TestTradesWithoutIsinAreNotRenamed()
+    {
+        List<Trade> trades =
+        [
+            CreateTrade("CWR", ""),
+            CreateTrade("CWRl", ""),
+        ];
+        IBXmlStockTradeParser.NormaliseAssetNamesByIsin(trades);
+        trades[0].AssetName.ShouldBe("CWR");
+        trades[1].AssetName.ShouldBe("CWRl");
+    }
+
+    private static Trade CreateTrade(string assetName, string isin)
+    {
+        return new Trade
+        {
+            AssetName = assetName,
+            Isin = isin,
+            Date = DateTime.Parse("01-May-21 10:00:00", CultureInfo.InvariantCulture),
+            Quantity = 10,
+            GrossProceed = new DescribedMoney(100, "GBP", 1),
+            AcquisitionDisposal = TradeType.ACQUISITION
+        };
+    }
+
     [Fact]
     public void TestMissingDividendTypeThrowException()
     {
