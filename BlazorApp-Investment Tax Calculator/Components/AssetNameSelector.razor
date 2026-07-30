@@ -63,6 +63,14 @@ else
                 }
             }
 
+            if (categoryFilter.Contains(AssetCategoryType.FUND))
+            {
+                foreach (string assetName in TaxEventLists.Trades.Where(t => t.AssetType == AssetCategoryType.FUND).Select(t => t.AssetName))
+                {
+                    allowedAssetNames.Add(assetName);
+                }
+            }
+
             if (categoryFilter.Contains(AssetCategoryType.OPTION))
             {
                 foreach (string assetName in TaxEventLists.OptionTrades.Select(t => t.AssetName))

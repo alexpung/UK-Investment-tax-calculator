@@ -140,7 +140,7 @@
     private bool _isCalculationMissing = false;
     private bool _dataChanged = false;
     private IDisposable? _registration;
-    private static readonly List<AssetCategoryType> _stockAssetCategoryFilter = [AssetCategoryType.STOCK];
+    private static readonly List<AssetCategoryType> _stockAssetCategoryFilter = [AssetCategoryType.STOCK, AssetCategoryType.FUND];
 
     protected override void OnInitialized()
     {

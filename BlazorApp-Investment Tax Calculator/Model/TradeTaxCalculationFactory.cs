@@ -36,8 +36,8 @@ public class TradeTaxCalculationFactory(ResidencyStatusRecord residencyStatusRec
     public List<TradeTaxCalculation> GroupTrade(IEnumerable<Trade> trades)
     {
         var groupedTrade = from trade in trades
-                           where trade.AssetType == AssetCategoryType.STOCK
-                           group trade by new { trade.AssetName, trade.Date.Date, trade.AcquisitionDisposal };
+                           where trade.AssetType is AssetCategoryType.STOCK or AssetCategoryType.FUND
+                           group trade by new { trade.AssetName, trade.Date.Date, trade.AcquisitionDisposal, trade.AssetType };
         var groupedFxTrade = from trade in trades
                              where trade.AssetType == AssetCategoryType.FX
                              group trade by new { trade.AssetName, trade.Date.Date, trade.AcquisitionDisposal };

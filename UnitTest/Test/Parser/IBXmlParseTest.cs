@@ -37,6 +37,19 @@ public class IBXmlParseTest
         parsedData.Count(trade => trade.AcquisitionDisposal == TradeType.DISPOSAL).ShouldBe(3);
         parsedData.First(t => t.AssetName == "ABC").Isin.ShouldBe("US9999999999");
         parsedData.First(t => t.AssetName == "DEF").Isin.ShouldBe("GB0000000000");
+        parsedData.ShouldAllBe(trade => trade.AssetType == AssetCategoryType.STOCK);
+    }
+
+    [Fact]
+    public void TestReadingIBXmlFundTrades()
+    {
+        IList<Trade> parsedData = IBXmlStockTradeParser.ParseFundXml(_xmlDoc);
+        parsedData.Count.ShouldBe(2);
+        parsedData.ShouldAllBe(trade => trade.AssetType == AssetCategoryType.FUND);
+        parsedData.Count(trade => trade.AcquisitionDisposal == TradeType.ACQUISITION).ShouldBe(1);
+        parsedData.Count(trade => trade.AcquisitionDisposal == TradeType.DISPOSAL).ShouldBe(1);
+        parsedData.ShouldAllBe(trade => trade.AssetName == "FUNDA");
+        parsedData.First().Isin.ShouldBe("IE0000000001");
     }
 
     [Fact]

@@ -14,6 +14,10 @@
 				<Order currency="USD" fxRateToBase="0.86" assetCategory="STK" symbol="ABC" isin="US9999999999" description="ABC Example Stock" dateTime="04-May-21 12:34:56" quantity="100" proceeds="-600" taxes="-50" ibCommission="-1.5" ibCommissionCurrency="USD" notes="O" buySell="BUY" levelOfDetail="ORDER" />
 				<Order currency="USD" fxRateToBase="0.86" assetCategory="STK" symbol="DEF" isin="GB0000000000" description="DEF Example Stock" dateTime="05-May-21 12:34:56" quantity="-100" proceeds="1000" taxes="0" ibCommission="-1.5" ibCommissionCurrency="USD" notes="O" buySell="SELL" levelOfDetail="ORDER" />
 				<Order currency="USD" fxRateToBase="0.86" assetCategory="STK" symbol="DEF" isin="GB0000000000" description="DEF Example Stock" dateTime="06-Dec-21 12:34:56" quantity="100" proceeds="-500" taxes="0" ibCommission="-1.5" ibCommissionCurrency="USD" notes="C" buySell="BUY" levelOfDetail="ORDER" />
+
+				<!-- Fund (ETF/Mutual fund) trades -->
+				<Order currency="USD" fxRateToBase="0.8" assetCategory="FUND" symbol="FUNDA" isin="IE0000000001" description="FUNDA Example Fund" dateTime="10-May-21 12:34:56" quantity="100" proceeds="-1000" taxes="0" ibCommission="-1.5" ibCommissionCurrency="USD" notes="O" buySell="BUY" levelOfDetail="ORDER" />
+				<Order currency="USD" fxRateToBase="0.85" assetCategory="FUND" symbol="FUNDA" isin="IE0000000001" description="FUNDA Example Fund" dateTime="10-Jun-21 12:34:56" quantity="-100" proceeds="1100" taxes="0" ibCommission="-1.5" ibCommissionCurrency="USD" notes="C" buySell="SELL" levelOfDetail="ORDER" />
 				<Order currency="JPY" fxRateToBase="0.006" assetCategory="FUT" symbol="NIYH3" isin="" description="NIY 10MAR23" dateTime="05-Mar-23 12:34:56" quantity="2" proceeds="-27000000" taxes="0" ibCommission="-700" ibCommissionCurrency="JPY" buySell="BUY" levelOfDetail="ORDER"/>
 				<Order currency="JPY" fxRateToBase="0.006" assetCategory="FUT" symbol="NIYH3" isin="" description="NIY 10MAR23" dateTime="07-Mar-23 12:34:56" quantity="-2" proceeds="29000000" taxes="0" ibCommission="-800" ibCommissionCurrency="JPY" buySell="SELL" levelOfDetail="ORDER"/>
 

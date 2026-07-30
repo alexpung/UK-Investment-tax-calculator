@@ -87,7 +87,7 @@
     [Parameter] public EventCallback OnCorporateActionAdded { get; set; }
     [Parameter] public PartnerTransferCorporateAction? ActionToEdit { get; set; }
     [Parameter] public bool AllowManualAssetNameInput { get; set; } = true;
-    [Parameter] public List<AssetCategoryType> AssetCategoryFilter { get; set; } = [AssetCategoryType.STOCK];
+    [Parameter] public List<AssetCategoryType> AssetCategoryFilter { get; set; } = [AssetCategoryType.STOCK, AssetCategoryType.FUND];
 
     private DateTime _date = DateTime.Today;
     private string? _ticker;

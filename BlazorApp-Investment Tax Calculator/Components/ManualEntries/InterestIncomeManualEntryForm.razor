@@ -94,7 +94,7 @@
     private List<CurrencyViewModel> _currencies = [];
     private List<EnumDescriptionPair<InterestType>> _interestTypes = [];
     private List<CountryCodeOption> _countryCodes = [];
-    private static readonly List<AssetCategoryType> _assetCategoryFilter = [AssetCategoryType.STOCK];
+    private static readonly List<AssetCategoryType> _assetCategoryFilter = [AssetCategoryType.STOCK, AssetCategoryType.FUND];
     private int? _loadedEditingTaxEventId;
     private bool IsEditing => EditingTaxEventId.HasValue;
 

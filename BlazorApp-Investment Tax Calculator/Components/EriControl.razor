@@ -87,7 +87,7 @@
     [Parameter] public bool IsCalculationMissing { get; set; }
     [Parameter] public EventCallback OnDataChanged { get; set; }
     [Parameter] public bool AllowManualAssetNameInput { get; set; }
-    [Parameter] public List<AssetCategoryType> AssetCategoryFilter { get; set; } = [AssetCategoryType.STOCK];
+    [Parameter] public List<AssetCategoryType> AssetCategoryFilter { get; set; } = [AssetCategoryType.STOCK, AssetCategoryType.FUND];
 
     private DateTime? PeriodEndDate { get; set; }
     private string SelectedTicker { get; set; } = string.Empty;

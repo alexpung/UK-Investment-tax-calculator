@@ -177,5 +177,21 @@ public class TradeCalculationResultTests
         (result.GetDisposalProceeds(taxYearsFilter, AssetGroupType.LISTEDSHARES) + result.GetDisposalProceeds(taxYearsFilter, AssetGroupType.OTHERASSETS)).ShouldBe(expectedTotalProceeds);
     }
 
+    [Fact]
+    public void FundDisposal_CountsAsListedShares()
+    {
+        AssetCategoryType.FUND.GetHmrcAssetCategoryType().ShouldBe(AssetGroupType.LISTEDSHARES);
+
+        var mock = SetUpMockTradeTaxCalculation(new DateTime(2021, 5, 1), TradeType.DISPOSAL, 100, 300, AssetCategoryType.FUND, gain: 200);
+        var taxYear = new MockTaxYear();
+        var result = new TradeCalculationResult(taxYear, _residencyStatusRecord);
+        result.SetResult([mock]);
+        var taxYearsFilter = new List<int> { 2021 };
+
+        result.GetNumberOfDisposals(taxYearsFilter, AssetGroupType.LISTEDSHARES).ShouldBe(1);
+        result.GetTotalGain(taxYearsFilter, AssetGroupType.LISTEDSHARES).ShouldBe(new WrappedMoney(200));
+        result.GetNumberOfDisposals(taxYearsFilter, AssetGroupType.OTHERASSETS).ShouldBe(0);
+    }
+
 
 }

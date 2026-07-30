@@ -61,7 +61,7 @@ public class TradeInputViewModel
         if (CommissionAmount != 0) expenses.Add(new(CommissionAmount, CommissionCurrency, CommissionExchangeRate));
         return AssetType switch
         {
-            AssetCategoryType.STOCK => new Trade()
+            AssetCategoryType.STOCK or AssetCategoryType.FUND => new Trade()
             {
                 AssetName = AssetName,
                 Date = Date,
