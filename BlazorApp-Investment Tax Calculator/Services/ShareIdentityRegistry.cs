@@ -158,16 +158,15 @@ public class ShareIdentityRegistry
         {
             identity = tickerIdentity ?? isinIdentity ?? CreateIdentity(ticker, taxEvent.Date);
         }
-        identity.AddTicker(ticker, taxEvent.Date);
+        identity.RecordObservation(ticker, isin, taxEvent.Date);
         _identityByTicker[ticker] = identity;
         if (!string.IsNullOrEmpty(isin))
         {
-            identity.AddIsin(isin);
             _identityByIsin[isin] = identity;
         }
         if (taxEvent is Trade { AssetType: AssetCategoryType.STOCK or AssetCategoryType.FUND } trade)
         {
-            identity.AddFullName(GetFullName(trade));
+            identity.AddFullName(GetFullName(trade), taxEvent.Date);
         }
     }
 

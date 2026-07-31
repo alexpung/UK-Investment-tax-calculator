@@ -140,6 +140,66 @@ public class ShareIdentityRegistryTest
     }
 
     [Fact]
+    public void TestLastSeenDatesIdentifyOlderAndNewerIsin()
+    {
+        // Newco insertion keeping the ticker: the last seen dates show which ISIN is the older one.
+        Trade oldTrade = CreateTrade("ABC", "GB00B010V573", "01-May-21 10:00:00");
+        Trade newTrade = CreateTrade("ABC", "GB00B010V574", "01-May-22 10:00:00");
+        ShareIdentityRegistry registry = new();
+        registry.RegisterEvents([oldTrade, newTrade]);
+        ShareIdentity identity = oldTrade.ShareIdentity!;
+        identity.GetIsinLastSeen("GB00B010V573").ShouldBe(oldTrade.Date);
+        identity.GetIsinLastSeen("GB00B010V574").ShouldBe(newTrade.Date);
+        identity.GetIsinLastSeen("GB00B010V573")!.Value.ShouldBeLessThan(identity.GetIsinLastSeen("GB00B010V574")!.Value);
+    }
+
+    [Fact]
+    public void TestLastSeenDatesIdentifyOlderAndNewerTicker()
+    {
+        Trade oldTrade = CreateTrade("DWAC", "US25400Q1058", "01-May-21 10:00:00");
+        Trade newTrade = CreateTrade("DJT", "US25400Q1058", "01-Jun-24 10:00:00");
+        ShareIdentityRegistry registry = new();
+        registry.RegisterEvents([oldTrade, newTrade]);
+        ShareIdentity identity = oldTrade.ShareIdentity!;
+        identity.GetTickerLastSeen("DWAC").ShouldBe(oldTrade.Date);
+        identity.GetTickerLastSeen("DJT").ShouldBe(newTrade.Date);
+        identity.GetTickerLastSeen("DWAC")!.Value.ShouldBeLessThan(identity.GetTickerLastSeen("DJT")!.Value);
+    }
+
+    [Fact]
+    public void TestObservationsListTickerIsinCombosOrderedOldestFirst()
+    {
+        Trade oldTrade = CreateTrade("DWAC", "US25400Q1058", "01-May-21 10:00:00");
+        Trade laterOldTrade = CreateTrade("DWAC", "US25400Q1058", "01-Jun-21 10:00:00");
+        Trade newTrade = CreateTrade("DJT", "US25400Q9999", "01-Jun-24 10:00:00");
+        ShareIdentityRegistry registry = new();
+        registry.LinkShares("DWAC", "DJT");
+        registry.RegisterEvents([oldTrade, laterOldTrade, newTrade]);
+        IReadOnlyList<ShareIdentityObservation> observations = oldTrade.ShareIdentity!.Observations;
+        observations.ShouldBe([
+            new ShareIdentityObservation("DWAC", "US25400Q1058", laterOldTrade.Date),
+            new ShareIdentityObservation("DJT", "US25400Q9999", newTrade.Date)]);
+    }
+
+    [Fact]
+    public void TestObservationLastSeenSurvivesIdentityMerge()
+    {
+        // The ticker only stock split is seen before the ISIN carrying trades that cause the identities to merge.
+        StockSplit stockSplit = CreateStockSplit("DISm");
+        Trade trade = CreateTrade("DISm", "US2546871060", "01-May-21 10:00:00");
+        Trade laterTrade = CreateTrade("DIS", "US2546871060", "01-May-22 10:00:00");
+        ShareIdentityRegistry registry = new();
+        registry.RegisterEvents([stockSplit, trade, laterTrade]);
+        ShareIdentity identity = trade.ShareIdentity!;
+        identity.GetTickerLastSeen("DISm").ShouldBe(stockSplit.Date); // split is dated 01-Jul-21, after the trade
+        identity.GetTickerLastSeen("DIS").ShouldBe(laterTrade.Date);
+        identity.Observations.Select(observation => (observation.Ticker, observation.Isin)).ShouldBe([
+            ("DISm", ""),
+            ("DISm", "US2546871060"),
+            ("DIS", "US2546871060")], ignoreOrder: true);
+    }
+
+    [Fact]
     public void TestFullNameIsRecordedFromTradeDescription()
     {
         Trade trade = CreateTrade("DIS", "US2546871060");

@@ -61,8 +61,8 @@
                         {
                             <tr>
                                 <td>@identity.PrimaryTicker</td>
-                                <td>@string.Join(", ", identity.Tickers)</td>
-                                <td>@string.Join(", ", identity.Isins)</td>
+                                <td>@string.Join(", ", identity.Tickers.Select(ticker => WithLastSeen(ticker, identity.GetTickerLastSeen(ticker))))</td>
+                                <td>@string.Join(", ", identity.Isins.Select(isin => WithLastSeen(isin, identity.GetIsinLastSeen(isin))))</td>
                                 <td>@string.Join("; ", identity.FullNames)</td>
                             </tr>
                         }
@@ -92,6 +92,10 @@
     }
 
     private void HandleRegistryChanged() => _ = InvokeAsync(StateHasChanged);
+
+    // The last seen date shows which ticker/ISIN is the older and which is the current one.
+    private static string WithLastSeen(string reference, DateTime? lastSeen) =>
+        lastSeen is null ? reference : $"{reference} (last seen {lastSeen.Value.ToShortDateString()})";
 
     private void AddLink()
     {
