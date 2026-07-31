@@ -17,9 +17,9 @@
                 @foreach (var dividend in AvailableTickers)
                 {
                     <div class="d-flex align-items-center" style="min-width:160px;">
-                        <RadzenCheckBox TValue="bool" Value="_selected.Contains(dividend.AssetName)"
-                                        Change="@(v => Toggle(dividend.AssetName, v))" Name="@($"chk_{dividend.Id}")" />
-                        <RadzenLabel Text="@dividend.AssetName" Component="@($"chk_{dividend.Id}")" class="ms-2" />
+                        <RadzenCheckBox TValue="bool" Value="_selected.Contains(dividend.CanonicalAssetName)"
+                                        Change="@(v => Toggle(dividend.CanonicalAssetName, v))" Name="@($"chk_{dividend.Id}")" />
+                        <RadzenLabel Text="@dividend.CanonicalAssetName" Component="@($"chk_{dividend.Id}")" class="ms-2" />
                     </div>
                 }
             </div>

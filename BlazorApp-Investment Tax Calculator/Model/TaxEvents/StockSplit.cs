@@ -46,7 +46,7 @@ public record StockSplit : CorporateAction, IChangeSection104
         DateOnly earlierTradeDate = DateOnly.FromDateTime(earlierTrade.Date);
         DateOnly laterTradeDate = DateOnly.FromDateTime(laterTrade.Date);
 
-        if (AssetName != trade1.AssetName || AssetName != trade2.AssetName) return matchAdjustment;
+        if (!IsSameAsset(trade1.AssetName) || !IsSameAsset(trade2.AssetName)) return matchAdjustment;
         if (!(earlierTradeDate < splitDate && splitDate <= laterTradeDate)) return matchAdjustment;
         matchAdjustment.MatchAdjustmentFactor *= (decimal)SplitTo / SplitFrom;
         matchAdjustment.CorporateActions.Add(this);
@@ -55,7 +55,7 @@ public record StockSplit : CorporateAction, IChangeSection104
 
     public override void ChangeSection104(UkSection104 section104)
     {
-        if (AssetName != section104.AssetName) return;
+        if (!section104.MatchesAsset(AssetName)) return;
 
         // Ensure per-run state is reset before processing.
         CashDisposal = null;

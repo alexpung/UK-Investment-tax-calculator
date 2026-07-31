@@ -28,13 +28,16 @@ public class ExportTaxEventServiceTest
         taxEventLists.Trades.Add(CreateTrade());
         ResidencyStatusRecord exportResidencyRecord = new();
         exportResidencyRecord.SetResidencyStatus(new DateOnly(2020, 4, 6), new DateOnly(2023, 4, 5), ResidencyEnum.NonResident);
-        ExportTaxEventService exportService = new(taxEventLists, exportResidencyRecord);
+        ShareIdentityRegistry exportShareIdentityRegistry = new();
+        exportShareIdentityRegistry.LinkShares("OLDCO", "NEWCO");
+        ExportTaxEventService exportService = new(taxEventLists, exportResidencyRecord, exportShareIdentityRegistry);
 
         string json = exportService.SerialiseTaxEvents();
         json.ShouldNotContain("\"AllEvents\"");
 
         ResidencyStatusRecord importResidencyRecord = new();
-        JsonParseController importController = new(new AssetTypeToLoadSetting(), importResidencyRecord);
+        ShareIdentityRegistry importShareIdentityRegistry = new();
+        JsonParseController importController = new(new AssetTypeToLoadSetting(), importResidencyRecord, importShareIdentityRegistry);
         TaxEventLists imported = importController.ParseFile(json);
 
         imported.Trades.Count.ShouldBe(1);
@@ -42,6 +45,7 @@ public class ExportTaxEventServiceTest
         importResidencyRecord.Ranges.ShouldBe(exportResidencyRecord.Ranges);
         importResidencyRecord.GetResidencyStatus(new DateOnly(2021, 1, 1)).ShouldBe(ResidencyEnum.NonResident);
         importResidencyRecord.GetResidencyStatus(new DateOnly(2024, 1, 1)).ShouldBe(ResidencyEnum.Resident);
+        importShareIdentityRegistry.ManualLinks.ShouldBe(exportShareIdentityRegistry.ManualLinks);
     }
 
     [Fact]
@@ -54,7 +58,7 @@ public class ExportTaxEventServiceTest
         ResidencyStatusRecord importResidencyRecord = new();
         importResidencyRecord.SetResidencyStatus(new DateOnly(2020, 4, 6), new DateOnly(2023, 4, 5), ResidencyEnum.NonResident);
         List<ResidencyStatusRecord.RangeEntry> rangesBeforeImport = [.. importResidencyRecord.Ranges];
-        JsonParseController importController = new(new AssetTypeToLoadSetting(), importResidencyRecord);
+        JsonParseController importController = new(new AssetTypeToLoadSetting(), importResidencyRecord, new ShareIdentityRegistry());
 
         TaxEventLists imported = importController.ParseFile(oldFormatJson);
 

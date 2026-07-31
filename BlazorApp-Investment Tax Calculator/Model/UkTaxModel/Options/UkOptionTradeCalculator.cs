@@ -3,10 +3,12 @@ using InvestmentTaxCalculator.Model.Interfaces;
 using InvestmentTaxCalculator.Model.TaxEvents;
 using InvestmentTaxCalculator.Model.UkTaxModel.Stocks;
 using InvestmentTaxCalculator.Parser;
+using InvestmentTaxCalculator.Services;
 
 namespace InvestmentTaxCalculator.Model.UkTaxModel.Options;
 
-public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorporateActionList tradeList, ITaxYear taxYear, TradeTaxCalculationFactory tradeTaxCalculationFactory) : ITradeCalculator
+public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorporateActionList tradeList, ITaxYear taxYear, TradeTaxCalculationFactory tradeTaxCalculationFactory,
+    ShareIdentityRegistry? shareIdentityRegistry = null) : ITradeCalculator
 {
     /// <summary>
     /// Corporate actions filtered to only those applicable to option trading.
@@ -17,7 +19,7 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
     public List<ITradeTaxCalculation> CalculateTax()
     {
         List<OptionTradeTaxCalculation> tradeTaxCalculations = [.. tradeTaxCalculationFactory.GroupOptionTrade(tradeList.OptionTrades)];
-        GroupedTradeContainer<OptionTradeTaxCalculation> _tradeContainer = new(tradeTaxCalculations, OptionRelevantCorporateActions);
+        GroupedTradeContainer<OptionTradeTaxCalculation> _tradeContainer = new(tradeTaxCalculations, OptionRelevantCorporateActions, shareIdentityRegistry);
         UkMatchingRules.ApplyUkTaxRuleSequence(MatchTrade, _tradeContainer, section104Pools);
         return [.. tradeTaxCalculations.Cast<ITradeTaxCalculation>()];
     }

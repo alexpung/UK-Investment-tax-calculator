@@ -33,7 +33,7 @@ public record PartnerTransferCorporateAction : CorporateAction, IChangeSection10
 
     public override void ChangeSection104(UkSection104 section104)
     {
-        if (AssetName != section104.AssetName) return;
+        if (!section104.MatchesAsset(AssetName)) return;
         if (Quantity <= 0)
         {
             throw new InvalidOperationException($"Partner transfer quantity must be greater than 0 for {AssetName} on {Date:d}.");

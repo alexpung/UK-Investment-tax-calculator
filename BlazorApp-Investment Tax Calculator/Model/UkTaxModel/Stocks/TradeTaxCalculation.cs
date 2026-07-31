@@ -68,7 +68,8 @@ public class TradeTaxCalculation : ITradeTaxCalculation
         UnmatchedQty = TotalQty;
         AcquisitionDisposal = trades.First().AcquisitionDisposal;
         Id = ITradeTaxCalculation.GetNextId();
-        AssetName = TradeList[0].AssetName;
+        // Use the canonical share name so trades recorded under different ticker variations report the same asset
+        AssetName = TradeList[0].CanonicalAssetName;
         AssetCategoryType = TradeList[0].AssetType;
         Date = TradeList[0].Date;
         TaxableDate = Date;

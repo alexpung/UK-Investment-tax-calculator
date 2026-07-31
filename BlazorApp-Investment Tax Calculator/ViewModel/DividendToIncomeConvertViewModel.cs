@@ -7,8 +7,8 @@ public class DividendToIncomeConvertViewModel(TaxEventLists taxEventLists)
 {
     public IEnumerable<Dividend> SelectableTickers =>
         taxEventLists.Dividends
-            .DistinctBy(d => d.AssetName)
-            .OrderBy(d => d.AssetName);
+            .DistinctBy(d => d.CanonicalAssetName)
+            .OrderBy(d => d.CanonicalAssetName);
 
     /// <summary>
     /// Convert all dividends of the given ticker to income events.
@@ -16,7 +16,7 @@ public class DividendToIncomeConvertViewModel(TaxEventLists taxEventLists)
     /// <param name="ticker"></param>
     public void ConvertDividendsToIncome(HashSet<string> tickers)
     {
-        List<Dividend> dividendsToConvert = [.. taxEventLists.Dividends.Where(dividend => tickers.Contains(dividend.AssetName))];
+        List<Dividend> dividendsToConvert = [.. taxEventLists.Dividends.Where(dividend => tickers.Contains(dividend.CanonicalAssetName))];
         foreach (Dividend dividend in dividendsToConvert)
         {
             InterestIncome interestIncome = new()

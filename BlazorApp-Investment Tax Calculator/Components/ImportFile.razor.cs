@@ -10,6 +10,7 @@ namespace InvestmentTaxCalculator.Components;
 public partial class ImportFile : IDisposable
 {
     [Inject] public required FileImportStateService FileImportState { get; set; }
+    [Inject] public required ShareIdentityRegistry ShareIdentityRegistry { get; set; }
 
     private DuplicateWarningModal duplicateModal = default!;
 
@@ -44,10 +45,10 @@ public partial class ImportFile : IDisposable
                 {
                     TaxEventLists events = await fileParseController.ReadFile(file);
                     ShowDividendRegionUnknownWarning(events);
-                    // Normalise over already imported events and the new file together, so a symbol pair split
-                    // across statements (e.g. "DIS" in one and "DISm" in another) is still unified, and
-                    // duplicate signatures are compared using the normalised asset names.
-                    AssetNameNormaliser.NormaliseAssetNamesByIsin(taxEventLists.AllEvents.Concat(events.AllEvents));
+                    // Build share identities over already imported events and the new file together, so a symbol
+                    // pair split across statements (e.g. "DIS" in one and "DISm" in another) resolves to the same
+                    // share, and duplicate signatures are compared using the canonical asset names.
+                    ShareIdentityRegistry.RegisterEvents(taxEventLists.AllEvents.Concat(events.AllEvents));
                     ExecutionState executionState = await CheckDuplicateAndConfirm(events);
                     if (executionState is ExecutionState.SKIP_FILE) continue;
                     if (executionState is ExecutionState.SKIP_DUPLICATE) taxEventLists.AddData(events, true);

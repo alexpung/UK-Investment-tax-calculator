@@ -1,10 +1,12 @@
 ﻿using InvestmentTaxCalculator.Enumerations;
 using InvestmentTaxCalculator.Model.Interfaces;
 using InvestmentTaxCalculator.Model.TaxEvents;
+using InvestmentTaxCalculator.Services;
 
 namespace InvestmentTaxCalculator.Model.UkTaxModel.Futures;
 
-public class UkFutureTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorporateActionList tradeList, TradeTaxCalculationFactory tradeTaxCalculationFactory) : ITradeCalculator
+public class UkFutureTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorporateActionList tradeList, TradeTaxCalculationFactory tradeTaxCalculationFactory,
+    ShareIdentityRegistry? shareIdentityRegistry = null) : ITradeCalculator
 {
     /// <summary>
     /// Corporate actions filtered to only those applicable to futures trading.
@@ -14,7 +16,7 @@ public class UkFutureTradeCalculator(UkSection104Pools section104Pools, ITradeAn
     public List<ITradeTaxCalculation> CalculateTax()
     {
         List<FutureTradeTaxCalculation> tradeTaxCalculations = [.. tradeTaxCalculationFactory.GroupFutureTrade(tradeList.FutureContractTrades)];
-        GroupedTradeContainer<FutureTradeTaxCalculation> _tradeContainer = new(tradeTaxCalculations, FutureRelevantCorporateActions);
+        GroupedTradeContainer<FutureTradeTaxCalculation> _tradeContainer = new(tradeTaxCalculations, FutureRelevantCorporateActions, shareIdentityRegistry);
         UkMatchingRules.ApplyUkTaxRuleSequence(MatchTrade, _tradeContainer, section104Pools);
         return [.. tradeTaxCalculations.Cast<ITradeTaxCalculation>()];
     }

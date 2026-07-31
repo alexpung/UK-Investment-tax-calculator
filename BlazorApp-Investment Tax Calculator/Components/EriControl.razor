@@ -131,10 +131,10 @@
 
     private string GetIsinForTicker(string ticker)
     {
-        var trade = TaxEventLists.Trades.FirstOrDefault(t => t.AssetName == ticker && !string.IsNullOrEmpty(t.Isin));
+        var trade = TaxEventLists.Trades.FirstOrDefault(t => t.IsSameAsset(ticker) && !string.IsNullOrEmpty(t.Isin));
         if (trade != null) return trade.Isin;
 
-        var dividend = TaxEventLists.Dividends.FirstOrDefault(d => d.AssetName == ticker && !string.IsNullOrEmpty(d.Isin));
+        var dividend = TaxEventLists.Dividends.FirstOrDefault(d => d.IsSameAsset(ticker) && !string.IsNullOrEmpty(d.Isin));
         if (dividend != null) return dividend.Isin;
 
         return string.Empty;

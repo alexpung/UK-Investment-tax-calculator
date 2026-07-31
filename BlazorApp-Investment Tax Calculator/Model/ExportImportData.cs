@@ -11,4 +11,10 @@ public record ExportImportData : TaxEventLists
     /// Residency status setting. Null when importing a file saved before this property existed.
     /// </summary>
     public List<ResidencyStatusRecord.RangeEntry>? ResidencyStatusRanges { get; set; }
+
+    /// <summary>
+    /// User declared links between share references (ticker or ISIN) that refer to the same share, e.g. for a
+    /// Newco insertion. Null when importing a file saved before this property existed.
+    /// </summary>
+    public List<ShareIdentityLink>? ShareIdentityLinks { get; set; }
 }

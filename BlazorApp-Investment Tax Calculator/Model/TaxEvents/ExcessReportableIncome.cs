@@ -62,7 +62,7 @@ public record ExcessReportableIncome : CorporateAction, IChangeSection104
 
     public override void ChangeSection104(UkSection104 section104)
     {
-        if (AssetName != section104.AssetName) return;
+        if (!section104.MatchesAsset(AssetName)) return;
         string explanation = $"Excess reportable income ({IncomeType.GetDescription()}) of {Amount.BaseCurrencyAmount} on {Date:d}";
         // The uplift is apportioned per unit held at the reporting period end: units disposed of in the gap period
         // before the fund distribution date take their share at the disposal (reg. 99(5)), the rest goes to the pool.

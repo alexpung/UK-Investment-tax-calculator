@@ -16,7 +16,7 @@ public record ReturnOfCapitalCorporateAction : CorporateAction, IChangeSection10
     // Return of capital reduces the acquisition cost (adjust Section 104 pool)
     public override void ChangeSection104(UkSection104 section104)
     {
-        if (AssetName != section104.AssetName) return;
+        if (!section104.MatchesAsset(AssetName)) return;
         string explanation = $"Return of capital of {Amount.BaseCurrencyAmount} on {Date:d}";
         section104.AdjustAcquisitionCost(Amount.BaseCurrencyAmount * -1, Date, explanation);
     }

@@ -11,6 +11,11 @@ namespace InvestmentTaxCalculator.Model.UkTaxModel;
 public record UkSection104
 {
     public string AssetName { get; init; }
+    /// <summary>
+    /// Identity of the share this pool tracks, when known. Lets corporate actions and other events address the
+    /// pool by any recorded ticker variation instead of relying on an exact ticker match.
+    /// </summary>
+    public ShareIdentity? ShareIdentity { get; init; }
     public decimal Quantity { get; set; }
     public WrappedMoney AcquisitionCostInBaseCurrency { get; set; }
     public WrappedMoney TotalContractValue { get; private set; } // Contract value that determine profit and loss but not actually money paid or received e.g. future cotract price
@@ -30,6 +35,16 @@ public record UkSection104
     public UkSection104(string name, ResidencyStatusRecord residencyStatusRecord) : this(name)
     {
         ResidencyStatusRecord = residencyStatusRecord;
+    }
+
+    /// <summary>
+    /// Whether the given ticker refers to the share this pool tracks, matching any ticker variation recorded in
+    /// the share identity. Without an identity only the exact pool asset name matches.
+    /// </summary>
+    public bool MatchesAsset(string assetName)
+    {
+        if (ShareIdentity is not null) return ShareIdentity.MatchesTicker(assetName) || AssetName == assetName;
+        return AssetName == assetName;
     }
 
     private void AdjustValues(decimal quantity, WrappedMoney acquisitionCostInBaseCurrency, WrappedMoney? contractValue = null)

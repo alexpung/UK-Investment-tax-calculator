@@ -1,0 +1,114 @@
+@using InvestmentTaxCalculator.Model
+@using InvestmentTaxCalculator.Services
+@implements IDisposable
+
+@inject ShareIdentityRegistry ShareIdentityRegistry
+@inject ToastService ToastService
+
+<div class="card mb-3">
+    <div class="card-body">
+        <h5 class="card-title">Share identities</h5>
+        <p class="card-text">
+            Imported tax events are matched by share identity: ticker variations sharing an ISIN (e.g. exchange
+            suffixed symbols like "DISm" or a renamed ticker) and ISIN changes keeping the same ticker are recognised
+            automatically. If a share changed both its ticker and its ISIN (e.g. a Newco insertion), link the old and
+            the new reference below so both are treated as the same share. Links are saved with exported data.
+        </p>
+
+        <div class="row g-2 align-items-end mb-3">
+            <div class="col-md-4">
+                <label class="form-label" for="linkReference1">Ticker or ISIN</label>
+                <input id="linkReference1" class="form-control" @bind="_linkReference1" placeholder="e.g. OLDCO" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label" for="linkReference2">Same share as ticker or ISIN</label>
+                <input id="linkReference2" class="form-control" @bind="_linkReference2" placeholder="e.g. NEWCO or US1234567890" />
+            </div>
+            <div class="col-md-4">
+                <button class="btn btn-primary" @onclick="AddLink">Link shares</button>
+            </div>
+        </div>
+
+        @if (ShareIdentityRegistry.ManualLinks.Count > 0)
+        {
+            <h6>Manual links</h6>
+            <ul class="list-group mb-3">
+                @foreach (var link in ShareIdentityRegistry.ManualLinks.ToList())
+                {
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>@link.Reference &harr; @link.LinkedReference</span>
+                        <button class="btn btn-sm btn-outline-danger" @onclick="() => RemoveLink(link)">Remove</button>
+                    </li>
+                }
+            </ul>
+        }
+
+        @if (IdentitiesWithVariations.Any())
+        {
+            <h6>Detected shares with multiple tickers or ISINs</h6>
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Name used in reports</th>
+                            <th>Ticker variations</th>
+                            <th>ISIN(s)</th>
+                            <th>Company name(s)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var identity in IdentitiesWithVariations)
+                        {
+                            <tr>
+                                <td>@identity.PrimaryTicker</td>
+                                <td>@string.Join(", ", identity.Tickers)</td>
+                                <td>@string.Join(", ", identity.Isins)</td>
+                                <td>@string.Join("; ", identity.FullNames)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private string _linkReference1 = string.Empty;
+    private string _linkReference2 = string.Empty;
+
+    private IEnumerable<ShareIdentity> IdentitiesWithVariations => ShareIdentityRegistry.Identities
+        .Where(identity => identity.Tickers.Count > 1 || identity.Isins.Count > 1)
+        .OrderBy(identity => identity.PrimaryTicker, StringComparer.OrdinalIgnoreCase);
+
+    protected override void OnInitialized()
+    {
+        ShareIdentityRegistry.OnChange += HandleRegistryChanged;
+    }
+
+    public void Dispose()
+    {
+        ShareIdentityRegistry.OnChange -= HandleRegistryChanged;
+    }
+
+    private void HandleRegistryChanged() => _ = InvokeAsync(StateHasChanged);
+
+    private void AddLink()
+    {
+        if (string.IsNullOrWhiteSpace(_linkReference1) || string.IsNullOrWhiteSpace(_linkReference2))
+        {
+            ToastService.ShowError("Please enter both share references to link.");
+            return;
+        }
+        ShareIdentityRegistry.LinkShares(_linkReference1, _linkReference2);
+        ToastService.ShowInformation($"Linked {_linkReference1.Trim()} and {_linkReference2.Trim()} as the same share. Run the calculation again to apply.");
+        _linkReference1 = string.Empty;
+        _linkReference2 = string.Empty;
+    }
+
+    private void RemoveLink(ShareIdentityLink link)
+    {
+        ShareIdentityRegistry.RemoveLink(link);
+        ToastService.ShowInformation("Link removed. Re-import or run the calculation again to apply.");
+    }
+}

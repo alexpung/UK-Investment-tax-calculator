@@ -35,6 +35,7 @@ builder.Services.AddSingleton<TaxYearReportService>();
 builder.Services.AddSingleton<TaxYearCgtByTypeReportService>();
 builder.Services.AddSingleton<PdfExportService>();
 builder.Services.AddSingleton<TaxCalculationService>();
+builder.Services.AddSingleton<ShareIdentityRegistry>();
 builder.Services.AddSingleton<CurrencyService>();
 builder.Services.AddSingleton<ManualEntryTrackerService>();
 builder.Services.AddScoped<FileImportStateService>();

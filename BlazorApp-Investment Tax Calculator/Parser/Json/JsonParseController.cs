@@ -1,12 +1,14 @@
 using InvestmentTaxCalculator.Model;
 using InvestmentTaxCalculator.Model.TaxEvents;
+using InvestmentTaxCalculator.Services;
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace InvestmentTaxCalculator.Parser.Json;
 
-public class JsonParseController(AssetTypeToLoadSetting assetTypeToLoadSetting, ResidencyStatusRecord residencyStatusRecord) : ITaxEventFileParser
+public class JsonParseController(AssetTypeToLoadSetting assetTypeToLoadSetting, ResidencyStatusRecord residencyStatusRecord,
+    ShareIdentityRegistry shareIdentityRegistry) : ITaxEventFileParser
 {
     public TaxEventLists ParseFile(string data)
     {
@@ -16,6 +18,11 @@ public class JsonParseController(AssetTypeToLoadSetting assetTypeToLoadSetting, 
         if (result.ResidencyStatusRanges is { Count: > 0 })
         {
             residencyStatusRecord.Ranges = result.ResidencyStatusRanges;
+        }
+        if (result.ShareIdentityLinks is { Count: > 0 })
+        {
+            // Restore user declared share links so they apply when the imported events are registered.
+            shareIdentityRegistry.ImportManualLinks(result.ShareIdentityLinks);
         }
         resultFiltered = assetTypeToLoadSetting.FilterTaxEvent(result);
         return resultFiltered;
@@ -35,4 +42,5 @@ public class JsonParseController(AssetTypeToLoadSetting assetTypeToLoadSetting, 
 [JsonSerializable(typeof(ExportImportData))]
 [JsonSerializable(typeof(ExcessReportableIncome))]
 [JsonSerializable(typeof(FundEqualisation))]
+[JsonSerializable(typeof(ShareIdentityLink))]
 internal partial class MyJsonContext : JsonSerializerContext { }
