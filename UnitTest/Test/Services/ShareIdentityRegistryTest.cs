@@ -340,6 +340,54 @@ public class ShareIdentityRegistryTest
     }
 
     [Fact]
+    public void TestOptionTradesAreNotGivenAShareIdentity()
+    {
+        // Broker exports put the UNDERLYING share's ISIN on option rows. Registering them would merge every option
+        // series and the underlying's shares into one identity, so they would report under one name and share a
+        // single Section 104 pool.
+        Trade stock = CreateTrade("MSFT", "US5949181045", "01-Feb-21 10:00:00");
+        OptionTrade januaryCall = CreateOptionTrade("MSFT  210116C00230000", "US5949181045", "MSFT", "04-Jan-21 10:00:00");
+        OptionTrade aprilCall = CreateOptionTrade("MSFT  210416C00230000", "US5949181045", "MSFT", "01-Apr-21 10:00:00");
+        ShareIdentityRegistry registry = new();
+        registry.RegisterEvents([stock, januaryCall, aprilCall]);
+
+        januaryCall.ShareIdentity.ShouldBeNull();
+        aprilCall.ShareIdentity.ShouldBeNull();
+        stock.ShareIdentity.ShouldNotBeNull();
+
+        // Each contract keeps its own symbol, so the two series and the shares stay three separate assets.
+        januaryCall.CanonicalAssetName.ShouldBe("MSFT  210116C00230000");
+        aprilCall.CanonicalAssetName.ShouldBe("MSFT  210416C00230000");
+        stock.CanonicalAssetName.ShouldBe("MSFT");
+        januaryCall.IsSameAsset("MSFT  210416C00230000").ShouldBeFalse();
+        januaryCall.IsSameAsset("MSFT").ShouldBeFalse();
+
+        // The option symbols must not pollute the share identity list shown to the user and in the PDF report.
+        registry.Identities.Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public void TestFutureLongAndShortLegsStaySeparateAcrossRepeatedRegistration()
+    {
+        // Calculation renames short positions in place by prefixing "Short ", and the app re-registers every event
+        // at the start of each calculation. If futures were registered, the prefixed and unprefixed names would be
+        // merged on the second pass through their shared ISIN and the long legs would be renamed to the short one.
+        FutureContractTrade longLeg = CreateFutureTrade("NIY", "JP12343", "01-Mar-23 10:00:00");
+        FutureContractTrade shortLeg = CreateFutureTrade("NIY", "JP12343", "03-Mar-23 10:00:00");
+        ShareIdentityRegistry registry = new();
+        registry.RegisterEvents([longLeg, shortLeg]);
+
+        shortLeg.AssetName = "Short " + shortLeg.AssetName; // what TagTradesWithOpenClose does during calculation
+        registry.RegisterEvents([longLeg, shortLeg]);
+
+        longLeg.ShareIdentity.ShouldBeNull();
+        shortLeg.ShareIdentity.ShouldBeNull();
+        longLeg.CanonicalAssetName.ShouldBe("NIY");
+        shortLeg.CanonicalAssetName.ShouldBe("Short NIY");
+        registry.Identities.ShouldBeEmpty();
+    }
+
+    [Fact]
     public void TestUnknownTickerResolvesToItself()
     {
         ShareIdentityRegistry registry = new();
@@ -357,6 +405,39 @@ public class ShareIdentityRegistryTest
             Date = DateTime.Parse(date, CultureInfo.InvariantCulture),
             Quantity = 10,
             GrossProceed = new DescribedMoney(100, "GBP", 1),
+            AcquisitionDisposal = TradeType.ACQUISITION
+        };
+    }
+
+    private static OptionTrade CreateOptionTrade(string assetName, string isin, string underlying, string date)
+    {
+        return new OptionTrade
+        {
+            AssetName = assetName,
+            Isin = isin,
+            Underlying = underlying,
+            Date = DateTime.Parse(date, CultureInfo.InvariantCulture),
+            Quantity = 1,
+            Multiplier = 100,
+            StrikePrice = new WrappedMoney(230, "GBP"),
+            ExpiryDate = DateTime.Parse("01-Jan-30 10:00:00", CultureInfo.InvariantCulture),
+            PUTCALL = PUTCALL.CALL,
+            GrossProceed = new DescribedMoney(100, "GBP", 1),
+            AcquisitionDisposal = TradeType.ACQUISITION
+        };
+    }
+
+    private static FutureContractTrade CreateFutureTrade(string assetName, string isin, string date)
+    {
+        return new FutureContractTrade
+        {
+            AssetName = assetName,
+            Isin = isin,
+            AssetType = AssetCategoryType.FUTURE,
+            Date = DateTime.Parse(date, CultureInfo.InvariantCulture),
+            Quantity = 2,
+            GrossProceed = new DescribedMoney(0, "GBP", 1),
+            ContractValue = new DescribedMoney(10000, "GBP", 1),
             AcquisitionDisposal = TradeType.ACQUISITION
         };
     }

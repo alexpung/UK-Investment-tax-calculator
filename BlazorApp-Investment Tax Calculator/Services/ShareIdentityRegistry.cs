@@ -40,7 +40,7 @@ public class ShareIdentityRegistry
         _identities.Clear();
         _identityByTicker.Clear();
         _identityByIsin.Clear();
-        foreach (TaxEvent taxEvent in taxEventList)
+        foreach (TaxEvent taxEvent in taxEventList.Where(IsShareEvent))
         {
             RegisterSingleEvent(taxEvent);
         }
@@ -48,10 +48,25 @@ public class ShareIdentityRegistry
         IndexUniqueTickers();
         foreach (TaxEvent taxEvent in taxEventList)
         {
-            taxEvent.ShareIdentity = ResolveForEvent(taxEvent);
+            // Derivatives are explicitly cleared rather than left alone: resolving one would find the underlying
+            // share by ISIN, and a stale identity from an earlier registration must not survive.
+            taxEvent.ShareIdentity = IsShareEvent(taxEvent) ? ResolveForEvent(taxEvent) : null;
         }
         OnChange?.Invoke();
     }
+
+    /// <summary>
+    /// Whether the event describes a share whose identity should be tracked. Derivatives are excluded:
+    /// share identity models renames, Newco insertions and exchange suffix variations, none of which apply to a
+    /// contract, and in broker exports an option's ISIN identifies the UNDERLYING share rather than the contract.
+    /// Registering them merges every option series on a share with each other and with the share itself into a
+    /// single identity, so they report under one name and share one Section 104 pool. Futures are excluded for the
+    /// same reason, and because the "Short " prefix given to short positions during calculation would otherwise be
+    /// picked up as another ticker of the same ISIN on the next calculation, merging long and short positions.
+    /// Without an identity these events fall back to exact asset name matching, the correct rule for a contract.
+    /// </summary>
+    private static bool IsShareEvent(TaxEvent taxEvent) =>
+        taxEvent is not (OptionTrade or FutureContractTrade or CashSettlement);
 
     /// <summary>
     /// Resolve the identity for a specific event, preferring its own ISIN (a reliable unique identifier) over the
