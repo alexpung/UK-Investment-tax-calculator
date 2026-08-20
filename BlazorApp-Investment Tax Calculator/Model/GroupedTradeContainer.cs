@@ -83,7 +83,13 @@ public class GroupedTradeContainer<T>(IEnumerable<T> tradeList, IEnumerable<Corp
 
         foreach (var action in corporateActionList)
         {
-            IReadOnlyList<string> tickers = [.. action.CompanyTickersInProcessingOrder.Select(ticker => GetCanonicalTicker(ticker, shareIdentityRegistry))];
+            // Distinct for the same reason as BuildTaxEventsDictionary: two tickers of one action can canonicalise
+            // to the same name (a manual link between the old and new company, or exchange suffix variations).
+            // Without this the action would make that name depend on itself, which reads as a circular dependency
+            // and aborts the whole calculation.
+            IReadOnlyList<string> tickers = [.. action.CompanyTickersInProcessingOrder
+                .Select(ticker => GetCanonicalTicker(ticker, shareIdentityRegistry))
+                .Distinct(StringComparer.Ordinal)];
             for (int i = 0; i < tickers.Count - 1; i++)
             {
                 string dependency = tickers[i];

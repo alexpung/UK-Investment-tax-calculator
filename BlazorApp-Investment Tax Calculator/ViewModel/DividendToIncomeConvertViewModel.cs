@@ -26,6 +26,12 @@ public class DividendToIncomeConvertViewModel(TaxEventLists taxEventLists)
                 InterestType = InterestType.ETFDIVIDEND,
                 IncomeLocation = dividend.CompanyLocation,
                 Amount = dividend.Proceed,
+                // The converted income is the same asset as the dividend it replaces: carry the ISIN and the
+                // resolved share identity across, otherwise CanonicalAssetName falls back to the raw ticker and
+                // the income stops grouping with the share it belongs to (e.g. income booked under a former
+                // ticker no longer matching that share's trades and dividends).
+                Isin = dividend.Isin,
+                ShareIdentity = dividend.ShareIdentity,
             };
             taxEventLists.InterestIncomes.Add(interestIncome);
             taxEventLists.Dividends.Remove(dividend);

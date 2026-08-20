@@ -122,8 +122,10 @@
             ToastService.ShowError("Please enter both share references to link.");
             return;
         }
-        ShareIdentityRegistry.LinkShares(_linkReference1, _linkReference2);
-        ToastService.ShowInformation($"Linked {_linkReference1.Trim()} and {_linkReference2.Trim()} as the same share. Run the calculation again to apply.");
+        string reference = _linkReference1.Trim();
+        string linkedReference = _linkReference2.Trim();
+        ShareIdentityRegistry.LinkShares(reference, linkedReference);
+        ToastService.ShowInformation($"Linked {reference} and {linkedReference} as the same share. Run the calculation again to apply.");
         _linkReference1 = string.Empty;
         _linkReference2 = string.Empty;
     }

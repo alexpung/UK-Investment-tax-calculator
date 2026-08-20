@@ -1,9 +1,11 @@
 @using InvestmentTaxCalculator.Enumerations
 @using InvestmentTaxCalculator.Model
 @using InvestmentTaxCalculator.Model.UkTaxModel
+@using InvestmentTaxCalculator.Services
 
 @inject UkSection104Pools Section104Pools
 @inject TaxEventLists TaxEventLists
+@inject ShareIdentityRegistry ShareIdentityRegistry
 
 @* AllowCustom (free text) -> RadzenAutoComplete; restricted -> filterable RadzenDropDown *@
 @if (AllowManualAssetNameInput)
@@ -128,7 +130,12 @@ else
             poolCount.ToString(),
             TaxEventLists.Trades.Count.ToString(),
             TaxEventLists.OptionTrades.Count.ToString(),
-            TaxEventLists.FutureContractTrades.Count.ToString());
+            TaxEventLists.FutureContractTrades.Count.ToString(),
+            // The cached names are built from CanonicalAssetName, which changes when shares are merged or split
+            // apart by a manual link. Neither the pool count nor the event counts need change when that happens,
+            // so include the identity state or the list goes stale after linking/unlinking shares.
+            ShareIdentityRegistry.Identities.Count.ToString(),
+            ShareIdentityRegistry.ManualLinks.Count.ToString());
     }
 
     private async Task OnValueChangedInternal(object? value)
