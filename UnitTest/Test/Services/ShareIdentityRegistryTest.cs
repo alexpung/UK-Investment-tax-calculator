@@ -84,15 +84,90 @@ public class ShareIdentityRegistryTest
     }
 
     [Fact]
-    public void TestNewIsinKeepingTickerIsSameShare()
+    public void TestNewIsinKeepingTickerRequiresManualLink()
     {
-        // A Newco insertion that keeps the ticker but issues a new ISIN: both ISINs are recorded on one share.
+        // Same ticker, new ISIN: this pattern is produced both by a legitimate re-issue (same company, new ISIN)
+        // and by an unrelated company later being assigned a ticker recycled from a delisted one. The two cannot
+        // be told apart from the data alone, so they are NOT auto-joined; a manual link is required, same as any
+        // other Newco-style insertion.
         Trade oldTrade = CreateTrade("ABC", "GB00B010V573", "01-May-21 10:00:00");
         Trade newTrade = CreateTrade("ABC", "GB00B010V574", "01-May-22 10:00:00");
         ShareIdentityRegistry registry = new();
         registry.RegisterEvents([oldTrade, newTrade]);
+        oldTrade.ShareIdentity.ShouldNotBeSameAs(newTrade.ShareIdentity);
+        registry.IsSameShare("GB00B010V573", "GB00B010V574").ShouldBeFalse();
+
+        registry.LinkShares("GB00B010V573", "GB00B010V574");
+        registry.RegisterEvents([oldTrade, newTrade]);
         oldTrade.ShareIdentity.ShouldBeSameAs(newTrade.ShareIdentity);
         oldTrade.ShareIdentity!.Isins.ShouldBe(["GB00B010V573", "GB00B010V574"]);
+    }
+
+    [Fact]
+    public void TestTickerRecycledByUnrelatedCompanyIsNotMerged()
+    {
+        // A ticker later reassigned by the exchange to a completely unrelated company (different ISIN) must not
+        // be silently folded into the original company's share identity/Section 104 pool.
+        Trade delistedCompanyTrade = CreateTrade("ABC", "GB00AAAAAAAA", "01-May-10 10:00:00");
+        Trade unrelatedCompanyTrade = CreateTrade("ABC", "US00BBBBBBBB", "01-May-24 10:00:00");
+        ShareIdentityRegistry registry = new();
+        registry.RegisterEvents([delistedCompanyTrade, unrelatedCompanyTrade]);
+        delistedCompanyTrade.ShareIdentity.ShouldNotBeSameAs(unrelatedCompanyTrade.ShareIdentity);
+        delistedCompanyTrade.ShareIdentity!.Isins.ShouldBe(["GB00AAAAAAAA"]);
+        unrelatedCompanyTrade.ShareIdentity!.Isins.ShouldBe(["US00BBBBBBBB"]);
+    }
+
+    [Fact]
+    public void TestRecycledTickerGetsDistinctCanonicalNames()
+    {
+        // Both identities have the primary ticker "ABC", so a canonical name built from the primary ticker alone
+        // would group the two unrelated shares together and pool the delisted company's acquisition cost into the
+        // new company's Section 104 holding. The canonical name must separate them.
+        Trade delistedCompanyTrade = CreateTrade("ABC", "GB00AAAAAAAA", "01-May-10 10:00:00");
+        Trade unrelatedCompanyTrade = CreateTrade("ABC", "US00BBBBBBBB", "01-May-24 10:00:00");
+        ShareIdentityRegistry registry = new();
+        registry.RegisterEvents([delistedCompanyTrade, unrelatedCompanyTrade]);
+
+        delistedCompanyTrade.CanonicalAssetName.ShouldBe("ABC (GB00AAAAAAAA)");
+        unrelatedCompanyTrade.CanonicalAssetName.ShouldBe("ABC (US00BBBBBBBB)");
+        delistedCompanyTrade.CanonicalAssetName.ShouldNotBe(unrelatedCompanyTrade.CanonicalAssetName);
+        delistedCompanyTrade.GetDuplicateSignature().ShouldNotBe(unrelatedCompanyTrade.GetDuplicateSignature());
+
+        // The disambiguated name must resolve back to its own identity, so pool lookups by reported name work.
+        registry.ResolveByTicker("ABC (GB00AAAAAAAA)").ShouldBeSameAs(delistedCompanyTrade.ShareIdentity);
+        registry.ResolveByTicker("ABC (US00BBBBBBBB)").ShouldBeSameAs(unrelatedCompanyTrade.ShareIdentity);
+        registry.GetCanonicalTicker("ABC (US00BBBBBBBB)").ShouldBe("ABC (US00BBBBBBBB)");
+        registry.IsSameShare("ABC (GB00AAAAAAAA)", "ABC (US00BBBBBBBB)").ShouldBeFalse();
+    }
+
+    [Fact]
+    public void TestUnambiguousTickerKeepsPlainCanonicalName()
+    {
+        // The disambiguator is only added on an actual clash: ordinary shares keep their bare ticker.
+        Trade trade = CreateTrade("ABC", "GB00AAAAAAAA");
+        Trade otherTrade = CreateTrade("XYZ", "US00BBBBBBBB");
+        ShareIdentityRegistry registry = new();
+        registry.RegisterEvents([trade, otherTrade]);
+        trade.CanonicalAssetName.ShouldBe("ABC");
+        otherTrade.CanonicalAssetName.ShouldBe("XYZ");
+    }
+
+    [Fact]
+    public void TestManualLinkRemovesTheDisambiguator()
+    {
+        // Same ticker with a new ISIN starts out as two identities and so is disambiguated. Once the user declares
+        // it a re-issue of the same share the identities merge and the plain ticker becomes unambiguous again.
+        Trade oldTrade = CreateTrade("ABC", "GB00B010V573", "01-May-21 10:00:00");
+        Trade newTrade = CreateTrade("ABC", "GB00B010V574", "01-May-22 10:00:00");
+        ShareIdentityRegistry registry = new();
+        registry.RegisterEvents([oldTrade, newTrade]);
+        oldTrade.CanonicalAssetName.ShouldBe("ABC (GB00B010V573)");
+        newTrade.CanonicalAssetName.ShouldBe("ABC (GB00B010V574)");
+
+        registry.LinkShares("GB00B010V573", "GB00B010V574");
+        registry.RegisterEvents([oldTrade, newTrade]);
+        oldTrade.CanonicalAssetName.ShouldBe("ABC");
+        newTrade.CanonicalAssetName.ShouldBe("ABC");
     }
 
     [Fact]
@@ -142,10 +217,12 @@ public class ShareIdentityRegistryTest
     [Fact]
     public void TestLastSeenDatesIdentifyOlderAndNewerIsin()
     {
-        // Newco insertion keeping the ticker: the last seen dates show which ISIN is the older one.
+        // Newco insertion keeping the ticker, confirmed via a manual link: the last seen dates show which ISIN
+        // is the older one.
         Trade oldTrade = CreateTrade("ABC", "GB00B010V573", "01-May-21 10:00:00");
         Trade newTrade = CreateTrade("ABC", "GB00B010V574", "01-May-22 10:00:00");
         ShareIdentityRegistry registry = new();
+        registry.LinkShares("GB00B010V573", "GB00B010V574");
         registry.RegisterEvents([oldTrade, newTrade]);
         ShareIdentity identity = oldTrade.ShareIdentity!;
         identity.GetIsinLastSeen("GB00B010V573").ShouldBe(oldTrade.Date);

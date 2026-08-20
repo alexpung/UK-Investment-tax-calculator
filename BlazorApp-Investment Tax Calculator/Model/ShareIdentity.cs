@@ -17,6 +17,7 @@ public class ShareIdentity
     private readonly Dictionary<string, DateTime> _isinLastSeen = new(StringComparer.Ordinal);
     private readonly Dictionary<string, DateTime> _fullNameLastSeen = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<(string Ticker, string Isin), DateTime> _tickerIsinLastSeen = [];
+    private string _uniqueSuffix = string.Empty;
 
     /// <summary>
     /// All ticker variations known for this share, e.g. exchange suffixed symbols and renamed symbols.
@@ -85,8 +86,24 @@ public class ShareIdentity
     public DateTime? GetFullNameLastSeen(string fullName) =>
         _fullNameLastSeen.TryGetValue(fullName, out DateTime lastSeen) ? lastSeen : null;
 
+    /// <summary>
+    /// The name this share is grouped and reported under, unique across every identity in the registry.
+    /// Equal to <see cref="PrimaryTicker"/> unless another identity resolves to the same primary ticker - a ticker
+    /// recycled by an unrelated company - in which case the registry appends the current ISIN to tell the two
+    /// apart, e.g. "RCY (GB00RCYNEW02)". Grouping keys must be built from this and not from
+    /// <see cref="PrimaryTicker"/>: two unrelated shares sharing a ticker would otherwise collapse into a single
+    /// Section 104 pool and take each other's acquisition cost.
+    /// </summary>
+    public string UniqueTicker => string.IsNullOrEmpty(_uniqueSuffix) ? PrimaryTicker : $"{PrimaryTicker} ({_uniqueSuffix})";
+
+    /// <summary>
+    /// Set by the ShareIdentityRegistry once all identities are known: empty when <see cref="PrimaryTicker"/> is
+    /// already unique, otherwise the discriminator that makes <see cref="UniqueTicker"/> unique.
+    /// </summary>
+    public void SetUniqueSuffix(string suffix) => _uniqueSuffix = suffix ?? string.Empty;
+
     public bool MatchesTicker(string ticker) =>
-        !string.IsNullOrEmpty(ticker) && (_tickers.Contains(ticker) || ticker == PrimaryTicker);
+        !string.IsNullOrEmpty(ticker) && (_tickers.Contains(ticker) || ticker == PrimaryTicker || ticker == UniqueTicker);
 
     public bool MatchesIsin(string isin) => !string.IsNullOrEmpty(isin) && _isins.Contains(isin);
 

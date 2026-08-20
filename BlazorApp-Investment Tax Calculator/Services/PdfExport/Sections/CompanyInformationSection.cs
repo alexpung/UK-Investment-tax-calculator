@@ -22,7 +22,7 @@ public class CompanyInformationSection(ShareIdentityRegistry shareIdentityRegist
 
         List<ShareIdentity> identities = [.. shareIdentityRegistry.Identities
             .Where(identity => identity.Isins.Count > 0 || identity.FullNames.Count > 0 || identity.Tickers.Count > 1)
-            .OrderBy(identity => identity.PrimaryTicker, StringComparer.OrdinalIgnoreCase)];
+            .OrderBy(identity => identity.UniqueTicker, StringComparer.OrdinalIgnoreCase)];
 
         if (identities.Count == 0)
         {
@@ -57,7 +57,7 @@ public class CompanyInformationSection(ShareIdentityRegistry shareIdentityRegist
                 observations = [.. identity.Tickers.Select(ticker => new ShareIdentityObservation(ticker, string.Empty, DateTime.MinValue))];
             }
             Row firstRow = table.AddRow();
-            firstRow.Cells[0].AddParagraph(identity.PrimaryTicker);
+            firstRow.Cells[0].AddParagraph(identity.UniqueTicker);
             firstRow.Cells[1].AddParagraph(string.Join("\n", identity.FullNames));
             for (int i = 0; i < observations.Count; i++)
             {

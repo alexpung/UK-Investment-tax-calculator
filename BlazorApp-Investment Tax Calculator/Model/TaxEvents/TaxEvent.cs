@@ -22,12 +22,13 @@ public abstract record TaxEvent : IAssetDatedEvent
 
     /// <summary>
     /// The single name all ticker variations of this share resolve to, used for grouping and duplicate detection.
+    /// Unique per share identity, so two unrelated companies that shared a recycled ticker do not group together.
     /// Falls back to <see cref="AssetName"/> when no identity is attached or the asset name was changed after
     /// registration (e.g. the "Short " prefix given to short positions).
     /// </summary>
     [JsonIgnore]
     public string CanonicalAssetName =>
-        ShareIdentity is not null && ShareIdentity.MatchesTicker(AssetName) ? ShareIdentity.PrimaryTicker : AssetName;
+        ShareIdentity is not null && ShareIdentity.MatchesTicker(AssetName) ? ShareIdentity.UniqueTicker : AssetName;
 
     /// <summary>
     /// Whether the given ticker refers to the same asset as this event, matching any recorded ticker variation of
@@ -46,6 +47,22 @@ public abstract record TaxEvent : IAssetDatedEvent
     {
         Id = Interlocked.Increment(ref _nextId);
     }
+
+    /// <summary>
+    /// Hand-written to exclude <see cref="ShareIdentity"/> from record equality: it is a mutable reference set by
+    /// the registry after construction, so including it (as the compiler-generated equality would) makes two
+    /// otherwise-identical events compare unequal depending on registration state/timing.
+    /// </summary>
+    public virtual bool Equals(TaxEvent? other) =>
+        other is not null &&
+        EqualityContract == other.EqualityContract &&
+        Id == other.Id &&
+        AssetName == other.AssetName &&
+        Date == other.Date &&
+        Isin == other.Isin;
+
+    public override int GetHashCode() => HashCode.Combine(EqualityContract, Id, AssetName, Date, Isin);
+
     public virtual string GetDuplicateSignature()
     {
         return $"{CanonicalAssetName}|{Date.Ticks}|{Isin}";

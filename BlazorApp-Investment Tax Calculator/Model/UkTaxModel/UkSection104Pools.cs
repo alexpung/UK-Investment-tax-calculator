@@ -59,8 +59,10 @@ public class UkSection104Pools(ITaxYear taxYearModel, ResidencyStatusRecord resi
     public virtual UkSection104 GetExistingOrInitialise(string assetName)
     {
         // All ticker variations of a share resolve to the same pool, keyed and named by the canonical ticker.
+        // The key must be the unique ticker: a ticker recycled by an unrelated company yields two identities with
+        // the same primary ticker, which would otherwise share one pool and one acquisition cost.
         ShareIdentity? shareIdentity = shareIdentityRegistry?.ResolveByTicker(assetName);
-        string poolKey = shareIdentity?.PrimaryTicker ?? assetName;
+        string poolKey = shareIdentity?.UniqueTicker ?? assetName;
         _section104Pools.TryGetValue(poolKey, out UkSection104? section104);
         if (section104 is null)
         {

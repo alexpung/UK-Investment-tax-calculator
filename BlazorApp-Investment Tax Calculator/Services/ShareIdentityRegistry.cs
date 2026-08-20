@@ -7,9 +7,12 @@ namespace InvestmentTaxCalculator.Services;
 /// <summary>
 /// Builds and holds the <see cref="ShareIdentity"/> of every imported share so that tax events can be matched by
 /// share identity instead of by exact ticker string. Events sharing an ISIN are recognised as the same share even
-/// when the ticker differs (rename, exchange suffix), events sharing a ticker are recognised as the same share even
-/// when the ISIN changed (e.g. re-issue), and shares whose ticker and ISIN both changed (e.g. Newco insertion) can
-/// be linked manually with <see cref="LinkShares"/>.
+/// when the ticker differs (rename, exchange suffix). A ticker match alone only joins two shares automatically when
+/// there is no conflicting ISIN evidence (e.g. one of the events carries no ISIN, such as a stock split). A ticker
+/// carrying a genuinely new ISIN is NOT auto-joined to whatever currently owns that ticker: the same ticker/new-ISIN
+/// pattern is produced both by a legitimate re-issue (same company, new ISIN) and by an unrelated company later
+/// being assigned a ticker recycled from a delisted one, and the two cannot be told apart from the data alone. Such
+/// cases, like a Newco insertion where both ticker and ISIN change, require a manual link via <see cref="LinkShares"/>.
 /// </summary>
 public class ShareIdentityRegistry
 {
@@ -42,12 +45,26 @@ public class ShareIdentityRegistry
             RegisterSingleEvent(taxEvent);
         }
         ApplyManualLinks();
-        IndexPrimaryTickers();
+        IndexUniqueTickers();
         foreach (TaxEvent taxEvent in taxEventList)
         {
-            taxEvent.ShareIdentity = ResolveByTicker(taxEvent.AssetName);
+            taxEvent.ShareIdentity = ResolveForEvent(taxEvent);
         }
         OnChange?.Invoke();
+    }
+
+    /// <summary>
+    /// Resolve the identity for a specific event, preferring its own ISIN (a reliable unique identifier) over the
+    /// ticker when both are known and point to different identities, e.g. when the ticker has been reused by an
+    /// unrelated share and only a ticker lookup would otherwise pick the wrong one.
+    /// </summary>
+    private ShareIdentity? ResolveForEvent(TaxEvent taxEvent)
+    {
+        if (!string.IsNullOrEmpty(taxEvent.Isin) && _identityByIsin.TryGetValue(taxEvent.Isin, out ShareIdentity? byIsin))
+        {
+            return byIsin;
+        }
+        return ResolveByTicker(taxEvent.AssetName);
     }
 
     /// <summary>
@@ -70,9 +87,10 @@ public class ShareIdentityRegistry
 
     /// <summary>
     /// The single name all variations of a ticker resolve to, used as grouping key and display name.
-    /// An unknown ticker resolves to itself.
+    /// Unique across shares, so a ticker recycled by an unrelated company does not resolve to the same name as the
+    /// original holder of that ticker. An unknown ticker resolves to itself.
     /// </summary>
-    public string GetCanonicalTicker(string ticker) => ResolveByTicker(ticker)?.PrimaryTicker ?? ticker;
+    public string GetCanonicalTicker(string ticker) => ResolveByTicker(ticker)?.UniqueTicker ?? ticker;
 
     /// <summary>
     /// Whether two tickers refer to the same share. Tickers unknown to the registry only match themselves.
@@ -101,7 +119,7 @@ public class ShareIdentityRegistry
         if (_manualLinks.Exists(link => IsSameLink(link, reference, linkedReference))) return;
         _manualLinks.Add(new ShareIdentityLink(reference, linkedReference));
         ApplyManualLinks();
-        IndexPrimaryTickers();
+        IndexUniqueTickers();
         OnChange?.Invoke();
     }
 
@@ -148,17 +166,32 @@ public class ShareIdentityRegistry
         ShareIdentity? tickerIdentity = _identityByTicker.GetValueOrDefault(ticker);
         ShareIdentity? isinIdentity = string.IsNullOrEmpty(isin) ? null : _identityByIsin.GetValueOrDefault(isin);
         ShareIdentity identity;
-        if (tickerIdentity is not null && isinIdentity is not null && !ReferenceEquals(tickerIdentity, isinIdentity))
+        if (isinIdentity is not null)
         {
-            // The ticker is known to one identity and the ISIN to another: both describe the same share, merge them.
-            Merge(tickerIdentity, isinIdentity);
+            // The ISIN has been seen before: trust it over the ticker, even when the ticker currently belongs to a
+            // different identity (e.g. a reused ticker), since ISINs reliably identify a single instrument.
+            identity = isinIdentity;
+            if (tickerIdentity is not null && !ReferenceEquals(tickerIdentity, isinIdentity) && CanJoinOnTickerAlone(tickerIdentity, isin))
+            {
+                Merge(isinIdentity, tickerIdentity);
+            }
+        }
+        else if (tickerIdentity is not null && CanJoinOnTickerAlone(tickerIdentity, isin))
+        {
+            // Ticker matches and there is no conflicting ISIN evidence (no ISIN on this event, or the ticker's
+            // identity has none recorded yet): safe to treat as the same share.
             identity = tickerIdentity;
         }
         else
         {
-            identity = tickerIdentity ?? isinIdentity ?? CreateIdentity(ticker, taxEvent.Date);
+            // Either an unknown ticker, or a ticker whose identity already carries a different, confirmed ISIN:
+            // don't assume it's the same share (it may be an unrelated company assigned a recycled ticker).
+            // Kept as a separate identity unless the user links them explicitly via LinkShares.
+            identity = CreateIdentity(ticker, taxEvent.Date);
         }
         identity.RecordObservation(ticker, isin, taxEvent.Date);
+        // Only a best-effort fallback for events without an ISIN to key off: reflects whichever identity most
+        // recently claimed this ticker, which can be ambiguous when the ticker is shared by two identities.
         _identityByTicker[ticker] = identity;
         if (!string.IsNullOrEmpty(isin))
         {
@@ -169,6 +202,15 @@ public class ShareIdentityRegistry
             identity.AddFullName(GetFullName(trade), taxEvent.Date);
         }
     }
+
+    /// <summary>
+    /// Whether it is safe to treat <paramref name="candidateIdentity"/> as the share for a ticker match alone: true
+    /// when the event carries no ISIN, the identity has no ISIN recorded yet, or the ISIN already belongs to it.
+    /// False means the identity is already confirmed to a different ISIN, so a ticker match alone is not enough
+    /// evidence (it may be a re-issue, or it may be an unrelated share that reused the ticker).
+    /// </summary>
+    private static bool CanJoinOnTickerAlone(ShareIdentity candidateIdentity, string isin) =>
+        string.IsNullOrEmpty(isin) || candidateIdentity.Isins.Count == 0 || candidateIdentity.Isins.Contains(isin);
 
     private ShareIdentity CreateIdentity(string ticker, DateTime lastSeen)
     {
@@ -197,16 +239,47 @@ public class ShareIdentityRegistry
     }
 
     /// <summary>
-    /// The primary ticker can be a base symbol that never occurred in the data (e.g. "CWR" for "CWRl" + "CWRm"),
-    /// index it so lookups by the displayed name find the identity. A real ticker of another identity wins.
+    /// Give every identity a grouping name that is unique across the registry, then index it.
+    ///
+    /// Two identities can share a primary ticker whenever a ticker was recycled by an unrelated company: each keeps
+    /// its own identity here, but both would report as e.g. "RCY". Everything downstream (Section 104 pool keys,
+    /// trade grouping, duplicate detection) keys on that string, so leaving it ambiguous silently pools two
+    /// unrelated shares and lets one take the other's acquisition cost. Clashing identities are therefore
+    /// discriminated by their current ISIN, e.g. "RCY (GB00RCYNEW02)".
+    ///
+    /// The primary ticker can also be a base symbol that never occurred in the data (e.g. "CWR" for "CWRl" +
+    /// "CWRm"), so index it too and lookups by the displayed name find the identity. A real ticker of another
+    /// identity wins.
     /// </summary>
-    private void IndexPrimaryTickers()
+    private void IndexUniqueTickers()
     {
         foreach (ShareIdentity identity in _identities)
         {
+            identity.SetUniqueSuffix(string.Empty);
+        }
+        foreach (IGrouping<string, ShareIdentity> clashingIdentities in _identities.GroupBy(identity => identity.PrimaryTicker)
+                                                                                  .Where(group => group.Count() > 1))
+        {
+            int ordinal = 0;
+            foreach (ShareIdentity identity in clashingIdentities)
+            {
+                ordinal++;
+                identity.SetUniqueSuffix(GetCurrentIsin(identity) ?? $"#{ordinal}");
+            }
+        }
+        foreach (ShareIdentity identity in _identities)
+        {
             _identityByTicker.TryAdd(identity.PrimaryTicker, identity);
+            _identityByTicker.TryAdd(identity.UniqueTicker, identity);
         }
     }
+
+    /// <summary>
+    /// The most recently seen ISIN of the identity, i.e. the one in force after any Newco insertion, or null when
+    /// the identity has no ISIN at all (only events without one, such as stock splits).
+    /// </summary>
+    private static string? GetCurrentIsin(ShareIdentity identity) =>
+        identity.Isins.OrderByDescending(isin => identity.GetIsinLastSeen(isin) ?? DateTime.MinValue).FirstOrDefault();
 
     /// <summary>
     /// The description of a stock/fund trade holds the full company name in broker exports (e.g. IBKR).

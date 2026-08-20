@@ -1,0 +1,70 @@
+<FlexQueryResponse queryName="Tax" type="AF">
+	<!--
+	Share identity matching example.
+
+	Exercises the three ways a ticker can change meaning between imported trades. Commissions and taxes are zero
+	throughout and all quantities/prices are round, so the Section 104 numbers below can be checked by hand.
+
+	Case 1  Ticker rename, ISIN unchanged (FB -> META, US30303M1027)
+	        Joined automatically: the shared ISIN identifies the share regardless of the ticker string.
+	        One identity, tickers "FB" + "META", reported under primary ticker META (the most recently seen).
+
+	Case 2  Newco insertion, ticker AND ISIN changed (OLDCO/GB00OLDCO001 -> NEWCO/GB00NEWCO002)
+	        NOT joined automatically - nothing in the data distinguishes this from an unrelated share.
+	        Requires a manual link on the "Share identities" panel: OLDCO <-> NEWCO (or the two ISINs).
+
+	Case 3  Recycled ticker, same ticker with a genuinely different ISIN (RCY/GB00RCYOLD01, RCY/GB00RCYNEW02)
+	        Must stay as two separate identities: an unrelated company was later assigned the delisted ticker.
+	        Both holdings are left partly open so a wrongly merged pool gives a visibly different gain.
+	        Both identities have the primary ticker "RCY", so they are reported under their ISIN-disambiguated
+	        names "RCY (GB00RCYOLD01)" and "RCY (GB00RCYNEW02)" to keep their Section 104 pools apart.
+	-->
+	<FlexStatements count="1">
+		<FlexStatement accountId="TestAccount" fromDate="01-Jan-21" toDate="31-Dec-23" period="Custom" whenGenerated="01-Jan-24 00:00:00">
+			<Trades>
+				<!--
+				Case 1: ticker renamed, ISIN unchanged. Auto-matched on ISIN US30303M1027.
+				Pool after both buys: 200 shares, cost GBP 40000 (16000 as FB + 24000 as META).
+				Disposal of 150 on 20-Oct-22: proceeds GBP 36000, allocated cost GBP 30000, gain GBP 6000 (2022/23).
+				Carried forward: 50 shares, cost GBP 10000.
+				If the rename were missed, only 100 META shares would be held and 150 could not be matched.
+				-->
+				<Order currency="USD" fxRateToBase="0.8" assetCategory="STK" symbol="FB" isin="US30303M1027" description="FACEBOOK INC-CLASS A" dateTime="10-Feb-21 15:30:00" quantity="100" proceeds="-20000" taxes="0" ibCommission="0" ibCommissionCurrency="USD" notes="O" buySell="BUY" levelOfDetail="ORDER" />
+				<Order currency="USD" fxRateToBase="0.8" assetCategory="STK" symbol="META" isin="US30303M1027" description="META PLATFORMS INC-CLASS A" dateTime="15-Mar-22 15:30:00" quantity="100" proceeds="-30000" taxes="0" ibCommission="0" ibCommissionCurrency="USD" notes="O" buySell="BUY" levelOfDetail="ORDER" />
+				<Order currency="USD" fxRateToBase="0.8" assetCategory="STK" symbol="META" isin="US30303M1027" description="META PLATFORMS INC-CLASS A" dateTime="20-Oct-22 15:30:00" quantity="-150" proceeds="45000" taxes="0" ibCommission="0" ibCommissionCurrency="USD" notes="C" buySell="SELL" levelOfDetail="ORDER" />
+
+				<!--
+				Case 2: Newco insertion, both ticker and ISIN changed, 1-for-1 share exchange.
+				Left unlinked the NEWCO pool holds only 500 shares, so only 500 of the 1200 sold are matched and
+				the disposal reports proceeds GBP 2500 / cost GBP 2000 / gain GBP 500 - the symptom of a missing link.
+				After linking OLDCO <-> NEWCO: pool 1500 shares, cost GBP 4000 (2000 as OLDCO + 2000 as NEWCO).
+				Disposal of 1200 on 01-Mar-23: proceeds GBP 6000, allocated cost GBP 3200, gain GBP 2800 (2022/23).
+				Carried forward: 300 shares, cost GBP 800.
+				-->
+				<Order currency="GBP" fxRateToBase="1" assetCategory="STK" symbol="OLDCO" isin="GB00OLDCO001" description="OLDCO HOLDINGS PLC" dateTime="05-Apr-21 10:00:00" quantity="1000" proceeds="-2000" taxes="0" ibCommission="0" ibCommissionCurrency="GBP" notes="O" buySell="BUY" levelOfDetail="ORDER" />
+				<Order currency="GBP" fxRateToBase="1" assetCategory="STK" symbol="NEWCO" isin="GB00NEWCO002" description="NEWCO GROUP PLC" dateTime="10-Oct-22 10:00:00" quantity="500" proceeds="-2000" taxes="0" ibCommission="0" ibCommissionCurrency="GBP" notes="O" buySell="BUY" levelOfDetail="ORDER" />
+				<Order currency="GBP" fxRateToBase="1" assetCategory="STK" symbol="NEWCO" isin="GB00NEWCO002" description="NEWCO GROUP PLC" dateTime="01-Mar-23 10:00:00" quantity="-1200" proceeds="6000" taxes="0" ibCommission="0" ibCommissionCurrency="GBP" notes="C" buySell="SELL" levelOfDetail="ORDER" />
+
+				<!--
+				Case 3a: original owner of the ticker RCY, ISIN GB00RCYOLD01.
+				Pool 400 shares, cost GBP 4000. Disposal of 200 on 30-Jun-21: proceeds GBP 2400,
+				allocated cost GBP 2000, gain GBP 400 (2021/22). 200 shares, cost GBP 2000 stay open.
+				-->
+				<Order currency="GBP" fxRateToBase="1" assetCategory="STK" symbol="RCY" isin="GB00RCYOLD01" description="RECYCLED TICKER OLD CO PLC" dateTime="12-Jan-21 09:00:00" quantity="400" proceeds="-4000" taxes="0" ibCommission="0" ibCommissionCurrency="GBP" notes="O" buySell="BUY" levelOfDetail="ORDER" />
+				<Order currency="GBP" fxRateToBase="1" assetCategory="STK" symbol="RCY" isin="GB00RCYOLD01" description="RECYCLED TICKER OLD CO PLC" dateTime="30-Jun-21 09:00:00" quantity="-200" proceeds="2400" taxes="0" ibCommission="0" ibCommissionCurrency="GBP" notes="C" buySell="SELL" levelOfDetail="ORDER" />
+
+				<!--
+				Case 3b: unrelated company later assigned the same ticker RCY, ISIN GB00RCYNEW02.
+				Must NOT share the pool of 3a. Own pool 300 shares, cost GBP 15000.
+				Disposal of 100 on 20-Sep-23: proceeds GBP 6500, allocated cost GBP 5000, gain GBP 1500 (2023/24).
+				Carried forward: 200 shares, cost GBP 10000.
+				A wrongly merged pool would be 500 shares at GBP 17000, giving cost GBP 3400 and gain GBP 3100
+				on the same disposal - the number to watch to tell the two behaviours apart. Regression tested by
+				UnitTest/Test/TradeCalculations/Stocks/UkTradeCalculatorRecycledTickerTest.cs.
+				-->
+				<Order currency="GBP" fxRateToBase="1" assetCategory="STK" symbol="RCY" isin="GB00RCYNEW02" description="RECYCLED TICKER NEW CO PLC" dateTime="05-Mar-23 09:00:00" quantity="300" proceeds="-15000" taxes="0" ibCommission="0" ibCommissionCurrency="GBP" notes="O" buySell="BUY" levelOfDetail="ORDER" />
+				<Order currency="GBP" fxRateToBase="1" assetCategory="STK" symbol="RCY" isin="GB00RCYNEW02" description="RECYCLED TICKER NEW CO PLC" dateTime="20-Sep-23 09:00:00" quantity="-100" proceeds="6500" taxes="0" ibCommission="0" ibCommissionCurrency="GBP" notes="C" buySell="SELL" levelOfDetail="ORDER" />
+			</Trades>
+		</FlexStatement>
+	</FlexStatements>
+</FlexQueryResponse>

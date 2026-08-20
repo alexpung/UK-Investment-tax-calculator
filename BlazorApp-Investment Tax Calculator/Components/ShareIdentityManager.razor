@@ -10,9 +10,11 @@
         <h5 class="card-title">Share identities</h5>
         <p class="card-text">
             Imported tax events are matched by share identity: ticker variations sharing an ISIN (e.g. exchange
-            suffixed symbols like "DISm" or a renamed ticker) and ISIN changes keeping the same ticker are recognised
-            automatically. If a share changed both its ticker and its ISIN (e.g. a Newco insertion), link the old and
-            the new reference below so both are treated as the same share. Links are saved with exported data.
+            suffixed symbols like "DISm" or a renamed ticker) are recognised automatically. If a share's ISIN
+            changed (e.g. a Newco insertion, whether or not the ticker also changed), link the old and the new
+            reference below so both are treated as the same share &mdash; this is not done automatically, since the
+            same ticker keeping a new ISIN also occurs when an unrelated company is later assigned a ticker recycled
+            from a delisted one, and the two cannot be told apart automatically. Links are saved with exported data.
         </p>
 
         <div class="row g-2 align-items-end mb-3">
@@ -60,7 +62,7 @@
                         @foreach (var identity in IdentitiesWithVariations)
                         {
                             <tr>
-                                <td>@identity.PrimaryTicker</td>
+                                <td>@identity.UniqueTicker</td>
                                 <td>@string.Join(", ", identity.Tickers.Select(ticker => WithLastSeen(ticker, identity.GetTickerLastSeen(ticker))))</td>
                                 <td>@string.Join(", ", identity.Isins.Select(isin => WithLastSeen(isin, identity.GetIsinLastSeen(isin))))</td>
                                 <td>@string.Join("; ", identity.FullNames)</td>
