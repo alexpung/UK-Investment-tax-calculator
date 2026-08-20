@@ -141,6 +141,49 @@ public class ShareIdentityRegistryTest
     }
 
     [Fact]
+    public void TestSyntheticPrimaryTickerDoesNotClaimUnrelatedCompanysTicker()
+    {
+        // "ABCl" and "ABCd" strip to the base symbol "ABC", which was never traded for that share but is the real
+        // ticker of an unrelated company. Matching on the primary ticker alone would let the suffixed share claim
+        // "ABC" and pull the unrelated company's events into its own matching.
+        Trade suffixedTrade = CreateTrade("ABCl", "GB00AAAAAAAA", "01-May-21 10:00:00");
+        Trade otherSuffixedTrade = CreateTrade("ABCd", "GB00AAAAAAAA", "01-Jun-21 10:00:00");
+        Trade unrelatedTrade = CreateTrade("ABC", "US00BBBBBBBB", "01-May-22 10:00:00");
+        ShareIdentityRegistry registry = new();
+        registry.RegisterEvents([suffixedTrade, otherSuffixedTrade, unrelatedTrade]);
+
+        ShareIdentity suffixedIdentity = suffixedTrade.ShareIdentity!;
+        ShareIdentity unrelatedIdentity = unrelatedTrade.ShareIdentity!;
+        suffixedIdentity.ShouldNotBeSameAs(unrelatedIdentity);
+        suffixedIdentity.PrimaryTicker.ShouldBe("ABC");
+        suffixedIdentity.Tickers.ShouldNotContain("ABC");
+
+        suffixedIdentity.MatchesTicker("ABC").ShouldBeFalse();
+        unrelatedIdentity.MatchesTicker("ABC").ShouldBeTrue();
+        suffixedTrade.IsSameAsset("ABC").ShouldBeFalse();
+        unrelatedTrade.IsSameAsset("ABCl").ShouldBeFalse();
+        registry.IsSameShare("ABCl", "ABC").ShouldBeFalse();
+    }
+
+    [Fact]
+    public void TestSyntheticPrimaryTickerStillMatchesWhenUnambiguous()
+    {
+        // The counterpart: with no competing share the synthetic base symbol is the reported name, so it must
+        // still match - otherwise lookups by the name shown in the report would fail.
+        Trade trade1 = CreateTrade("CWRl", "GB00B010V573", "01-May-21 10:00:00");
+        Trade trade2 = CreateTrade("CWRm", "GB00B010V573", "01-Jun-21 10:00:00");
+        ShareIdentityRegistry registry = new();
+        registry.RegisterEvents([trade1, trade2]);
+
+        trade1.ShareIdentity!.PrimaryTicker.ShouldBe("CWR");
+        trade1.ShareIdentity!.Tickers.ShouldNotContain("CWR");
+        trade1.ShareIdentity!.MatchesTicker("CWR").ShouldBeTrue();
+        trade1.CanonicalAssetName.ShouldBe("CWR");
+        trade1.IsSameAsset("CWR").ShouldBeTrue();
+        registry.ResolveByTicker("CWR").ShouldBeSameAs(trade1.ShareIdentity);
+    }
+
+    [Fact]
     public void TestUnambiguousTickerKeepsPlainCanonicalName()
     {
         // The disambiguator is only added on an actual clash: ordinary shares keep their bare ticker.

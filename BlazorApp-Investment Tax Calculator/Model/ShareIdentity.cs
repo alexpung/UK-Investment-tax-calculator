@@ -102,8 +102,15 @@ public class ShareIdentity
     /// </summary>
     public void SetUniqueSuffix(string suffix) => _uniqueSuffix = suffix ?? string.Empty;
 
+    /// <summary>
+    /// Whether the given ticker refers to this share: either a ticker actually observed in the imported data, or
+    /// the name the share is reported under. <see cref="PrimaryTicker"/> is deliberately not matched on its own:
+    /// it can be a synthetic base symbol that was never traded for this share (e.g. "ABC" for "ABCl" + "ABCd")
+    /// and that is the real, observed ticker of an unrelated company, which this share must not claim.
+    /// When the primary ticker is unambiguous it is matched anyway, because <see cref="UniqueTicker"/> equals it.
+    /// </summary>
     public bool MatchesTicker(string ticker) =>
-        !string.IsNullOrEmpty(ticker) && (_tickers.Contains(ticker) || ticker == PrimaryTicker || ticker == UniqueTicker);
+        !string.IsNullOrEmpty(ticker) && (_tickers.Contains(ticker) || ticker == UniqueTicker);
 
     public bool MatchesIsin(string isin) => !string.IsNullOrEmpty(isin) && _isins.Contains(isin);
 

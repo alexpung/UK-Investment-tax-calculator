@@ -47,7 +47,7 @@
 
         @if (IdentitiesWithVariations.Any())
         {
-            <h6>Detected shares with multiple tickers or ISINs</h6>
+            <h6>Detected shares with multiple tickers or ISINs, or sharing a ticker</h6>
             <div class="table-responsive">
                 <table class="table table-sm">
                     <thead>
@@ -79,9 +79,25 @@
     private string _linkReference1 = string.Empty;
     private string _linkReference2 = string.Empty;
 
-    private IEnumerable<ShareIdentity> IdentitiesWithVariations => ShareIdentityRegistry.Identities
-        .Where(identity => identity.Tickers.Count > 1 || identity.Isins.Count > 1)
-        .OrderBy(identity => identity.PrimaryTicker, StringComparer.OrdinalIgnoreCase);
+    // Shares worth showing the user: those with more than one ticker or ISIN, plus those sharing a primary ticker
+    // with another share (a recycled ticker, or the same ticker reissued under a new ISIN). The latter have a
+    // single ticker and a single ISIN each, so they need listing explicitly - they are reported under an
+    // ISIN-disambiguated name and are the cases most likely to need a manual link.
+    private IEnumerable<ShareIdentity> IdentitiesWithVariations
+    {
+        get
+        {
+            HashSet<string> sharedPrimaryTickers = [.. ShareIdentityRegistry.Identities
+                .GroupBy(identity => identity.PrimaryTicker, StringComparer.Ordinal)
+                .Where(group => group.Count() > 1)
+                .Select(group => group.Key)];
+            return ShareIdentityRegistry.Identities
+                .Where(identity => identity.Tickers.Count > 1
+                                || identity.Isins.Count > 1
+                                || sharedPrimaryTickers.Contains(identity.PrimaryTicker))
+                .OrderBy(identity => identity.UniqueTicker, StringComparer.OrdinalIgnoreCase);
+        }
+    }
 
     protected override void OnInitialized()
     {
