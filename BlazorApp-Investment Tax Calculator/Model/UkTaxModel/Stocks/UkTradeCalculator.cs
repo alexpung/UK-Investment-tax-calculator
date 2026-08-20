@@ -1,6 +1,7 @@
 ﻿using InvestmentTaxCalculator.Enumerations;
 using InvestmentTaxCalculator.Model.Interfaces;
 using InvestmentTaxCalculator.Model.TaxEvents;
+using InvestmentTaxCalculator.Services;
 
 using System.Text;
 
@@ -11,7 +12,8 @@ namespace InvestmentTaxCalculator.Model.UkTaxModel.Stocks;
 /// </summary>
 /// <param name="section104Pools"></param>
 /// <param name="tradeList"></param>
-public class UkTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorporateActionList tradeList, TradeTaxCalculationFactory tradeTaxCalculationFactory) : ITradeCalculator
+public class UkTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorporateActionList tradeList, TradeTaxCalculationFactory tradeTaxCalculationFactory,
+    ShareIdentityRegistry? shareIdentityRegistry = null) : ITradeCalculator
 {
     /// <summary>
     /// Corporate actions filtered to only those applicable to stock and FX trading.
@@ -29,7 +31,7 @@ public class UkTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorpo
             ca.GeneratedDisposals.Clear();
         }
 
-        GroupedTradeContainer<ITradeTaxCalculation> _tradeContainer = new(tradeTaxCalculations, StockRelevantCorporateActions);
+        GroupedTradeContainer<ITradeTaxCalculation> _tradeContainer = new(tradeTaxCalculations, StockRelevantCorporateActions, shareIdentityRegistry);
         UkMatchingRules.ApplyUkTaxRuleSequence(MatchTrade, _tradeContainer, section104Pools);
 
         // Collect generated disposals from corporate actions (e.g., cash from takeovers/spinoffs/splits)

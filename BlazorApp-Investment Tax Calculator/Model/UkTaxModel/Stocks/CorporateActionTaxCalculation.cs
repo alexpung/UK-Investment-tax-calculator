@@ -34,7 +34,7 @@ public class CorporateActionTaxCalculation : ITradeTaxCalculation
     {
         Id = ITradeTaxCalculation.GetNextId();
         RelatedCorporateAction = corporateAction;
-        AssetName = corporateAction.AssetName;
+        AssetName = corporateAction.CanonicalAssetName;
         Date = corporateAction.Date;
         TaxableDate = corporateAction.Date;
         AssetCategoryType = corporateAction.AppliesToAssetCategoryType;
@@ -53,7 +53,7 @@ public class CorporateActionTaxCalculation : ITradeTaxCalculation
         var match = new TradeMatch
         {
             Date = DateOnly.FromDateTime(corporateAction.Date),
-            AssetName = corporateAction.AssetName,
+            AssetName = corporateAction.CanonicalAssetName,
             TradeMatchType = TaxMatchType.CORPORATE_ACTION,
             MatchedSellTrade = this,
             MatchDisposalQty = quantity,

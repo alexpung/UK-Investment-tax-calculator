@@ -24,14 +24,14 @@ public class UkDividendCalculator(IDividendLists dividendList, ITaxYear taxYear,
 
         // Logic to determine if the next payment is in the same tax year
         var interestIncomesByAsset = dividendList.InterestIncomes
-            .GroupBy(i => i.AssetName)
+            .GroupBy(i => i.CanonicalAssetName)
             .ToDictionary(g => g.Key, g => g.OrderBy(i => i.Date).ToList());
 
         foreach (var interest in dividendList.InterestIncomes)
         {
             if (interest.InterestType is InterestType.ACCURREDINCOMEPROFIT or InterestType.ACCURREDINCOMELOSS)
             {
-                if (interestIncomesByAsset.TryGetValue(interest.AssetName, out List<InterestIncome>? assetEvents))
+                if (interestIncomesByAsset.TryGetValue(interest.CanonicalAssetName, out List<InterestIncome>? assetEvents))
                 {
                     // Find the BOND event with the smallest Date that is strictly greater than the accrued interest event's Date
                     var nextBondPayment = assetEvents

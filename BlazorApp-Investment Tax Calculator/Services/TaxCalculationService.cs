@@ -20,7 +20,9 @@ public class TaxCalculationService(
     IEnumerable<ITradeCalculator> tradeCalculators,
     YearOptions years,
     ITaxYear taxYear,
-    ToastService toastService)
+    ToastService toastService,
+    TaxEventLists taxEventLists,
+    ShareIdentityRegistry shareIdentityRegistry)
 {
     private bool _isCalculating = false;
     public bool IsCalculating => _isCalculating;
@@ -39,6 +41,9 @@ public class TaxCalculationService(
             section104Pools.Clear();
             tradeCalculationResult.Clear();
             ITradeTaxCalculation.ResetID();
+            // Refresh share identities so events added since import (e.g. manual entries and corporate actions
+            // entered in the UI) are matched by share identity during the calculation.
+            shareIdentityRegistry.RegisterEvents(taxEventLists.AllEvents);
 
             foreach (ITradeCalculator tradeCalculator in tradeCalculators)
             {

@@ -61,12 +61,19 @@
                                      AssetCategoryFilter="@_stockAssetCategoryFilter"
                                      ActionToEdit="GetPartnerActionToEdit(PartnerTransferDirection.ReceiveFromPartner)" />
                 }
+                else if (_selectedAction == "Share Identities")
+                {
+                    <ShareIdentityManager/>
+                }
             </div>
 
-            <!-- Corporate Actions and Events History Section -->
-            <div class="section">
-                <CorporateActionsList @ref="_historyList" OnActionDeleted="OnActionModified" OnActionEdit="HandleEdit" />
-            </div>
+            @if (_selectedAction != "Share Identities")
+            {
+                <!-- Corporate Actions and Events History Section -->
+                <div class="section">
+                    <CorporateActionsList @ref="_historyList" OnActionDeleted="OnActionModified" OnActionEdit="HandleEdit" />
+                </div>
+            }
         </div>
     </div>
 </div>
@@ -77,7 +84,7 @@
     private IDisposable? _navigationRegistration;
     private static readonly List<AssetCategoryType> _stockAssetCategoryFilter = [AssetCategoryType.STOCK, AssetCategoryType.FUND];
     
-    private List<string> _actionTypes = new() { "Takeover / Merger", "Spinoff", "Stock Split / Reverse Split", "Gift to partner", "Receive from partner" };
+    private List<string> _actionTypes = new() { "Takeover / Merger", "Spinoff", "Stock Split / Reverse Split", "Gift to partner", "Receive from partner", "Share Identities" };
     private string? _selectedAction = "Takeover / Merger";
 
     private CorporateAction? _actionToEdit;

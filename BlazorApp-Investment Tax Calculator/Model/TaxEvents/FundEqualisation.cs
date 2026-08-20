@@ -40,7 +40,7 @@ public record FundEqualisation : CorporateAction, IChangeSection104
 
     public override void ChangeSection104(UkSection104 section104)
     {
-        if (AssetName != section104.AssetName) return;
+        if (!section104.MatchesAsset(AssetName)) return;
         string explanation = $"Fund equalisation of {Amount.BaseCurrencyAmount} on {Date:d}";
         if (!string.IsNullOrEmpty(RelatedEventDescription))
         {

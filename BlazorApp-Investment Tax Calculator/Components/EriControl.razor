@@ -63,9 +63,9 @@
                         <RadzenNumeric TValue="decimal" @bind-Value="@FxRate" Format="N8" Min="0" class="w-100" />
                     </div>
 
-                    @if (!string.IsNullOrEmpty(GetIsinForTicker(SelectedTicker)))
+                    @if (!string.IsNullOrEmpty(GetIsinForTicker(SelectedTicker, PeriodEndDate.Value)))
                     {
-                        string isin = GetIsinForTicker(SelectedTicker);
+                        string isin = GetIsinForTicker(SelectedTicker, PeriodEndDate.Value);
                         <div class="col-md-6 col-lg-4">
                             <label class="form-label">Detected Region (from ISIN: @isin)</label>
                             <div class="form-control bg-dark text-info border-info">
@@ -129,15 +129,25 @@
         return Task.CompletedTask;
     }
 
-    private string GetIsinForTicker(string ticker)
+    // A share can carry more than one ISIN over time (a Newco insertion or re-issue), and the ISIN determines the
+    // region the income is taxed in. Take the most recent one in force at the end of the reporting period rather
+    // than whichever event happens to come first in the list, which is an arbitrary order.
+    private string GetIsinForTicker(string ticker, DateTime asOfDate)
     {
-        var trade = TaxEventLists.Trades.FirstOrDefault(t => t.AssetName == ticker && !string.IsNullOrEmpty(t.Isin));
-        if (trade != null) return trade.Isin;
+        List<TaxEvent> datedIsinEvents = [.. TaxEventLists.Trades.Cast<TaxEvent>()
+            .Concat(TaxEventLists.Dividends)
+            .Where(taxEvent => taxEvent.IsSameAsset(ticker) && !string.IsNullOrEmpty(taxEvent.Isin))];
 
-        var dividend = TaxEventLists.Dividends.FirstOrDefault(d => d.AssetName == ticker && !string.IsNullOrEmpty(d.Isin));
-        if (dividend != null) return dividend.Isin;
-
-        return string.Empty;
+        string? isinAtPeriodEnd = datedIsinEvents
+            .Where(taxEvent => taxEvent.Date <= asOfDate)
+            .OrderByDescending(taxEvent => taxEvent.Date)
+            .Select(taxEvent => taxEvent.Isin)
+            .FirstOrDefault();
+        // Nothing on or before the period end (e.g. an ERI period preceding the first recorded event): fall back
+        // to the earliest ISIN known for the share.
+        return isinAtPeriodEnd
+            ?? datedIsinEvents.OrderBy(taxEvent => taxEvent.Date).Select(taxEvent => taxEvent.Isin).FirstOrDefault()
+            ?? string.Empty;
     }
 
     private async Task OnSubmit()
@@ -148,8 +158,8 @@
             return;
         }
 
-        string isin = GetIsinForTicker(SelectedTicker);
-        CountryCode region = string.IsNullOrEmpty(isin) || isin.Length < 2 
+        string isin = GetIsinForTicker(SelectedTicker, PeriodEndDate.Value);
+        CountryCode region = string.IsNullOrEmpty(isin) || isin.Length < 2
             ? CountryCode.UnknownRegion 
             : CountryCode.GetRegionByTwoDigitCode(isin[..2]);
 

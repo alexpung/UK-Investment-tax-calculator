@@ -26,8 +26,8 @@ public class TradeTaxCalculationFactory(ResidencyStatusRecord residencyStatusRec
         foreach (var tradeGroup in GroupFutureContractTradeByAssetName(trades))
         {
             List<FutureContractTrade> taggedTrades = UkMatchingRules.TagTradesWithOpenClose(tradeGroup);
-            // trade.AssetName grouping is required as short positions is treated as a separate asset
-            groupedTrade.AddRange(taggedTrades.GroupBy(trade => (trade.Date.Date, trade.AcquisitionDisposal, trade.AssetName)).Select(trades => new FutureTradeTaxCalculation(trades)));
+            // trade.CanonicalAssetName grouping is required as short positions is treated as a separate asset
+            groupedTrade.AddRange(taggedTrades.GroupBy(trade => (trade.Date.Date, trade.AcquisitionDisposal, trade.CanonicalAssetName)).Select(trades => new FutureTradeTaxCalculation(trades)));
         }
         SetResidencyStatus(groupedTrade, residencyStatusRecord);
         return groupedTrade;
@@ -37,10 +37,10 @@ public class TradeTaxCalculationFactory(ResidencyStatusRecord residencyStatusRec
     {
         var groupedTrade = from trade in trades
                            where trade.AssetType is AssetCategoryType.STOCK or AssetCategoryType.FUND
-                           group trade by new { trade.AssetName, trade.Date.Date, trade.AcquisitionDisposal, trade.AssetType };
+                           group trade by new { trade.CanonicalAssetName, trade.Date.Date, trade.AcquisitionDisposal, trade.AssetType };
         var groupedFxTrade = from trade in trades
                              where trade.AssetType == AssetCategoryType.FX
-                             group trade by new { trade.AssetName, trade.Date.Date, trade.AcquisitionDisposal };
+                             group trade by new { trade.CanonicalAssetName, trade.Date.Date, trade.AcquisitionDisposal };
         IEnumerable<TradeTaxCalculation> groupedTradeCalculations = groupedTrade.Select(group => new TradeTaxCalculation(group));
         IEnumerable<TradeTaxCalculation> groupedFxTradeCalculations = groupedFxTrade.Select(group => new FxTradeTaxCalculation(group));
         var groupedList = groupedTradeCalculations.Concat(groupedFxTradeCalculations).ToList();
@@ -51,7 +51,7 @@ public class TradeTaxCalculationFactory(ResidencyStatusRecord residencyStatusRec
     public List<OptionTradeTaxCalculation> GroupOptionTrade(IEnumerable<OptionTrade> trades)
     {
         var groupedTrade = from trade in trades
-                           group trade by new { trade.AssetName, trade.Date.Date, trade.AcquisitionDisposal };
+                           group trade by new { trade.CanonicalAssetName, trade.Date.Date, trade.AcquisitionDisposal };
         var groupedList = groupedTrade.Select(group => new OptionTradeTaxCalculation(group)).ToList();
         SetResidencyStatus(groupedList, residencyStatusRecord);
         return groupedList;
@@ -60,7 +60,7 @@ public class TradeTaxCalculationFactory(ResidencyStatusRecord residencyStatusRec
     private static IEnumerable<IGrouping<string, FutureContractTrade>> GroupFutureContractTradeByAssetName(IEnumerable<FutureContractTrade> trades)
     {
         return from trade in trades
-               group trade by trade.AssetName;
+               group trade by trade.CanonicalAssetName;
     }
 
     private static void SetResidencyStatus(IEnumerable<ITradeTaxCalculation> tradeCalculations, ResidencyStatusRecord residencyStatusRecord)

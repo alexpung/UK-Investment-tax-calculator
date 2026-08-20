@@ -1,11 +1,12 @@
 using InvestmentTaxCalculator.Model.Interfaces;
 using InvestmentTaxCalculator.Model.TaxEvents;
+using InvestmentTaxCalculator.Services;
 
 using System.Collections.Immutable;
 
 namespace InvestmentTaxCalculator.Model;
 
-public class GroupedTradeContainer<T>(IEnumerable<T> tradeList, IEnumerable<CorporateAction> corporateActionList) where T : ITradeTaxCalculation
+public class GroupedTradeContainer<T>(IEnumerable<T> tradeList, IEnumerable<CorporateAction> corporateActionList, ShareIdentityRegistry? shareIdentityRegistry = null) where T : ITradeTaxCalculation
 {
     private readonly Dictionary<string, ImmutableList<T>> _tradeListDict = tradeList
         .GroupBy(trade => trade.AssetName)
@@ -16,19 +17,22 @@ public class GroupedTradeContainer<T>(IEnumerable<T> tradeList, IEnumerable<Corp
                           .ToImmutableList()
         );
 
-    private readonly Dictionary<string, ImmutableList<IAssetDatedEvent>> _tradeAndCorporateActionListDict = BuildTaxEventsDictionary(tradeList, corporateActionList);
+    private readonly Dictionary<string, ImmutableList<IAssetDatedEvent>> _tradeAndCorporateActionListDict = BuildTaxEventsDictionary(tradeList, corporateActionList, shareIdentityRegistry);
 
     // Dependency tree: ticker -> set of tickers that must be processed first
-    private readonly Dictionary<string, HashSet<string>> _takeoverDependencies = BuildDependencyTree(corporateActionList);
+    private readonly Dictionary<string, HashSet<string>> _takeoverDependencies = BuildDependencyTree(corporateActionList, shareIdentityRegistry);
 
     /// <summary>
     /// Builds the dictionary of tax events grouped by asset name.
     /// TakeoverCorporateActions are added to BOTH old company and acquiring company groups.
     /// Corporate actions are processed at the start of their EffectiveDate (midnight).
+    /// Corporate action tickers resolve through the share identity registry so an action recorded under any ticker
+    /// variation is applied to the group holding the trades of that share.
     /// </summary>
     private static Dictionary<string, ImmutableList<IAssetDatedEvent>> BuildTaxEventsDictionary(
         IEnumerable<T> tradeList,
-        IEnumerable<CorporateAction> corporateActionList)
+        IEnumerable<CorporateAction> corporateActionList,
+        ShareIdentityRegistry? shareIdentityRegistry)
     {
         var mutableDict = tradeList.Cast<IAssetDatedEvent>()
             .GroupBy(e => e.AssetName)
@@ -40,7 +44,7 @@ public class GroupedTradeContainer<T>(IEnumerable<T> tradeList, IEnumerable<Corp
         // Add corporate actions to each relevant ticker list
         foreach (var action in corporateActionList)
         {
-            foreach (var ticker in action.CompanyTickersInProcessingOrder.Distinct(StringComparer.Ordinal))
+            foreach (var ticker in action.CompanyTickersInProcessingOrder.Select(ticker => GetCanonicalTicker(ticker, shareIdentityRegistry)).Distinct(StringComparer.Ordinal))
             {
                 if (mutableDict.TryGetValue(ticker, out var existingList))
                 {
@@ -72,14 +76,20 @@ public class GroupedTradeContainer<T>(IEnumerable<T> tradeList, IEnumerable<Corp
     /// Builds dependency tree for corporate actions.
     /// Later tickers depend on earlier tickers in the processing order list.
     /// </summary>
-    private static Dictionary<string, HashSet<string>> BuildDependencyTree(IEnumerable<CorporateAction> corporateActionList)
+    private static Dictionary<string, HashSet<string>> BuildDependencyTree(IEnumerable<CorporateAction> corporateActionList, ShareIdentityRegistry? shareIdentityRegistry)
     {
 
         var deps = new Dictionary<string, HashSet<string>>();
 
         foreach (var action in corporateActionList)
         {
-            var tickers = action.CompanyTickersInProcessingOrder;
+            // Distinct for the same reason as BuildTaxEventsDictionary: two tickers of one action can canonicalise
+            // to the same name (a manual link between the old and new company, or exchange suffix variations).
+            // Without this the action would make that name depend on itself, which reads as a circular dependency
+            // and aborts the whole calculation.
+            IReadOnlyList<string> tickers = [.. action.CompanyTickersInProcessingOrder
+                .Select(ticker => GetCanonicalTicker(ticker, shareIdentityRegistry))
+                .Distinct(StringComparer.Ordinal)];
             for (int i = 0; i < tickers.Count - 1; i++)
             {
                 string dependency = tickers[i];
@@ -108,13 +118,16 @@ public class GroupedTradeContainer<T>(IEnumerable<T> tradeList, IEnumerable<Corp
     {
         get
         {
-            if (_tradeListDict.TryGetValue(AssetName, out ImmutableList<T>? value))
+            if (_tradeListDict.TryGetValue(GetCanonicalTicker(AssetName, shareIdentityRegistry), out ImmutableList<T>? value))
             {
                 return value;
             }
             else return [];
         }
     }
+
+    private static string GetCanonicalTicker(string ticker, ShareIdentityRegistry? shareIdentityRegistry) =>
+        shareIdentityRegistry?.GetCanonicalTicker(ticker) ?? ticker;
 
     /// <summary>
     /// return all ImmutableLists of trades sorted by date

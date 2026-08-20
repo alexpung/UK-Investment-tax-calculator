@@ -1,0 +1,467 @@
+using InvestmentTaxCalculator.Enumerations;
+using InvestmentTaxCalculator.Model;
+using InvestmentTaxCalculator.Model.TaxEvents;
+using InvestmentTaxCalculator.Services;
+
+using System.Globalization;
+
+namespace UnitTest.Test.Services;
+
+public class ShareIdentityRegistryTest
+{
+    [Theory]
+    [InlineData("CWR", "CWRl", "CWR")]
+    [InlineData("DIS", "DISm", "DIS")]
+    public void TestSameIsinWithLowercaseSuffixSymbolsResolveToBaseSymbol(string baseSymbol, string suffixedSymbol, string expectedSymbol)
+    {
+        ShareIdentityRegistry registry = new();
+        List<TaxEvent> taxEvents =
+        [
+            CreateTrade(baseSymbol, "GB00B010V573"),
+            CreateTrade(suffixedSymbol, "GB00B010V573"),
+        ];
+        registry.RegisterEvents(taxEvents);
+        taxEvents.ShouldAllBe(taxEvent => taxEvent.CanonicalAssetName == expectedSymbol);
+        registry.IsSameShare(baseSymbol, suffixedSymbol).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void TestDividendsAndCorporateActionsShareIdentityWithTrades()
+    {
+        Trade trade = CreateTrade("DISm", "US2546871060");
+        Dividend dividend = CreateDividend("DIS", "US2546871060");
+        StockSplit stockSplitWithoutIsin = CreateStockSplit("DISm");
+        ShareIdentityRegistry registry = new();
+        registry.RegisterEvents([trade, dividend, stockSplitWithoutIsin]);
+        trade.CanonicalAssetName.ShouldBe("DIS");
+        dividend.CanonicalAssetName.ShouldBe("DIS");
+        stockSplitWithoutIsin.CanonicalAssetName.ShouldBe("DIS");
+        trade.ShareIdentity.ShouldBeSameAs(dividend.ShareIdentity);
+        trade.ShareIdentity.ShouldBeSameAs(stockSplitWithoutIsin.ShareIdentity);
+        stockSplitWithoutIsin.IsSameAsset("DIS").ShouldBeTrue();
+    }
+
+    [Fact]
+    public void TestSymbolPairSplitAcrossStatementsIsUnifiedWhenRegisteredTogether()
+    {
+        // "DIS" appears in one statement and "DISm" only in another: registering the combined
+        // events of both statements still unifies them.
+        List<TaxEvent> statement1 = [CreateTrade("DIS", "US2546871060")];
+        List<TaxEvent> statement2 = [CreateTrade("DISm", "US2546871060"), CreateDividend("DISm", "US2546871060")];
+        ShareIdentityRegistry registry = new();
+        registry.RegisterEvents(statement1.Concat(statement2));
+        statement1.ShouldAllBe(taxEvent => taxEvent.CanonicalAssetName == "DIS");
+        statement2.ShouldAllBe(taxEvent => taxEvent.CanonicalAssetName == "DIS");
+    }
+
+    [Fact]
+    public void TestDifferentIsinSymbolsAreSeparateShares()
+    {
+        List<TaxEvent> taxEvents =
+        [
+            CreateTrade("CWR", "GB00B010V573"),
+            CreateTrade("CWRl", "GB00B010V574"),
+        ];
+        ShareIdentityRegistry registry = new();
+        registry.RegisterEvents(taxEvents);
+        taxEvents[0].CanonicalAssetName.ShouldBe("CWR");
+        taxEvents[1].CanonicalAssetName.ShouldBe("CWRl");
+        registry.IsSameShare("CWR", "CWRl").ShouldBeFalse();
+    }
+
+    [Fact]
+    public void TestRenamedTickerSharingIsinIsSameShare()
+    {
+        // A ticker rename keeps the ISIN: both symbols resolve to the same share and the
+        // most recently traded ticker is used as the display name.
+        Trade oldTrade = CreateTrade("DWAC", "US25400Q1058", "01-May-21 10:00:00");
+        Trade newTrade = CreateTrade("DJT", "US25400Q1058", "01-Jun-24 10:00:00");
+        ShareIdentityRegistry registry = new();
+        registry.RegisterEvents([oldTrade, newTrade]);
+        registry.IsSameShare("DWAC", "DJT").ShouldBeTrue();
+        oldTrade.CanonicalAssetName.ShouldBe("DJT");
+        newTrade.CanonicalAssetName.ShouldBe("DJT");
+    }
+
+    [Fact]
+    public void TestNewIsinKeepingTickerRequiresManualLink()
+    {
+        // Same ticker, new ISIN: this pattern is produced both by a legitimate re-issue (same company, new ISIN)
+        // and by an unrelated company later being assigned a ticker recycled from a delisted one. The two cannot
+        // be told apart from the data alone, so they are NOT auto-joined; a manual link is required, same as any
+        // other Newco-style insertion.
+        Trade oldTrade = CreateTrade("ABC", "GB00B010V573", "01-May-21 10:00:00");
+        Trade newTrade = CreateTrade("ABC", "GB00B010V574", "01-May-22 10:00:00");
+        ShareIdentityRegistry registry = new();
+        registry.RegisterEvents([oldTrade, newTrade]);
+        oldTrade.ShareIdentity.ShouldNotBeSameAs(newTrade.ShareIdentity);
+        registry.IsSameShare("GB00B010V573", "GB00B010V574").ShouldBeFalse();
+
+        registry.LinkShares("GB00B010V573", "GB00B010V574");
+        registry.RegisterEvents([oldTrade, newTrade]);
+        oldTrade.ShareIdentity.ShouldBeSameAs(newTrade.ShareIdentity);
+        oldTrade.ShareIdentity!.Isins.ShouldBe(["GB00B010V573", "GB00B010V574"]);
+    }
+
+    [Fact]
+    public void TestTickerRecycledByUnrelatedCompanyIsNotMerged()
+    {
+        // A ticker later reassigned by the exchange to a completely unrelated company (different ISIN) must not
+        // be silently folded into the original company's share identity/Section 104 pool.
+        Trade delistedCompanyTrade = CreateTrade("ABC", "GB00AAAAAAAA", "01-May-10 10:00:00");
+        Trade unrelatedCompanyTrade = CreateTrade("ABC", "US00BBBBBBBB", "01-May-24 10:00:00");
+        ShareIdentityRegistry registry = new();
+        registry.RegisterEvents([delistedCompanyTrade, unrelatedCompanyTrade]);
+        delistedCompanyTrade.ShareIdentity.ShouldNotBeSameAs(unrelatedCompanyTrade.ShareIdentity);
+        delistedCompanyTrade.ShareIdentity!.Isins.ShouldBe(["GB00AAAAAAAA"]);
+        unrelatedCompanyTrade.ShareIdentity!.Isins.ShouldBe(["US00BBBBBBBB"]);
+    }
+
+    [Fact]
+    public void TestRecycledTickerGetsDistinctCanonicalNames()
+    {
+        // Both identities have the primary ticker "ABC", so a canonical name built from the primary ticker alone
+        // would group the two unrelated shares together and pool the delisted company's acquisition cost into the
+        // new company's Section 104 holding. The canonical name must separate them.
+        Trade delistedCompanyTrade = CreateTrade("ABC", "GB00AAAAAAAA", "01-May-10 10:00:00");
+        Trade unrelatedCompanyTrade = CreateTrade("ABC", "US00BBBBBBBB", "01-May-24 10:00:00");
+        ShareIdentityRegistry registry = new();
+        registry.RegisterEvents([delistedCompanyTrade, unrelatedCompanyTrade]);
+
+        delistedCompanyTrade.CanonicalAssetName.ShouldBe("ABC (GB00AAAAAAAA)");
+        unrelatedCompanyTrade.CanonicalAssetName.ShouldBe("ABC (US00BBBBBBBB)");
+        delistedCompanyTrade.CanonicalAssetName.ShouldNotBe(unrelatedCompanyTrade.CanonicalAssetName);
+        delistedCompanyTrade.GetDuplicateSignature().ShouldNotBe(unrelatedCompanyTrade.GetDuplicateSignature());
+
+        // The disambiguated name must resolve back to its own identity, so pool lookups by reported name work.
+        registry.ResolveByTicker("ABC (GB00AAAAAAAA)").ShouldBeSameAs(delistedCompanyTrade.ShareIdentity);
+        registry.ResolveByTicker("ABC (US00BBBBBBBB)").ShouldBeSameAs(unrelatedCompanyTrade.ShareIdentity);
+        registry.GetCanonicalTicker("ABC (US00BBBBBBBB)").ShouldBe("ABC (US00BBBBBBBB)");
+        registry.IsSameShare("ABC (GB00AAAAAAAA)", "ABC (US00BBBBBBBB)").ShouldBeFalse();
+    }
+
+    [Fact]
+    public void TestSyntheticPrimaryTickerDoesNotClaimUnrelatedCompanysTicker()
+    {
+        // "ABCl" and "ABCd" strip to the base symbol "ABC", which was never traded for that share but is the real
+        // ticker of an unrelated company. Matching on the primary ticker alone would let the suffixed share claim
+        // "ABC" and pull the unrelated company's events into its own matching.
+        Trade suffixedTrade = CreateTrade("ABCl", "GB00AAAAAAAA", "01-May-21 10:00:00");
+        Trade otherSuffixedTrade = CreateTrade("ABCd", "GB00AAAAAAAA", "01-Jun-21 10:00:00");
+        Trade unrelatedTrade = CreateTrade("ABC", "US00BBBBBBBB", "01-May-22 10:00:00");
+        ShareIdentityRegistry registry = new();
+        registry.RegisterEvents([suffixedTrade, otherSuffixedTrade, unrelatedTrade]);
+
+        ShareIdentity suffixedIdentity = suffixedTrade.ShareIdentity!;
+        ShareIdentity unrelatedIdentity = unrelatedTrade.ShareIdentity!;
+        suffixedIdentity.ShouldNotBeSameAs(unrelatedIdentity);
+        suffixedIdentity.PrimaryTicker.ShouldBe("ABC");
+        suffixedIdentity.Tickers.ShouldNotContain("ABC");
+
+        suffixedIdentity.MatchesTicker("ABC").ShouldBeFalse();
+        unrelatedIdentity.MatchesTicker("ABC").ShouldBeTrue();
+        suffixedTrade.IsSameAsset("ABC").ShouldBeFalse();
+        unrelatedTrade.IsSameAsset("ABCl").ShouldBeFalse();
+        registry.IsSameShare("ABCl", "ABC").ShouldBeFalse();
+    }
+
+    [Fact]
+    public void TestSyntheticPrimaryTickerStillMatchesWhenUnambiguous()
+    {
+        // The counterpart: with no competing share the synthetic base symbol is the reported name, so it must
+        // still match - otherwise lookups by the name shown in the report would fail.
+        Trade trade1 = CreateTrade("CWRl", "GB00B010V573", "01-May-21 10:00:00");
+        Trade trade2 = CreateTrade("CWRm", "GB00B010V573", "01-Jun-21 10:00:00");
+        ShareIdentityRegistry registry = new();
+        registry.RegisterEvents([trade1, trade2]);
+
+        trade1.ShareIdentity!.PrimaryTicker.ShouldBe("CWR");
+        trade1.ShareIdentity!.Tickers.ShouldNotContain("CWR");
+        trade1.ShareIdentity!.MatchesTicker("CWR").ShouldBeTrue();
+        trade1.CanonicalAssetName.ShouldBe("CWR");
+        trade1.IsSameAsset("CWR").ShouldBeTrue();
+        registry.ResolveByTicker("CWR").ShouldBeSameAs(trade1.ShareIdentity);
+    }
+
+    [Fact]
+    public void TestUnambiguousTickerKeepsPlainCanonicalName()
+    {
+        // The disambiguator is only added on an actual clash: ordinary shares keep their bare ticker.
+        Trade trade = CreateTrade("ABC", "GB00AAAAAAAA");
+        Trade otherTrade = CreateTrade("XYZ", "US00BBBBBBBB");
+        ShareIdentityRegistry registry = new();
+        registry.RegisterEvents([trade, otherTrade]);
+        trade.CanonicalAssetName.ShouldBe("ABC");
+        otherTrade.CanonicalAssetName.ShouldBe("XYZ");
+    }
+
+    [Fact]
+    public void TestManualLinkRemovesTheDisambiguator()
+    {
+        // Same ticker with a new ISIN starts out as two identities and so is disambiguated. Once the user declares
+        // it a re-issue of the same share the identities merge and the plain ticker becomes unambiguous again.
+        Trade oldTrade = CreateTrade("ABC", "GB00B010V573", "01-May-21 10:00:00");
+        Trade newTrade = CreateTrade("ABC", "GB00B010V574", "01-May-22 10:00:00");
+        ShareIdentityRegistry registry = new();
+        registry.RegisterEvents([oldTrade, newTrade]);
+        oldTrade.CanonicalAssetName.ShouldBe("ABC (GB00B010V573)");
+        newTrade.CanonicalAssetName.ShouldBe("ABC (GB00B010V574)");
+
+        registry.LinkShares("GB00B010V573", "GB00B010V574");
+        registry.RegisterEvents([oldTrade, newTrade]);
+        oldTrade.CanonicalAssetName.ShouldBe("ABC");
+        newTrade.CanonicalAssetName.ShouldBe("ABC");
+    }
+
+    [Fact]
+    public void TestEventsWithoutIsinAreNotUnified()
+    {
+        List<TaxEvent> taxEvents =
+        [
+            CreateTrade("CWR", ""),
+            CreateTrade("CWRl", ""),
+        ];
+        ShareIdentityRegistry registry = new();
+        registry.RegisterEvents(taxEvents);
+        taxEvents[0].CanonicalAssetName.ShouldBe("CWR");
+        taxEvents[1].CanonicalAssetName.ShouldBe("CWRl");
+        registry.IsSameShare("CWR", "CWRl").ShouldBeFalse();
+    }
+
+    [Fact]
+    public void TestManualLinkJoinsSharesWithDifferentTickerAndIsin()
+    {
+        // Newco insertion: ticker and ISIN both changed, so the shares can only be joined by a manual link.
+        Trade oldTrade = CreateTrade("OLDCO", "GB00B010V573", "01-May-21 10:00:00");
+        Trade newTrade = CreateTrade("NEWCO", "GB00B010V574", "01-May-22 10:00:00");
+        ShareIdentityRegistry registry = new();
+        registry.RegisterEvents([oldTrade, newTrade]);
+        registry.IsSameShare("OLDCO", "NEWCO").ShouldBeFalse();
+
+        registry.LinkShares("OLDCO", "NEWCO");
+        registry.RegisterEvents([oldTrade, newTrade]);
+        registry.IsSameShare("OLDCO", "NEWCO").ShouldBeTrue();
+        oldTrade.ShareIdentity.ShouldBeSameAs(newTrade.ShareIdentity);
+        oldTrade.ShareIdentity!.Isins.Count.ShouldBe(2);
+        oldTrade.CanonicalAssetName.ShouldBe("NEWCO");
+    }
+
+    [Fact]
+    public void TestManualLinkByIsinIsApplied()
+    {
+        Trade oldTrade = CreateTrade("OLDCO", "GB00B010V573");
+        Trade newTrade = CreateTrade("NEWCO", "GB00B010V574");
+        ShareIdentityRegistry registry = new();
+        registry.LinkShares("GB00B010V573", "GB00B010V574");
+        registry.RegisterEvents([oldTrade, newTrade]);
+        registry.IsSameShare("OLDCO", "NEWCO").ShouldBeTrue();
+    }
+
+    [Fact]
+    public void TestLastSeenDatesIdentifyOlderAndNewerIsin()
+    {
+        // Newco insertion keeping the ticker, confirmed via a manual link: the last seen dates show which ISIN
+        // is the older one.
+        Trade oldTrade = CreateTrade("ABC", "GB00B010V573", "01-May-21 10:00:00");
+        Trade newTrade = CreateTrade("ABC", "GB00B010V574", "01-May-22 10:00:00");
+        ShareIdentityRegistry registry = new();
+        registry.LinkShares("GB00B010V573", "GB00B010V574");
+        registry.RegisterEvents([oldTrade, newTrade]);
+        ShareIdentity identity = oldTrade.ShareIdentity!;
+        identity.GetIsinLastSeen("GB00B010V573").ShouldBe(oldTrade.Date);
+        identity.GetIsinLastSeen("GB00B010V574").ShouldBe(newTrade.Date);
+        identity.GetIsinLastSeen("GB00B010V573")!.Value.ShouldBeLessThan(identity.GetIsinLastSeen("GB00B010V574")!.Value);
+    }
+
+    [Fact]
+    public void TestLastSeenDatesIdentifyOlderAndNewerTicker()
+    {
+        Trade oldTrade = CreateTrade("DWAC", "US25400Q1058", "01-May-21 10:00:00");
+        Trade newTrade = CreateTrade("DJT", "US25400Q1058", "01-Jun-24 10:00:00");
+        ShareIdentityRegistry registry = new();
+        registry.RegisterEvents([oldTrade, newTrade]);
+        ShareIdentity identity = oldTrade.ShareIdentity!;
+        identity.GetTickerLastSeen("DWAC").ShouldBe(oldTrade.Date);
+        identity.GetTickerLastSeen("DJT").ShouldBe(newTrade.Date);
+        identity.GetTickerLastSeen("DWAC")!.Value.ShouldBeLessThan(identity.GetTickerLastSeen("DJT")!.Value);
+    }
+
+    [Fact]
+    public void TestObservationsListTickerIsinCombosOrderedOldestFirst()
+    {
+        Trade oldTrade = CreateTrade("DWAC", "US25400Q1058", "01-May-21 10:00:00");
+        Trade laterOldTrade = CreateTrade("DWAC", "US25400Q1058", "01-Jun-21 10:00:00");
+        Trade newTrade = CreateTrade("DJT", "US25400Q9999", "01-Jun-24 10:00:00");
+        ShareIdentityRegistry registry = new();
+        registry.LinkShares("DWAC", "DJT");
+        registry.RegisterEvents([oldTrade, laterOldTrade, newTrade]);
+        IReadOnlyList<ShareIdentityObservation> observations = oldTrade.ShareIdentity!.Observations;
+        observations.ShouldBe([
+            new ShareIdentityObservation("DWAC", "US25400Q1058", laterOldTrade.Date),
+            new ShareIdentityObservation("DJT", "US25400Q9999", newTrade.Date)]);
+    }
+
+    [Fact]
+    public void TestObservationLastSeenSurvivesIdentityMerge()
+    {
+        // The ticker only stock split is seen before the ISIN carrying trades that cause the identities to merge.
+        StockSplit stockSplit = CreateStockSplit("DISm");
+        Trade trade = CreateTrade("DISm", "US2546871060", "01-May-21 10:00:00");
+        Trade laterTrade = CreateTrade("DIS", "US2546871060", "01-May-22 10:00:00");
+        ShareIdentityRegistry registry = new();
+        registry.RegisterEvents([stockSplit, trade, laterTrade]);
+        ShareIdentity identity = trade.ShareIdentity!;
+        identity.GetTickerLastSeen("DISm").ShouldBe(stockSplit.Date); // split is dated 01-Jul-21, after the trade
+        identity.GetTickerLastSeen("DIS").ShouldBe(laterTrade.Date);
+        identity.Observations.Select(observation => (observation.Ticker, observation.Isin)).ShouldBe([
+            ("DISm", ""),
+            ("DISm", "US2546871060"),
+            ("DIS", "US2546871060")], ignoreOrder: true);
+    }
+
+    [Fact]
+    public void TestFullNameIsRecordedFromTradeDescription()
+    {
+        Trade trade = CreateTrade("DIS", "US2546871060");
+        trade.Description = "WALT DISNEY CO";
+        ShareIdentityRegistry registry = new();
+        registry.RegisterEvents([trade]);
+        trade.ShareIdentity!.FullNames.ShouldBe(["WALT DISNEY CO"]);
+    }
+
+    [Fact]
+    public void TestDuplicateSignatureMatchesAcrossTickerVariations()
+    {
+        Trade trade1 = CreateTrade("DIS", "US2546871060");
+        Trade trade2 = CreateTrade("DISm", "US2546871060");
+        ShareIdentityRegistry registry = new();
+        registry.RegisterEvents([trade1, trade2]);
+        trade1.GetDuplicateSignature().ShouldBe(trade2.GetDuplicateSignature());
+    }
+
+    [Fact]
+    public void TestOptionTradesAreNotGivenAShareIdentity()
+    {
+        // Broker exports put the UNDERLYING share's ISIN on option rows. Registering them would merge every option
+        // series and the underlying's shares into one identity, so they would report under one name and share a
+        // single Section 104 pool.
+        Trade stock = CreateTrade("MSFT", "US5949181045", "01-Feb-21 10:00:00");
+        OptionTrade januaryCall = CreateOptionTrade("MSFT  210116C00230000", "US5949181045", "MSFT", "04-Jan-21 10:00:00");
+        OptionTrade aprilCall = CreateOptionTrade("MSFT  210416C00230000", "US5949181045", "MSFT", "01-Apr-21 10:00:00");
+        ShareIdentityRegistry registry = new();
+        registry.RegisterEvents([stock, januaryCall, aprilCall]);
+
+        januaryCall.ShareIdentity.ShouldBeNull();
+        aprilCall.ShareIdentity.ShouldBeNull();
+        stock.ShareIdentity.ShouldNotBeNull();
+
+        // Each contract keeps its own symbol, so the two series and the shares stay three separate assets.
+        januaryCall.CanonicalAssetName.ShouldBe("MSFT  210116C00230000");
+        aprilCall.CanonicalAssetName.ShouldBe("MSFT  210416C00230000");
+        stock.CanonicalAssetName.ShouldBe("MSFT");
+        januaryCall.IsSameAsset("MSFT  210416C00230000").ShouldBeFalse();
+        januaryCall.IsSameAsset("MSFT").ShouldBeFalse();
+
+        // The option symbols must not pollute the share identity list shown to the user and in the PDF report.
+        registry.Identities.Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public void TestFutureLongAndShortLegsStaySeparateAcrossRepeatedRegistration()
+    {
+        // Calculation renames short positions in place by prefixing "Short ", and the app re-registers every event
+        // at the start of each calculation. If futures were registered, the prefixed and unprefixed names would be
+        // merged on the second pass through their shared ISIN and the long legs would be renamed to the short one.
+        FutureContractTrade longLeg = CreateFutureTrade("NIY", "JP12343", "01-Mar-23 10:00:00");
+        FutureContractTrade shortLeg = CreateFutureTrade("NIY", "JP12343", "03-Mar-23 10:00:00");
+        ShareIdentityRegistry registry = new();
+        registry.RegisterEvents([longLeg, shortLeg]);
+
+        shortLeg.AssetName = "Short " + shortLeg.AssetName; // what TagTradesWithOpenClose does during calculation
+        registry.RegisterEvents([longLeg, shortLeg]);
+
+        longLeg.ShareIdentity.ShouldBeNull();
+        shortLeg.ShareIdentity.ShouldBeNull();
+        longLeg.CanonicalAssetName.ShouldBe("NIY");
+        shortLeg.CanonicalAssetName.ShouldBe("Short NIY");
+        registry.Identities.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void TestUnknownTickerResolvesToItself()
+    {
+        ShareIdentityRegistry registry = new();
+        registry.GetCanonicalTicker("UNKNOWN").ShouldBe("UNKNOWN");
+        registry.IsSameShare("UNKNOWN", "UNKNOWN").ShouldBeTrue();
+        registry.IsSameShare("UNKNOWN", "OTHER").ShouldBeFalse();
+    }
+
+    private static Trade CreateTrade(string assetName, string isin, string date = "01-May-21 10:00:00")
+    {
+        return new Trade
+        {
+            AssetName = assetName,
+            Isin = isin,
+            Date = DateTime.Parse(date, CultureInfo.InvariantCulture),
+            Quantity = 10,
+            GrossProceed = new DescribedMoney(100, "GBP", 1),
+            AcquisitionDisposal = TradeType.ACQUISITION
+        };
+    }
+
+    private static OptionTrade CreateOptionTrade(string assetName, string isin, string underlying, string date)
+    {
+        return new OptionTrade
+        {
+            AssetName = assetName,
+            Isin = isin,
+            Underlying = underlying,
+            Date = DateTime.Parse(date, CultureInfo.InvariantCulture),
+            Quantity = 1,
+            Multiplier = 100,
+            StrikePrice = new WrappedMoney(230, "GBP"),
+            ExpiryDate = DateTime.Parse("01-Jan-30 10:00:00", CultureInfo.InvariantCulture),
+            PUTCALL = PUTCALL.CALL,
+            GrossProceed = new DescribedMoney(100, "GBP", 1),
+            AcquisitionDisposal = TradeType.ACQUISITION
+        };
+    }
+
+    private static FutureContractTrade CreateFutureTrade(string assetName, string isin, string date)
+    {
+        return new FutureContractTrade
+        {
+            AssetName = assetName,
+            Isin = isin,
+            AssetType = AssetCategoryType.FUTURE,
+            Date = DateTime.Parse(date, CultureInfo.InvariantCulture),
+            Quantity = 2,
+            GrossProceed = new DescribedMoney(0, "GBP", 1),
+            ContractValue = new DescribedMoney(10000, "GBP", 1),
+            AcquisitionDisposal = TradeType.ACQUISITION
+        };
+    }
+
+    private static Dividend CreateDividend(string assetName, string isin)
+    {
+        return new Dividend
+        {
+            AssetName = assetName,
+            Isin = isin,
+            Date = DateTime.Parse("01-Jun-21 10:00:00", CultureInfo.InvariantCulture),
+            DividendType = DividendType.DIVIDEND,
+            Proceed = new DescribedMoney(100, "GBP", 1)
+        };
+    }
+
+    private static StockSplit CreateStockSplit(string assetName)
+    {
+        return new StockSplit
+        {
+            AssetName = assetName,
+            Date = DateTime.Parse("01-Jul-21 10:00:00", CultureInfo.InvariantCulture),
+            SplitTo = 2,
+            SplitFrom = 1
+        };
+    }
+}

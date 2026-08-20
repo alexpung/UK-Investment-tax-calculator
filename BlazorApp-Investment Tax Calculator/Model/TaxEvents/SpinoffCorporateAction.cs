@@ -86,13 +86,13 @@ public record SpinoffCorporateAction : CorporateAction, IChangeSection104
     public override void ChangeSection104(UkSection104 section104)
     {
         // Phase 1: Process the parent company (reduce cost basis)
-        if (AssetName == section104.AssetName)
+        if (section104.MatchesAsset(AssetName))
         {
             ProcessParentCompany(section104);
         }
 
         // Phase 2: Process the spinoff company (add new shares with transferred cost)
-        else if (SpinoffCompanyTicker == section104.AssetName)
+        else if (section104.MatchesAsset(SpinoffCompanyTicker))
         {
             ProcessSpinoffCompany(section104);
         }

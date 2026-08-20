@@ -1,8 +1,9 @@
 ﻿using InvestmentTaxCalculator.Model.Interfaces;
+using InvestmentTaxCalculator.Services;
 
 namespace InvestmentTaxCalculator.Model.UkTaxModel;
 
-public class UkSection104Pools(ITaxYear taxYearModel, ResidencyStatusRecord residencyStatusRecord)
+public class UkSection104Pools(ITaxYear taxYearModel, ResidencyStatusRecord residencyStatusRecord, ShareIdentityRegistry? shareIdentityRegistry = null)
 {
     private readonly Dictionary<string, UkSection104> _section104Pools = [];
 
@@ -57,18 +58,23 @@ public class UkSection104Pools(ITaxYear taxYearModel, ResidencyStatusRecord resi
     /// <returns></returns>
     public virtual UkSection104 GetExistingOrInitialise(string assetName)
     {
-        _section104Pools.TryGetValue(assetName, out UkSection104? section104);
+        // All ticker variations of a share resolve to the same pool, keyed and named by the canonical ticker.
+        // The key must be the unique ticker: a ticker recycled by an unrelated company yields two identities with
+        // the same primary ticker, which would otherwise share one pool and one acquisition cost.
+        ShareIdentity? shareIdentity = shareIdentityRegistry?.ResolveByTicker(assetName);
+        string poolKey = shareIdentity?.UniqueTicker ?? assetName;
+        _section104Pools.TryGetValue(poolKey, out UkSection104? section104);
         if (section104 is null)
         {
-            section104 = new(assetName, residencyStatusRecord);
-            _section104Pools[assetName] = section104;
+            section104 = new(poolKey, residencyStatusRecord) { ShareIdentity = shareIdentity };
+            _section104Pools[poolKey] = section104;
         }
         return section104;
     }
 
     public List<Section104History> GetSection104HistoriesUntilTaxYear(int endingTaxYear, string assetName)
     {
-        _section104Pools.TryGetValue(assetName, out UkSection104? section104);
+        _section104Pools.TryGetValue(GetPoolKey(assetName), out UkSection104? section104);
         if (section104 is null)
         {
             return [];
@@ -79,7 +85,7 @@ public class UkSection104Pools(ITaxYear taxYearModel, ResidencyStatusRecord resi
 
     public List<Section104History> GetSection104HistoriesWithinTaxYear(int taxYear, string assetName)
     {
-        _section104Pools.TryGetValue(assetName, out UkSection104? section104);
+        _section104Pools.TryGetValue(GetPoolKey(assetName), out UkSection104? section104);
         if (section104 is null)
         {
             return [];
@@ -93,4 +99,6 @@ public class UkSection104Pools(ITaxYear taxYearModel, ResidencyStatusRecord resi
     {
         _section104Pools.Clear();
     }
+
+    private string GetPoolKey(string assetName) => shareIdentityRegistry?.GetCanonicalTicker(assetName) ?? assetName;
 }

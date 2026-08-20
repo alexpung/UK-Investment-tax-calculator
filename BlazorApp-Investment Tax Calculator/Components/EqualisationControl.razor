@@ -90,19 +90,25 @@
 
     protected override void OnInitialized()
     {
-        var tickersWithIncome = TaxEventLists.Dividends.Where(d => d.DividendType != DividendType.WITHHOLDING).Select(d => d.AssetName)
-            .Union(TaxEventLists.InterestIncomes.Select(i => i.AssetName))
+        Currencies = CurrencyService.GetCurrencies();
+    }
+
+    // Recomputed whenever the parent re-renders rather than once on initialisation: the available tickers derive
+    // from the Section 104 pools and from CanonicalAssetName, both of which change when a calculation is run or
+    // shares are linked, while this component instance outlives those changes.
+    protected override void OnParametersSet()
+    {
+        var tickersWithIncome = TaxEventLists.Dividends.Where(d => d.DividendType != DividendType.WITHHOLDING).Select(d => d.CanonicalAssetName)
+            .Union(TaxEventLists.InterestIncomes.Select(i => i.CanonicalAssetName))
             .ToHashSet();
 
         AvailableTickers = Section104Pools.GetSection104s()
-            .Where(p => TaxEventLists.Trades.Any(t => t.AssetName == p.AssetName && t.AssetType is AssetCategoryType.STOCK or AssetCategoryType.FUND))
+            .Where(p => TaxEventLists.Trades.Any(t => t.IsSameAsset(p.AssetName) && t.AssetType is AssetCategoryType.STOCK or AssetCategoryType.FUND))
             .Select(p => p.AssetName)
             .Where(name => tickersWithIncome.Contains(name))
             .Distinct()
             .OrderBy(a => a)
             .ToList();
-        
-        Currencies = CurrencyService.GetCurrencies();
     }
 
     private Task OnTickerChanged(string ticker)
@@ -144,8 +150,8 @@
         AvailableIncomeEvents.Clear();
         if (string.IsNullOrEmpty(SelectedTicker)) return;
 
-        var dividends = TaxEventLists.Dividends.Where(d => d.AssetName == SelectedTicker && d.DividendType != DividendType.WITHHOLDING);
-        var interest = TaxEventLists.InterestIncomes.Where(i => i.AssetName == SelectedTicker);
+        var dividends = TaxEventLists.Dividends.Where(d => d.IsSameAsset(SelectedTicker) && d.DividendType != DividendType.WITHHOLDING);
+        var interest = TaxEventLists.InterestIncomes.Where(i => i.IsSameAsset(SelectedTicker));
         
         foreach(var d in dividends) 
         {
@@ -197,7 +203,7 @@
         if (isEriEvent)
         {
             var relatedEri = TaxEventLists.CorporateActions.OfType<ExcessReportableIncome>()
-                .FirstOrDefault(e => e.AssetName == SelectedTicker && e.Date == selectedEvent.Date);
+                .FirstOrDefault(e => e.IsSameAsset(SelectedTicker) && e.Date == selectedEvent.Date);
             reportingPeriodEnd = relatedEri is not null
                 ? relatedEri.EffectiveReportingPeriodEndDate.ToDateTime(TimeOnly.MinValue)
                 : selectedEvent.Date.AddMonths(-6);

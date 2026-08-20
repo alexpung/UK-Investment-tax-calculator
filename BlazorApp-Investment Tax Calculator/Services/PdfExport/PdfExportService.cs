@@ -14,7 +14,7 @@ public class PdfExportService
     public List<ISection> AllSections { get; set; }
     public string[]? SelectedSections { get; set; }
     public PdfExportService(TaxYearReportService taxYearReportService, TradeCalculationResult tradeCalculationResult,
-        UkSection104Pools uKSection104Pools, DividendCalculationResult dividendCalculationResult)
+        UkSection104Pools uKSection104Pools, DividendCalculationResult dividendCalculationResult, ShareIdentityRegistry shareIdentityRegistry)
     {
         ISection yearSummarySection = new YearlyTaxSummarySection(tradeCalculationResult, taxYearReportService);
         ISection allTradesListSection = new AllTradesListInYearSection(tradeCalculationResult);
@@ -23,6 +23,7 @@ public class PdfExportService
         ISection dividendSummarySection = new DividendSummarySection(dividendCalculationResult);
         ISection disposalDetailSection = new DisposalDetailSection(tradeCalculationResult);
         ISection interestIncomeSummarySection = new InterestIncomeSummarySection(dividendCalculationResult);
+        ISection companyInformationSection = new CompanyInformationSection(shareIdentityRegistry);
         AllSections = [
             yearSummarySection,
             dividendSummarySection,
@@ -30,7 +31,8 @@ public class PdfExportService
             disposalDetailSection,
             endOfYearSection104StatusSection,
             section104Section,
-            allTradesListSection
+            allTradesListSection,
+            companyInformationSection
             ];
         SelectedSections = [.. AllSections.Select(section => section.Name)];
     }

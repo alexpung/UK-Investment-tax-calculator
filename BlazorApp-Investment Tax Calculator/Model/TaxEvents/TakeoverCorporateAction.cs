@@ -59,13 +59,13 @@ public record TakeoverCorporateAction : CorporateAction, IChangeSection104
     public override void ChangeSection104(UkSection104 section104)
     {
         // Phase 1: Process the old company (non-surviving ticker)
-        if (AssetName == section104.AssetName)
+        if (section104.MatchesAsset(AssetName))
         {
             ProcessOldCompany(section104);
         }
 
         // Phase 2: Process the new company (acquiring ticker)
-        else if (AcquiringCompanyTicker == section104.AssetName)
+        else if (section104.MatchesAsset(AcquiringCompanyTicker))
         {
             ProcessNewCompany(section104);
         }

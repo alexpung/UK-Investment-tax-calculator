@@ -1,9 +1,11 @@
 @using InvestmentTaxCalculator.Enumerations
 @using InvestmentTaxCalculator.Model
 @using InvestmentTaxCalculator.Model.UkTaxModel
+@using InvestmentTaxCalculator.Services
 
 @inject UkSection104Pools Section104Pools
 @inject TaxEventLists TaxEventLists
+@inject ShareIdentityRegistry ShareIdentityRegistry
 
 @* AllowCustom (free text) -> RadzenAutoComplete; restricted -> filterable RadzenDropDown *@
 @if (AllowManualAssetNameInput)
@@ -57,7 +59,7 @@ else
         {
             if (categoryFilter.Contains(AssetCategoryType.STOCK))
             {
-                foreach (string assetName in TaxEventLists.Trades.Where(t => t.AssetType == AssetCategoryType.STOCK).Select(t => t.AssetName))
+                foreach (string assetName in TaxEventLists.Trades.Where(t => t.AssetType == AssetCategoryType.STOCK).Select(t => t.CanonicalAssetName))
                 {
                     allowedAssetNames.Add(assetName);
                 }
@@ -65,7 +67,7 @@ else
 
             if (categoryFilter.Contains(AssetCategoryType.FUND))
             {
-                foreach (string assetName in TaxEventLists.Trades.Where(t => t.AssetType == AssetCategoryType.FUND).Select(t => t.AssetName))
+                foreach (string assetName in TaxEventLists.Trades.Where(t => t.AssetType == AssetCategoryType.FUND).Select(t => t.CanonicalAssetName))
                 {
                     allowedAssetNames.Add(assetName);
                 }
@@ -73,7 +75,7 @@ else
 
             if (categoryFilter.Contains(AssetCategoryType.OPTION))
             {
-                foreach (string assetName in TaxEventLists.OptionTrades.Select(t => t.AssetName))
+                foreach (string assetName in TaxEventLists.OptionTrades.Select(t => t.CanonicalAssetName))
                 {
                     allowedAssetNames.Add(assetName);
                 }
@@ -81,7 +83,7 @@ else
 
             if (categoryFilter.Contains(AssetCategoryType.FUTURE))
             {
-                foreach (string assetName in TaxEventLists.FutureContractTrades.Select(t => t.AssetName))
+                foreach (string assetName in TaxEventLists.FutureContractTrades.Select(t => t.CanonicalAssetName))
                 {
                     allowedAssetNames.Add(assetName);
                 }
@@ -89,7 +91,7 @@ else
 
             if (categoryFilter.Contains(AssetCategoryType.FX))
             {
-                foreach (string assetName in TaxEventLists.Trades.Where(t => t.AssetType == AssetCategoryType.FX).Select(t => t.AssetName))
+                foreach (string assetName in TaxEventLists.Trades.Where(t => t.AssetType == AssetCategoryType.FX).Select(t => t.CanonicalAssetName))
                 {
                     allowedAssetNames.Add(assetName);
                 }
@@ -128,7 +130,12 @@ else
             poolCount.ToString(),
             TaxEventLists.Trades.Count.ToString(),
             TaxEventLists.OptionTrades.Count.ToString(),
-            TaxEventLists.FutureContractTrades.Count.ToString());
+            TaxEventLists.FutureContractTrades.Count.ToString(),
+            // The cached names are built from CanonicalAssetName, which changes when shares are merged or split
+            // apart by a manual link. Neither the pool count nor the event counts need change when that happens,
+            // so include the identity state or the list goes stale after linking/unlinking shares.
+            ShareIdentityRegistry.Identities.Count.ToString(),
+            ShareIdentityRegistry.ManualLinks.Count.ToString());
     }
 
     private async Task OnValueChangedInternal(object? value)
