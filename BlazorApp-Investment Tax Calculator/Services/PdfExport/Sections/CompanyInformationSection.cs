@@ -1,4 +1,7 @@
 using InvestmentTaxCalculator.Model;
+using InvestmentTaxCalculator.Model.Interfaces;
+using InvestmentTaxCalculator.Model.TaxEvents;
+using InvestmentTaxCalculator.Model.UkTaxModel;
 
 using MigraDoc.DocumentObjectModel;
 using MigraDoc.DocumentObjectModel.Tables;
@@ -6,11 +9,14 @@ using MigraDoc.DocumentObjectModel.Tables;
 namespace InvestmentTaxCalculator.Services.PdfExport.Sections;
 
 /// <summary>
-/// Lists the identity of each company/share in the imported data: the name used in the report, the full company
-/// name(s), and every ticker/ISIN combination with the date it was last seen, so renames, Newco insertions and
-/// exchange suffix variations are documented in the report.
+/// Lists the identity of each company/share relevant to the reported tax year: the name used in the report, the
+/// full company name(s), and every ticker/ISIN combination with the date it was last seen, so renames, Newco
+/// insertions and exchange suffix variations are documented in the report. A company is relevant when it has a
+/// tax event dated in the tax year or is still held in a Section 104 pool at the end of it, so the section stays
+/// limited to companies appearing elsewhere in the report instead of every company ever imported.
 /// </summary>
-public class CompanyInformationSection(ShareIdentityRegistry shareIdentityRegistry) : ISection
+public class CompanyInformationSection(ShareIdentityRegistry shareIdentityRegistry, TaxEventLists taxEventLists,
+    ITaxYear taxYearConverter, UkSection104Pools section104Pools) : ISection
 {
     public string Name { get; set; } = "Company Information";
     public string Title { get; set; } = "Company Information";
@@ -20,17 +26,20 @@ public class CompanyInformationSection(ShareIdentityRegistry shareIdentityRegist
         Paragraph paragraph = section.AddParagraph(Title);
         Style.StyleTitle(paragraph);
 
+        HashSet<ShareIdentity> relevantIdentities = GetIdentitiesRelevantToTaxYear(taxYear);
         List<ShareIdentity> identities = [.. shareIdentityRegistry.Identities
+            .Where(relevantIdentities.Contains)
             .Where(identity => identity.Isins.Count > 0 || identity.FullNames.Count > 0 || identity.Tickers.Count > 1)
             .OrderBy(identity => identity.UniqueTicker, StringComparer.OrdinalIgnoreCase)];
 
         if (identities.Count == 0)
         {
-            section.AddParagraph("No company information is available.");
+            section.AddParagraph("No company information is available for this tax year.");
             return section;
         }
 
-        section.AddParagraph("Tickers and ISINs of the same company are listed together with the date each " +
+        section.AddParagraph("Companies with a tax event in this tax year or still held at the end of it are " +
+            "listed. Tickers and ISINs of the same company are listed together with the date each " +
             "combination was last seen in the imported data, so the entry with the latest date is the current " +
             "ticker/ISIN and earlier entries are former ones (e.g. before a rename or Newco insertion).");
 
@@ -68,5 +77,30 @@ public class CompanyInformationSection(ShareIdentityRegistry shareIdentityRegist
             }
         }
         return section;
+    }
+
+    /// <summary>
+    /// The identities with a tax event dated in the given tax year, plus those still held in a Section 104 pool at
+    /// the end of it (a held company appears in the Section 104 status section even without any event that year).
+    /// </summary>
+    private HashSet<ShareIdentity> GetIdentitiesRelevantToTaxYear(int taxYear)
+    {
+        HashSet<ShareIdentity> relevantIdentities = [];
+        foreach (TaxEvent taxEvent in taxEventLists.AllEvents)
+        {
+            if (taxEvent.ShareIdentity is not null && taxYearConverter.ToTaxYear(taxEvent.Date) == taxYear)
+            {
+                relevantIdentities.Add(taxEvent.ShareIdentity);
+            }
+        }
+        foreach (string assetName in section104Pools.GetEndOfYearSection104s(taxYear).Keys)
+        {
+            ShareIdentity? identity = shareIdentityRegistry.ResolveByTicker(assetName);
+            if (identity is not null)
+            {
+                relevantIdentities.Add(identity);
+            }
+        }
+        return relevantIdentities;
     }
 }
