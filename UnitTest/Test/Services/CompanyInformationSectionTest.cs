@@ -87,6 +87,25 @@ public class CompanyInformationSectionTest
     }
 
     [Fact]
+    public void TestTemporaryNonResidentAcquisitionListsCompanyInTheReportedTaxYear()
+    {
+        // An acquisition made while temporarily non-resident is grouped into the residency-resumption year and
+        // appears in that year's "List of all trades" section, so its company belongs in that year's company
+        // information too. Relevance therefore deliberately covers all calculated trades, not only disposals.
+        TaxEventLists taxEventLists = new();
+        Trade acquisitionTrade = CreateTrade("TNA", "GB00HHHHHHHH", "01-May-20 10:00:00");
+        taxEventLists.Trades.Add(acquisitionTrade);
+        (CompanyInformationSection companyInformationSection, _, _, TradeCalculationResult tradeCalculationResult,
+            ResidencyStatusRecord residencyStatusRecord) = CreateSection(taxEventLists);
+        residencyStatusRecord.SetResidencyStatus(new DateOnly(2019, 4, 6), new DateOnly(2023, 4, 5), ResidencyStatus.TemporaryNonResident);
+        TradeTaxCalculation calculation = new([acquisitionTrade]) { ResidencyStatusAtTrade = ResidencyStatus.TemporaryNonResident };
+        tradeCalculationResult.SetResult([calculation]);
+
+        GetListedTickers(companyInformationSection, 2023).ShouldBe(["TNA"]);
+        GetListedTickers(companyInformationSection, 2021).ShouldBeEmpty();
+    }
+
+    [Fact]
     public void TestTakeoverListsAcquiringCompanyInTheTaxYear()
     {
         // A takeover affects the acquiring company's Section 104 pool in the year of the action, so both companies
