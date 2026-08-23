@@ -1,4 +1,5 @@
 using InvestmentTaxCalculator.Model;
+using InvestmentTaxCalculator.Model.Interfaces;
 using InvestmentTaxCalculator.Model.UkTaxModel;
 using InvestmentTaxCalculator.Services.PdfExport.Sections;
 
@@ -14,7 +15,8 @@ public class PdfExportService
     public List<ISection> AllSections { get; set; }
     public string[]? SelectedSections { get; set; }
     public PdfExportService(TaxYearReportService taxYearReportService, TradeCalculationResult tradeCalculationResult,
-        UkSection104Pools uKSection104Pools, DividendCalculationResult dividendCalculationResult, ShareIdentityRegistry shareIdentityRegistry)
+        UkSection104Pools uKSection104Pools, DividendCalculationResult dividendCalculationResult, ShareIdentityRegistry shareIdentityRegistry,
+        TaxEventLists taxEventLists, ITaxYear taxYearConverter)
     {
         ISection yearSummarySection = new YearlyTaxSummarySection(tradeCalculationResult, taxYearReportService);
         ISection allTradesListSection = new AllTradesListInYearSection(tradeCalculationResult);
@@ -23,7 +25,7 @@ public class PdfExportService
         ISection dividendSummarySection = new DividendSummarySection(dividendCalculationResult);
         ISection disposalDetailSection = new DisposalDetailSection(tradeCalculationResult);
         ISection interestIncomeSummarySection = new InterestIncomeSummarySection(dividendCalculationResult);
-        ISection companyInformationSection = new CompanyInformationSection(shareIdentityRegistry);
+        ISection companyInformationSection = new CompanyInformationSection(shareIdentityRegistry, taxEventLists, taxYearConverter, uKSection104Pools, tradeCalculationResult);
         AllSections = [
             yearSummarySection,
             dividendSummarySection,
