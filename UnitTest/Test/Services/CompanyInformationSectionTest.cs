@@ -2,6 +2,7 @@ using InvestmentTaxCalculator.Enumerations;
 using InvestmentTaxCalculator.Model;
 using InvestmentTaxCalculator.Model.TaxEvents;
 using InvestmentTaxCalculator.Model.UkTaxModel;
+using InvestmentTaxCalculator.Model.UkTaxModel.Stocks;
 using InvestmentTaxCalculator.Services;
 using InvestmentTaxCalculator.Services.PdfExport.Sections;
 
@@ -20,7 +21,7 @@ public class CompanyInformationSectionTest
         TaxEventLists taxEventLists = new();
         taxEventLists.Trades.Add(CreateTrade("ABC", "GB00AAAAAAAA", "01-May-21 10:00:00"));
         taxEventLists.Trades.Add(CreateTrade("XYZ", "US00BBBBBBBB", "01-May-19 10:00:00"));
-        (CompanyInformationSection companyInformationSection, _, _) = CreateSection(taxEventLists);
+        (CompanyInformationSection companyInformationSection, _, _, _, _) = CreateSection(taxEventLists);
 
         List<string> listedTickers = GetListedTickers(companyInformationSection, 2021);
 
@@ -33,7 +34,7 @@ public class CompanyInformationSectionTest
         TaxEventLists taxEventLists = new();
         taxEventLists.Trades.Add(CreateTrade("ABC", "GB00AAAAAAAA", "01-May-19 10:00:00"));
         taxEventLists.Dividends.Add(CreateDividend("ABC", "GB00AAAAAAAA", "01-Jun-21 10:00:00"));
-        (CompanyInformationSection companyInformationSection, _, _) = CreateSection(taxEventLists);
+        (CompanyInformationSection companyInformationSection, _, _, _, _) = CreateSection(taxEventLists);
 
         GetListedTickers(companyInformationSection, 2021).ShouldBe(["ABC"]);
         GetListedTickers(companyInformationSection, 2019).ShouldBe(["ABC"]);
@@ -45,7 +46,7 @@ public class CompanyInformationSectionTest
     {
         TaxEventLists taxEventLists = new();
         taxEventLists.Trades.Add(CreateTrade("HLD", "GB00CCCCCCCC", "01-May-19 10:00:00"));
-        (CompanyInformationSection companyInformationSection, _, UkSection104Pools section104Pools) = CreateSection(taxEventLists);
+        (CompanyInformationSection companyInformationSection, _, UkSection104Pools section104Pools, _, _) = CreateSection(taxEventLists);
         section104Pools.GetExistingOrInitialise("HLD")
             .AddAssets(DateTime.Parse("01-May-19 10:00:00", CultureInfo.InvariantCulture), 10, new WrappedMoney(100, "GBP"));
 
@@ -57,7 +58,7 @@ public class CompanyInformationSectionTest
     {
         TaxEventLists taxEventLists = new();
         taxEventLists.Trades.Add(CreateTrade("SLD", "GB00DDDDDDDD", "01-May-19 10:00:00"));
-        (CompanyInformationSection companyInformationSection, _, UkSection104Pools section104Pools) = CreateSection(taxEventLists);
+        (CompanyInformationSection companyInformationSection, _, UkSection104Pools section104Pools, _, _) = CreateSection(taxEventLists);
         UkSection104 section104 = section104Pools.GetExistingOrInitialise("SLD");
         section104.AddAssets(DateTime.Parse("01-May-19 10:00:00", CultureInfo.InvariantCulture), 10, new WrappedMoney(100, "GBP"));
         section104.ClearSection104(DateTime.Parse("01-Jun-19 10:00:00", CultureInfo.InvariantCulture), "Disposed");
@@ -66,14 +67,58 @@ public class CompanyInformationSectionTest
         GetListedTickers(companyInformationSection, 2019).ShouldBe(["SLD"]);
     }
 
-    private static (CompanyInformationSection Section, ShareIdentityRegistry Registry, UkSection104Pools Pools) CreateSection(TaxEventLists taxEventLists)
+    [Fact]
+    public void TestTemporaryNonResidentDisposalListsCompanyInTheReportedTaxYear()
+    {
+        // A disposal made while temporarily non-resident is taxed (and reported) in the year residency resumes,
+        // so the company belongs in that report year's company information even though the trade date is earlier.
+        TaxEventLists taxEventLists = new();
+        Trade disposalTrade = CreateTrade("TNR", "GB00EEEEEEEE", "01-May-20 10:00:00", TradeType.DISPOSAL);
+        taxEventLists.Trades.Add(disposalTrade);
+        (CompanyInformationSection companyInformationSection, _, _, TradeCalculationResult tradeCalculationResult,
+            ResidencyStatusRecord residencyStatusRecord) = CreateSection(taxEventLists);
+        residencyStatusRecord.SetResidencyStatus(new DateOnly(2019, 4, 6), new DateOnly(2023, 4, 5), ResidencyStatus.TemporaryNonResident);
+        TradeTaxCalculation calculation = new([disposalTrade]) { ResidencyStatusAtTrade = ResidencyStatus.TemporaryNonResident };
+        tradeCalculationResult.SetResult([calculation]);
+
+        GetListedTickers(companyInformationSection, 2023).ShouldBe(["TNR"]);
+        GetListedTickers(companyInformationSection, 2020).ShouldBe(["TNR"]);
+        GetListedTickers(companyInformationSection, 2021).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void TestTakeoverListsAcquiringCompanyInTheTaxYear()
+    {
+        // A takeover affects the acquiring company's Section 104 pool in the year of the action, so both companies
+        // belong in that year's company information even when the acquiring company has no tax event of its own.
+        TaxEventLists taxEventLists = new();
+        taxEventLists.Trades.Add(CreateTrade("OLD", "GB00FFFFFFFF", "01-May-19 10:00:00"));
+        taxEventLists.Trades.Add(CreateTrade("ACQ", "GB00GGGGGGGG", "01-May-19 10:00:00"));
+        taxEventLists.CorporateActions.Add(new TakeoverCorporateAction
+        {
+            AssetName = "OLD",
+            Date = DateTime.Parse("01-May-21 10:00:00", CultureInfo.InvariantCulture),
+            AcquiringCompanyTicker = "ACQ",
+            OldToNewRatio = 1m
+        });
+        (CompanyInformationSection companyInformationSection, _, _, _, _) = CreateSection(taxEventLists);
+
+        GetListedTickers(companyInformationSection, 2021).ShouldBe(["ACQ", "OLD"]);
+        GetListedTickers(companyInformationSection, 2020).ShouldBeEmpty();
+    }
+
+    private static (CompanyInformationSection Section, ShareIdentityRegistry Registry, UkSection104Pools Pools,
+        TradeCalculationResult TradeCalculationResult, ResidencyStatusRecord ResidencyStatusRecord) CreateSection(TaxEventLists taxEventLists)
     {
         ShareIdentityRegistry shareIdentityRegistry = new();
         shareIdentityRegistry.RegisterEvents(taxEventLists.AllEvents);
         UKTaxYear ukTaxYear = new();
-        UkSection104Pools section104Pools = new(ukTaxYear, new ResidencyStatusRecord(), shareIdentityRegistry);
-        CompanyInformationSection companyInformationSection = new(shareIdentityRegistry, taxEventLists, ukTaxYear, section104Pools);
-        return (companyInformationSection, shareIdentityRegistry, section104Pools);
+        ResidencyStatusRecord residencyStatusRecord = new();
+        UkSection104Pools section104Pools = new(ukTaxYear, residencyStatusRecord, shareIdentityRegistry);
+        TradeCalculationResult tradeCalculationResult = new(ukTaxYear, residencyStatusRecord);
+        CompanyInformationSection companyInformationSection = new(shareIdentityRegistry, taxEventLists, ukTaxYear,
+            section104Pools, tradeCalculationResult);
+        return (companyInformationSection, shareIdentityRegistry, section104Pools, tradeCalculationResult, residencyStatusRecord);
     }
 
     /// <summary>
@@ -95,7 +140,7 @@ public class CompanyInformationSectionTest
             .Where(ticker => !string.IsNullOrEmpty(ticker))];
     }
 
-    private static Trade CreateTrade(string assetName, string isin, string date)
+    private static Trade CreateTrade(string assetName, string isin, string date, TradeType tradeType = TradeType.ACQUISITION)
     {
         return new Trade
         {
@@ -104,7 +149,7 @@ public class CompanyInformationSectionTest
             Date = DateTime.Parse(date, CultureInfo.InvariantCulture),
             Quantity = 10,
             GrossProceed = new DescribedMoney(100, "GBP", 1),
-            AcquisitionDisposal = TradeType.ACQUISITION
+            AcquisitionDisposal = tradeType
         };
     }
 

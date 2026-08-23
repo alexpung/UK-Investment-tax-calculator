@@ -16,7 +16,7 @@ namespace InvestmentTaxCalculator.Services.PdfExport.Sections;
 /// limited to companies appearing elsewhere in the report instead of every company ever imported.
 /// </summary>
 public class CompanyInformationSection(ShareIdentityRegistry shareIdentityRegistry, TaxEventLists taxEventLists,
-    ITaxYear taxYearConverter, UkSection104Pools section104Pools) : ISection
+    ITaxYear taxYearConverter, UkSection104Pools section104Pools, TradeCalculationResult tradeCalculationResult) : ISection
 {
     public string Name { get; set; } = "Company Information";
     public string Title { get; set; } = "Company Information";
@@ -80,27 +80,45 @@ public class CompanyInformationSection(ShareIdentityRegistry shareIdentityRegist
     }
 
     /// <summary>
-    /// The identities with a tax event dated in the given tax year, plus those still held in a Section 104 pool at
-    /// the end of it (a held company appears in the Section 104 status section even without any event that year).
+    /// The identities with a tax event dated in the given tax year (for a corporate action, every company the
+    /// action affects - e.g. the acquiring company of a takeover - not just the company it is recorded against),
+    /// plus those whose calculated trades are reported in the tax year (a disposal made while temporarily
+    /// non-resident is reported in the year residency resumes, not the year of its trade date), plus those still
+    /// held in a Section 104 pool at the end of the year (a held company appears in the Section 104 status
+    /// section even without any event that year).
     /// </summary>
     private HashSet<ShareIdentity> GetIdentitiesRelevantToTaxYear(int taxYear)
     {
         HashSet<ShareIdentity> relevantIdentities = [];
         foreach (TaxEvent taxEvent in taxEventLists.AllEvents)
         {
-            if (taxEvent.ShareIdentity is not null && taxYearConverter.ToTaxYear(taxEvent.Date) == taxYear)
+            if (taxYearConverter.ToTaxYear(taxEvent.Date) != taxYear) continue;
+            if (taxEvent.ShareIdentity is not null)
             {
                 relevantIdentities.Add(taxEvent.ShareIdentity);
             }
-        }
-        foreach (string assetName in section104Pools.GetEndOfYearSection104s(taxYear).Keys)
-        {
-            ShareIdentity? identity = shareIdentityRegistry.ResolveByTicker(assetName);
-            if (identity is not null)
+            if (taxEvent is CorporateAction corporateAction)
             {
-                relevantIdentities.Add(identity);
+                AddResolvedIdentities(relevantIdentities, corporateAction.CompanyTickersInProcessingOrder);
             }
         }
+        AddResolvedIdentities(relevantIdentities, tradeCalculationResult.TradeByYear
+            .Where(tradesByYear => tradesByYear.Key.Item1 == taxYear)
+            .SelectMany(tradesByYear => tradesByYear.Value)
+            .Select(calculation => calculation.AssetName));
+        AddResolvedIdentities(relevantIdentities, section104Pools.GetEndOfYearSection104s(taxYear).Keys);
         return relevantIdentities;
+    }
+
+    private void AddResolvedIdentities(HashSet<ShareIdentity> identities, IEnumerable<string> tickers)
+    {
+        foreach (string ticker in tickers)
+        {
+            ShareIdentity? identity = shareIdentityRegistry.ResolveByTicker(ticker);
+            if (identity is not null)
+            {
+                identities.Add(identity);
+            }
+        }
     }
 }

@@ -25,7 +25,7 @@ public class PdfExportService
         ISection dividendSummarySection = new DividendSummarySection(dividendCalculationResult);
         ISection disposalDetailSection = new DisposalDetailSection(tradeCalculationResult);
         ISection interestIncomeSummarySection = new InterestIncomeSummarySection(dividendCalculationResult);
-        ISection companyInformationSection = new CompanyInformationSection(shareIdentityRegistry, taxEventLists, taxYearConverter, uKSection104Pools);
+        ISection companyInformationSection = new CompanyInformationSection(shareIdentityRegistry, taxEventLists, taxYearConverter, uKSection104Pools, tradeCalculationResult);
         AllSections = [
             yearSummarySection,
             dividendSummarySection,
