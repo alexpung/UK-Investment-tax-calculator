@@ -247,6 +247,26 @@ public class ShareIdentityRegistryTest
     }
 
     [Fact]
+    public void TestManualLinkByBaseSymbolFindsSuffixOnlyTicker()
+    {
+        // The user knows the share by its base symbol, but the imported data may only carry an exchange suffixed
+        // variation (e.g. "SDLFl"). A link typed with the base symbol must still find and merge that share, and
+        // the merged share must display the new base symbol rather than the broker's suffixed spelling.
+        Trade oldTrade = CreateTrade("PHNX", "GB00PHNX0001", "01-May-21 10:00:00");
+        Trade newTrade = CreateTrade("SDLFl", "GB00SDLF0001", "01-May-25 10:00:00");
+        ShareIdentityRegistry registry = new();
+        registry.RegisterEvents([oldTrade, newTrade]);
+        registry.LinkShares("PHNX", "SDLF");
+        registry.RegisterEvents([oldTrade, newTrade]);
+
+        oldTrade.ShareIdentity.ShouldBeSameAs(newTrade.ShareIdentity);
+        registry.IsSameShare("PHNX", "SDLFl").ShouldBeTrue();
+        oldTrade.CanonicalAssetName.ShouldBe("SDLF");
+        newTrade.CanonicalAssetName.ShouldBe("SDLF");
+        registry.ResolveByTicker("SDLF").ShouldBeSameAs(oldTrade.ShareIdentity);
+    }
+
+    [Fact]
     public void TestManualLinkByIsinIsApplied()
     {
         Trade oldTrade = CreateTrade("OLDCO", "GB00B010V573");

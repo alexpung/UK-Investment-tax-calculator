@@ -125,7 +125,19 @@
         string reference = _linkReference1.Trim();
         string linkedReference = _linkReference2.Trim();
         ShareIdentityRegistry.LinkShares(reference, linkedReference);
-        ToastService.ShowInformation($"Linked {reference} and {linkedReference} as the same share. Run the calculation again to apply.");
+        // A link only takes effect when both references resolve to an imported share, so warn about typos and
+        // not-yet-imported tickers instead of storing a link that silently does nothing.
+        string? unresolvedReference = ShareIdentityRegistry.Resolve(reference) is null ? reference
+            : ShareIdentityRegistry.Resolve(linkedReference) is null ? linkedReference : null;
+        if (unresolvedReference is not null)
+        {
+            ToastService.ShowWarning($"Link saved, but \"{unresolvedReference}\" does not match any imported ticker or ISIN. " +
+                "The link will only take effect once data with that reference is imported.");
+        }
+        else
+        {
+            ToastService.ShowInformation($"Linked {reference} and {linkedReference} as the same share. Run the calculation again to apply.");
+        }
         _linkReference1 = string.Empty;
         _linkReference2 = string.Empty;
     }

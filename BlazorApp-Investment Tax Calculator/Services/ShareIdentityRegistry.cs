@@ -92,12 +92,25 @@ public class ShareIdentityRegistry
     }
 
     /// <summary>
-    /// The identity holding the given ticker or ISIN, or null if unknown.
+    /// The identity holding the given ticker or ISIN, or null if unknown. A reference no identity holds directly
+    /// falls back to an exchange suffix insensitive match: users refer to a share by its base symbol (e.g. "SDLF")
+    /// while the imported data may only ever carry a suffixed variation (e.g. "SDLFl"), and a manual link typed
+    /// with the base symbol must still find that share. Only an unambiguous match counts - null when the base
+    /// symbol belongs to more than one share.
     /// </summary>
     public ShareIdentity? Resolve(string tickerOrIsin)
     {
         if (string.IsNullOrEmpty(tickerOrIsin)) return null;
-        return _identityByTicker.GetValueOrDefault(tickerOrIsin) ?? _identityByIsin.GetValueOrDefault(tickerOrIsin);
+        return _identityByTicker.GetValueOrDefault(tickerOrIsin)
+            ?? _identityByIsin.GetValueOrDefault(tickerOrIsin)
+            ?? ResolveByBaseSymbol(tickerOrIsin);
+    }
+
+    private ShareIdentity? ResolveByBaseSymbol(string baseSymbol)
+    {
+        List<ShareIdentity> matches = [.. _identities
+            .Where(identity => identity.Tickers.Any(ticker => ShareIdentity.StripExchangeSuffix(ticker) == baseSymbol))];
+        return matches.Count == 1 ? matches[0] : null;
     }
 
     /// <summary>

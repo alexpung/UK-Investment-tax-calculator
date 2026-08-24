@@ -50,7 +50,9 @@ public class ShareIdentity
     /// <summary>
     /// The single display/grouping name of this share:
     /// the common base symbol when all tickers only differ by a lowercase exchange suffix,
-    /// otherwise the most recently seen ticker (e.g. the new symbol after a rename).
+    /// otherwise the most recently seen ticker (e.g. the new symbol after a rename), again without its exchange
+    /// suffix - a rename observed only as a suffixed variation (e.g. "PHNX" renamed and seen as "SDLFl") must
+    /// display the new base symbol ("SDLF"), not the broker's suffixed spelling.
     /// </summary>
     public string PrimaryTicker
     {
@@ -60,8 +62,11 @@ public class ShareIdentity
             if (_tickers.Count == 1) return _tickers[0];
             List<string> baseSymbols = _tickers.Select(StripExchangeSuffix).Distinct().ToList();
             if (baseSymbols.Count == 1 && !string.IsNullOrEmpty(baseSymbols[0])) return baseSymbols[0];
-            return _tickers.OrderByDescending(ticker => _tickerLastSeen.GetValueOrDefault(ticker, DateTime.MinValue))
-                           .First();
+            string mostRecentTicker = _tickers
+                .OrderByDescending(ticker => _tickerLastSeen.GetValueOrDefault(ticker, DateTime.MinValue))
+                .First();
+            string mostRecentBaseSymbol = StripExchangeSuffix(mostRecentTicker);
+            return string.IsNullOrEmpty(mostRecentBaseSymbol) ? mostRecentTicker : mostRecentBaseSymbol;
         }
     }
 
