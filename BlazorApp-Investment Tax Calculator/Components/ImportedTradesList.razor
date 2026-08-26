@@ -4,6 +4,8 @@
 @using InvestmentTaxCalculator.Services
 
 @inject ITradeAndCorporateActionList _taxEventLists
+@inject TaxEventLists _allTaxEventLists
+@inject ShareIdentityRegistry _shareIdentityRegistry
 @inject ToastService _toastService
 
 <div class="card mt-4">
@@ -99,6 +101,9 @@
         if (removed)
         {
             _toastService.ShowInformation("Trade removed.");
+            // Deleting the last trade of a share must drop it from the share identities too, instead of leaving a
+            // stale entry (e.g. still selectable in the share identity link dropdowns) until the next calculation.
+            _shareIdentityRegistry.RegisterEvents(_allTaxEventLists.AllEvents);
             RefreshData();
             if (_grid != null)
             {

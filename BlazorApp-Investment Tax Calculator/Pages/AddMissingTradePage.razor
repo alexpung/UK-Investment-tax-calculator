@@ -9,6 +9,7 @@
 @inject TaxEventLists TaxEventLists
 @inject TaxCalculationService TaxCalculationService
 @inject ManualEntryTrackerService ManualEntryTrackerService
+@inject ShareIdentityRegistry ShareIdentityRegistry
 @inject NavigationManager NavigationManager
 
 <div class="container-fluid py-5">
@@ -147,6 +148,7 @@
             _editingTaxEventId = null;
         }
         ManualEntryTrackerService.Add(taxEventId);
+        RefreshShareIdentities();
         RefreshAddedEntries();
         StateHasChanged();
     }
@@ -177,10 +179,16 @@
                 _editingTaxEventId = null;
             }
 
+            RefreshShareIdentities();
             RefreshAddedEntries();
             StateHasChanged();
         }
     }
+
+    // Manual entries go straight into TaxEventLists, so the share identities would otherwise stay stale until the
+    // next calculation or file import: a manually entered ticker would be missing everywhere identities are used,
+    // including the share identity link dropdowns. Re-register on every add, edit and delete, as importing does.
+    private void RefreshShareIdentities() => ShareIdentityRegistry.RegisterEvents(TaxEventLists.AllEvents);
 
     private void RefreshAddedEntries()
     {

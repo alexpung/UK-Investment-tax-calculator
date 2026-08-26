@@ -15,6 +15,7 @@
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 @inject TaxCalculationService TaxCalculationService
+@inject ShareIdentityRegistry ShareIdentityRegistry
 
 <div class="container-fluid py-5">
     <div class="row">
@@ -162,6 +163,10 @@
     private void RefreshAll()
     {
         _dataChanged = true;
+        // ERI and equalisation entries (and the dividend/interest events ERI generates) go straight into
+        // TaxEventLists, so re-register the share identities instead of leaving them stale until the next
+        // calculation or file import.
+        ShareIdentityRegistry.RegisterEvents(TaxEventLists.AllEvents);
         RefreshHistory();
     }
 

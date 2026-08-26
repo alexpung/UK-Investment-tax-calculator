@@ -408,6 +408,32 @@ public class ShareIdentityRegistryTest
     }
 
     [Fact]
+    public void TestManuallyAddedEventIsAvailableAfterReRegistrationWithoutCalculating()
+    {
+        // Manual entry pages add straight to TaxEventLists and re-register, so a ticker entered by hand is known
+        // to the registry (and so selectable for a manual link) without waiting for the next calculation.
+        TaxEventLists taxEventLists = new();
+        taxEventLists.Trades.Add(CreateTrade("IMPORTED", "GB00IMPORTED"));
+        ShareIdentityRegistry registry = new();
+        registry.RegisterEvents(taxEventLists.AllEvents);
+        registry.ResolveByTicker("MANUAL").ShouldBeNull();
+
+        Trade manualTrade = CreateTrade("MANUAL", string.Empty, "01-Jun-22 10:00:00");
+        taxEventLists.Trades.Add(manualTrade);
+        registry.RegisterEvents(taxEventLists.AllEvents);
+
+        registry.ResolveByTicker("MANUAL").ShouldNotBeNull();
+        manualTrade.CanonicalAssetName.ShouldBe("MANUAL");
+        registry.Identities.Select(identity => identity.UniqueTicker).ShouldBe(["IMPORTED", "MANUAL"], ignoreOrder: true);
+
+        // Removing it again drops the identity, so a deleted entry does not linger.
+        taxEventLists.Trades.Remove(manualTrade);
+        registry.RegisterEvents(taxEventLists.AllEvents);
+        registry.ResolveByTicker("MANUAL").ShouldBeNull();
+        registry.Identities.Select(identity => identity.UniqueTicker).ShouldBe(["IMPORTED"]);
+    }
+
+    [Fact]
     public void TestUnknownTickerResolvesToItself()
     {
         ShareIdentityRegistry registry = new();
