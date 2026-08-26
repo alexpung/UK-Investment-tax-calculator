@@ -2,11 +2,14 @@
 
 @using InvestmentTaxCalculator.Components
 @using InvestmentTaxCalculator.Enumerations
+@using InvestmentTaxCalculator.Model
 @using InvestmentTaxCalculator.Model.TaxEvents
 @using StockSplitAction = InvestmentTaxCalculator.Model.TaxEvents.StockSplit
 @using InvestmentTaxCalculator.Services
 @implements IDisposable
 @inject TaxCalculationService _taxCalculationService
+@inject TaxEventLists _taxEventLists
+@inject ShareIdentityRegistry _shareIdentityRegistry
 @inject NavigationManager _navigationManager
 
 <div class="container-fluid py-5">
@@ -134,6 +137,10 @@
     {
         _hasChanges = true;
         _actionToEdit = null;
+        // Corporate actions go straight into TaxEventLists, so the share identities would otherwise stay stale
+        // until the next calculation or file import. The share identity link dropdowns live on this same page, so
+        // a ticker introduced by an action entered here must be selectable without leaving and recalculating.
+        _shareIdentityRegistry.RegisterEvents(_taxEventLists.AllEvents);
         if (_historyList is not null)
         {
             await _historyList.Refresh();

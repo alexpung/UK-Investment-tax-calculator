@@ -19,12 +19,16 @@
 
         <div class="row g-2 align-items-end mb-3">
             <div class="col-md-4">
-                <label class="form-label" for="linkReference1">Ticker or ISIN</label>
-                <input id="linkReference1" class="form-control" @bind="_linkReference1" placeholder="e.g. OLDCO" />
+                <label class="form-label" for="linkReference1">Share</label>
+                <RadzenDropDown id="linkReference1" TValue="string" Data="@LinkOptions" TextProperty="Label" ValueProperty="Value"
+                                @bind-Value="_linkReference1" AllowFiltering="true" AllowClear="true"
+                                Placeholder="Select a ticker" class="w-100" />
             </div>
             <div class="col-md-4">
-                <label class="form-label" for="linkReference2">Same share as ticker or ISIN</label>
-                <input id="linkReference2" class="form-control" @bind="_linkReference2" placeholder="e.g. NEWCO or US1234567890" />
+                <label class="form-label" for="linkReference2">Same share as</label>
+                <RadzenDropDown id="linkReference2" TValue="string" Data="@LinkOptions" TextProperty="Label" ValueProperty="Value"
+                                @bind-Value="_linkReference2" AllowFiltering="true" AllowClear="true"
+                                Placeholder="Select a ticker" class="w-100" />
             </div>
             <div class="col-md-4">
                 <button class="btn btn-primary" @onclick="AddLink">Link shares</button>
@@ -79,6 +83,17 @@
     private string _linkReference1 = string.Empty;
     private string _linkReference2 = string.Empty;
 
+    private record LinkOption(string Value, string Label);
+
+    // One entry per share known to the registry, selectable by the name it is reported under. That name already
+    // carries the disambiguating ISIN when a ticker is recycled by an unrelated company (e.g. "ABC (GB00...)"),
+    // so the two shares can be told apart in the dropdown. The company name is appended for recognition.
+    private IEnumerable<LinkOption> LinkOptions => ShareIdentityRegistry.Identities
+        .Select(identity => new LinkOption(identity.UniqueTicker, identity.FullNames.Count > 0
+            ? $"{identity.UniqueTicker} — {string.Join("; ", identity.FullNames)}"
+            : identity.UniqueTicker))
+        .OrderBy(option => option.Label, StringComparer.OrdinalIgnoreCase);
+
     // Shares worth showing the user: those with more than one ticker or ISIN, plus those sharing a primary ticker
     // with another share (a recycled ticker, or the same ticker reissued under a new ISIN). The latter have a
     // single ticker and a single ISIN each, so they need listing explicitly - they are reported under an
@@ -119,13 +134,31 @@
     {
         if (string.IsNullOrWhiteSpace(_linkReference1) || string.IsNullOrWhiteSpace(_linkReference2))
         {
-            ToastService.ShowError("Please enter both share references to link.");
+            ToastService.ShowError("Please select both shares to link.");
             return;
         }
         string reference = _linkReference1.Trim();
         string linkedReference = _linkReference2.Trim();
+        ShareIdentity? identity = ShareIdentityRegistry.Resolve(reference);
+        ShareIdentity? linkedIdentity = ShareIdentityRegistry.Resolve(linkedReference);
+        if (identity is not null && ReferenceEquals(identity, linkedIdentity))
+        {
+            ToastService.ShowError("Both selections refer to the same share already - nothing to link.");
+            return;
+        }
         ShareIdentityRegistry.LinkShares(reference, linkedReference);
-        ToastService.ShowInformation($"Linked {reference} and {linkedReference} as the same share. Run the calculation again to apply.");
+        // Selections come from the dropdown so they normally resolve, but a stored link only takes effect when
+        // both references match an imported share - warn instead of storing a link that silently does nothing.
+        string? unresolvedReference = identity is null ? reference : linkedIdentity is null ? linkedReference : null;
+        if (unresolvedReference is not null)
+        {
+            ToastService.ShowWarning($"Link saved, but \"{unresolvedReference}\" does not match any imported ticker or ISIN. " +
+                "The link will only take effect once data with that reference is imported.");
+        }
+        else
+        {
+            ToastService.ShowInformation($"Linked {reference} and {linkedReference} as the same share. Run the calculation again to apply.");
+        }
         _linkReference1 = string.Empty;
         _linkReference2 = string.Empty;
     }

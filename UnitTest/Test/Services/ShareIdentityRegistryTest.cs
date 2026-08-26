@@ -247,6 +247,26 @@ public class ShareIdentityRegistryTest
     }
 
     [Fact]
+    public void TestManualLinkByBaseSymbolFindsSuffixOnlyTicker()
+    {
+        // The user knows the share by its base symbol, but the imported data may only carry an exchange suffixed
+        // variation (e.g. "SDLFl"). A link typed with the base symbol must still find and merge that share, and
+        // the merged share must display the new base symbol rather than the broker's suffixed spelling.
+        Trade oldTrade = CreateTrade("PHNX", "GB00PHNX0001", "01-May-21 10:00:00");
+        Trade newTrade = CreateTrade("SDLFl", "GB00SDLF0001", "01-May-25 10:00:00");
+        ShareIdentityRegistry registry = new();
+        registry.RegisterEvents([oldTrade, newTrade]);
+        registry.LinkShares("PHNX", "SDLF");
+        registry.RegisterEvents([oldTrade, newTrade]);
+
+        oldTrade.ShareIdentity.ShouldBeSameAs(newTrade.ShareIdentity);
+        registry.IsSameShare("PHNX", "SDLFl").ShouldBeTrue();
+        oldTrade.CanonicalAssetName.ShouldBe("SDLF");
+        newTrade.CanonicalAssetName.ShouldBe("SDLF");
+        registry.ResolveByTicker("SDLF").ShouldBeSameAs(oldTrade.ShareIdentity);
+    }
+
+    [Fact]
     public void TestManualLinkByIsinIsApplied()
     {
         Trade oldTrade = CreateTrade("OLDCO", "GB00B010V573");
@@ -385,6 +405,32 @@ public class ShareIdentityRegistryTest
         longLeg.CanonicalAssetName.ShouldBe("NIY");
         shortLeg.CanonicalAssetName.ShouldBe("Short NIY");
         registry.Identities.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void TestManuallyAddedEventIsAvailableAfterReRegistrationWithoutCalculating()
+    {
+        // Manual entry pages add straight to TaxEventLists and re-register, so a ticker entered by hand is known
+        // to the registry (and so selectable for a manual link) without waiting for the next calculation.
+        TaxEventLists taxEventLists = new();
+        taxEventLists.Trades.Add(CreateTrade("IMPORTED", "GB00IMPORTED"));
+        ShareIdentityRegistry registry = new();
+        registry.RegisterEvents(taxEventLists.AllEvents);
+        registry.ResolveByTicker("MANUAL").ShouldBeNull();
+
+        Trade manualTrade = CreateTrade("MANUAL", string.Empty, "01-Jun-22 10:00:00");
+        taxEventLists.Trades.Add(manualTrade);
+        registry.RegisterEvents(taxEventLists.AllEvents);
+
+        registry.ResolveByTicker("MANUAL").ShouldNotBeNull();
+        manualTrade.CanonicalAssetName.ShouldBe("MANUAL");
+        registry.Identities.Select(identity => identity.UniqueTicker).ShouldBe(["IMPORTED", "MANUAL"], ignoreOrder: true);
+
+        // Removing it again drops the identity, so a deleted entry does not linger.
+        taxEventLists.Trades.Remove(manualTrade);
+        registry.RegisterEvents(taxEventLists.AllEvents);
+        registry.ResolveByTicker("MANUAL").ShouldBeNull();
+        registry.Identities.Select(identity => identity.UniqueTicker).ShouldBe(["IMPORTED"]);
     }
 
     [Fact]
