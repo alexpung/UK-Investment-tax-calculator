@@ -25,6 +25,7 @@
             <div class="form-text text-info">
                 Holding on @Date.ToShortDateString(): <strong>@CurrentHolding</strong> shares
             </div>
+            <HoldingBreakdown AssetName="@SourceTicker" AsOfDate="@Date" />
         }
     </div>
     <div class="col-md-6">

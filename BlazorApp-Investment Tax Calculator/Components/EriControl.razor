@@ -41,6 +41,7 @@
                     <div class="col-md-6 col-lg-4">
                         <label class="form-label">Quantity at Period End</label>
                         <div class="form-control bg-dark text-info border-info">@Quantity.ToString("N4")</div>
+                        <HoldingBreakdown AssetName="@SelectedTicker" AsOfDate="@PeriodEndDate.Value" />
                     </div>
 
                     <div class="col-md-6 col-lg-4">

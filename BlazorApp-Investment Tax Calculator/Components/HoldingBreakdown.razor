@@ -1,0 +1,108 @@
+@using InvestmentTaxCalculator.Model.UkTaxModel
+@using InvestmentTaxCalculator.ViewModel
+
+@inject UkSection104Pools _ukSection104Pools
+
+@* Collapsed by default: the breakdown is a check the user reaches for when a quantity looks wrong, not something
+   that should compete with the form itself. The rows are only built on the first expand, because the entry forms
+   recompute their stats from OnParametersSet on every parent render. *@
+@if (!string.IsNullOrWhiteSpace(AssetName))
+{
+    <div class="holding-breakdown mt-1">
+        <RadzenButton Variant="Variant.Text"
+                      Size="ButtonSize.Small"
+                      ButtonStyle="ButtonStyle.Info"
+                      Icon="@(_isExpanded ? "expand_less" : "expand_more")"
+                      Text="@(_isExpanded ? "Hide breakdown" : "Show breakdown")"
+                      Click="@ToggleExpanded" />
+
+        @if (_isExpanded && _breakdown is not null)
+        {
+            @if (!_breakdown.HasHistory)
+            {
+                <div class="form-text text-warning mt-1">
+                    No holding history recorded for @_breakdown.AssetName on or before @AsOfDate.ToShortDateString().
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive mt-2">
+                    <table class="table table-sm table-dark table-borderless align-middle mb-1">
+                        <thead>
+                            <tr>
+                                <th scope="col">Date</th>
+                                <th scope="col" class="text-end">Change</th>
+                                <th scope="col" class="text-end">Running total</th>
+                                <th scope="col">Detail</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="text-info">
+                                <td colspan="2">
+                                    Opening balance
+                                    @if (_breakdown.OmittedChangeCount > 0)
+                                    {
+                                        <span class="text-muted">(@_breakdown.OmittedChangeCount earlier change@(_breakdown.OmittedChangeCount == 1 ? "" : "s") not shown)</span>
+                                    }
+                                </td>
+                                <td class="text-end">@_breakdown.OpeningQuantity.ToString("N4")</td>
+                                <td></td>
+                            </tr>
+                            @foreach (HoldingChangeRow row in _breakdown.Rows)
+                            {
+                                <tr>
+                                    <td>@row.Date.ToShortDateString()</td>
+                                    <td class="text-end @(row.Change < 0 ? "text-danger" : "text-success")">@row.Change.ToString("+#,##0.0000;-#,##0.0000;0.0000")</td>
+                                    <td class="text-end">@row.RunningTotal.ToString("N4")</td>
+                                    <td class="small">@row.Description</td>
+                                </tr>
+                            }
+                            <tr class="fw-bold border-top">
+                                <td colspan="2">Holding on @AsOfDate.ToShortDateString()</td>
+                                <td class="text-end">@_breakdown.Quantity.ToString("N4")</td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            }
+        }
+    </div>
+}
+
+@code {
+    /// <summary>Ticker whose holding is being explained. No breakdown is offered when empty.</summary>
+    [Parameter] public string? AssetName { get; set; }
+
+    /// <summary>The date the displayed holding is taken at.</summary>
+    [Parameter] public DateTime AsOfDate { get; set; }
+
+    private bool _isExpanded;
+    private HoldingBreakdownViewModel? _breakdown;
+    private string _lastDataSignature = string.Empty;
+
+    protected override void OnParametersSet()
+    {
+        string dataSignature = $"{AssetName}|{AsOfDate:yyyy-MM-dd}";
+        if (string.Equals(_lastDataSignature, dataSignature, StringComparison.Ordinal)) return;
+
+        _lastDataSignature = dataSignature;
+        // A different asset or date invalidates the rows. Rebuild only while open; otherwise drop them and let the
+        // next expand pay for the rebuild.
+        _breakdown = _isExpanded ? BuildBreakdown() : null;
+    }
+
+    private void ToggleExpanded()
+    {
+        _isExpanded = !_isExpanded;
+        if (_isExpanded)
+        {
+            _breakdown ??= BuildBreakdown();
+        }
+    }
+
+    private HoldingBreakdownViewModel? BuildBreakdown() =>
+        string.IsNullOrWhiteSpace(AssetName)
+            ? null
+            : HoldingBreakdownViewModel.Build(_ukSection104Pools, AssetName, DateOnly.FromDateTime(AsOfDate));
+}
