@@ -21,9 +21,16 @@ public static class ReportingFundCostAllocator
     /// Must be called when the pool state reflects all events before <paramref name="adjustmentDate"/>,
     /// which holds when invoked from ChangeSection104 as events are processed in chronological order.
     /// </summary>
-    public static void Apply(UkSection104 section104, DateOnly reportingPeriodEnd, DateTime adjustmentDate, WrappedMoney adjustmentAmount, string description)
+    /// <param name="unitsAtPeriodEnd">
+    /// Units held at the reporting period end that <paramref name="adjustmentAmount"/> was computed from, when the
+    /// caller knows it. The section 104 pool quantity is used when null, but it omits units matched by the same day
+    /// and bed and breakfast rules, so dividing by it would give a per unit share that does not match the rate the
+    /// total was calculated at.
+    /// </param>
+    public static void Apply(UkSection104 section104, DateOnly reportingPeriodEnd, DateTime adjustmentDate, WrappedMoney adjustmentAmount, string description,
+                             decimal? unitsAtPeriodEnd = null)
     {
-        decimal quantityAtPeriodEnd = section104.GetLastSection104History(reportingPeriodEnd)?.NewQuantity ?? 0m;
+        decimal quantityAtPeriodEnd = unitsAtPeriodEnd ?? section104.GetLastSection104History(reportingPeriodEnd)?.NewQuantity ?? 0m;
         if (quantityAtPeriodEnd <= 0)
         {
             // No holding recorded at the reporting period end - nothing to apportion, adjust the pool as a whole.

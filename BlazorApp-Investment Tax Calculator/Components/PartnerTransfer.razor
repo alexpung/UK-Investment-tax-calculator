@@ -5,7 +5,7 @@
 @using InvestmentTaxCalculator.Enumerations
 @using InvestmentTaxCalculator.Services
 
-@inject UkSection104Pools _ukSection104Pools
+@inject HoldingsService _holdingsService
 @inject TradeCalculationResult _tradeCalculationResult
 @inject ITradeAndCorporateActionList _taxEventLists
 @inject ToastService _toastService
@@ -161,9 +161,7 @@
     {
         _currentHolding = 0m;
         if (string.IsNullOrWhiteSpace(_ticker)) return;
-        var pool = _ukSection104Pools.GetExistingOrInitialise(_ticker!);
-        var history = pool.GetLastSection104History(DateOnly.FromDateTime(_date));
-        _currentHolding = history?.NewQuantity ?? 0m;
+        _currentHolding = _holdingsService.GetHolding(_ticker!, DateOnly.FromDateTime(_date)).Quantity;
     }
 
     private async Task Submit()

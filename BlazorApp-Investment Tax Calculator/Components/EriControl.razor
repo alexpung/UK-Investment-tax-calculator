@@ -5,7 +5,7 @@
 @using InvestmentTaxCalculator.Services
 @using InvestmentTaxCalculator.Enumerations
 
-@inject UkSection104Pools Section104Pools
+@inject HoldingsService HoldingsService
 @inject TaxEventLists TaxEventLists
 @inject ToastService ToastService
 @inject CurrencyService CurrencyService
@@ -118,9 +118,10 @@
         SelectedTicker = ticker;
         if (!string.IsNullOrEmpty(SelectedTicker) && PeriodEndDate.HasValue)
         {
-            var pool = Section104Pools.GetExistingOrInitialise(SelectedTicker);
-            var history = pool.GetLastSection104History(DateOnly.FromDateTime(PeriodEndDate.Value));
-            Quantity = history?.NewQuantity ?? 0;
+            // Units actually held at the period end, which is what fixes the liability (SI 2009/3001 reg. 94(3)),
+            // rather than the section 104 pool quantity, which omits units matched by the same day and bed and
+            // breakfast rules and so can read higher than the holding.
+            Quantity = HoldingsService.GetHolding(SelectedTicker, DateOnly.FromDateTime(PeriodEndDate.Value)).Quantity;
         }
         else
         {
@@ -172,6 +173,7 @@
             AssetName = SelectedTicker,
             Date = distributionDate,
             ReportingPeriodEndDate = PeriodEndDate.Value,
+            UnitsAtReportingPeriodEnd = Quantity,
             IncomeType = SelectedIncomeType,
             Amount = new DescribedMoney(totalAmountLocal, Currency, FxRate, $"ERI for {Quantity:N4} shares (Period End: {PeriodEndDate.Value:d})"),
             Isin = isin,

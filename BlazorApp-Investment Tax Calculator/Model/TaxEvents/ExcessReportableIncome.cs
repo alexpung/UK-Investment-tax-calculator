@@ -36,6 +36,14 @@ public record ExcessReportableIncome : CorporateAction, IChangeSection104
     /// </summary>
     public DateTime? ReportingPeriodEndDate { get; init; }
 
+    /// <summary>
+    /// Units held at the end of the reporting period that <see cref="Amount"/> was computed from. Recorded so the
+    /// per unit apportionment uses the same basis as the total: the section 104 pool quantity omits units matched
+    /// by the same day and bed and breakfast rules, so it can differ from the holding that fixed the liability.
+    /// Null for entries saved before this was recorded, which fall back to the pool quantity as before.
+    /// </summary>
+    public decimal? UnitsAtReportingPeriodEnd { get; init; }
+
     [JsonIgnore]
     public DateOnly EffectiveReportingPeriodEndDate => DateOnly.FromDateTime(ReportingPeriodEndDate ?? AssumedReportingPeriodEnd());
 
@@ -66,7 +74,7 @@ public record ExcessReportableIncome : CorporateAction, IChangeSection104
         string explanation = $"Excess reportable income ({IncomeType.GetDescription()}) of {Amount.BaseCurrencyAmount} on {Date:d}";
         // The uplift is apportioned per unit held at the reporting period end: units disposed of in the gap period
         // before the fund distribution date take their share at the disposal (reg. 99(5)), the rest goes to the pool.
-        ReportingFundCostAllocator.Apply(section104, EffectiveReportingPeriodEndDate, Date, Amount.BaseCurrencyAmount, explanation);
+        ReportingFundCostAllocator.Apply(section104, EffectiveReportingPeriodEndDate, Date, Amount.BaseCurrencyAmount, explanation, UnitsAtReportingPeriodEnd);
     }
     public override string GetDuplicateSignature()
     {

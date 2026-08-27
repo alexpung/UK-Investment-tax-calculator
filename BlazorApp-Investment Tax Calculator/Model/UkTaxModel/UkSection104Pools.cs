@@ -72,17 +72,6 @@ public class UkSection104Pools(ITaxYear taxYearModel, ResidencyStatusRecord resi
         return section104;
     }
 
-    /// <summary>
-    /// The existing pool for the asset, or null when none has been created. Unlike <see cref="GetExistingOrInitialise"/>
-    /// this never adds a pool, so read only callers (e.g. showing a holding for a ticker the user is still typing)
-    /// do not leave empty pools behind.
-    /// </summary>
-    public virtual UkSection104? GetExistingOrNull(string assetName)
-    {
-        _section104Pools.TryGetValue(GetPoolKey(assetName), out UkSection104? section104);
-        return section104;
-    }
-
     public List<Section104History> GetSection104HistoriesUntilTaxYear(int endingTaxYear, string assetName)
     {
         _section104Pools.TryGetValue(GetPoolKey(assetName), out UkSection104? section104);

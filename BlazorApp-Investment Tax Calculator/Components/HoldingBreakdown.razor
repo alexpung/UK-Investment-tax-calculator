@@ -1,7 +1,7 @@
-@using InvestmentTaxCalculator.Model.UkTaxModel
+@using InvestmentTaxCalculator.Services
 @using InvestmentTaxCalculator.ViewModel
 
-@inject UkSection104Pools _ukSection104Pools
+@inject HoldingsService _holdingsService
 
 @* Collapsed by default: the breakdown is a check the user reaches for when a quantity looks wrong, not something
    that should compete with the form itself. The rows are only built on the first expand, because the entry forms
@@ -48,7 +48,7 @@
                                 <td class="text-end">@_breakdown.OpeningQuantity.ToString("N4")</td>
                                 <td></td>
                             </tr>
-                            @foreach (HoldingChangeRow row in _breakdown.Rows)
+                            @foreach (HoldingChange row in _breakdown.Rows)
                             {
                                 <tr>
                                     <td>@row.Date.ToShortDateString()</td>
@@ -65,6 +65,13 @@
                         </tbody>
                     </table>
                 </div>
+                @if (_breakdown.HasNegativeHolding)
+                {
+                    <div class="form-text text-warning">
+                        More units of @_breakdown.AssetName were sold than were ever acquired. Unless this is a genuine
+                        short position, an earlier statement is missing from the import and this holding is understated.
+                    </div>
+                }
             }
         }
     </div>
@@ -104,5 +111,5 @@
     private HoldingBreakdownViewModel? BuildBreakdown() =>
         string.IsNullOrWhiteSpace(AssetName)
             ? null
-            : HoldingBreakdownViewModel.Build(_ukSection104Pools, AssetName, DateOnly.FromDateTime(AsOfDate));
+            : HoldingBreakdownViewModel.Build(_holdingsService, AssetName, DateOnly.FromDateTime(AsOfDate));
 }
