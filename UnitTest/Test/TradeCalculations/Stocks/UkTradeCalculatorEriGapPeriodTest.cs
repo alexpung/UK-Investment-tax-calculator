@@ -116,46 +116,4 @@ public class UkTradeCalculatorEriGapPeriodTest
         pool.Quantity.ShouldBe(100m);
         pool.AcquisitionCostInBaseCurrency.Amount.ShouldBe(1500m, 0.01m); // unaffected by the ERI
     }
-
-    [Fact]
-    public void TestRecordedPeriodEndUnitsSetThePerUnitRateWithoutDisturbingTheApportionment()
-    {
-        // The entry form computes the ERI amount from the units actually held at the period end, which the bed and
-        // breakfast rules can put below the section 104 pool quantity. Recording that basis on the event keeps the
-        // per unit rate the amount was calculated at. The split between a gap period disposal and the retained pool
-        // is proportional, so it is unchanged - only the rate the two shares are expressed at is pinned.
-        Trade buy = CreateTrade(TradeType.ACQUISITION, "01-Jan-23 10:00:00", 1000, 10000m);
-        Trade periodEndSell = CreateTrade(TradeType.DISPOSAL, "20-Dec-23 10:00:00", 200, 2600m);
-        Trade bedAndBreakfastRebuy = CreateTrade(TradeType.ACQUISITION, "10-Jan-24 10:00:00", 200, 2800m);
-        Trade gapPeriodSell = CreateTrade(TradeType.DISPOSAL, "31-Mar-24 10:00:00", 300, 4500m);
-
-        ExcessReportableIncome eri = new()
-        {
-            AssetName = "REPORT_FUND",
-            Date = DateTime.Parse("30-Jun-24 00:00:00", CultureInfo.InvariantCulture),
-            ReportingPeriodEndDate = DateTime.Parse("31-Dec-23 00:00:00", CultureInfo.InvariantCulture),
-            IncomeType = ExcessReportableIncomeType.DIVIDEND,
-            // 800 units actually held at the period end (1000 bought less the 200 sold on 20 Dec), at 0.50 each.
-            // The pool still reads 1000 there, because the 20 Dec disposal is matched with the 10 Jan repurchase.
-            UnitsAtReportingPeriodEnd = 800m,
-            Amount = new DescribedMoney(400m, "GBP", 1, "ERI")
-        };
-
-        UkSection104Pools section104Pools = new(new UKTaxYear(), new ResidencyStatusRecord());
-        TaxEventLists taxEventLists = new();
-        taxEventLists.AddData([buy, periodEndSell, bedAndBreakfastRebuy, gapPeriodSell, eri]);
-
-        UkTradeCalculator calculator = TradeCalculationHelper.CreateUkTradeCalculator(section104Pools, taxEventLists);
-        List<ITradeTaxCalculation> result = calculator.CalculateTax();
-
-        UkSection104 pool = section104Pools.GetExistingOrInitialise("REPORT_FUND");
-        pool.GetLastSection104History(new DateOnly(2023, 12, 31))!.NewQuantity.ShouldBe(1000m);
-
-        ITradeTaxCalculation gapDisposal = result.First(x => x.Date == gapPeriodSell.Date);
-        // 300 of the 1000 pooled units leave, carrying 30% of the entitlement: 0.3 * 400 = 120 (reg. 99(5)).
-        gapDisposal.TotalAllowableCost.Amount.ShouldBe(3120m, 0.01m);
-        // The 700 units left in the pool keep 7000 of the original cost and take the remaining 280 (reg. 99(4)).
-        pool.Quantity.ShouldBe(700m);
-        pool.AcquisitionCostInBaseCurrency.Amount.ShouldBe(7280m, 0.01m);
-    }
 }

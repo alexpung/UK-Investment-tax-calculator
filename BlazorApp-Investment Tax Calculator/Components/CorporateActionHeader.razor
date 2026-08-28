@@ -3,7 +3,7 @@
 @using InvestmentTaxCalculator.Services
 @using InvestmentTaxCalculator.Enumerations
 
-@inject HoldingsService _holdingsService
+@inject UkSection104Pools _ukSection104Pools
 
 <div class="row mb-3">
     <div class="col-md-6">
@@ -111,7 +111,13 @@
         CurrentHolding = 0;
         if (string.IsNullOrEmpty(SourceTicker)) return;
 
-        CurrentHolding = _holdingsService.GetHolding(SourceTicker!, DateOnly.FromDateTime(Date)).Quantity;
+        var pool = _ukSection104Pools.GetExistingOrInitialise(SourceTicker!);
+        var history = pool.GetLastSection104History(DateOnly.FromDateTime(Date));
+        
+        if (history != null) 
+        {
+            CurrentHolding = history.NewQuantity;
+        }
     }
 
     private async Task OnDateChangeInternal(DateTime? value)

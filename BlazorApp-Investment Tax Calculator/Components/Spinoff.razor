@@ -5,7 +5,7 @@
 @using InvestmentTaxCalculator.Model.Interfaces
 @using InvestmentTaxCalculator.Enumerations
 
-@inject HoldingsService _holdingsService
+@inject UkSection104Pools _ukSection104Pools
 @inject TradeCalculationResult _tradeCalculationResult
 @inject ITradeAndCorporateActionList _taxEventLists
 @inject ToastService _toastService
@@ -230,7 +230,9 @@
         _expectedSpinoffQuantity = 0;
         if (_parentSharesRatio > 0 && !string.IsNullOrEmpty(_parentTicker))
         {
-            decimal currentHolding = _holdingsService.GetHolding(_parentTicker!, DateOnly.FromDateTime(_date)).Quantity;
+            var pool = _ukSection104Pools.GetExistingOrInitialise(_parentTicker!);
+            var history = pool.GetLastSection104History(DateOnly.FromDateTime(_date));
+            decimal currentHolding = history?.NewQuantity ?? 0;
 
             decimal rawQuantity = currentHolding * (_spinoffSharesRatio / _parentSharesRatio);
             _expectedSpinoffQuantity = Math.Round(rawQuantity, 4, MidpointRounding.ToZero);

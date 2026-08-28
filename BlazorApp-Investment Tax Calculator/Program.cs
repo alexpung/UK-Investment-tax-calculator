@@ -64,9 +64,6 @@ builder.Services.AddSingleton<ITradeAndCorporateActionList>(taxEventLists);
 builder.Services.AddSingleton(taxEventLists);
 builder.Services.AddSingleton<AssetTypeToLoadSetting>();
 builder.Services.AddSingleton<UkSection104Pools>();
-// Units actually held per asset and date, independent of the section 104 pools, so the entry forms can show and
-// use a holding that is not distorted by same day / bed and breakfast matching.
-builder.Services.AddSingleton<HoldingsService>();
 builder.Services.AddSingleton<TradeCalculationResult>();
 builder.Services.AddSingleton<DividendCalculationResult>();
 builder.Services.AddSingleton<ITaxYear, UKTaxYear>();

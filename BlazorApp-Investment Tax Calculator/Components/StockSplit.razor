@@ -6,7 +6,7 @@
 @using InvestmentTaxCalculator.Enumerations
 @using StockSplitAction = InvestmentTaxCalculator.Model.TaxEvents.StockSplit
 
-@inject HoldingsService _holdingsService
+@inject UkSection104Pools _ukSection104Pools
 @inject TradeCalculationResult _tradeCalculationResult
 @inject ITradeAndCorporateActionList _taxEventLists
 @inject ToastService _toastService
@@ -165,7 +165,9 @@
         _fractionalRemoved = 0;
         if (_splitFrom > 0 && !string.IsNullOrEmpty(_ticker))
         {
-            decimal currentHolding = _holdingsService.GetHolding(_ticker!, DateOnly.FromDateTime(_date)).Quantity;
+            var pool = _ukSection104Pools.GetExistingOrInitialise(_ticker!);
+            var history = pool.GetLastSection104History(DateOnly.FromDateTime(_date));
+            decimal currentHolding = history?.NewQuantity ?? 0;
             decimal rawNewQuantity = currentHolding * (_splitTo / _splitFrom);
             _expectedNewQuantity = rawNewQuantity;
             _fractionalRemoved = rawNewQuantity - Math.Floor(rawNewQuantity);
