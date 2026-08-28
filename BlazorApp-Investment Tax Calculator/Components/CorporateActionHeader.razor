@@ -4,6 +4,7 @@
 @using InvestmentTaxCalculator.Enumerations
 
 @inject UkSection104Pools _ukSection104Pools
+@inject TaxCalculationService _taxCalculationService
 
 <div class="row mb-3">
     <div class="col-md-6">
@@ -22,10 +23,19 @@
                            Placeholder="Select Asset" />
         @if (!string.IsNullOrEmpty(SourceTicker))
         {
-            <div class="form-text text-info">
-                Holding on @Date.ToShortDateString(): <strong>@CurrentHolding</strong> shares
-            </div>
-            <HoldingBreakdown AssetName="@SourceTicker" AsOfDate="@Date" />
+            @if (_taxCalculationService.HasCalculated)
+            {
+                <div class="form-text text-info">
+                    Holding on @Date.ToShortDateString(): <strong>@CurrentHolding</strong> shares
+                </div>
+                <HoldingBreakdown AssetName="@SourceTicker" AsOfDate="@Date" />
+            }
+            else
+            {
+                <div class="form-text text-warning">
+                    Holding on @Date.ToShortDateString(): <strong>Calculation pending</strong>
+                </div>
+            }
         }
     </div>
     <div class="col-md-6">
@@ -111,8 +121,7 @@
         CurrentHolding = 0;
         if (string.IsNullOrEmpty(SourceTicker)) return;
 
-        var pool = _ukSection104Pools.GetExistingOrInitialise(SourceTicker!);
-        var history = pool.GetLastSection104History(DateOnly.FromDateTime(Date));
+        var history = _ukSection104Pools.GetExistingOrNull(SourceTicker!)?.GetLastSection104History(DateOnly.FromDateTime(Date));
         
         if (history != null) 
         {

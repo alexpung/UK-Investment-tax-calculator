@@ -5,7 +5,6 @@
 @using InvestmentTaxCalculator.Services
 @using InvestmentTaxCalculator.Enumerations
 
-@inject UkSection104Pools Section104Pools
 @inject TaxEventLists TaxEventLists
 @inject ToastService ToastService
 @inject CurrencyService CurrencyService
@@ -24,8 +23,7 @@
                                    AssetCategoryFilter="@AssetCategoryFilter"
                                    IncludedAssetNames="@AvailableTickers"
                                    Placeholder="Select a ticker"
-                                   CssClass="e-outline"
-                                   Enabled="@(!IsCalculationMissing)" />
+                                   CssClass="e-outline" />
             </div>
 
             @if (!string.IsNullOrEmpty(SelectedTicker))
@@ -67,7 +65,6 @@
 </div>
 
 @code {
-    [Parameter] public bool IsCalculationMissing { get; set; }
     [Parameter] public EventCallback OnDataChanged { get; set; }
     [Parameter] public bool AllowManualAssetNameInput { get; set; }
     [Parameter] public List<AssetCategoryType> AssetCategoryFilter { get; set; } = [AssetCategoryType.STOCK, AssetCategoryType.FUND];
@@ -94,20 +91,22 @@
     }
 
     // Recomputed whenever the parent re-renders rather than once on initialisation: the available tickers derive
-    // from the Section 104 pools and from CanonicalAssetName, both of which change when a calculation is run or
-    // shares are linked, while this component instance outlives those changes.
+    // from the imported events and from CanonicalAssetName, both of which change when files are imported or shares
+    // are linked, while this component instance outlives those changes.
     protected override void OnParametersSet()
     {
         var tickersWithIncome = TaxEventLists.Dividends.Where(d => d.DividendType != DividendType.WITHHOLDING).Select(d => d.CanonicalAssetName)
             .Union(TaxEventLists.InterestIncomes.Select(i => i.CanonicalAssetName))
             .ToHashSet();
 
-        AvailableTickers = Section104Pools.GetSection104s()
-            .Where(p => TaxEventLists.Trades.Any(t => t.IsSameAsset(p.AssetName) && t.AssetType is AssetCategoryType.STOCK or AssetCategoryType.FUND))
-            .Select(p => p.AssetName)
-            .Where(name => tickersWithIncome.Contains(name))
+        // Derived from the imported events rather than the Section 104 pools, so equalisation can be entered as
+        // soon as the data is imported. Equalisation needs no holding, only an income event to reduce.
+        AvailableTickers = TaxEventLists.Trades
+            .Where(trade => trade.AssetType is AssetCategoryType.STOCK or AssetCategoryType.FUND)
+            .Select(trade => trade.CanonicalAssetName)
+            .Where(tickersWithIncome.Contains)
             .Distinct()
-            .OrderBy(a => a)
+            .OrderBy(assetName => assetName)
             .ToList();
     }
 

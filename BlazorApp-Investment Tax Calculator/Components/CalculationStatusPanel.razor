@@ -1,0 +1,67 @@
+@using InvestmentTaxCalculator.Services
+
+@implements IDisposable
+@inject TaxCalculationService _taxCalculationService
+@inject FileImportStateService _fileImportState
+
+@* Replaces the "run a calculation first" warnings that used to gate these pages. Tickers are selectable straight
+   after import; only the quantities need a calculation, and this says so and offers the one button that fixes it. *@
+<div class="card bg-dark border-secondary mb-4">
+    <div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-3">
+        <div>
+            <div class="fw-bold @StatusCssClass">@StatusText</div>
+            <div class="form-text mb-0">
+                A calculation applies every corporate action and matching rule, which is what fixes the holdings
+                shown on this page. Run it again after adding or editing entries.
+            </div>
+        </div>
+        <RadzenButton Click="@RunCalculation"
+                      ButtonStyle="ButtonStyle.Primary"
+                      Disabled="@(_taxCalculationService.IsCalculating || _fileImportState.IsProcessing)"
+                      Text="@ButtonText" />
+    </div>
+</div>
+
+@code {
+    /// <summary>Raised after a calculation started from this panel completes, so the page can refresh its data.</summary>
+    [Parameter] public EventCallback OnCalculated { get; set; }
+
+    private string ButtonText => _taxCalculationService.IsCalculating
+        ? "Calculating..."
+        : _taxCalculationService.HasCalculated ? "Update calculation" : "Run calculation";
+
+    private string StatusText
+    {
+        get
+        {
+            if (_taxCalculationService.IsCalculating) return "Calculating...";
+            if (_fileImportState.IsProcessing) return "Importing files...";
+            if (!_taxCalculationService.HasCalculated) return "Quantities are pending until a calculation has been run.";
+            if (_taxCalculationService.IsResultStale) return "Data has changed since the last calculation, so the quantities shown are out of date.";
+            return "Quantities are up to date with the last calculation.";
+        }
+    }
+
+    private string StatusCssClass =>
+        !_taxCalculationService.HasCalculated || _taxCalculationService.IsResultStale ? "text-warning" : "text-success";
+
+    protected override void OnInitialized()
+    {
+        _taxCalculationService.OnStateChanged += HandleStateChanged;
+        _fileImportState.OnChange += HandleStateChanged;
+    }
+
+    private async Task RunCalculation()
+    {
+        await _taxCalculationService.CalculateAsync();
+        await OnCalculated.InvokeAsync();
+    }
+
+    private void HandleStateChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+    {
+        _taxCalculationService.OnStateChanged -= HandleStateChanged;
+        _fileImportState.OnChange -= HandleStateChanged;
+    }
+}

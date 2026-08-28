@@ -6,7 +6,7 @@
 @using InvestmentTaxCalculator.Services
 
 @inject UkSection104Pools _ukSection104Pools
-@inject TradeCalculationResult _tradeCalculationResult
+@inject TaxCalculationService _taxCalculationService
 @inject ITradeAndCorporateActionList _taxEventLists
 @inject ToastService _toastService
 
@@ -19,67 +19,67 @@
         }
     </div>
     <div class="card-body">
-        @if (!_tradeCalculationResult.CalculatedTrade.Any())
-        {
-            <div class="alert alert-warning">
-                Please run a tax calculation first to populate the list of available assets.
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label class="form-label">Date</label>
+                <RadzenDatePicker TValue="DateTime" @bind-Value="@_date" DateFormat="d" class="w-100" />
             </div>
-        }
-        else
-        {
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label class="form-label">Date</label>
-                    <RadzenDatePicker TValue="DateTime" @bind-Value="@_date" DateFormat="d" class="w-100" />
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Asset Ticker</label>
-                    <AssetNameSelector Value="@_ticker"
-                                       ValueChanged="@OnTickerChanged"
-                                       AllowManualAssetNameInput="@AllowManualAssetNameInput"
-                                       AssetCategoryFilter="@AssetCategoryFilter"
-                                       Placeholder="Select or Enter Ticker" />
-                    @if (!string.IsNullOrWhiteSpace(_ticker))
+            <div class="col-md-6">
+                <label class="form-label">Asset Ticker</label>
+                <AssetNameSelector Value="@_ticker"
+                                   ValueChanged="@OnTickerChanged"
+                                   AllowManualAssetNameInput="@AllowManualAssetNameInput"
+                                   AssetCategoryFilter="@AssetCategoryFilter"
+                                   Placeholder="Select or Enter Ticker" />
+                @if (!string.IsNullOrWhiteSpace(_ticker))
+                {
+                    @if (_taxCalculationService.HasCalculated)
                     {
                         <div class="form-text text-info">
                             Holding on @_date.ToShortDateString(): <strong>@_currentHolding.ToString("F4")</strong> shares
                         </div>
                         <HoldingBreakdown AssetName="@_ticker" AsOfDate="@_date" />
                     }
-                </div>
+                    else
+                    {
+                        <div class="form-text text-warning">
+                            Holding on @_date.ToShortDateString(): <strong>Calculation pending</strong>
+                        </div>
+                    }
+                }
             </div>
+        </div>
 
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label class="form-label">Quantity</label>
+                <RadzenNumeric TValue="decimal" @bind-Value="@_quantity" Min="0.00000001m" Format="n8" class="w-100" />
+            </div>
+        </div>
+
+        @if (Direction == PartnerTransferDirection.ReceiveFromPartner)
+        {
             <div class="row mb-3">
-                <div class="col-md-6">
-                    <label class="form-label">Quantity</label>
-                    <RadzenNumeric TValue="decimal" @bind-Value="@_quantity" Min="0.00000001m" Format="n8" class="w-100" />
+                <div class="col-md-4">
+                    <label class="form-label">Transferred Cost Amount</label>
+                    <RadzenNumeric TValue="decimal" @bind-Value="@_transferredCostAmount" Min="0" Format="n4" class="w-100" />
                 </div>
-            </div>
-
-            @if (Direction == PartnerTransferDirection.ReceiveFromPartner)
-            {
-                <div class="row mb-3">
-                    <div class="col-md-4">
-                        <label class="form-label">Transferred Cost Amount</label>
-                        <RadzenNumeric TValue="decimal" @bind-Value="@_transferredCostAmount" Min="0" Format="n4" class="w-100" />
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Currency</label>
-                        <RadzenDropDown TValue="string" Placeholder="Currency" Data="@_currencies" TextProperty="Display" ValueProperty="Code" @bind-Value="@_transferredCostCurrency" AllowFiltering="true" class="w-100" />
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">FX Rate (to GBP)</label>
-                        <RadzenNumeric TValue="decimal" @bind-Value="@_transferredCostFx" Min="0.00000001m" Format="n8" class="w-100" />
-                    </div>
+                <div class="col-md-4">
+                    <label class="form-label">Currency</label>
+                    <RadzenDropDown TValue="string" Placeholder="Currency" Data="@_currencies" TextProperty="Display" ValueProperty="Code" @bind-Value="@_transferredCostCurrency" AllowFiltering="true" class="w-100" />
                 </div>
-            }
-
-            <div class="row">
-                <div class="col-12">
-                    <RadzenButton ButtonStyle="ButtonStyle.Primary" Click="Submit" Text="@($"{(_isEditing ? "Update" : "Add")} {Title}")" />
+                <div class="col-md-4">
+                    <label class="form-label">FX Rate (to GBP)</label>
+                    <RadzenNumeric TValue="decimal" @bind-Value="@_transferredCostFx" Min="0.00000001m" Format="n8" class="w-100" />
                 </div>
             </div>
         }
+
+        <div class="row">
+            <div class="col-12">
+                <RadzenButton ButtonStyle="ButtonStyle.Primary" Click="Submit" Text="@($"{(_isEditing ? "Update" : "Add")} {Title}")" />
+            </div>
+        </div>
     </div>
 </div>
 
@@ -161,9 +161,7 @@
     {
         _currentHolding = 0m;
         if (string.IsNullOrWhiteSpace(_ticker)) return;
-        var pool = _ukSection104Pools.GetExistingOrInitialise(_ticker!);
-        var history = pool.GetLastSection104History(DateOnly.FromDateTime(_date));
-        _currentHolding = history?.NewQuantity ?? 0m;
+        _currentHolding = _ukSection104Pools.GetExistingOrNull(_ticker!)?.GetLastSection104History(DateOnly.FromDateTime(_date))?.NewQuantity ?? 0m;
     }
 
     private async Task Submit()
@@ -181,10 +179,19 @@
 
         CalculateHolding();
 
-        if (Direction == PartnerTransferDirection.GiftToPartner && _quantity > _currentHolding)
+        if (Direction == PartnerTransferDirection.GiftToPartner)
         {
-            _toastService.ShowError($"Cannot gift {_quantity:0.####} shares because the holding is {_currentHolding:0.####} on {_date:d}.");
-            return;
+            // The holding only exists once the matching rules have run, so gifting cannot be checked before then.
+            if (!_taxCalculationService.HasCalculated)
+            {
+                _toastService.ShowError("Run the calculation first so the holding available to gift is known.");
+                return;
+            }
+            if (_quantity > _currentHolding)
+            {
+                _toastService.ShowError($"Cannot gift {_quantity:0.####} shares because the holding is {_currentHolding:0.####} on {_date:d}.");
+                return;
+            }
         }
 
         DescribedMoney? transferredCost = null;

@@ -6,7 +6,7 @@
 @using InvestmentTaxCalculator.Enumerations
 
 @inject UkSection104Pools _ukSection104Pools
-@inject TradeCalculationResult _tradeCalculationResult
+@inject TaxCalculationService _taxCalculationService
 @inject ITradeAndCorporateActionList _taxEventLists
 @inject ToastService _toastService
 
@@ -19,101 +19,92 @@
         }
     </div>
     <div class="card-body">
-        @if (!_tradeCalculationResult.CalculatedTrade.Any())
+        <div class="row mb-3">
+            <div class="col-md-6 offset-md-6">
+                <label class="form-label">Type</label>
+                <RadzenRadioButtonList @bind-Value="@_spinoffType" TValue="string" class="d-flex gap-3">
+                    <Items>
+                        <RadzenRadioButtonListItem Text="Shares Only" Value="@("SharesOnly")" />
+                        <RadzenRadioButtonListItem Text="Shares + Cash" Value="@("SharesPlusCash")" />
+                    </Items>
+                </RadzenRadioButtonList>
+            </div>
+        </div>
+
+        <CorporateActionHeader @bind-Date="@_date"
+                               @bind-SourceTicker="@_parentTicker"
+                               @bind-DestinationTicker="@_spinoffTicker"
+                               @bind-SourceRatio="@_parentSharesRatio"
+                               @bind-DestinationRatio="@_spinoffSharesRatio"
+                               OnInputsChanged="CalculateStats"
+                               SourceLabel="Parent Company Asset"
+                               DestinationLabel="Spinoff Company Ticker"
+                               RatioLabel="Spinoff Ratio (Parent : Spinoff)"
+                               SourceUnitLabel="shares of parent"
+                               DestinationUnitLabel="shares of spinoff">
+            <DestinationInfo>
+                Expected Spinoff Shares: <strong>@(_taxCalculationService.HasCalculated ? _expectedSpinoffQuantity.ToString("F4") : "Calculation pending")</strong>
+            </DestinationInfo>
+        </CorporateActionHeader>
+
+        <div class="card mb-3 bg-dark border-info text-white">
+            <div class="card-body">
+                <h5>Market Values (Day of Spinoff)</h5>
+                <div class="form-text mb-3 text-info">Required to calculate the cost basis split between Parent and Spinoff companies.</div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Parent Market Value (Total Holding)</label>
+                        <RadzenNumeric TValue="decimal" @bind-Value="@_parentMv" Min="0" Placeholder="Amount" Change="@OnCostInputChanged" class="w-100" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Currency</label>
+                        <RadzenDropDown TValue="string" Placeholder="Currency" Data="@_currencies" TextProperty="Display" ValueProperty="Code" @bind-Value="@_parentMvCurrency" AllowFiltering="true" class="w-100" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">FX Rate (to GBP)</label>
+                        <RadzenNumeric TValue="decimal" @bind-Value="@_parentMvFx" Format="n4" Min="0.000001m" Change="@OnCostInputChanged" class="w-100" />
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Spinoff Market Value (Total Holding)</label>
+                        <RadzenNumeric TValue="decimal" @bind-Value="@_spinoffMv" Min="0" Placeholder="Amount" Change="@OnCostInputChanged" class="w-100" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Currency</label>
+                        <RadzenDropDown TValue="string" Placeholder="Currency" Data="@_currencies" TextProperty="Display" ValueProperty="Code" @bind-Value="@_spinoffMvCurrency" AllowFiltering="true" class="w-100" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">FX Rate (to GBP)</label>
+                        <RadzenNumeric TValue="decimal" @bind-Value="@_spinoffMvFx" Format="n4" Min="0.000001m" Change="@OnCostInputChanged" class="w-100" />
+                    </div>
+                </div>
+
+                <div class="alert alert-info py-2 mb-0">
+                    Cost Allocation: <strong>@(_parentRetainedPct.ToString("P2"))</strong> to Parent, <strong>@((1 - _parentRetainedPct).ToString("P2"))</strong> to Spinoff.
+                </div>
+            </div>
+        </div>
+
+        @if (_spinoffType == "SharesPlusCash")
         {
-            <div class="alert alert-warning">
-                Please run a tax calculation first to populate the list of available assets.
-            </div>
+            <CashInLieuInput @bind-CashAmount="@_cashAmount"
+                             @bind-CashCurrency="@_cashCurrency"
+                             @bind-CashFx="@_cashFx"
+                             @bind-ElectSmallCash="@_electSmallCash"
+                             Title="Cash-in-lieu (Fractional Shares)"
+                             CheckboxHelpText="If cash is less than £3,000 OR less than 5% of total value and this is elected, the cash is not treated as a disposal; it reduces the Section 104 cost basis instead."
+                             CssBackgroundColor="#065f46">
+            </CashInLieuInput>
         }
-        else
-        {
-            <div class="row mb-3">
-                <div class="col-md-6 offset-md-6">
-                    <label class="form-label">Type</label>
-                    <RadzenRadioButtonList @bind-Value="@_spinoffType" TValue="string" class="d-flex gap-3">
-                        <Items>
-                            <RadzenRadioButtonListItem Text="Shares Only" Value="@("SharesOnly")" />
-                            <RadzenRadioButtonListItem Text="Shares + Cash" Value="@("SharesPlusCash")" />
-                        </Items>
-                    </RadzenRadioButtonList>
-                </div>
+
+        <div class="row">
+            <div class="col-12">
+                <RadzenButton ButtonStyle="ButtonStyle.Primary" Click="Submit" Text="@($"{(_isEditing ? "Update" : "Add")} Spinoff Action")" />
             </div>
-
-            <CorporateActionHeader @bind-Date="@_date"
-                                   @bind-SourceTicker="@_parentTicker"
-                                   @bind-DestinationTicker="@_spinoffTicker"
-                                   @bind-SourceRatio="@_parentSharesRatio"
-                                   @bind-DestinationRatio="@_spinoffSharesRatio"
-                                   OnInputsChanged="CalculateStats"
-                                   SourceLabel="Parent Company Asset"
-                                   DestinationLabel="Spinoff Company Ticker"
-                                   RatioLabel="Spinoff Ratio (Parent : Spinoff)"
-                                   SourceUnitLabel="shares of parent"
-                                   DestinationUnitLabel="shares of spinoff">
-                <DestinationInfo>
-                    Expected Spinoff Shares: <strong>@_expectedSpinoffQuantity.ToString("F4")</strong>
-                </DestinationInfo>
-            </CorporateActionHeader>
-
-            <div class="card mb-3 bg-dark border-info text-white">
-                <div class="card-body">
-                    <h5>Market Values (Day of Spinoff)</h5>
-                    <div class="form-text mb-3 text-info">Required to calculate the cost basis split between Parent and Spinoff companies.</div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <label class="form-label">Parent Market Value (Total Holding)</label>
-                            <RadzenNumeric TValue="decimal" @bind-Value="@_parentMv" Min="0" Placeholder="Amount" Change="@OnCostInputChanged" class="w-100" />
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Currency</label>
-                            <RadzenDropDown TValue="string" Placeholder="Currency" Data="@_currencies" TextProperty="Display" ValueProperty="Code" @bind-Value="@_parentMvCurrency" AllowFiltering="true" class="w-100" />
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">FX Rate (to GBP)</label>
-                            <RadzenNumeric TValue="decimal" @bind-Value="@_parentMvFx" Format="n4" Min="0.000001m" Change="@OnCostInputChanged" class="w-100" />
-                        </div>
-                    </div>
-
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <label class="form-label">Spinoff Market Value (Total Holding)</label>
-                            <RadzenNumeric TValue="decimal" @bind-Value="@_spinoffMv" Min="0" Placeholder="Amount" Change="@OnCostInputChanged" class="w-100" />
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Currency</label>
-                            <RadzenDropDown TValue="string" Placeholder="Currency" Data="@_currencies" TextProperty="Display" ValueProperty="Code" @bind-Value="@_spinoffMvCurrency" AllowFiltering="true" class="w-100" />
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">FX Rate (to GBP)</label>
-                            <RadzenNumeric TValue="decimal" @bind-Value="@_spinoffMvFx" Format="n4" Min="0.000001m" Change="@OnCostInputChanged" class="w-100" />
-                        </div>
-                    </div>
-
-                    <div class="alert alert-info py-2 mb-0">
-                        Cost Allocation: <strong>@(_parentRetainedPct.ToString("P2"))</strong> to Parent, <strong>@((1 - _parentRetainedPct).ToString("P2"))</strong> to Spinoff.
-                    </div>
-                </div>
-            </div>
-
-            @if (_spinoffType == "SharesPlusCash")
-            {
-                <CashInLieuInput @bind-CashAmount="@_cashAmount"
-                                 @bind-CashCurrency="@_cashCurrency"
-                                 @bind-CashFx="@_cashFx"
-                                 @bind-ElectSmallCash="@_electSmallCash"
-                                 Title="Cash-in-lieu (Fractional Shares)"
-                                 CheckboxHelpText="If cash is less than £3,000 OR less than 5% of total value and this is elected, the cash is not treated as a disposal; it reduces the Section 104 cost basis instead."
-                                 CssBackgroundColor="#065f46">
-                </CashInLieuInput>
-            }
-
-            <div class="row">
-                <div class="col-12">
-                    <RadzenButton ButtonStyle="ButtonStyle.Primary" Click="Submit" Text="@($"{(_isEditing ? "Update" : "Add")} Spinoff Action")" />
-                </div>
-            </div>
-        }
+        </div>
     </div>
 </div>
 
@@ -230,9 +221,7 @@
         _expectedSpinoffQuantity = 0;
         if (_parentSharesRatio > 0 && !string.IsNullOrEmpty(_parentTicker))
         {
-            var pool = _ukSection104Pools.GetExistingOrInitialise(_parentTicker!);
-            var history = pool.GetLastSection104History(DateOnly.FromDateTime(_date));
-            decimal currentHolding = history?.NewQuantity ?? 0;
+            decimal currentHolding = _ukSection104Pools.GetExistingOrNull(_parentTicker!)?.GetLastSection104History(DateOnly.FromDateTime(_date))?.NewQuantity ?? 0;
 
             decimal rawQuantity = currentHolding * (_spinoffSharesRatio / _parentSharesRatio);
             _expectedSpinoffQuantity = Math.Round(rawQuantity, 4, MidpointRounding.ToZero);

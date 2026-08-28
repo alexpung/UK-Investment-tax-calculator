@@ -7,7 +7,7 @@
 @using StockSplitAction = InvestmentTaxCalculator.Model.TaxEvents.StockSplit
 
 @inject UkSection104Pools _ukSection104Pools
-@inject TradeCalculationResult _tradeCalculationResult
+@inject TaxCalculationService _taxCalculationService
 @inject ITradeAndCorporateActionList _taxEventLists
 @inject ToastService _toastService
 
@@ -20,67 +20,58 @@
         }
     </div>
     <div class="card-body">
-        @if (!_tradeCalculationResult.CalculatedTrade.Any())
+        <CorporateActionHeader @bind-Date="@_date"
+                               @bind-SourceTicker="@_ticker"
+                               @bind-SourceRatio="@_splitFrom"
+                               @bind-DestinationRatio="@_splitTo"
+                               OnInputsChanged="CalculateStats"
+                               SourceLabel="Asset undergoing split"
+                               DestinationLabel="N/A (Ticker remains same)"
+                               RatioLabel="Split Ratio (Example: 2 for 1)"
+                               SourceUnitLabel="shares before"
+                               DestinationUnitLabel="shares after"
+                               RatioDecimals="0"
+                               RatioFormat="n0"
+                               RatioMin="1m"
+                               IsDestinationDisabled="true">
+            <DestinationInfo>
+                Expected New Quantity: <strong>@(_taxCalculationService.HasCalculated ? _expectedNewQuantity.ToString("F4") : "Calculation pending")</strong>
+            </DestinationInfo>
+        </CorporateActionHeader>
+
+        <div class="row mb-3">
+             <div class="col-12">
+                 <RadzenCheckBox TValue="bool" @bind-Value="@_hasCash" Name="hasCashSplit" />
+                 <RadzenLabel Text="Cash-in-lieu received (for fractional shares)" Component="hasCashSplit" class="ms-2" />
+             </div>
+        </div>
+
+        @if (_hasCash)
         {
-            <div class="alert alert-warning">
-                Please run a tax calculation first to populate the list of available assets.
-            </div>
+            <CashInLieuInput @bind-CashAmount="@_cashAmount"
+                             @bind-CashCurrency="@_cashCurrency"
+                             @bind-CashFx="@_cashFx"
+                             @bind-ElectSmallCash="@_electSmallCash"
+                             Title="Cash Component"
+                             CheckboxHelpText="If cash is less than £3,000 OR less than 5% of total value and this is elected, the cash is not treated as a disposal; it reduces the Section 104 cost basis instead."
+                             CssBackgroundColor="#374151">
+                <ChildContent>
+                    <div class="alert @(_fractionalRemoved > FractionalTolerance ? "alert-info" : "alert-warning") py-2 mb-0">
+                        Fractional Shares Removed: <strong>@_fractionalRemoved.ToString("F6")</strong>
+                        @if (_fractionalRemoved <= FractionalTolerance)
+                        {
+                            <div class="mt-1">No fractional shares are produced by the current holding and split ratio, so cash-in-lieu cannot be applied.</div>
+                        }
+                    </div>
+                </ChildContent>
+            </CashInLieuInput>
         }
-        else
-        {
-            <CorporateActionHeader @bind-Date="@_date"
-                                   @bind-SourceTicker="@_ticker"
-                                   @bind-SourceRatio="@_splitFrom"
-                                   @bind-DestinationRatio="@_splitTo"
-                                   OnInputsChanged="CalculateStats"
-                                   SourceLabel="Asset undergoing split"
-                                   DestinationLabel="N/A (Ticker remains same)"
-                                   RatioLabel="Split Ratio (Example: 2 for 1)"
-                                   SourceUnitLabel="shares before"
-                                   DestinationUnitLabel="shares after"
-                                   RatioDecimals="0"
-                                   RatioFormat="n0"
-                                   RatioMin="1m"
-                                   IsDestinationDisabled="true">
-                <DestinationInfo>
-                    Expected New Quantity: <strong>@_expectedNewQuantity.ToString("F4")</strong>
-                </DestinationInfo>
-            </CorporateActionHeader>
 
-            <div class="row mb-3">
-                 <div class="col-12">
-                     <RadzenCheckBox TValue="bool" @bind-Value="@_hasCash" Name="hasCashSplit" />
-                     <RadzenLabel Text="Cash-in-lieu received (for fractional shares)" Component="hasCashSplit" class="ms-2" />
-                 </div>
+        <div class="row">
+            <div class="col-12">
+                <RadzenButton ButtonStyle="ButtonStyle.Primary" Click="Submit" Text="@($"{(_isEditing ? "Update" : "Add")} Stock Split")" />
             </div>
-
-            @if (_hasCash)
-            {
-                <CashInLieuInput @bind-CashAmount="@_cashAmount"
-                                 @bind-CashCurrency="@_cashCurrency"
-                                 @bind-CashFx="@_cashFx"
-                                 @bind-ElectSmallCash="@_electSmallCash"
-                                 Title="Cash Component"
-                                 CheckboxHelpText="If cash is less than £3,000 OR less than 5% of total value and this is elected, the cash is not treated as a disposal; it reduces the Section 104 cost basis instead."
-                                 CssBackgroundColor="#374151">
-                    <ChildContent>
-                        <div class="alert @(_fractionalRemoved > FractionalTolerance ? "alert-info" : "alert-warning") py-2 mb-0">
-                            Fractional Shares Removed: <strong>@_fractionalRemoved.ToString("F6")</strong>
-                            @if (_fractionalRemoved <= FractionalTolerance)
-                            {
-                                <div class="mt-1">No fractional shares are produced by the current holding and split ratio, so cash-in-lieu cannot be applied.</div>
-                            }
-                        </div>
-                    </ChildContent>
-                </CashInLieuInput>
-            }
-
-            <div class="row">
-                <div class="col-12">
-                    <RadzenButton ButtonStyle="ButtonStyle.Primary" Click="Submit" Text="@($"{(_isEditing ? "Update" : "Add")} Stock Split")" />
-                </div>
-            </div>
-        }
+        </div>
     </div>
 </div>
 
@@ -165,9 +156,7 @@
         _fractionalRemoved = 0;
         if (_splitFrom > 0 && !string.IsNullOrEmpty(_ticker))
         {
-            var pool = _ukSection104Pools.GetExistingOrInitialise(_ticker!);
-            var history = pool.GetLastSection104History(DateOnly.FromDateTime(_date));
-            decimal currentHolding = history?.NewQuantity ?? 0;
+            decimal currentHolding = _ukSection104Pools.GetExistingOrNull(_ticker!)?.GetLastSection104History(DateOnly.FromDateTime(_date))?.NewQuantity ?? 0;
             decimal rawNewQuantity = currentHolding * (_splitTo / _splitFrom);
             _expectedNewQuantity = rawNewQuantity;
             _fractionalRemoved = rawNewQuantity - Math.Floor(rawNewQuantity);
@@ -200,6 +189,13 @@
         CalculateStats();
 
         DescribedMoney? cashInLieu = null;
+        if (_hasCash && !_taxCalculationService.HasCalculated)
+        {
+            // Whether a fraction is produced depends on the holding, which only exists after a calculation.
+            _toastService.ShowError("Run the calculation first so the holding is known before recording cash-in-lieu.");
+            return;
+        }
+
         if (_hasCash)
         {
             if (_fractionalRemoved <= FractionalTolerance)
