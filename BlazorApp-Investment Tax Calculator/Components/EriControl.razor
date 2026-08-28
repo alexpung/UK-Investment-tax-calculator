@@ -6,6 +6,7 @@
 @using InvestmentTaxCalculator.Enumerations
 
 @inject UkSection104Pools Section104Pools
+@inject TaxCalculationService TaxCalculationService
 @inject TaxEventLists TaxEventLists
 @inject ToastService ToastService
 @inject CurrencyService CurrencyService
@@ -18,7 +19,7 @@
         <div class="row g-3">
             <div class="col-md-6 col-lg-4">
                 <label class="form-label">Accounting Period End Date</label>
-                <RadzenDatePicker TValue="DateTime?" Value="@PeriodEndDate" DateFormat="d" Change="@OnDateChanged" Placeholder="Pick period end date" Disabled="@IsCalculationMissing" class="w-100" />
+                <RadzenDatePicker TValue="DateTime?" Value="@PeriodEndDate" DateFormat="d" Change="@OnDateChanged" Placeholder="Pick period end date" class="w-100" />
             </div>
 
             @if (PeriodEndDate.HasValue)
@@ -32,15 +33,22 @@
                                        HoldingDate="@PeriodEndDate"
                                        RequirePositiveHoldingOnDate="true"
                                        Placeholder="Select a ticker"
-                                       CssClass="e-outline"
-                                       Enabled="@(!IsCalculationMissing)" />
+                                       CssClass="e-outline" />
                 </div>
 
                 @if (!string.IsNullOrEmpty(SelectedTicker))
                 {
                     <div class="col-md-6 col-lg-4">
                         <label class="form-label">Quantity at Period End</label>
-                        <div class="form-control bg-dark text-info border-info">@Quantity.ToString("N4")</div>
+                        @if (TaxCalculationService.HasCalculated)
+                        {
+                            <div class="form-control bg-dark text-info border-info">@Quantity.ToString("N4")</div>
+                            <HoldingBreakdown AssetName="@SelectedTicker" AsOfDate="@PeriodEndDate.Value" />
+                        }
+                        else
+                        {
+                            <div class="form-control bg-dark text-warning border-warning">Calculation pending</div>
+                        }
                     </div>
 
                     <div class="col-md-6 col-lg-4">
@@ -84,7 +92,6 @@
 </div>
 
 @code {
-    [Parameter] public bool IsCalculationMissing { get; set; }
     [Parameter] public EventCallback OnDataChanged { get; set; }
     [Parameter] public bool AllowManualAssetNameInput { get; set; }
     [Parameter] public List<AssetCategoryType> AssetCategoryFilter { get; set; } = [AssetCategoryType.STOCK, AssetCategoryType.FUND];
@@ -117,9 +124,9 @@
         SelectedTicker = ticker;
         if (!string.IsNullOrEmpty(SelectedTicker) && PeriodEndDate.HasValue)
         {
-            var pool = Section104Pools.GetExistingOrInitialise(SelectedTicker);
-            var history = pool.GetLastSection104History(DateOnly.FromDateTime(PeriodEndDate.Value));
-            Quantity = history?.NewQuantity ?? 0;
+            // GetExistingOrNull rather than GetExistingOrInitialise: tickers are now selectable before a
+            // calculation has run, so this must not leave an empty pool behind for one that has no pool yet.
+            Quantity = Section104Pools.GetExistingOrNull(SelectedTicker)?.GetLastSection104History(DateOnly.FromDateTime(PeriodEndDate.Value))?.NewQuantity ?? 0;
         }
         else
         {
@@ -152,6 +159,13 @@
 
     private async Task OnSubmit()
     {
+        if (!TaxCalculationService.HasCalculated)
+        {
+            // The ERI amount is quantity times income per share and is frozen into the saved event, so it cannot be
+            // entered before the holding at the period end is known.
+            ToastService.ShowError("Run the calculation first so the quantity held at the period end is known.");
+            return;
+        }
         if (!PeriodEndDate.HasValue || string.IsNullOrEmpty(SelectedTicker) || Quantity <= 0 || IncomePerShare <= 0 || FxRate <= 0)
         {
             ToastService.ShowError("Please fill in all fields correctly.");

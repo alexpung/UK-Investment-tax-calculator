@@ -6,7 +6,7 @@
 @using InvestmentTaxCalculator.Enumerations
 
 @inject UkSection104Pools _ukSection104Pools
-@inject TradeCalculationResult _tradeCalculationResult
+@inject TaxCalculationService _taxCalculationService
 @inject ITradeAndCorporateActionList _taxEventLists
 @inject ToastService _toastService
 
@@ -19,79 +19,70 @@
         }
     </div>
     <div class="card-body">
-        @if (!_tradeCalculationResult.CalculatedTrade.Any())
-        {
-            <div class="alert alert-warning">
-                Please run a tax calculation first to populate the list of available assets.
+        <div class="row mb-3">
+            <div class="col-md-6 offset-md-6">
+                <label class="form-label">Type</label>
+                <RadzenRadioButtonList @bind-Value="@_takeoverType" TValue="string" class="d-flex gap-3">
+                    <Items>
+                        <RadzenRadioButtonListItem Text="Share for Share" Value="@("ShareForShare")" />
+                        <RadzenRadioButtonListItem Text="Share + Cash" Value="@("SharePlusCash")" />
+                    </Items>
+                </RadzenRadioButtonList>
             </div>
-        }
-        else
+        </div>
+
+        <CorporateActionHeader @bind-Date="@_date"
+                               @bind-SourceTicker="@_oldTicker"
+                               @bind-DestinationTicker="@_newTicker"
+                               @bind-SourceRatio="@_oldSharesRatio"
+                               @bind-DestinationRatio="@_newSharesRatio"
+                               OnInputsChanged="CalculateStats"
+                               SourceLabel="Original Asset (Old Company)"
+                               DestinationLabel="New Company Ticker"
+                               RatioLabel="Exchange Ratio (Old : New)"
+                               SourceUnitLabel="shares of old company"
+                               DestinationUnitLabel="shares of new company">
+            <DestinationInfo>
+                Expected New Shares: <strong>@(_taxCalculationService.HasCalculated ? _expectedNewQuantity.ToString("F4") : "Calculation pending")</strong>
+            </DestinationInfo>
+        </CorporateActionHeader>
+
+        @if (_takeoverType == "SharePlusCash")
         {
-            <div class="row mb-3">
-                <div class="col-md-6 offset-md-6">
-                    <label class="form-label">Type</label>
-                    <RadzenRadioButtonList @bind-Value="@_takeoverType" TValue="string" class="d-flex gap-3">
-                        <Items>
-                            <RadzenRadioButtonListItem Text="Share for Share" Value="@("ShareForShare")" />
-                            <RadzenRadioButtonListItem Text="Share + Cash" Value="@("SharePlusCash")" />
-                        </Items>
-                    </RadzenRadioButtonList>
-                </div>
-            </div>
-
-            <CorporateActionHeader @bind-Date="@_date"
-                                   @bind-SourceTicker="@_oldTicker"
-                                   @bind-DestinationTicker="@_newTicker"
-                                   @bind-SourceRatio="@_oldSharesRatio"
-                                   @bind-DestinationRatio="@_newSharesRatio"
-                                   OnInputsChanged="CalculateStats"
-                                   SourceLabel="Original Asset (Old Company)"
-                                   DestinationLabel="New Company Ticker"
-                                   RatioLabel="Exchange Ratio (Old : New)"
-                                   SourceUnitLabel="shares of old company"
-                                   DestinationUnitLabel="shares of new company">
-                <DestinationInfo>
-                    Expected New Shares: <strong>@_expectedNewQuantity.ToString("F4")</strong>
-                </DestinationInfo>
-            </CorporateActionHeader>
-
-            @if (_takeoverType == "SharePlusCash")
-            {
-                <CashInLieuInput @bind-CashAmount="@_cashAmount"
-                                 @bind-CashCurrency="@_cashCurrency"
-                                 @bind-CashFx="@_cashFx"
-                                 @bind-ElectSmallCash="@_electSmallCash"
-                                 Title="Cash Component"
-                                 CheckboxHelpText="If cash is less than £3,000 OR less than 5% of total value and this is elected, the cash is not treated as a disposal; it reduces the Section 104 cost basis instead."
-                                 CssBackgroundColor="#1e3a8a">
-                    <ChildContent>
-                        <hr/>
-                        <h5>Valuation for Cost Apportionment</h5>
-                        <div class="form-text mb-2 text-white-50">Required to calculate the cost basis split between new shares and cash.</div>
-                        <div class="row mb-3">
-                            <div class="col-md-4">
-                                <label class="form-label">Total Market Value of New Share Holding</label>
-                                <RadzenNumeric TValue="decimal" @bind-Value="@_newShareMv" Min="0" Placeholder="Amount" class="w-100" />
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Currency</label>
-                                <RadzenDropDown TValue="string" Placeholder="Currency" Data="@_currencies" TextProperty="Display" ValueProperty="Code" @bind-Value="@_newShareMvCurrency" AllowFiltering="true" class="w-100" />
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">FX Rate (to GBP)</label>
-                                <RadzenNumeric TValue="decimal" @bind-Value="@_newShareMvFx" Format="n4" Min="0.000001m" class="w-100" />
-                            </div>
+            <CashInLieuInput @bind-CashAmount="@_cashAmount"
+                             @bind-CashCurrency="@_cashCurrency"
+                             @bind-CashFx="@_cashFx"
+                             @bind-ElectSmallCash="@_electSmallCash"
+                             Title="Cash Component"
+                             CheckboxHelpText="If cash is less than £3,000 OR less than 5% of total value and this is elected, the cash is not treated as a disposal; it reduces the Section 104 cost basis instead."
+                             CssBackgroundColor="#1e3a8a">
+                <ChildContent>
+                    <hr/>
+                    <h5>Valuation for Cost Apportionment</h5>
+                    <div class="form-text mb-2 text-white-50">Required to calculate the cost basis split between new shares and cash.</div>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Total Market Value of New Share Holding</label>
+                            <RadzenNumeric TValue="decimal" @bind-Value="@_newShareMv" Min="0" Placeholder="Amount" class="w-100" />
                         </div>
-                    </ChildContent>
-                </CashInLieuInput>
-            }
-
-            <div class="row">
-                <div class="col-12">
-                    <RadzenButton ButtonStyle="ButtonStyle.Primary" Click="Submit" Text="@($"{(_isEditing ? "Update" : "Add")} Takeover Action")" />
-                </div>
-            </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Currency</label>
+                            <RadzenDropDown TValue="string" Placeholder="Currency" Data="@_currencies" TextProperty="Display" ValueProperty="Code" @bind-Value="@_newShareMvCurrency" AllowFiltering="true" class="w-100" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">FX Rate (to GBP)</label>
+                            <RadzenNumeric TValue="decimal" @bind-Value="@_newShareMvFx" Format="n4" Min="0.000001m" class="w-100" />
+                        </div>
+                    </div>
+                </ChildContent>
+            </CashInLieuInput>
         }
+
+        <div class="row">
+            <div class="col-12">
+                <RadzenButton ButtonStyle="ButtonStyle.Primary" Click="Submit" Text="@($"{(_isEditing ? "Update" : "Add")} Takeover Action")" />
+            </div>
+        </div>
     </div>
 </div>
 
@@ -191,9 +182,7 @@
         _expectedNewQuantity = 0;
         if (_oldSharesRatio > 0 && !string.IsNullOrEmpty(_oldTicker))
         {
-            var pool = _ukSection104Pools.GetExistingOrInitialise(_oldTicker!);
-            var history = pool.GetLastSection104History(DateOnly.FromDateTime(_date));
-            decimal currentHolding = history?.NewQuantity ?? 0;
+            decimal currentHolding = _ukSection104Pools.GetExistingOrNull(_oldTicker!)?.GetLastSection104History(DateOnly.FromDateTime(_date))?.NewQuantity ?? 0;
             _expectedNewQuantity = currentHolding * (_newSharesRatio / _oldSharesRatio);
         }
     }
