@@ -84,12 +84,20 @@
     protected override void OnParametersSet()
     {
         string dataSignature = $"{AssetName}|{AsOfDate:yyyy-MM-dd}";
-        if (string.Equals(_lastDataSignature, dataSignature, StringComparison.Ordinal)) return;
-
+        bool inputsChanged = !string.Equals(_lastDataSignature, dataSignature, StringComparison.Ordinal);
         _lastDataSignature = dataSignature;
-        // A different asset or date invalidates the rows. Rebuild only while open; otherwise drop them and let the
-        // next expand pay for the rebuild.
-        _breakdown = _isExpanded ? BuildBreakdown() : null;
+
+        // Rebuilt on every render while open, not only when the asset or date changes: a calculation rebuilds the
+        // Section 104 pools underneath us, so unchanged inputs do not mean unchanged rows. While closed the rows are
+        // dropped so reopening pays for a fresh build rather than showing what the pools used to say.
+        if (_isExpanded)
+        {
+            _breakdown = BuildBreakdown();
+        }
+        else if (inputsChanged)
+        {
+            _breakdown = null;
+        }
     }
 
     private void ToggleExpanded()
@@ -97,7 +105,7 @@
         _isExpanded = !_isExpanded;
         if (_isExpanded)
         {
-            _breakdown ??= BuildBreakdown();
+            _breakdown = BuildBreakdown();
         }
     }
 

@@ -165,6 +165,10 @@
         {
              CalculateCostSplit();
         }
+
+        // A calculation rebuilds the Section 104 pools, so the expected spinoff quantity derived from the parent
+        // holding has to be recomputed on every render rather than only when an input changes.
+        CalculateStats();
     }
 
     private void LoadAction(SpinoffCorporateAction action)

@@ -28,7 +28,7 @@ public class TaxCalculationServiceStateTest
         GrossProceed = new() { Amount = new(quantity * 10m) },
     };
 
-    private static TaxCalculationService CreateService(TaxEventLists taxEventLists)
+    private static TaxCalculationService CreateService(TaxEventLists taxEventLists, IEnumerable<ITradeCalculator>? tradeCalculators = null)
     {
         UKTaxYear taxYear = new();
         ResidencyStatusRecord residencyStatusRecord = new();
@@ -40,7 +40,7 @@ public class TaxCalculationServiceStateTest
             dividendCalculator,
             new DividendCalculationResult(),
             new TradeCalculationResult(taxYear, residencyStatusRecord),
-            [],
+            tradeCalculators ?? [],
             new YearOptions(),
             taxYear,
             new ToastService(NullLogger<ToastService>.Instance),
@@ -100,6 +100,28 @@ public class TaxCalculationServiceStateTest
         taxEventLists.CorporateActions.Add(original with { SplitTo = 3 });
 
         taxEventLists.GetTotalNumberOfEvents().ShouldBe(2);
+        service.IsResultStale.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task TestAnEventAddedWhileCalculatingLeavesTheResultStale()
+    {
+        // The calculators read the event lists when they run, so an entry the user submits mid calculation is not in
+        // the results. Standing in for that timing: a calculator that adds an event while the calculation is running.
+        TaxEventLists taxEventLists = new();
+        taxEventLists.AddData([CreateTrade("01-Jan-23 10:00:00", 1000)]);
+
+        ITradeCalculator lateAddingCalculator = Substitute.For<ITradeCalculator>();
+        lateAddingCalculator.CalculateTax().Returns(_ =>
+        {
+            taxEventLists.AddData([CreateTrade("01-Jun-23 10:00:00", 500)]);
+            return [];
+        });
+
+        TaxCalculationService service = CreateService(taxEventLists, [lateAddingCalculator]);
+        await service.CalculateAsync();
+
+        service.HasCalculated.ShouldBeTrue();
         service.IsResultStale.ShouldBeTrue();
     }
 

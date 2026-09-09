@@ -84,6 +84,11 @@ public class TaxCalculationService(
             // entered in the UI) are matched by share identity during the calculation.
             shareIdentityRegistry.RegisterEvents(taxEventLists.AllEvents);
 
+            // Captured before the calculators run, because that is the input this result reflects. An entry the user
+            // adds while the calculation is in flight is not in the results, so recording the fingerprint afterwards
+            // would report the result as up to date when it is not.
+            (int Count, int IdentityHash) inputFingerprint = GetEventFingerprint();
+
             foreach (ITradeCalculator tradeCalculator in tradeCalculators)
             {
                 tradeCalculationResult.SetResult(await Task.Run(tradeCalculator.CalculateTax));
@@ -92,10 +97,8 @@ public class TaxCalculationService(
             dividendCalculationResult.SetResult(await Task.Run(dividendCalculator.CalculateTax));
             years.SetYears(GetSelectableYears());
 
-            // Recorded after the run so anything the calculation itself adds counts as calculated, not as a change
-            // made since.
             HasCalculated = true;
-            _calculatedEventFingerprint = GetEventFingerprint();
+            _calculatedEventFingerprint = inputFingerprint;
 
             toastService.ShowInformation("Calculation completed.");
         }

@@ -134,6 +134,10 @@
         {
             _previousActionToEdit = null;
         }
+
+        // A calculation rebuilds the Section 104 pools, so the expected quantity derived from the holding has to be
+        // recomputed on every render rather than only when an input changes.
+        CalculateStats();
     }
 
     private void LoadAction(TakeoverCorporateAction action)

@@ -125,6 +125,10 @@
         {
             _previousActionToEdit = null;
         }
+
+        // A calculation rebuilds the Section 104 pools, so the displayed holding has to be recomputed on every
+        // render rather than only when the ticker changes.
+        CalculateHolding();
     }
 
     private void LoadAction(PartnerTransferCorporateAction action)

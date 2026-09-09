@@ -119,21 +119,25 @@
         Quantity = 0m;
     }
 
+    // A calculation rebuilds the Section 104 pools, so the quantity for an already selected ticker has to be read
+    // again. Without this it stays at the zero recorded before the calculation and the entry is rejected until the
+    // user reselects the ticker.
+    protected override void OnParametersSet() => RefreshQuantity();
+
     private Task OnTickerChanged(string ticker)
     {
         SelectedTicker = ticker;
-        if (!string.IsNullOrEmpty(SelectedTicker) && PeriodEndDate.HasValue)
-        {
-            // GetExistingOrNull rather than GetExistingOrInitialise: tickers are now selectable before a
-            // calculation has run, so this must not leave an empty pool behind for one that has no pool yet.
-            Quantity = Section104Pools.GetExistingOrNull(SelectedTicker)?.GetLastSection104History(DateOnly.FromDateTime(PeriodEndDate.Value))?.NewQuantity ?? 0;
-        }
-        else
-        {
-            Quantity = 0m;
-        }
-
+        RefreshQuantity();
         return Task.CompletedTask;
+    }
+
+    private void RefreshQuantity()
+    {
+        // GetExistingOrNull rather than GetExistingOrInitialise: tickers are selectable before a calculation has run,
+        // so this must not leave an empty pool behind for one that has no pool yet.
+        Quantity = !string.IsNullOrEmpty(SelectedTicker) && PeriodEndDate.HasValue
+            ? Section104Pools.GetExistingOrNull(SelectedTicker)?.GetLastSection104History(DateOnly.FromDateTime(PeriodEndDate.Value))?.NewQuantity ?? 0m
+            : 0m;
     }
 
     // A share can carry more than one ISIN over time (a Newco insertion or re-issue), and the ISIN determines the
