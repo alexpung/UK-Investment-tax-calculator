@@ -1,4 +1,4 @@
-@using InvestmentTaxCalculator.Model
+﻿@using InvestmentTaxCalculator.Model
 @using InvestmentTaxCalculator.Model.TaxEvents
 @using InvestmentTaxCalculator.Model.UkTaxModel
 @using InvestmentTaxCalculator.Model.Interfaces
@@ -11,20 +11,22 @@
 @inject ToastService ToastService
 @inject CurrencyService CurrencyService
 
+@* Laid out with the shared entry-form-grid (app.css) rather than Bootstrap columns: the card is only half the
+   window when shown beside the equalisation card, and the grid sizes itself from the card rather than the viewport. *@
 <div class="card bg-secondary text-white">
     <div class="card-header bg-info text-dark">
         <h5 class="mb-0">Add Excess Reportable Income (ERI)</h5>
     </div>
     <div class="card-body">
-        <div class="row g-3">
-            <div class="col-md-6 col-lg-4">
+        <div class="entry-form-grid">
+            <div class="entry-field">
                 <label class="form-label">Accounting Period End Date</label>
                 <RadzenDatePicker TValue="DateTime?" Value="@PeriodEndDate" DateFormat="d" Change="@OnDateChanged" Placeholder="Pick period end date" class="w-100" />
             </div>
 
             @if (PeriodEndDate.HasValue)
             {
-                <div class="col-md-6 col-lg-4">
+                <div class="entry-field">
                     <label class="form-label">Ticker</label>
                     <AssetNameSelector Value="@SelectedTicker"
                                        ValueChanged="@OnTickerChanged"
@@ -38,12 +40,11 @@
 
                 @if (!string.IsNullOrEmpty(SelectedTicker))
                 {
-                    <div class="col-md-6 col-lg-4">
+                    <div class="entry-field">
                         <label class="form-label">Quantity at Period End</label>
                         @if (TaxCalculationService.HasCalculated)
                         {
                             <div class="form-control bg-dark text-info border-info">@Quantity.ToString("N4")</div>
-                            <HoldingBreakdown AssetName="@SelectedTicker" AsOfDate="@PeriodEndDate.Value" />
                         }
                         else
                         {
@@ -51,22 +52,22 @@
                         }
                     </div>
 
-                    <div class="col-md-6 col-lg-4">
+                    <div class="entry-field">
                         <label class="form-label">Income Type</label>
                         <RadzenDropDown TValue="ExcessReportableIncomeType" Data="@IncomeTypes" TextProperty="Description" ValueProperty="EnumValue" @bind-Value="@SelectedIncomeType" class="w-100" />
                     </div>
 
-                    <div class="col-md-6 col-lg-3">
+                    <div class="entry-field">
                         <label class="form-label">Income Per Share (Local Currency)</label>
                         <RadzenNumeric TValue="decimal" @bind-Value="@IncomePerShare" Format="N8" Min="0" class="w-100" />
                     </div>
 
-                    <div class="col-md-6 col-lg-2">
+                    <div class="entry-field">
                         <label class="form-label">Currency</label>
                         <RadzenDropDown TValue="string" Data="@Currencies" TextProperty="Code" ValueProperty="Code" @bind-Value="@Currency" AllowFiltering="true" class="w-100" />
                     </div>
 
-                    <div class="col-md-6 col-lg-2">
+                    <div class="entry-field">
                         <label class="form-label">Exchange Rate (to GBP)</label>
                         <RadzenNumeric TValue="decimal" @bind-Value="@FxRate" Format="N8" Min="0" class="w-100" />
                     </div>
@@ -74,15 +75,25 @@
                     @if (!string.IsNullOrEmpty(GetIsinForTicker(SelectedTicker, PeriodEndDate.Value)))
                     {
                         string isin = GetIsinForTicker(SelectedTicker, PeriodEndDate.Value);
-                        <div class="col-md-6 col-lg-4">
-                            <label class="form-label">Detected Region (from ISIN: @isin)</label>
-                            <div class="form-control bg-dark text-info border-info">
-                                @CountryCode.GetRegionByTwoDigitCode(isin[..2]).CountryName (@isin[..2])
+                        <div class="entry-field">
+                            <label class="form-label">Detected Region (from ISIN)</label>
+                            <div class="form-control bg-dark text-info border-info text-truncate" title="@isin">
+                                @CountryCode.GetRegionByTwoDigitCode(isin[..2]).CountryName (@isin[..2]) - @isin
                             </div>
                         </div>
                     }
 
-                    <div class="col-12 mt-4 d-flex justify-content-center">
+                    @* The breakdown table needs the width of the card rather than the width of the single grid column
+                       the quantity sits in, so it is given a row of its own under the fields it explains. *@
+                    @if (TaxCalculationService.HasCalculated)
+                    {
+                        <div class="entry-field-full">
+                            <span class="form-label d-block mb-1">Quantity breakdown for @SelectedTicker</span>
+                            <HoldingBreakdown AssetName="@SelectedTicker" AsOfDate="@PeriodEndDate.Value" />
+                        </div>
+                    }
+
+                    <div class="entry-field-full mt-2 d-flex justify-content-center">
                         <RadzenButton ButtonStyle="ButtonStyle.Info" Size="ButtonSize.Large" Click="OnSubmit" Text="Add ERI Entry" />
                     </div>
                 }
