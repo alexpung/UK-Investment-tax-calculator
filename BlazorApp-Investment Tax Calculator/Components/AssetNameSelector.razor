@@ -1,11 +1,14 @@
 @using InvestmentTaxCalculator.Enumerations
 @using InvestmentTaxCalculator.Model
 @using InvestmentTaxCalculator.Model.UkTaxModel
+@using InvestmentTaxCalculator.Model.TaxEvents
 @using InvestmentTaxCalculator.Services
+@using System.Runtime.CompilerServices
 
 @inject UkSection104Pools Section104Pools
 @inject TaxEventLists TaxEventLists
 @inject ShareIdentityRegistry ShareIdentityRegistry
+@inject TaxCalculationService TaxCalculationService
 
 @* AllowCustom (free text) -> RadzenAutoComplete; restricted -> filterable RadzenDropDown *@
 @if (AllowManualAssetNameInput)
@@ -50,64 +53,56 @@ else
     private void RefreshAssetNames()
     {
         var categoryFilter = AssetCategoryFilter?.Distinct().ToHashSet() ?? [];
-        bool hasCategoryFilter = categoryFilter.Count > 0;
         var includedAssetNames = IncludedAssetNames?.ToHashSet(StringComparer.OrdinalIgnoreCase) ?? [];
         bool hasIncludedAssetsFilter = includedAssetNames.Count > 0;
 
-        var allowedAssetNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        if (hasCategoryFilter)
+        // The names come from the imported events rather than the Section 104 pools, so the list is populated as
+        // soon as files are imported instead of staying empty until a calculation has been run.
+        IEnumerable<string> assetNames = GetAssetNamesByCategory(categoryFilter);
+
+        if (hasIncludedAssetsFilter)
         {
-            if (categoryFilter.Contains(AssetCategoryType.STOCK))
-            {
-                foreach (string assetName in TaxEventLists.Trades.Where(t => t.AssetType == AssetCategoryType.STOCK).Select(t => t.CanonicalAssetName))
-                {
-                    allowedAssetNames.Add(assetName);
-                }
-            }
+            assetNames = assetNames.Where(assetName => includedAssetNames.Contains(assetName));
+        }
 
-            if (categoryFilter.Contains(AssetCategoryType.FUND))
-            {
-                foreach (string assetName in TaxEventLists.Trades.Where(t => t.AssetType == AssetCategoryType.FUND).Select(t => t.CanonicalAssetName))
-                {
-                    allowedAssetNames.Add(assetName);
-                }
-            }
+        // A holding only exists once the matching rules have run, and it is out of date once events have changed,
+        // so this filter is skipped rather than filtering on stale pools: the quantity is shown as pending instead.
+        if (RequirePositiveHoldingOnDate && HoldingDate.HasValue && TaxCalculationService.HasCurrentResult)
+        {
+            DateOnly holdingDate = DateOnly.FromDateTime(HoldingDate.Value);
+            assetNames = assetNames.Where(assetName =>
+                (Section104Pools.GetExistingOrNull(assetName)?.GetLastSection104History(holdingDate)?.NewQuantity ?? 0) > 0);
+        }
 
-            if (categoryFilter.Contains(AssetCategoryType.OPTION))
-            {
-                foreach (string assetName in TaxEventLists.OptionTrades.Select(t => t.CanonicalAssetName))
-                {
-                    allowedAssetNames.Add(assetName);
-                }
-            }
+        _assetNames = [.. assetNames
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(assetName => assetName, StringComparer.OrdinalIgnoreCase)];
+    }
 
-            if (categoryFilter.Contains(AssetCategoryType.FUTURE))
-            {
-                foreach (string assetName in TaxEventLists.FutureContractTrades.Select(t => t.CanonicalAssetName))
-                {
-                    allowedAssetNames.Add(assetName);
-                }
-            }
+    private List<string> GetAssetNamesByCategory(HashSet<AssetCategoryType> categoryFilter)
+    {
+        List<string> assetNames = [];
+        bool includeEveryCategory = categoryFilter.Count == 0;
 
-            if (categoryFilter.Contains(AssetCategoryType.FX))
+        foreach (AssetCategoryType tradeCategory in (AssetCategoryType[])[AssetCategoryType.STOCK, AssetCategoryType.FUND, AssetCategoryType.FX])
+        {
+            if (includeEveryCategory || categoryFilter.Contains(tradeCategory))
             {
-                foreach (string assetName in TaxEventLists.Trades.Where(t => t.AssetType == AssetCategoryType.FX).Select(t => t.CanonicalAssetName))
-                {
-                    allowedAssetNames.Add(assetName);
-                }
+                assetNames.AddRange(TaxEventLists.Trades.Where(trade => trade.AssetType == tradeCategory).Select(trade => trade.CanonicalAssetName));
             }
         }
 
-        DateOnly? holdingDate = HoldingDate.HasValue ? DateOnly.FromDateTime(HoldingDate.Value) : null;
+        if (includeEveryCategory || categoryFilter.Contains(AssetCategoryType.OPTION))
+        {
+            assetNames.AddRange(TaxEventLists.OptionTrades.Select(trade => trade.CanonicalAssetName));
+        }
 
-        _assetNames = Section104Pools.GetSection104s()
-            .Where(pool => !hasCategoryFilter || allowedAssetNames.Contains(pool.AssetName))
-            .Where(pool => !hasIncludedAssetsFilter || includedAssetNames.Contains(pool.AssetName))
-            .Where(pool => !RequirePositiveHoldingOnDate || holdingDate == null || (pool.GetLastSection104History(holdingDate.Value)?.NewQuantity ?? 0) > 0)
-            .Select(pool => pool.AssetName)
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .OrderBy(assetName => assetName, StringComparer.OrdinalIgnoreCase)
-            .ToList();
+        if (includeEveryCategory || categoryFilter.Contains(AssetCategoryType.FUTURE))
+        {
+            assetNames.AddRange(TaxEventLists.FutureContractTrades.Select(trade => trade.CanonicalAssetName));
+        }
+
+        return assetNames;
     }
 
     private string BuildDataSignature()
@@ -123,6 +118,12 @@ else
 
         int poolCount = Section104Pools.GetSection104s().Count;
         return string.Join('|',
+            // Whether a current calculation exists decides if the positive holding filter applies at all.
+            TaxCalculationService.HasCurrentResult.ToString(),
+            // Counts alone do not describe the cached names: editing a manual trade removes it and adds a
+            // replacement, so its ticker can change while every count stays the same. Combining the trade
+            // identities catches the swapped instance.
+            BuildTradeIdentityHash().ToString(),
             string.Join(',', orderedAssetCategories),
             string.Join(',', orderedIncludedAssets),
             HoldingDate?.Date.ToString("yyyy-MM-dd") ?? string.Empty,
@@ -136,6 +137,24 @@ else
             // so include the identity state or the list goes stale after linking/unlinking shares.
             ShareIdentityRegistry.Identities.Count.ToString(),
             ShareIdentityRegistry.ManualLinks.Count.ToString());
+    }
+
+    private int BuildTradeIdentityHash()
+    {
+        int identityHash = 0;
+        foreach (Trade trade in TaxEventLists.Trades)
+        {
+            identityHash ^= RuntimeHelpers.GetHashCode(trade);
+        }
+        foreach (OptionTrade optionTrade in TaxEventLists.OptionTrades)
+        {
+            identityHash ^= RuntimeHelpers.GetHashCode(optionTrade);
+        }
+        foreach (FutureContractTrade futureContractTrade in TaxEventLists.FutureContractTrades)
+        {
+            identityHash ^= RuntimeHelpers.GetHashCode(futureContractTrade);
+        }
+        return identityHash;
     }
 
     private async Task OnValueChangedInternal(object? value)

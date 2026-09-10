@@ -21,6 +21,9 @@
                 <p class="page-subtitle">Select an action/event type to configure and record entries</p>
             </div>
 
+            @* The callback re-renders this page, so the forms below refresh the holdings they read from the pools. *@
+            <CalculationStatusPanel OnCalculated="StateHasChanged" />
+
             <!-- Action Selector -->
             <div class="row mb-5 justify-content-center">
                 <div class="col-md-5">

@@ -116,4 +116,37 @@ public class UkTradeCalculatorEriGapPeriodTest
         pool.Quantity.ShouldBe(100m);
         pool.AcquisitionCostInBaseCurrency.Amount.ShouldBe(1500m, 0.01m); // unaffected by the ERI
     }
+
+    [Fact]
+    public void TestSellingBeforeThePeriodEndAndRepurchasingWithin30DaysStaysLiableForTheFullEri()
+    {
+        // SI 2009/3001 reg. 94(3A): where a disposal in the earlier reporting period is identified by s.106A TCGA
+        // 1992 with an acquisition in the NEXT reporting period, the disposal "shall be ignored and the participant
+        // shall be treated as holding that interest at the end of the earlier period". Selling just before the
+        // period end and buying back inside the 30 day window therefore does NOT reduce the ERI liability.
+        //
+        // The section 104 pool is the right basis for the period end holding precisely because it already works
+        // this way: it excludes the disposals that s.106A matches to a later acquisition. Do not "correct" this to
+        // a running total of units held - that reintroduces the avoidance reg. 94(3A) exists to block.
+        Trade buy = CreateTrade(TradeType.ACQUISITION, "01-Jan-23 10:00:00", 1000, 10000m);
+        Trade sellBeforePeriodEnd = CreateTrade(TradeType.DISPOSAL, "20-Dec-23 10:00:00", 200, 2600m);
+        Trade repurchaseNextPeriod = CreateTrade(TradeType.ACQUISITION, "10-Jan-24 10:00:00", 200, 2800m);
+        ExcessReportableIncome eri = CreateEri(500m); // 0.5 per unit for the 1000 units treated as held at 31 Dec 23
+
+        UkSection104Pools section104Pools = new(new UKTaxYear(), new ResidencyStatusRecord());
+        TaxEventLists taxEventLists = new();
+        taxEventLists.AddData([buy, sellBeforePeriodEnd, repurchaseNextPeriod, eri]);
+
+        UkTradeCalculator calculator = TradeCalculationHelper.CreateUkTradeCalculator(section104Pools, taxEventLists);
+        List<ITradeTaxCalculation> result = calculator.CalculateTax();
+
+        ITradeTaxCalculation disposal = result.First(x => x.AcquisitionDisposal == TradeType.DISPOSAL);
+        disposal.MatchHistory[0].TradeMatchType.ShouldBe(TaxMatchType.BED_AND_BREAKFAST);
+
+        UkSection104 pool = section104Pools.GetExistingOrInitialise("REPORT_FUND");
+        // The 200 sold on 20 Dec are treated as still held at the period end, so the holding stays at 1000.
+        pool.GetLastSection104History(new DateOnly(2023, 12, 31))!.NewQuantity.ShouldBe(1000m);
+        pool.Quantity.ShouldBe(1000m);
+        pool.AcquisitionCostInBaseCurrency.Amount.ShouldBe(10500m, 0.01m); // full 500 uplift on 1000 units
+    }
 }

@@ -8,7 +8,6 @@
 @using InvestmentTaxCalculator.Components
 
 @implements IDisposable
-@inject UkSection104Pools Section104Pools
 @inject TaxEventLists TaxEventLists
 @inject ToastService ToastService
 @inject ITaxYear TaxYear
@@ -42,32 +41,25 @@
                     <h6 class="fw-bold">Important Workflow Notes:</h6>
                     <ul class="mb-0">
                         <li><strong>Accumulating Funds:</strong> For accumulating funds with equalisation, you must <strong>add the Excess Reportable Income (ERI) first</strong>. Once added, you can then select that ERI entry in the Equalisation section to reduce it.</li>
-                        <li><strong>Ticker Selection:</strong> Some available tickers may be standard stocks (non-funds). Ensure you only apply ERI or Equalisation to appropriate offshore fund assets.</li>
+                        <li><strong>Ticker Selection:</strong> Tickers are available as soon as your files are imported. Some may be standard stocks (non-funds), so ensure you only apply ERI or Equalisation to appropriate offshore fund assets.</li>
+                        <li><strong>Quantities:</strong> The quantity held at a period end comes from the tax calculation, so it shows as "Calculation pending" until you run one with the button above.</li>
                         <li><strong>Manual Matching:</strong> You are responsible for matching equalisation payments to the correct corresponding income event as per your broker's tax reports.</li>
                         <li><strong>Export & Backup:</strong> All manual entries are saved automatically to the session. You can export the entire session (including ERI and Equalisation) for future use from the <a href="MainCalculatorPage" class="alert-link">Main Import/Export page</a>.</li>
                     </ul>
                 </div>
             </div>
 
-            @if (_isCalculationMissing)
-            {
-                <div class="alert alert-danger alert-custom mb-4" role="alert">
-                    <h5 class="alert-heading">Calculations Required</h5>
-                    <p class="mb-0">No Section 104 pools found. Please run the calculation first in the <a href="MainCalculatorPage" class="alert-link">Import/Export page</a> before adding entries, so that available tickers and quantities can be populated.</p>
-                </div>
-            }
+            <CalculationStatusPanel OnCalculated="RefreshHistory" />
 
             <!-- ERI and Equalisation Controls -->
             <div class="row g-4 mb-5">
                 <div class="col-xl-6">
-                    <EriControl IsCalculationMissing="@_isCalculationMissing"
-                                OnDataChanged="RefreshAll"
+                    <EriControl OnDataChanged="RefreshAll"
                                 AllowManualAssetNameInput="false"
                                 AssetCategoryFilter="@_stockAssetCategoryFilter" />
                 </div>
                 <div class="col-xl-6">
-                    <EqualisationControl IsCalculationMissing="@_isCalculationMissing"
-                                         OnDataChanged="RefreshAll"
+                    <EqualisationControl OnDataChanged="RefreshAll"
                                          AllowManualAssetNameInput="false"
                                          AssetCategoryFilter="@_stockAssetCategoryFilter" />
                 </div>
@@ -138,14 +130,12 @@
 @code {
     private List<CorporateAction> History { get; set; } = new();
     
-    private bool _isCalculationMissing = false;
     private bool _dataChanged = false;
     private IDisposable? _registration;
     private static readonly List<AssetCategoryType> _stockAssetCategoryFilter = [AssetCategoryType.STOCK, AssetCategoryType.FUND];
 
     protected override void OnInitialized()
     {
-        _isCalculationMissing = !Section104Pools.GetSection104s().Any();
         RefreshHistory();
 
         _registration = NavigationManager.RegisterLocationChangingHandler(OnLocationChanging);

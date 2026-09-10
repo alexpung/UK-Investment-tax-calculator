@@ -12,6 +12,14 @@ namespace InvestmentTaxCalculator.Model.UkTaxModel;
 /// before the fund distribution date is applied to the allowable cost of those disposals (reg. 99(5) treats the
 /// amount as received immediately before the disposal), and only the retained units' share is applied to the
 /// section 104 pool on the fund distribution date (reg. 99(4)).
+/// <para>
+/// The period end holding is read from the section 104 pool deliberately, not from a running total of units held.
+/// Reg. 94(3A) provides that where a disposal in the earlier reporting period is identified by s.106A TCGA 1992
+/// with an acquisition in the next reporting period, the disposal "shall be ignored and the participant shall be
+/// treated as holding that interest at the end of the earlier period" - so selling before the period end and
+/// repurchasing inside the 30 day window does not reduce the liability. The pool already behaves that way, because
+/// disposals matched same day or bed and breakfast never enter it, and it handles partial matching correctly.
+/// </para>
 /// </summary>
 public static class ReportingFundCostAllocator
 {

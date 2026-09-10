@@ -1,4 +1,4 @@
-/* ===================================
+﻿/* ===================================
    Main Styles for UK Investment Tax Calculator
    =================================== */
 
@@ -192,4 +192,40 @@
     width: 3rem;
     height: 3rem;
     margin-bottom: 1rem;
+}
+
+/* ===================================
+   Manual entry form grids
+   ===================================
+   The entry cards are laid out side by side, so their width does not follow the viewport breakpoints that
+   Bootstrap columns react to: col-lg-* would squeeze several fields into a half width card. An auto-fit grid
+   sizes itself from the card instead. */
+.entry-form-grid {
+    display: grid;
+    /* auto-fill rather than auto-fit: the empty tracks are kept, so a field stays in its column instead of
+       stretching across the card while the fields after it are still hidden. */
+    grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+    gap: 1rem;
+    align-items: start;
+}
+
+.entry-form-grid .entry-field {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+/* Two lines are reserved for every label and the text sits at the bottom of that box, so a label that wraps
+   does not push its own control below the ones next to it. */
+.entry-form-grid .entry-field > .form-label {
+    display: flex;
+    align-items: flex-end;
+    min-height: 3rem;
+    margin-bottom: 0.5rem;
+}
+
+/* For content that needs the width of the card rather than of a single column, such as a holding breakdown
+   table or the submit button. */
+.entry-form-grid .entry-field-full {
+    grid-column: 1 / -1;
 }
