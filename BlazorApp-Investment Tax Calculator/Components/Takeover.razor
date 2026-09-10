@@ -2,6 +2,7 @@
 @using InvestmentTaxCalculator.Model.TaxEvents
 @using InvestmentTaxCalculator.Model.UkTaxModel
 @using InvestmentTaxCalculator.Services
+@using InvestmentTaxCalculator.ViewModel
 @using InvestmentTaxCalculator.Model.Interfaces
 @using InvestmentTaxCalculator.Enumerations
 
@@ -37,13 +38,14 @@
                                @bind-SourceRatio="@_oldSharesRatio"
                                @bind-DestinationRatio="@_newSharesRatio"
                                OnInputsChanged="CalculateStats"
+                               ActionToEdit="@ActionToEdit"
                                SourceLabel="Original Asset (Old Company)"
                                DestinationLabel="New Company Ticker"
                                RatioLabel="Exchange Ratio (Old : New)"
                                SourceUnitLabel="shares of old company"
                                DestinationUnitLabel="shares of new company">
             <DestinationInfo>
-                Expected New Shares: <strong>@(_taxCalculationService.HasCurrentResult ? _expectedNewQuantity.ToString("F4") : "Calculation pending")</strong>
+                Expected New Shares: <strong>@(_taxCalculationService.HasCurrentResult && _expectedNewQuantity.HasValue ? _expectedNewQuantity.Value.ToString("F4") : "Calculation pending")</strong>
             </DestinationInfo>
         </CorporateActionHeader>
 
@@ -106,7 +108,7 @@
     private string _newShareMvCurrency = "GBP";
     private decimal _newShareMvFx = 1m;
 
-    private decimal _expectedNewQuantity;
+    private decimal? _expectedNewQuantity;
     private bool _isEditing => ActionToEdit != null;
     private TakeoverCorporateAction? _previousActionToEdit;
 
@@ -183,12 +185,13 @@
 
     private void CalculateStats()
     {
-        _expectedNewQuantity = 0;
-        if (_oldSharesRatio > 0 && !string.IsNullOrEmpty(_oldTicker))
-        {
-            decimal currentHolding = _ukSection104Pools.GetExistingOrNull(_oldTicker!)?.GetLastSection104History(DateOnly.FromDateTime(_date))?.NewQuantity ?? 0;
-            _expectedNewQuantity = currentHolding * (_newSharesRatio / _oldSharesRatio);
-        }
+        _expectedNewQuantity = null;
+        if (_oldSharesRatio <= 0 || string.IsNullOrEmpty(_oldTicker)) return;
+
+        // Editing previews against the holding before this takeover, otherwise it reads the pool the takeover
+        // already emptied and the expected new shares come out as zero.
+        decimal? currentHolding = HoldingPreview.GetQuantity(_ukSection104Pools, _oldTicker, _date, ActionToEdit);
+        _expectedNewQuantity = currentHolding * (_newSharesRatio / _oldSharesRatio);
     }
 
     private async Task Submit()

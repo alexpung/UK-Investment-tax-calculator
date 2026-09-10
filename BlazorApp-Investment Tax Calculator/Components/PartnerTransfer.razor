@@ -4,6 +4,7 @@
 @using InvestmentTaxCalculator.Model.UkTaxModel
 @using InvestmentTaxCalculator.Enumerations
 @using InvestmentTaxCalculator.Services
+@using InvestmentTaxCalculator.ViewModel
 
 @inject UkSection104Pools _ukSection104Pools
 @inject TaxCalculationService _taxCalculationService
@@ -33,17 +34,22 @@
                                    Placeholder="Select or Enter Ticker" />
                 @if (!string.IsNullOrWhiteSpace(_ticker))
                 {
-                    @if (_taxCalculationService.HasCurrentResult)
+                    @if (_taxCalculationService.HasCurrentResult && _currentHolding.HasValue)
                     {
                         <div class="form-text text-info">
-                            Holding on @_date.ToShortDateString(): <strong>@_currentHolding.ToString("F4")</strong> shares
+                            @HoldingLabel: <strong>@_currentHolding.Value.ToString("F4")</strong> shares
                         </div>
-                        <HoldingBreakdown AssetName="@_ticker" AsOfDate="@_date" />
+                        @* While editing, the pool history still contains the transfer being edited, so a breakdown
+                           of it would not explain the figure above. *@
+                        @if (ActionToEdit is null)
+                        {
+                            <HoldingBreakdown AssetName="@_ticker" AsOfDate="@_date" />
+                        }
                     }
                     else
                     {
                         <div class="form-text text-warning">
-                            Holding on @_date.ToShortDateString(): <strong>Calculation pending</strong>
+                            @HoldingLabel: <strong>Calculation pending</strong>
                         </div>
                     }
                 }
@@ -96,7 +102,11 @@
     private decimal _transferredCostAmount = 0m;
     private string _transferredCostCurrency = "GBP";
     private decimal _transferredCostFx = 1m;
-    private decimal _currentHolding = 0m;
+    private decimal? _currentHolding;
+
+    private string HoldingLabel => ActionToEdit is null
+        ? $"Holding on {_date.ToShortDateString()}"
+        : $"Holding before this transfer on {_date.ToShortDateString()}";
     private List<CurrencyViewModel> _currencies = [];
     private PartnerTransferCorporateAction? _previousActionToEdit;
     private bool _isEditing => ActionToEdit != null;
@@ -163,9 +173,9 @@
 
     private void CalculateHolding()
     {
-        _currentHolding = 0m;
-        if (string.IsNullOrWhiteSpace(_ticker)) return;
-        _currentHolding = _ukSection104Pools.GetExistingOrNull(_ticker!)?.GetLastSection104History(DateOnly.FromDateTime(_date))?.NewQuantity ?? 0m;
+        // Editing previews against the holding before this transfer, otherwise a gift is validated against a pool
+        // it has already been deducted from and raising the gift is rejected against the reduced holding.
+        _currentHolding = HoldingPreview.GetQuantity(_ukSection104Pools, _ticker, _date, ActionToEdit);
     }
 
     private async Task Submit()
@@ -186,14 +196,14 @@
         if (Direction == PartnerTransferDirection.GiftToPartner)
         {
             // The holding only exists once the matching rules have run, so gifting cannot be checked before then.
-            if (!_taxCalculationService.HasCurrentResult)
+            if (!_taxCalculationService.HasCurrentResult || _currentHolding is null)
             {
                 _toastService.ShowError("Run the calculation so the holding available to gift is up to date.");
                 return;
             }
-            if (_quantity > _currentHolding)
+            if (_quantity > _currentHolding.Value)
             {
-                _toastService.ShowError($"Cannot gift {_quantity:0.####} shares because the holding is {_currentHolding:0.####} on {_date:d}.");
+                _toastService.ShowError($"Cannot gift {_quantity:0.####} shares because the holding is {_currentHolding.Value:0.####} on {_date:d}.");
                 return;
             }
         }

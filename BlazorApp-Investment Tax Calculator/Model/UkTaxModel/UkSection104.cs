@@ -217,6 +217,24 @@ public record UkSection104
     }
 
     /// <summary>
+    /// Quantity in the pool immediately before <paramref name="corporateAction"/> was applied, or null when the
+    /// action moved nothing here (its ticker had an empty pool, or it never touched this pool at all).
+    /// <para>
+    /// This is what an entry form editing that action needs. Reading the pool at the action's date instead returns
+    /// the holding with the action already applied, which previews a split as if it happened twice and a takeover
+    /// as a holding of zero. The value comes from the action's own first entry, so it reflects the pool at the
+    /// exact point the action ran: trades on the same date that the matching rules ordered after the action are
+    /// correctly excluded, and any ordered before it are correctly included.
+    /// </para>
+    /// </summary>
+    public decimal? GetQuantityBefore(TaxEvents.CorporateAction corporateAction)
+    {
+        return Section104HistoryList
+            .FirstOrDefault(history => ReferenceEquals(history.SourceCorporateAction, corporateAction))
+            ?.OldQuantity;
+    }
+
+    /// <summary>
     /// Used in corporate actions like stock split to multiply the quantity in the S104 pool
     /// </summary>
     /// <param name="factor"></param>
