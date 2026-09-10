@@ -40,7 +40,7 @@
                 {
                     <div class="col-md-6 col-lg-4">
                         <label class="form-label">Quantity at Period End</label>
-                        @if (TaxCalculationService.HasCalculated)
+                        @if (TaxCalculationService.HasCurrentResult)
                         {
                             <div class="form-control bg-dark text-info border-info">@Quantity.ToString("N4")</div>
                             <HoldingBreakdown AssetName="@SelectedTicker" AsOfDate="@PeriodEndDate.Value" />
@@ -163,11 +163,11 @@
 
     private async Task OnSubmit()
     {
-        if (!TaxCalculationService.HasCalculated)
+        if (!TaxCalculationService.HasCurrentResult)
         {
             // The ERI amount is quantity times income per share and is frozen into the saved event, so it cannot be
             // entered before the holding at the period end is known.
-            ToastService.ShowError("Run the calculation first so the quantity held at the period end is known.");
+            ToastService.ShowError("Run the calculation so the quantity held at the period end is up to date.");
             return;
         }
         if (!PeriodEndDate.HasValue || string.IsNullOrEmpty(SelectedTicker) || Quantity <= 0 || IncomePerShare <= 0 || FxRate <= 0)

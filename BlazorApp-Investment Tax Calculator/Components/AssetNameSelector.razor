@@ -1,7 +1,9 @@
 @using InvestmentTaxCalculator.Enumerations
 @using InvestmentTaxCalculator.Model
 @using InvestmentTaxCalculator.Model.UkTaxModel
+@using InvestmentTaxCalculator.Model.TaxEvents
 @using InvestmentTaxCalculator.Services
+@using System.Runtime.CompilerServices
 
 @inject UkSection104Pools Section104Pools
 @inject TaxEventLists TaxEventLists
@@ -63,9 +65,9 @@ else
             assetNames = assetNames.Where(assetName => includedAssetNames.Contains(assetName));
         }
 
-        // A holding only exists once the matching rules have run, so before that this filter is skipped rather than
-        // emptying the list: the quantity is shown as pending instead.
-        if (RequirePositiveHoldingOnDate && HoldingDate.HasValue && TaxCalculationService.HasCalculated)
+        // A holding only exists once the matching rules have run, and it is out of date once events have changed,
+        // so this filter is skipped rather than filtering on stale pools: the quantity is shown as pending instead.
+        if (RequirePositiveHoldingOnDate && HoldingDate.HasValue && TaxCalculationService.HasCurrentResult)
         {
             DateOnly holdingDate = DateOnly.FromDateTime(HoldingDate.Value);
             assetNames = assetNames.Where(assetName =>
@@ -116,8 +118,12 @@ else
 
         int poolCount = Section104Pools.GetSection104s().Count;
         return string.Join('|',
-            // Whether a calculation has run decides if the positive holding filter applies at all.
-            TaxCalculationService.HasCalculated.ToString(),
+            // Whether a current calculation exists decides if the positive holding filter applies at all.
+            TaxCalculationService.HasCurrentResult.ToString(),
+            // Counts alone do not describe the cached names: editing a manual trade removes it and adds a
+            // replacement, so its ticker can change while every count stays the same. Combining the trade
+            // identities catches the swapped instance.
+            BuildTradeIdentityHash().ToString(),
             string.Join(',', orderedAssetCategories),
             string.Join(',', orderedIncludedAssets),
             HoldingDate?.Date.ToString("yyyy-MM-dd") ?? string.Empty,
@@ -131,6 +137,24 @@ else
             // so include the identity state or the list goes stale after linking/unlinking shares.
             ShareIdentityRegistry.Identities.Count.ToString(),
             ShareIdentityRegistry.ManualLinks.Count.ToString());
+    }
+
+    private int BuildTradeIdentityHash()
+    {
+        int identityHash = 0;
+        foreach (Trade trade in TaxEventLists.Trades)
+        {
+            identityHash ^= RuntimeHelpers.GetHashCode(trade);
+        }
+        foreach (OptionTrade optionTrade in TaxEventLists.OptionTrades)
+        {
+            identityHash ^= RuntimeHelpers.GetHashCode(optionTrade);
+        }
+        foreach (FutureContractTrade futureContractTrade in TaxEventLists.FutureContractTrades)
+        {
+            identityHash ^= RuntimeHelpers.GetHashCode(futureContractTrade);
+        }
+        return identityHash;
     }
 
     private async Task OnValueChangedInternal(object? value)

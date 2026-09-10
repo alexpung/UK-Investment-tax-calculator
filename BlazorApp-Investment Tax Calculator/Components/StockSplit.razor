@@ -35,7 +35,7 @@
                                RatioMin="1m"
                                IsDestinationDisabled="true">
             <DestinationInfo>
-                Expected New Quantity: <strong>@(_taxCalculationService.HasCalculated ? _expectedNewQuantity.ToString("F4") : "Calculation pending")</strong>
+                Expected New Quantity: <strong>@(_taxCalculationService.HasCurrentResult ? _expectedNewQuantity.ToString("F4") : "Calculation pending")</strong>
             </DestinationInfo>
         </CorporateActionHeader>
 
@@ -193,10 +193,10 @@
         CalculateStats();
 
         DescribedMoney? cashInLieu = null;
-        if (_hasCash && !_taxCalculationService.HasCalculated)
+        if (_hasCash && !_taxCalculationService.HasCurrentResult)
         {
             // Whether a fraction is produced depends on the holding, which only exists after a calculation.
-            _toastService.ShowError("Run the calculation first so the holding is known before recording cash-in-lieu.");
+            _toastService.ShowError("Run the calculation so the holding is up to date before recording cash-in-lieu.");
             return;
         }
 

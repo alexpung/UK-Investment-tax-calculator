@@ -43,7 +43,7 @@
                                SourceUnitLabel="shares of parent"
                                DestinationUnitLabel="shares of spinoff">
             <DestinationInfo>
-                Expected Spinoff Shares: <strong>@(_taxCalculationService.HasCalculated ? _expectedSpinoffQuantity.ToString("F4") : "Calculation pending")</strong>
+                Expected Spinoff Shares: <strong>@(_taxCalculationService.HasCurrentResult ? _expectedSpinoffQuantity.ToString("F4") : "Calculation pending")</strong>
             </DestinationInfo>
         </CorporateActionHeader>
 

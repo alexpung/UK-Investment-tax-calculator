@@ -43,7 +43,7 @@
                                SourceUnitLabel="shares of old company"
                                DestinationUnitLabel="shares of new company">
             <DestinationInfo>
-                Expected New Shares: <strong>@(_taxCalculationService.HasCalculated ? _expectedNewQuantity.ToString("F4") : "Calculation pending")</strong>
+                Expected New Shares: <strong>@(_taxCalculationService.HasCurrentResult ? _expectedNewQuantity.ToString("F4") : "Calculation pending")</strong>
             </DestinationInfo>
         </CorporateActionHeader>
 

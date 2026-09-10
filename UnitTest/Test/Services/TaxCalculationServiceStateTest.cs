@@ -126,6 +126,50 @@ public class TaxCalculationServiceStateTest
     }
 
     [Fact]
+    public async Task TestAFailedRecalculationDoesNotLeaveTheEarlierResultReportedAsCurrent()
+    {
+        // The pools are cleared before the calculators run, so a failed recalculation leaves nothing to read even
+        // though the events are unchanged and the earlier run succeeded.
+        TaxEventLists taxEventLists = new();
+        taxEventLists.AddData([CreateTrade("01-Jan-23 10:00:00", 1000)]);
+
+        bool shouldThrow = false;
+        ITradeCalculator calculator = Substitute.For<ITradeCalculator>();
+        calculator.CalculateTax().Returns(_ => shouldThrow ? throw new InvalidOperationException("boom") : []);
+
+        TaxCalculationService service = CreateService(taxEventLists, [calculator]);
+        await service.CalculateAsync();
+        service.HasCurrentResult.ShouldBeTrue();
+
+        shouldThrow = true;
+        await service.CalculateAsync();
+
+        service.HasCalculated.ShouldBeFalse();
+        service.IsResultStale.ShouldBeFalse(); // the events never changed, so staleness alone would not catch this
+        service.HasCurrentResult.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task TestAStaleResultIsNotReportedAsCurrent()
+    {
+        // The pools still hold the previous run until the next one, so anything reading a quantity out of them has
+        // to treat a stale result as no result.
+        TaxEventLists taxEventLists = new();
+        taxEventLists.AddData([CreateTrade("01-Jan-23 10:00:00", 1000)]);
+        TaxCalculationService service = CreateService(taxEventLists);
+        await service.CalculateAsync();
+        service.HasCurrentResult.ShouldBeTrue();
+
+        taxEventLists.AddData([CreateTrade("01-Jun-23 10:00:00", 500)]);
+
+        service.HasCalculated.ShouldBeTrue();
+        service.HasCurrentResult.ShouldBeFalse();
+
+        await service.CalculateAsync();
+        service.HasCurrentResult.ShouldBeTrue();
+    }
+
+    [Fact]
     public async Task TestRemovingAnEventAfterCalculatingMakesTheResultStale()
     {
         TaxEventLists taxEventLists = new();

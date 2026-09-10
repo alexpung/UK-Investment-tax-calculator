@@ -47,6 +47,13 @@ public class TaxCalculationService(
     public bool IsResultStale => HasCalculated && GetEventFingerprint() != _calculatedEventFingerprint;
 
     /// <summary>
+    /// Whether the Section 104 pools reflect the tax events as they stand now. Anything reading a quantity out of
+    /// the pools must gate on this rather than on <see cref="HasCalculated"/> alone: once events have changed the
+    /// pools still hold the previous result, and an ERI amount computed from it would be frozen into a saved event.
+    /// </summary>
+    public bool HasCurrentResult => HasCalculated && !IsResultStale;
+
+    /// <summary>
     /// Cheap stand in for "have the tax events changed", computed on demand and allocating nothing.
     /// <para>
     /// The count catches additions and removals; the combined reference identities catch an event being replaced by
@@ -76,6 +83,10 @@ public class TaxCalculationService(
         {
             CurrentTrigger = trigger;
             _isCalculating = true;
+            // Cleared up front rather than on success: the pools are emptied below, so from here until this run
+            // completes there is no result to read. Without this a failed recalculation would leave the previous
+            // run's flag set while the pools stand empty, and the quantities would be reported as up to date.
+            HasCalculated = false;
             SafeInvokeOnStateChanged();
             section104Pools.Clear();
             tradeCalculationResult.Clear();

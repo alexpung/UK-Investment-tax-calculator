@@ -33,7 +33,7 @@
                                    Placeholder="Select or Enter Ticker" />
                 @if (!string.IsNullOrWhiteSpace(_ticker))
                 {
-                    @if (_taxCalculationService.HasCalculated)
+                    @if (_taxCalculationService.HasCurrentResult)
                     {
                         <div class="form-text text-info">
                             Holding on @_date.ToShortDateString(): <strong>@_currentHolding.ToString("F4")</strong> shares
@@ -186,9 +186,9 @@
         if (Direction == PartnerTransferDirection.GiftToPartner)
         {
             // The holding only exists once the matching rules have run, so gifting cannot be checked before then.
-            if (!_taxCalculationService.HasCalculated)
+            if (!_taxCalculationService.HasCurrentResult)
             {
-                _toastService.ShowError("Run the calculation first so the holding available to gift is known.");
+                _toastService.ShowError("Run the calculation so the holding available to gift is up to date.");
                 return;
             }
             if (_quantity > _currentHolding)

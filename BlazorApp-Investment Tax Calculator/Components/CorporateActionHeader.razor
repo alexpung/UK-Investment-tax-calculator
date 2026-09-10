@@ -23,7 +23,7 @@
                            Placeholder="Select Asset" />
         @if (!string.IsNullOrEmpty(SourceTicker))
         {
-            @if (_taxCalculationService.HasCalculated)
+            @if (_taxCalculationService.HasCurrentResult)
             {
                 <div class="form-text text-info">
                     Holding on @Date.ToShortDateString(): <strong>@CurrentHolding</strong> shares
