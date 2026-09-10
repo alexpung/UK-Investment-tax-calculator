@@ -92,7 +92,20 @@ public static class UkMatchingRules
                         }
                         break;
                     case IChangeSection104 action:
+                        // Stamped here rather than inside each ChangeSection104 implementation: this is the single
+                        // place every one of them is invoked, so nothing has to thread the action through
+                        // MultiplyQuantity, AddAssets, ClearSection104 and the rest. Actions that touch the pool
+                        // more than once (a takeover clearing it and adding a cash disposal, a split multiplying
+                        // and then removing a fraction) get every entry they produced tagged.
+                        int stampFrom = section104.Section104HistoryList.Count;
                         action.ChangeSection104(section104);
+                        if (action is CorporateAction sourceCorporateAction)
+                        {
+                            for (int index = stampFrom; index < section104.Section104HistoryList.Count; index++)
+                            {
+                                section104.Section104HistoryList[index].SourceCorporateAction = sourceCorporateAction;
+                            }
+                        }
                         break;
                     case CorporateAction:
                         // Intentionally ignore as CorporateActions without IChangeSection104 don't need processing

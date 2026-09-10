@@ -2,6 +2,7 @@
 @using InvestmentTaxCalculator.Model.TaxEvents
 @using InvestmentTaxCalculator.Model.UkTaxModel
 @using InvestmentTaxCalculator.Services
+@using InvestmentTaxCalculator.ViewModel
 @using InvestmentTaxCalculator.Model.Interfaces
 @using InvestmentTaxCalculator.Enumerations
 
@@ -37,13 +38,14 @@
                                @bind-SourceRatio="@_parentSharesRatio"
                                @bind-DestinationRatio="@_spinoffSharesRatio"
                                OnInputsChanged="CalculateStats"
+                               ActionToEdit="@ActionToEdit"
                                SourceLabel="Parent Company Asset"
                                DestinationLabel="Spinoff Company Ticker"
                                RatioLabel="Spinoff Ratio (Parent : Spinoff)"
                                SourceUnitLabel="shares of parent"
                                DestinationUnitLabel="shares of spinoff">
             <DestinationInfo>
-                Expected Spinoff Shares: <strong>@(_taxCalculationService.HasCurrentResult ? _expectedSpinoffQuantity.ToString("F4") : "Calculation pending")</strong>
+                Expected Spinoff Shares: <strong>@(_taxCalculationService.HasCurrentResult && _expectedSpinoffQuantity.HasValue ? _expectedSpinoffQuantity.Value.ToString("F4") : "Calculation pending")</strong>
             </DestinationInfo>
         </CorporateActionHeader>
 
@@ -132,7 +134,7 @@
     private decimal _cashFx = 1m;
     private bool _electSmallCash = true;
 
-    private decimal _expectedSpinoffQuantity;
+    private decimal? _expectedSpinoffQuantity;
     private decimal _parentRetainedPct;
     private bool _isEditing => ActionToEdit != null;
     private SpinoffCorporateAction? _previousActionToEdit;
@@ -222,14 +224,16 @@
 
     private void CalculateStats()
     {
-        _expectedSpinoffQuantity = 0;
-        if (_parentSharesRatio > 0 && !string.IsNullOrEmpty(_parentTicker))
-        {
-            decimal currentHolding = _ukSection104Pools.GetExistingOrNull(_parentTicker!)?.GetLastSection104History(DateOnly.FromDateTime(_date))?.NewQuantity ?? 0;
+        _expectedSpinoffQuantity = null;
+        if (_parentSharesRatio <= 0 || string.IsNullOrEmpty(_parentTicker)) return;
 
-            decimal rawQuantity = currentHolding * (_spinoffSharesRatio / _parentSharesRatio);
-            _expectedSpinoffQuantity = Math.Round(rawQuantity, 4, MidpointRounding.ToZero);
-        }
+        // A spinoff leaves the parent quantity alone, so the two bases agree here. Routed through the same helper
+        // anyway so every corporate action form previews the same way.
+        decimal? currentHolding = HoldingPreview.GetQuantity(_ukSection104Pools, _parentTicker, _date, ActionToEdit);
+        if (currentHolding is null) return;
+
+        decimal rawQuantity = currentHolding.Value * (_spinoffSharesRatio / _parentSharesRatio);
+        _expectedSpinoffQuantity = Math.Round(rawQuantity, 4, MidpointRounding.ToZero);
     }
 
     private void CalculateCostSplit()

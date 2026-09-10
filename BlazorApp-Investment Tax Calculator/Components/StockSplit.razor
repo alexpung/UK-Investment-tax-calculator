@@ -2,6 +2,7 @@
 @using InvestmentTaxCalculator.Model.TaxEvents
 @using InvestmentTaxCalculator.Model.UkTaxModel
 @using InvestmentTaxCalculator.Services
+@using InvestmentTaxCalculator.ViewModel
 @using InvestmentTaxCalculator.Model.Interfaces
 @using InvestmentTaxCalculator.Enumerations
 @using StockSplitAction = InvestmentTaxCalculator.Model.TaxEvents.StockSplit
@@ -25,6 +26,7 @@
                                @bind-SourceRatio="@_splitFrom"
                                @bind-DestinationRatio="@_splitTo"
                                OnInputsChanged="CalculateStats"
+                               ActionToEdit="@ActionToEdit"
                                SourceLabel="Asset undergoing split"
                                DestinationLabel="N/A (Ticker remains same)"
                                RatioLabel="Split Ratio (Example: 2 for 1)"
@@ -35,7 +37,7 @@
                                RatioMin="1m"
                                IsDestinationDisabled="true">
             <DestinationInfo>
-                Expected New Quantity: <strong>@(_taxCalculationService.HasCurrentResult ? _expectedNewQuantity.ToString("F4") : "Calculation pending")</strong>
+                Expected New Quantity: <strong>@(_taxCalculationService.HasCurrentResult && _expectedNewQuantity.HasValue ? _expectedNewQuantity.Value.ToString("F4") : "Calculation pending")</strong>
             </DestinationInfo>
         </CorporateActionHeader>
 
@@ -57,7 +59,7 @@
                              CssBackgroundColor="#374151">
                 <ChildContent>
                     <div class="alert @(_fractionalRemoved > FractionalTolerance ? "alert-info" : "alert-warning") py-2 mb-0">
-                        Fractional Shares Removed: <strong>@_fractionalRemoved.ToString("F6")</strong>
+                        Fractional Shares Removed: <strong>@(_fractionalRemoved?.ToString("F6") ?? "Calculation pending")</strong>
                         @if (_fractionalRemoved <= FractionalTolerance)
                         {
                             <div class="mt-1">No fractional shares are produced by the current holding and split ratio, so cash-in-lieu cannot be applied.</div>
@@ -90,8 +92,8 @@
     private decimal _cashFx = 1m;
     private bool _electSmallCash = true;
 
-    private decimal _expectedNewQuantity;
-    private decimal _fractionalRemoved;
+    private decimal? _expectedNewQuantity;
+    private decimal? _fractionalRemoved;
     private bool _isEditing => ActionToEdit != null;
     private StockSplitAction? _previousActionToEdit;
     private const decimal FractionalTolerance = 0.00000001m;
@@ -156,15 +158,18 @@
 
     private void CalculateStats()
     {
-        _expectedNewQuantity = 0;
-        _fractionalRemoved = 0;
-        if (_splitFrom > 0 && !string.IsNullOrEmpty(_ticker))
-        {
-            decimal currentHolding = _ukSection104Pools.GetExistingOrNull(_ticker!)?.GetLastSection104History(DateOnly.FromDateTime(_date))?.NewQuantity ?? 0;
-            decimal rawNewQuantity = currentHolding * (_splitTo / _splitFrom);
-            _expectedNewQuantity = rawNewQuantity;
-            _fractionalRemoved = rawNewQuantity - Math.Floor(rawNewQuantity);
-        }
+        _expectedNewQuantity = null;
+        _fractionalRemoved = null;
+        if (_splitFrom <= 0 || string.IsNullOrEmpty(_ticker)) return;
+
+        // Editing previews against the holding before this split, otherwise the ratio is applied to a pool the
+        // split has already multiplied and the expected quantity comes out doubled.
+        decimal? currentHolding = HoldingPreview.GetQuantity(_ukSection104Pools, _ticker, _date, ActionToEdit);
+        if (currentHolding is null) return;
+
+        decimal rawNewQuantity = currentHolding.Value * (_splitTo / _splitFrom);
+        _expectedNewQuantity = rawNewQuantity;
+        _fractionalRemoved = rawNewQuantity - Math.Floor(rawNewQuantity);
     }
 
     private async Task Submit()
@@ -193,7 +198,7 @@
         CalculateStats();
 
         DescribedMoney? cashInLieu = null;
-        if (_hasCash && !_taxCalculationService.HasCurrentResult)
+        if (_hasCash && (!_taxCalculationService.HasCurrentResult || _fractionalRemoved is null))
         {
             // Whether a fraction is produced depends on the holding, which only exists after a calculation.
             _toastService.ShowError("Run the calculation so the holding is up to date before recording cash-in-lieu.");

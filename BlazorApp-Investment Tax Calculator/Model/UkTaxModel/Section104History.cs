@@ -9,6 +9,14 @@ namespace InvestmentTaxCalculator.Model.UkTaxModel;
 public class Section104History : ITextFilePrintable
 {
     public ITradeTaxCalculation? TradeTaxCalculation { get; set; }
+
+    /// <summary>
+    /// The corporate action whose <see cref="Interfaces.IChangeSection104.ChangeSection104"/> produced this entry,
+    /// when one did. Stamped centrally as the action is processed, so an entry form editing that action can find
+    /// the pool state that preceded it rather than reading a pool the action has already been applied to.
+    /// </summary>
+    public TaxEvents.CorporateAction? SourceCorporateAction { get; set; }
+
     public DateTime Date { get; set; }
     public decimal OldQuantity { get; set; }
     public WrappedMoney OldValue { get; set; } = WrappedMoney.GetBaseCurrencyZero();

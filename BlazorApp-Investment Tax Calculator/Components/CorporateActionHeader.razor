@@ -1,5 +1,7 @@
 @using InvestmentTaxCalculator.Model
+@using InvestmentTaxCalculator.Model.TaxEvents
 @using InvestmentTaxCalculator.Model.UkTaxModel
+@using InvestmentTaxCalculator.ViewModel
 @using InvestmentTaxCalculator.Services
 @using InvestmentTaxCalculator.Enumerations
 
@@ -23,17 +25,22 @@
                            Placeholder="Select Asset" />
         @if (!string.IsNullOrEmpty(SourceTicker))
         {
-            @if (_taxCalculationService.HasCurrentResult)
+            @if (_taxCalculationService.HasCurrentResult && CurrentHolding.HasValue)
             {
                 <div class="form-text text-info">
-                    Holding on @Date.ToShortDateString(): <strong>@CurrentHolding</strong> shares
+                    @HoldingLabel: <strong>@CurrentHolding.Value</strong> shares
                 </div>
-                <HoldingBreakdown AssetName="@SourceTicker" AsOfDate="@Date" />
+                @* While editing, the pool history still contains the action being edited, so a breakdown of it would
+                   not explain the figure above. It comes back once the edit is submitted and recalculated. *@
+                @if (ActionToEdit is null)
+                {
+                    <HoldingBreakdown AssetName="@SourceTicker" AsOfDate="@Date" />
+                }
             }
             else
             {
                 <div class="form-text text-warning">
-                    Holding on @Date.ToShortDateString(): <strong>Calculation pending</strong>
+                    @HoldingLabel: <strong>Calculation pending</strong>
                 </div>
             }
         }
@@ -109,7 +116,15 @@
     [Parameter] public decimal RatioMin { get; set; } = 0.0001m;
     [Parameter] public EventCallback OnInputsChanged { get; set; }
 
-    public decimal CurrentHolding { get; private set; }
+    /// <summary>The action this form is editing, so the holding is previewed against the state that preceded it.</summary>
+    [Parameter] public CorporateAction? ActionToEdit { get; set; }
+
+    /// <summary>Null when no holding can be shown; see <see cref="HoldingPreview.GetQuantity"/>.</summary>
+    public decimal? CurrentHolding { get; private set; }
+
+    private string HoldingLabel => ActionToEdit is null
+        ? $"Holding on {Date.ToShortDateString()}"
+        : $"Holding before this action on {Date.ToShortDateString()}";
 
     protected override void OnParametersSet()
     {
@@ -118,15 +133,7 @@
 
     private void CalculateStats()
     {
-        CurrentHolding = 0;
-        if (string.IsNullOrEmpty(SourceTicker)) return;
-
-        var history = _ukSection104Pools.GetExistingOrNull(SourceTicker!)?.GetLastSection104History(DateOnly.FromDateTime(Date));
-        
-        if (history != null) 
-        {
-            CurrentHolding = history.NewQuantity;
-        }
+        CurrentHolding = HoldingPreview.GetQuantity(_ukSection104Pools, SourceTicker, Date, ActionToEdit);
     }
 
     private async Task OnDateChangeInternal(DateTime? value)
