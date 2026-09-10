@@ -85,7 +85,7 @@
 
                     @* The breakdown table needs the width of the card rather than the width of the single grid column
                        the quantity sits in, so it is given a row of its own under the fields it explains. *@
-                    @if (TaxCalculationService.HasCalculated)
+                    @if (TaxCalculationService.HasCurrentResult)
                     {
                         <div class="entry-field-full">
                             <span class="form-label d-block mb-1">Quantity breakdown for @SelectedTicker</span>
