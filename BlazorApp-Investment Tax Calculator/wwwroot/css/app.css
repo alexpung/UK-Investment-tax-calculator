@@ -17,13 +17,15 @@
 
 .main-content-wrapper {
     flex: 1;
-    padding: 2rem;
+    /* Keep the generous vertical rhythm but trim the horizontal padding: the
+       data grids need every pixel of width they can get. */
+    padding: 2rem 1rem;
     background-color: var(--bs-body-bg);
 }
 
 @media (max-width: 768px) {
     .main-content-wrapper {
-        padding: 1rem;
+        padding: 1rem 0.5rem;
         padding-top: 4.5rem;
         /* Prevent overlap with fixed hamburger button */
     }
@@ -178,6 +180,16 @@
 /* Denser typography recovers horizontal room for many-column tables */
 .rz-data-grid .rz-grid-table {
     font-size: 0.8125rem;
+}
+
+/* Radzen truncates cell text with "…" when the table uses a fixed layout
+   (which AllowColumnResize turns on). Let cell content wrap instead, so a
+   value that is wider than its column stays readable. */
+.rz-data-grid .rz-grid-table tbody td .rz-cell-data {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    overflow-wrap: break-word;
 }
 
 /* Loading Screen Styles */
