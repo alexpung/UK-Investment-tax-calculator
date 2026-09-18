@@ -29,6 +29,9 @@ public class CalculationWorkflowTests : PlaywrightTestBase
     private const string ExpectedTotalLoss = "-£7,003,493.00";
     private const string ExpectedTotalDividend = "£555.00";
     private const string ExpectedForeignTaxPaid = "-£166.50";
+    // Every reported amount is converted to the base currency, so the symbol must never
+    // follow the browser locale (the test context is pinned to en-US in PlaywrightTestBase).
+    private const string BaseCurrencySymbol = "£";
 
     [Test]
     public async Task LoadXmlFile_ShowsImportStatistics()
@@ -157,6 +160,38 @@ public class CalculationWorkflowTests : PlaywrightTestBase
         
         Assert.That(rowCount, Is.EqualTo(ExpectedDividendRows), 
             $"Dividend Data page should have {ExpectedDividendRows} data rows");
+    }
+
+    [Test]
+    public async Task AfterCalculation_DividendSummaryPageShowsAmountsInBaseCurrency()
+    {
+        await LoadAndCalculateAsync();
+
+        // Navigate to Dividend/Income Summary page
+        await ExpandNavCategoryAsync("Tax summaries");
+        await Page.Locator(".nav-link-custom:has-text('Dividend/Income Summary')").ClickAsync();
+        await Page.WaitForURLAsync("**/DividendYearlyTaxSummaryPage", new PageWaitForURLOptions { Timeout = 10000 });
+
+        await Task.Delay(2000);
+
+        var dataRows = Page.Locator("tr.rz-data-row");
+        var rowCount = await dataRows.CountAsync();
+        TestContext.WriteLine($"Dividend Summary page has {rowCount} data rows");
+
+        Assert.That(rowCount, Is.GreaterThan(0), "Dividend Summary page should have at least one data row");
+
+        for (var i = 0; i < rowCount; i++)
+        {
+            var rowText = await dataRows.Nth(i).TextContentAsync() ?? "";
+            TestContext.WriteLine($"Dividend Summary row {i}: {rowText}");
+
+            Assert.That(rowText, Does.Contain(BaseCurrencySymbol),
+                $"Row {i} should report amounts with the base currency symbol '{BaseCurrencySymbol}'");
+            Assert.That(rowText, Does.Not.Contain("$"),
+                $"Row {i} should not use the browser locale currency symbol");
+            Assert.That(rowText, Does.Not.Contain("\u00A4"),
+                $"Row {i} should not use the generic currency sign");
+        }
     }
 
     [Test]
