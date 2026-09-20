@@ -1,5 +1,4 @@
 @using InvestmentTaxCalculator.Model
-@using System.Globalization
 @using InvestmentTaxCalculator.Services
 @inherits TaxCalculationRefreshComponentBase
 
@@ -21,19 +20,25 @@
                 <Columns>
                     <RadzenDataGridColumn TItem="DividendSummary" Property="@nameof(DividendSummary.TaxYear)" Title="Tax Year" TextAlign="TextAlign.Right" FilterMode="FilterMode.CheckBoxList" />
                     <RadzenDataGridColumn TItem="DividendSummary" Property="CountryOfOrigin.ThreeDigitCode" Title="Country of Origin" FilterMode="FilterMode.CheckBoxList" />
-                    <RadzenDataGridColumn TItem="DividendSummary" Property="TotalInterestIncome.Amount" Title="Total interest income" FormatString="{0:C2}" TextAlign="TextAlign.Right">
+                    @* Amounts are rendered from WrappedMoney so the base currency symbol is used.
+                       A "{0:C2}" format string would instead pick the browser culture's symbol (e.g. $ on en-US).
+                       Property still points at the decimal amount to keep sorting and filtering numeric. *@
+                    <RadzenDataGridColumn TItem="DividendSummary" Property="TotalInterestIncome.Amount" Title="Total interest income" TextAlign="TextAlign.Right">
+                        <Template Context="dividendSummary">@dividendSummary.TotalInterestIncome</Template>
                         <FooterTemplate>
-                            Total: <b>@_dividendSummaries.Sum(d => d.TotalInterestIncome.Amount).ToString("C2", CultureInfo.CurrentCulture)</b>
+                            Total: <b>@_dividendSummaries.Sum(d => d.TotalInterestIncome)</b>
                         </FooterTemplate>
                     </RadzenDataGridColumn>
-                    <RadzenDataGridColumn TItem="DividendSummary" Property="TotalTaxableDividend.Amount" Title="Total Taxable Dividend" FormatString="{0:C2}" TextAlign="TextAlign.Right">
+                    <RadzenDataGridColumn TItem="DividendSummary" Property="TotalTaxableDividend.Amount" Title="Total Taxable Dividend" TextAlign="TextAlign.Right">
+                        <Template Context="dividendSummary">@dividendSummary.TotalTaxableDividend</Template>
                         <FooterTemplate>
-                            Total: <b>@_dividendSummaries.Sum(d => d.TotalTaxableDividend.Amount).ToString("C2", CultureInfo.CurrentCulture)</b>
+                            Total: <b>@_dividendSummaries.Sum(d => d.TotalTaxableDividend)</b>
                         </FooterTemplate>
                     </RadzenDataGridColumn>
-                    <RadzenDataGridColumn TItem="DividendSummary" Property="TotalForeignTaxPaid.Amount" Title="Total Foreign Tax Paid" FormatString="{0:C2}" TextAlign="TextAlign.Right">
+                    <RadzenDataGridColumn TItem="DividendSummary" Property="TotalForeignTaxPaid.Amount" Title="Total Foreign Tax Paid" TextAlign="TextAlign.Right">
+                        <Template Context="dividendSummary">@dividendSummary.TotalForeignTaxPaid</Template>
                         <FooterTemplate>
-                            Total: <b>@_dividendSummaries.Sum(d => d.TotalForeignTaxPaid.Amount).ToString("C2", CultureInfo.CurrentCulture)</b>
+                            Total: <b>@_dividendSummaries.Sum(d => d.TotalForeignTaxPaid)</b>
                         </FooterTemplate>
                     </RadzenDataGridColumn>
                 </Columns>

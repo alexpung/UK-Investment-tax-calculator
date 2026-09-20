@@ -29,6 +29,11 @@ public class CalculationWorkflowTests : PlaywrightTestBase
     private const string ExpectedTotalLoss = "-£7,003,493.00";
     private const string ExpectedTotalDividend = "£555.00";
     private const string ExpectedForeignTaxPaid = "-£166.50";
+    // Every reported amount is converted to the base currency, so the symbol must never
+    // follow the browser locale (the test context is pinned to en-US in PlaywrightTestBase).
+    private const string BaseCurrencySymbol = "£";
+    // Total interest income / Total Taxable Dividend / Total Foreign Tax Paid.
+    private const int ExpectedSummaryMoneyColumns = 3;
 
     [Test]
     public async Task LoadXmlFile_ShowsImportStatistics()
@@ -160,6 +165,49 @@ public class CalculationWorkflowTests : PlaywrightTestBase
     }
 
     [Test]
+    public async Task AfterCalculation_DividendSummaryPageShowsAmountsInBaseCurrency()
+    {
+        await LoadAndCalculateAsync();
+
+        // Navigate to Dividend/Income Summary page
+        await ExpandNavCategoryAsync("Tax summaries");
+        await Page.Locator(".nav-link-custom:has-text('Dividend/Income Summary')").ClickAsync();
+        await Page.WaitForURLAsync("**/DividendYearlyTaxSummaryPage", new PageWaitForURLOptions { Timeout = 10000 });
+
+        await Task.Delay(2000);
+
+        var dataRows = Page.Locator("tr.rz-data-row");
+        var rowCount = await dataRows.CountAsync();
+        TestContext.WriteLine($"Dividend Summary page has {rowCount} data rows");
+
+        Assert.That(rowCount, Is.GreaterThan(0), "Dividend Summary page should have at least one data row");
+
+        for (var i = 0; i < rowCount; i++)
+        {
+            var rowText = await dataRows.Nth(i).TextContentAsync() ?? "";
+            TestContext.WriteLine($"Dividend Summary row {i}: {rowText}");
+            AssertBaseCurrencyOnly(rowText, $"Row {i}");
+        }
+
+        // The footer totals are summed and rendered separately from the row cells, so check each
+        // of the three money columns' footers rather than relying on the rows alone.
+        var footerTotals = Page.Locator("tfoot .rz-column-footer")
+            .Filter(new LocatorFilterOptions { HasText = "Total:" });
+        var footerCount = await footerTotals.CountAsync();
+        TestContext.WriteLine($"Dividend Summary page has {footerCount} footer totals");
+
+        Assert.That(footerCount, Is.EqualTo(ExpectedSummaryMoneyColumns),
+            $"Dividend Summary should show a footer total for each of the {ExpectedSummaryMoneyColumns} money columns");
+
+        for (var i = 0; i < footerCount; i++)
+        {
+            var footerText = await footerTotals.Nth(i).TextContentAsync() ?? "";
+            TestContext.WriteLine($"Dividend Summary footer total {i}: {footerText.Trim()}");
+            AssertBaseCurrencyOnly(footerText, $"Footer total {i}");
+        }
+    }
+
+    [Test]
     public async Task AfterCalculation_Section104DataPageHasData()
     {
         await LoadAndCalculateAsync();
@@ -178,6 +226,20 @@ public class CalculationWorkflowTests : PlaywrightTestBase
         
         Assert.That(rowCount, Is.EqualTo(ExpectedSection104Rows), 
             $"Section 104 Data page should have {ExpectedSection104Rows} data rows");
+    }
+
+    /// <summary>
+    /// Asserts that rendered money text uses the base currency symbol rather than one that follows
+    /// the browser locale.
+    /// </summary>
+    private static void AssertBaseCurrencyOnly(string text, string subject)
+    {
+        Assert.That(text, Does.Contain(BaseCurrencySymbol),
+            $"{subject} should report amounts with the base currency symbol '{BaseCurrencySymbol}'");
+        Assert.That(text, Does.Not.Contain("$"),
+            $"{subject} should not use the browser locale currency symbol");
+        Assert.That(text, Does.Not.Contain("\u00A4"),
+            $"{subject} should not use the generic currency sign");
     }
 
     /// <summary>

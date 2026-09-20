@@ -18,12 +18,16 @@ public class PlaywrightTestBase : PageTest
 
     /// <summary>
     /// Configure Playwright context to ignore HTTPS certificate errors for dev certs.
+    /// The locale is pinned to a non-GBP one so formatting assertions do not depend on the
+    /// locale of the machine running the tests, and so amounts that wrongly follow the browser
+    /// culture instead of the base currency are caught.
     /// </summary>
     public override BrowserNewContextOptions ContextOptions()
     {
         return new BrowserNewContextOptions
         {
-            IgnoreHTTPSErrors = true
+            IgnoreHTTPSErrors = true,
+            Locale = "en-US"
         };
     }
 
