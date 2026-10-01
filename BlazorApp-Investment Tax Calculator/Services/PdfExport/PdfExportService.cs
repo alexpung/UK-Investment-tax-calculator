@@ -1,4 +1,4 @@
-using InvestmentTaxCalculator.Model;
+﻿using InvestmentTaxCalculator.Model;
 using InvestmentTaxCalculator.Model.Interfaces;
 using InvestmentTaxCalculator.Model.UkTaxModel;
 using InvestmentTaxCalculator.Services.PdfExport.Sections;
@@ -25,11 +25,13 @@ public class PdfExportService
         ISection dividendSummarySection = new DividendSummarySection(dividendCalculationResult);
         ISection disposalDetailSection = new DisposalDetailSection(tradeCalculationResult);
         ISection interestIncomeSummarySection = new InterestIncomeSummarySection(dividendCalculationResult);
+        ISection interestExpenseSection = new InterestExpenseSection(dividendCalculationResult);
         ISection companyInformationSection = new CompanyInformationSection(shareIdentityRegistry, taxEventLists, taxYearConverter, uKSection104Pools, tradeCalculationResult);
         AllSections = [
             yearSummarySection,
             dividendSummarySection,
             interestIncomeSummarySection,
+            interestExpenseSection,
             disposalDetailSection,
             endOfYearSection104StatusSection,
             section104Section,

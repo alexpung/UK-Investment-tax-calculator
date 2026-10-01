@@ -46,6 +46,17 @@ public record DividendSummary
                                                            select interest.Amount.BaseCurrencyAmount).Sum();
 
     public virtual WrappedMoney TotalInterestIncome => (from interest in RelatedInterestIncome
+                                                        where !interest.IsInterestExpense
                                                         select interest.Amount.BaseCurrencyAmount).Sum();
+
+    /// <summary>
+    /// Interest paid, represented as negative number. For reference only - not deductible and not included in <see cref="TotalInterestIncome"/>.
+    /// </summary>
+    public virtual WrappedMoney TotalInterestExpense => (from interest in RelatedInterestIncome
+                                                         where interest.IsInterestExpense
+                                                         select interest.Amount.BaseCurrencyAmount).Sum();
+
+    public IEnumerable<InterestIncome> InterestIncomeExcludingExpenses => RelatedInterestIncome.Where(i => !i.IsInterestExpense);
+    public IEnumerable<InterestIncome> InterestExpenses => RelatedInterestIncome.Where(i => i.IsInterestExpense);
 
 }

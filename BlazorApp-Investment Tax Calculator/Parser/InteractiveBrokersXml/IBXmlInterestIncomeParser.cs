@@ -10,7 +10,7 @@ public static class IBXmlInterestIncomeParser
     public static List<InterestIncome> ParseXml(XElement document)
     {
         IEnumerable<XElement> filteredElements = document.Descendants("StatementOfFundsLine")
-            .Where(row => row.GetAttribute("activityCode") is "INTR" or "INTP" or "CINT" && row.GetAttribute("levelOfDetail") == "Currency");
+            .Where(row => row.GetAttribute("activityCode") is "INTR" or "INTP" or "CINT" or "DINT" && row.GetAttribute("levelOfDetail") == "Currency");
         return filteredElements.Select(InterestIncomeMaker).Where(interestIncome => interestIncome != null).ToList()!;
     }
 
@@ -21,7 +21,7 @@ public static class IBXmlInterestIncomeParser
         CountryCode incomeLocation;
         try
         {
-            incomeLocation = interestType == InterestType.SAVINGS
+            incomeLocation = interestType is InterestType.SAVINGS or InterestType.INTERESTEXPENSE
             ? CountryCode.GetRegionByTwoDigitCode("GB") : CountryCode.GetRegionByTwoDigitCode(element.GetAttribute("issuerCountryCode"));
         }
         catch (ParseException)
@@ -33,7 +33,7 @@ public static class IBXmlInterestIncomeParser
             return new InterestIncome
             {
                 InterestType = (InterestType)interestType,
-                AssetName = interestType == InterestType.SAVINGS ? "Broker interest" : element.GetAttribute("symbol"),
+                AssetName = interestType is InterestType.SAVINGS or InterestType.INTERESTEXPENSE ? "Broker interest" : element.GetAttribute("symbol"),
                 Date = XmlParserHelper.ParseDate(element.GetAttribute("settleDate")),
                 IncomeLocation = incomeLocation,
                 Amount = element.BuildDescribedMoney("amount", "currency", "fxRateToBase", element.GetAttribute("activityDescription"))
@@ -53,6 +53,7 @@ public static class IBXmlInterestIncomeParser
         if (description.Contains("Sold Accrued Interest")) return InterestType.ACCURREDINCOMEPROFIT;
         if (description.Contains("Bond Coupon Payment")) return InterestType.BOND;
         if (interestIncomeElement.GetAttribute("activityCode") == "CINT") return InterestType.SAVINGS;
+        if (interestIncomeElement.GetAttribute("activityCode") == "DINT") return InterestType.INTERESTEXPENSE;
         return null;
     }
 }

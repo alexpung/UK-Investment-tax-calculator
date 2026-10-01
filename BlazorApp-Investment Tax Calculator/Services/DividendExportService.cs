@@ -28,7 +28,8 @@ public class DividendExportService(DividendCalculationResult dividendCalculation
             output.AppendLine($"\tAccrued income loss: {dividendSummary.TotalAccurredIncomeLoss}");
             output.AppendLine($"\tETF dividend income: {dividendSummary.TotalEtfDividendIncome}");
             output.AppendLine($"\tExcess Reportable Income (Interest): {dividendSummary.TotalExcessReportableIncomeInterest}");
-            output.AppendLine($"\tTotal interest income: {dividendSummary.TotalInterestIncome}\n");
+            output.AppendLine($"\tTotal interest income: {dividendSummary.TotalInterestIncome}");
+            output.AppendLine($"\tInterest expense (not deductible, excluded from totals, for reference only): {dividendSummary.TotalInterestExpense}\n");
             output.AppendLine();
             output.AppendLine("\t\tDividend Transactions:");
             if (dividendSummary.RelatedDividendsAndTaxes.Count == 0)
@@ -40,13 +41,22 @@ public class DividendExportService(DividendCalculationResult dividendCalculation
                 output.AppendLine($"\t\t{dividend.PrintToTextFile()}");
             }
             output.AppendLine("\t\tInterest Transactions:");
-            if (dividendSummary.RelatedInterestIncome.Count == 0)
+            if (!dividendSummary.InterestIncomeExcludingExpenses.Any())
             {
                 output.AppendLine("\t\tNone");
             }
-            foreach (var interestIncome in dividendSummary.RelatedInterestIncome.OrderBy(i => i.Date))
+            foreach (var interestIncome in dividendSummary.InterestIncomeExcludingExpenses.OrderBy(i => i.Date))
             {
                 output.AppendLine($"\t\t{interestIncome.PrintToTextFile()}");
+            }
+            output.AppendLine("\t\tInterest Expense Transactions (not deductible, not included in any summary, for reference only):");
+            if (!dividendSummary.InterestExpenses.Any())
+            {
+                output.AppendLine("\t\tNone");
+            }
+            foreach (var interestExpense in dividendSummary.InterestExpenses.OrderBy(i => i.Date))
+            {
+                output.AppendLine($"\t\t{interestExpense.PrintToTextFile()}");
             }
             output.AppendLine();
         }
