@@ -16,7 +16,7 @@ public class InterestIncomeSummarySection(DividendCalculationResult incomeCalcul
         Paragraph paragraph = section.AddParagraph(Title);
         Style.StyleTitle(paragraph);
         List<DividendSummary> incomeSummaries = incomeCalculationResult.DividendSummary.Where(i => i.TaxYear == taxYear).ToList();
-        if (!incomeSummaries.Any() || incomeSummaries.All(s => s.RelatedInterestIncome.Count == 0))
+        if (!incomeSummaries.Any() || incomeSummaries.All(s => !s.InterestIncomeExcludingExpenses.Any()))
         {
             section.AddParagraph($"No interest income received in the tax year {taxYear} - {taxYear + 1}.");
             return section;
@@ -43,7 +43,7 @@ public class InterestIncomeSummarySection(DividendCalculationResult incomeCalcul
         headerRow.Cells[6].AddParagraph("ERI interest");
         headerRow.Cells[7].AddParagraph("Total interest income taxable");
 
-        foreach (var summary in incomeSummaries)
+        foreach (var summary in incomeSummaries.Where(s => s.InterestIncomeExcludingExpenses.Any()))
         {
             Row row = table.AddRow();
             row.Cells[0].AddParagraph($"{summary.CountryOfOrigin.CountryName} ({summary.CountryOfOrigin.ThreeDigitCode})");
@@ -68,7 +68,7 @@ public class InterestIncomeSummarySection(DividendCalculationResult incomeCalcul
         summaryTotalRow.Cells[7].AddParagraph(incomeSummaries.Sum(summary => summary.TotalInterestIncome).ToString());
         foreach (var summary in incomeSummaries)
         {
-            if (summary.RelatedInterestIncome.Count == 0)
+            if (!summary.InterestIncomeExcludingExpenses.Any())
             {
                 continue;
             }
@@ -87,7 +87,7 @@ public class InterestIncomeSummarySection(DividendCalculationResult incomeCalcul
             headerRow.Cells[2].AddParagraph("Description");
             headerRow.Cells[3].AddParagraph("Type");
             headerRow.Cells[4].AddParagraph("Interest Received");
-            foreach (var income in summary.RelatedInterestIncome)
+            foreach (var income in summary.InterestIncomeExcludingExpenses)
             {
                 Row incomeRow = incomeDetailTable.AddRow();
                 incomeRow.Cells[0].AddParagraph(income.AssetName);

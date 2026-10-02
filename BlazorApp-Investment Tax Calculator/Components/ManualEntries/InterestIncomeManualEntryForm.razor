@@ -1,4 +1,4 @@
-@using InvestmentTaxCalculator.Enumerations
+﻿@using InvestmentTaxCalculator.Enumerations
 @using InvestmentTaxCalculator.Model
 @using InvestmentTaxCalculator.Model.TaxEvents
 @using InvestmentTaxCalculator.Services
@@ -223,6 +223,13 @@
             // Loss entries are represented by negative amounts.
             return _amount < 0
                 || FailAmountValidation("Accrued income loss amount must be less than 0.", showToast);
+        }
+
+        if (_interestType == InterestType.INTERESTEXPENSE)
+        {
+            // Interest paid is represented by negative amounts.
+            return _amount < 0
+                || FailAmountValidation("Interest expense amount must be less than 0.", showToast);
         }
 
         return _amount > 0

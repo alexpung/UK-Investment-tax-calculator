@@ -8,13 +8,17 @@ namespace InvestmentTaxCalculator.Model.TaxEvents;
 public record InterestIncome : TaxEvent, ITextFilePrintable
 {
     /// <summary>
-    /// Negative for accurred income loss
+    /// Negative for accurred income loss and interest expense
     /// </summary>
     public required DescribedMoney Amount { get; init; }
     public required InterestType InterestType { get; init; }
     public CountryCode IncomeLocation { get; set; } = CountryCode.UnknownRegion;
     // In case of accrued income profit/loss, tax is deferred if next payment is in different tax year
     public bool IsNextPaymentInSameTaxYear { get; set; } = true;
+    /// <summary>
+    /// Interest paid (e.g. margin interest). Recorded for reference only: it is not deductible and excluded from all income totals.
+    /// </summary>
+    public bool IsInterestExpense => InterestType == InterestType.INTERESTEXPENSE;
     public bool IsTaxDeferred => (InterestType == InterestType.ACCURREDINCOMEPROFIT || InterestType == InterestType.ACCURREDINCOMELOSS) && !IsNextPaymentInSameTaxYear;
     public string PrintToTextFile()
     {
@@ -47,5 +51,7 @@ public enum InterestType
     [Description("ETF dividend income")]
     ETFDIVIDEND,
     [Description("Excess Reportable Income (Interest)")]
-    EXCESSREPORTABLEINCOME
+    EXCESSREPORTABLEINCOME,
+    [Description("Interest Expense (not deductible)")]
+    INTERESTEXPENSE
 }
