@@ -63,6 +63,7 @@ builder.Services.AddSingleton<IDividendLists>(taxEventLists);
 builder.Services.AddSingleton<ITradeAndCorporateActionList>(taxEventLists);
 builder.Services.AddSingleton(taxEventLists);
 builder.Services.AddSingleton<AssetTypeToLoadSetting>();
+builder.Services.AddSingleton<OptionCalculationSetting>();
 builder.Services.AddSingleton<UkSection104Pools>();
 builder.Services.AddSingleton<TradeCalculationResult>();
 builder.Services.AddSingleton<DividendCalculationResult>();

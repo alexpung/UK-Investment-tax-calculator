@@ -56,7 +56,8 @@ public class UkTradeCalculatorShortOptionRefundTest
         var disposeOptionTradeResult = result.Find(trade => trade is OptionTradeTaxCalculation { AcquisitionDisposal: TradeType.DISPOSAL, TotalQty: 5 });
         disposeOptionTradeResult!.TotalAllowableCost.ShouldBe(new WrappedMoney(allowableCostSameYear));
         ((OptionTradeTaxCalculation)disposeOptionTradeResult).TaxRepayList.Sum(taxrepay => taxrepay.RefundAmount.Amount).ShouldBe(refundAmount);
-        ((OptionTradeTaxCalculation)disposeOptionTradeResult).TaxRepayList.Select(taxRepay => taxRepay.TaxYear).ShouldAllBe(x => x == 2022);
+        ((OptionTradeTaxCalculation)disposeOptionTradeResult).TaxRepayList.Select(taxRepay => taxRepay.ClosingTaxYear).ShouldAllBe(x => x == 2022);
+        ((OptionTradeTaxCalculation)disposeOptionTradeResult).TaxRepayList.Select(taxRepay => taxRepay.WrittenTaxYear).ShouldAllBe(x => x == 2021);
     }
 
     [Fact]
@@ -165,7 +166,8 @@ public class UkTradeCalculatorShortOptionRefundTest
         var writtenOptionTrade = result.Find(trade => trade is OptionTradeTaxCalculation { AcquisitionDisposal: TradeType.DISPOSAL, TotalQty: 4 });
         writtenOptionTrade!.TotalAllowableCost.ShouldBe(new WrappedMoney(850));
         ((OptionTradeTaxCalculation)writtenOptionTrade).TaxRepayList[0].RefundAmount.ShouldBe(new WrappedMoney(425));
-        ((OptionTradeTaxCalculation)writtenOptionTrade).TaxRepayList[0].TaxYear.ShouldBe(2022);
+        ((OptionTradeTaxCalculation)writtenOptionTrade).TaxRepayList[0].ClosingTaxYear.ShouldBe(2022);
+        ((OptionTradeTaxCalculation)writtenOptionTrade).TaxRepayList[0].WrittenTaxYear.ShouldBe(2021);
         var exercisedTradeResult = result.Find(trade => trade is ITradeTaxCalculation { AcquisitionDisposal: TradeType.DISPOSAL, TotalQty: 100 });
         exercisedTradeResult!.UnmatchedCostOrProceed.ShouldBe(new WrappedMoney(14792));
     }

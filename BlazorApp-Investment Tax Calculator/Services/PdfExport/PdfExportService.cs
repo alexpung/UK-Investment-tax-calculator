@@ -24,6 +24,7 @@ public class PdfExportService
         ISection endOfYearSection104StatusSection = new EndOfYearSection104StatusSection(uKSection104Pools);
         ISection dividendSummarySection = new DividendSummarySection(dividendCalculationResult);
         ISection disposalDetailSection = new DisposalDetailSection(tradeCalculationResult);
+        ISection writtenOptionTaxRefundSection = new WrittenOptionTaxRefundSection(tradeCalculationResult);
         ISection interestIncomeSummarySection = new InterestIncomeSummarySection(dividendCalculationResult);
         ISection interestExpenseSection = new InterestExpenseSection(dividendCalculationResult);
         ISection companyInformationSection = new CompanyInformationSection(shareIdentityRegistry, taxEventLists, taxYearConverter, uKSection104Pools, tradeCalculationResult);
@@ -33,6 +34,7 @@ public class PdfExportService
             interestIncomeSummarySection,
             interestExpenseSection,
             disposalDetailSection,
+            writtenOptionTaxRefundSection,
             endOfYearSection104StatusSection,
             section104Section,
             allTradesListSection,

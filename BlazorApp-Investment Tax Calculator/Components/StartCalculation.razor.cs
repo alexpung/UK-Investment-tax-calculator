@@ -1,5 +1,6 @@
 namespace InvestmentTaxCalculator.Components;
 
+using InvestmentTaxCalculator.Model;
 using InvestmentTaxCalculator.Services;
 
 using Microsoft.AspNetCore.Components;
@@ -8,6 +9,7 @@ public partial class StartCalculation : IDisposable
 {
     [Inject] public required TaxCalculationService TaxCalculationService { get; set; }
     [Inject] public required FileImportStateService FileImportState { get; set; }
+    [Inject] public required OptionCalculationSetting OptionCalculationSetting { get; set; }
     [Parameter] public EventCallback OnCalculated { get; set; }
 
     protected override void OnInitialized()

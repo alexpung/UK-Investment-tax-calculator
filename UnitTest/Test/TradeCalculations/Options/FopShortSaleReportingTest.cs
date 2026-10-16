@@ -194,7 +194,8 @@ public class FopShortSaleReportingTest
         var disposalCalc = results.OfType<OptionTradeTaxCalculation>().First(c => c.AcquisitionDisposal == TradeType.DISPOSAL);
         
         disposalCalc.TaxRepayList.Count.ShouldBe(1);
-        disposalCalc.TaxRepayList[0].TaxYear.ShouldBe(2023);
+        disposalCalc.TaxRepayList[0].ClosingTaxYear.ShouldBe(2023);
+        disposalCalc.TaxRepayList[0].WrittenTaxYear.ShouldBe(2022);
         disposalCalc.TaxRepayList[0].RefundAmount.Amount.ShouldBe(600m);
     }
 
