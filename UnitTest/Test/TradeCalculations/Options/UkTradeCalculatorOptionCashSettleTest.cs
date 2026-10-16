@@ -132,7 +132,8 @@ public class UkTradeCalculatorOptionCashSettleTest
         {
             optionDisposalTrade.TaxRepayList.Count.ShouldBe(1);
             optionDisposalTrade.TaxRepayList[0].RefundAmount.ShouldBe(new WrappedMoney(30000));
-            optionDisposalTrade.TaxRepayList[0].TaxYear.ShouldBe(2022);
+            optionDisposalTrade.TaxRepayList[0].ClosingTaxYear.ShouldBe(2022);
+            optionDisposalTrade.TaxRepayList[0].WrittenTaxYear.ShouldBe(2021);
         }
         else
         {
@@ -246,11 +247,12 @@ public class UkTradeCalculatorOptionCashSettleTest
         optionDisposalTrade.TotalProceeds.ShouldBe(new WrappedMoney(200000 - 30));
         optionDisposalTrade.TaxRepayList.Count.ShouldBe(3);
         optionDisposalTrade.TaxRepayList[0].RefundAmount.ShouldBe(new WrappedMoney(10000 + 25));
-        optionDisposalTrade.TaxRepayList[0].TaxYear.ShouldBe(2022);
+        optionDisposalTrade.TaxRepayList[0].ClosingTaxYear.ShouldBe(2022);
         optionDisposalTrade.TaxRepayList[1].RefundAmount.ShouldBe(new WrappedMoney(90000));
-        optionDisposalTrade.TaxRepayList[1].TaxYear.ShouldBe(2022);
+        optionDisposalTrade.TaxRepayList[1].ClosingTaxYear.ShouldBe(2022);
         optionDisposalTrade.TaxRepayList[2].RefundAmount.ShouldBe(new WrappedMoney(30000 + 20));
-        optionDisposalTrade.TaxRepayList[2].TaxYear.ShouldBe(2022);
+        optionDisposalTrade.TaxRepayList[2].ClosingTaxYear.ShouldBe(2022);
+        optionDisposalTrade.TaxRepayList.ShouldAllBe(taxRepay => taxRepay.WrittenTaxYear == 2021);
     }
 
     [Fact]

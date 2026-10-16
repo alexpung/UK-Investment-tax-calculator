@@ -184,7 +184,8 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
             output.AppendLine("Overpaid tax refund:");
             foreach (var taxRepay in TaxRepayList)
             {
-                output.AppendLine($"\tTax Year: {taxRepay.TaxYear}, Refund Amount: {taxRepay.RefundAmount}, Reason: {taxRepay.Reason}");
+                output.AppendLine($"\tTax Year to Adjust (Option Written): {taxRepay.WrittenTaxYear}, Tax Year Closed: {taxRepay.ClosingTaxYear}, " +
+                    $"Refund Amount: {taxRepay.RefundAmount}, Reason: {taxRepay.Reason}");
             }
         }
         if (MatchHistory.Count > 2)
@@ -210,4 +211,12 @@ public class OptionTradeTaxCalculation : TradeTaxCalculation
     }
 }
 
-public record TaxRepay(int TaxYear, WrappedMoney RefundAmount, string Reason);
+/// <summary>
+/// Allowable cost of a written option that is closed in a later tax year than it was written.
+/// </summary>
+/// <param name="WrittenTaxYear">Tax year the option was written, where the full premium was taxed and the gain should be reduced by the refund amount.
+/// For an option written during temporary non-residence this is the year of return.</param>
+/// <param name="ClosingTaxYear">Tax year the option was closed, assigned or cash settled. For a closing trade during temporary non-residence this is the year of return.</param>
+/// <param name="RefundAmount">Allowable cost not deducted from the full premium taxed in the written tax year</param>
+/// <param name="Reason">Description of the option and closing trade</param>
+public record TaxRepay(int WrittenTaxYear, int ClosingTaxYear, WrappedMoney RefundAmount, string Reason);

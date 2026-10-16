@@ -8,7 +8,7 @@ using InvestmentTaxCalculator.Services;
 namespace InvestmentTaxCalculator.Model.UkTaxModel.Options;
 
 public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorporateActionList tradeList, ITaxYear taxYear, TradeTaxCalculationFactory tradeTaxCalculationFactory,
-    ShareIdentityRegistry? shareIdentityRegistry = null) : ITradeCalculator
+    ShareIdentityRegistry? shareIdentityRegistry = null, OptionCalculationSetting? optionCalculationSetting = null) : ITradeCalculator
 {
     /// <summary>
     /// Corporate actions filtered to only those applicable to option trading.
@@ -56,16 +56,8 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
         WrappedMoney allowableCost = tradePairSorter.AcquisitionTrade.GetProportionedCostOrProceedForTradeReason(TradeReason.OrderedTrade, tradePairSorter.AcquisitionMatchQuantity);
         WrappedMoney disposalProceed = tradePairSorter.DisposalTrade.GetProportionedCostOrProceedForTradeReason(TradeReason.OrderedTrade, tradePairSorter.DisposalMatchQuantity);
         // If written an option and the position is held to next tax year, full disposal proceed is taxed and allowable cost can only be reclaimed when the trade is closed.
-        if (tradePairSorter.EarlierTrade.AcquisitionDisposal == TradeType.DISPOSAL && taxYear.ToTaxYear(tradePairSorter.EarlierTrade.Date) != taxYear.ToTaxYear(tradePairSorter.LatterTrade.Date))
+        if (tradePairSorter.EarlierTrade.AcquisitionDisposal == TradeType.DISPOSAL && RefundIfNotInSameYear(tradePairSorter, allowableCost, "position closed"))
         {
-            TaxRepay refundPremium = new(
-                TaxYear: taxYear.ToTaxYear(tradePairSorter.LatterTrade.Date),
-                RefundAmount: allowableCost,
-                Reason: $"Sold option {tradePairSorter.EarlierTrade.AssetName}" +
-                $" with ID:{tradePairSorter.EarlierTrade.Id} on {tradePairSorter.EarlierTrade.Date:d}" +
-                $" and position closed in later tax year with trade ID:{tradePairSorter.LatterTrade.Id}"
-                );
-            tradePairSorter.DisposalTrade.TaxRepayList.Add(refundPremium);
             allowableCost = WrappedMoney.GetBaseCurrencyZero();
         }
         TradeMatch disposalTradeMatch = CreateTradeMatch(tradePairSorter, tradePairSorter.AcquisitionMatchQuantity,
@@ -146,7 +138,7 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
         {
             WrappedMoney allowableCost = tradePairSorter.AcquisitionTrade.GetProportionedCostOrProceedForTradeReason(TradeReason.OptionAssigned, assignmentQty);
             WrappedMoney disposalProceed = tradePairSorter.DisposalTrade.GetProportionedCostOrProceedForTradeReason(TradeReason.OrderedTrade, assignmentQty);
-            if (RefundIfNotInSameYear(tradePairSorter, taxYear, allowableCost))
+            if (RefundIfNotInSameYear(tradePairSorter, allowableCost, "it get assigned"))
             {
                 allowableCost = WrappedMoney.GetBaseCurrencyZero();
             }
@@ -162,7 +154,7 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
                 $"Premium received {premiumReceived}, assignment cost {assignmentCost}", TradeReason.OptionAssigned);
             // The trade is as if not happened when an option is assigned, so in previous year you are assessed premiumReceived, so that is refunded,
             // but netPremiumReceived is added to the underlying trade
-            if (!RefundIfNotInSameYear(tradePairSorter, taxYear, premiumReceived))
+            if (!RefundIfNotInSameYear(tradePairSorter, premiumReceived, "it get assigned"))
             {
                 tradePairSorter.EarlierTrade.RefundDisposalQty(assignmentQty);
             }
@@ -173,22 +165,28 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
         AssignTradeMatch(tradePairSorter, assignmentQty, tradeMatch, tradeMatch);
     }
 
-    private static bool RefundIfNotInSameYear(TradePairSorter<OptionTradeTaxCalculation> tradePairSorter, ITaxYear taxYear, WrappedMoney allowableCost)
+    /// <summary>
+    /// If a written option is closed in a later tax year, list the closing cost as a tax refund for the tax year the option was written.
+    /// Returns false if the option is closed in the same tax year or the user chose to deduct the closing cost in the tax year the option was written,
+    /// in which case the closing cost should be deducted normally.
+    /// Tax years are based on the taxable date, so trades during temporary non-residence count in the year of return.
+    /// </summary>
+    private bool RefundIfNotInSameYear(TradePairSorter<OptionTradeTaxCalculation> tradePairSorter, WrappedMoney refundAmount, string closingDescription)
     {
-        bool refunded = false;
-        if (taxYear.ToTaxYear(tradePairSorter.EarlierTrade.Date) != taxYear.ToTaxYear(tradePairSorter.LatterTrade.Date))
-        {
-            tradePairSorter.DisposalTrade.TaxRepayList.Add(
-                new TaxRepay(
-                taxYear.ToTaxYear(tradePairSorter.LatterTrade.Date),
-                allowableCost,
-                $"Sold {tradePairSorter.EarlierTrade.AssetName} " +
-                $"option with ID:{tradePairSorter.EarlierTrade.Id} on {tradePairSorter.EarlierTrade.Date:d} " +
-                $"and it get assigned in later tax year with trade ID:{tradePairSorter.LatterTrade.Id}"
-                ));
-            refunded = true;
-        }
-        return refunded;
+        if (optionCalculationSetting?.DeductClosingCostInWrittenTaxYear is true) return false;
+        int writtenTaxYear = taxYear.ToTaxYear(tradePairSorter.EarlierTrade.TaxableDate);
+        int closingTaxYear = taxYear.ToTaxYear(tradePairSorter.LatterTrade.TaxableDate);
+        if (writtenTaxYear == closingTaxYear) return false;
+        tradePairSorter.DisposalTrade.TaxRepayList.Add(
+            new TaxRepay(
+            WrittenTaxYear: writtenTaxYear,
+            ClosingTaxYear: closingTaxYear,
+            RefundAmount: refundAmount,
+            Reason: $"Sold option {tradePairSorter.EarlierTrade.AssetName} " +
+            $"with ID:{tradePairSorter.EarlierTrade.Id} on {tradePairSorter.EarlierTrade.Date:d} " +
+            $"and {closingDescription} in later tax year with trade ID:{tradePairSorter.LatterTrade.Id}"
+            ));
+        return true;
     }
 
     private static TradeMatch CreateTradeMatch(TradePairSorter<OptionTradeTaxCalculation> tradePairSorter, decimal matchQty, WrappedMoney allowableCost,

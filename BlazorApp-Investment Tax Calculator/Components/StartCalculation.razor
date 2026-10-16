@@ -17,6 +17,19 @@
             </div>
         }
         
+        <div class="mb-3">
+            <RadzenCheckBox @bind-Value="@OptionCalculationSetting.DeductClosingCostInWrittenTaxYear" Name="deductClosingCostInWrittenTaxYear"
+                            Disabled="@TaxCalculationService.IsCalculating" />
+            <RadzenLabel Text="Deduct closing cost of written options in the tax year the option was written"
+                         Component="deductClosingCostInWrittenTaxYear" class="ms-2" />
+            <div class="form-text">
+                By default, a written option closed, assigned or cash settled in a later tax year is taxed on the full premium in the year it was written,
+                and the closing cost is listed in the tax refund table instead of being deducted.
+                Tick this to deduct the closing cost from the gain of the tax year the option was written instead, e.g. if the option was closed before you filed that year's tax return.
+                Written options without a closing trade are still taxed on the full premium.
+            </div>
+        </div>
+
         <RadzenButton Click="OnStartCalculation"
                       ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Large"
                       Disabled="@(TaxCalculationService.IsCalculating || FileImportState.IsProcessing)">

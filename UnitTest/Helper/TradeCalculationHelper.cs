@@ -15,14 +15,15 @@ namespace UnitTest.Helper;
 
 public static class TradeCalculationHelper
 {
-    public static List<ITradeTaxCalculation> CalculateTrades(IEnumerable<TaxEvent> taxEvents, out UkSection104Pools section104Pools, ResidencyStatusRecord? residencyStatusRecord = null)
+    public static List<ITradeTaxCalculation> CalculateTrades(IEnumerable<TaxEvent> taxEvents, out UkSection104Pools section104Pools, ResidencyStatusRecord? residencyStatusRecord = null,
+        OptionCalculationSetting? optionCalculationSetting = null)
     {
         residencyStatusRecord ??= new ResidencyStatusRecord();
         section104Pools = new UkSection104Pools(new UKTaxYear(), residencyStatusRecord);
         TaxEventLists taxEventLists = new();
         taxEventLists.AddData(taxEvents);
         OptionHelper.CheckOptions(taxEventLists);
-        UkOptionTradeCalculator optionTradeCalculator = CreateOptionTradeCalculator(section104Pools, taxEventLists, residencyStatusRecord);
+        UkOptionTradeCalculator optionTradeCalculator = CreateOptionTradeCalculator(section104Pools, taxEventLists, residencyStatusRecord, optionCalculationSetting);
         UkTradeCalculator calculator = CreateUkTradeCalculator(section104Pools, taxEventLists, residencyStatusRecord);
         UkFutureTradeCalculator futureCalculator = CreateUkFutureTradeCalculator(section104Pools, taxEventLists, residencyStatusRecord);
 
@@ -47,11 +48,12 @@ public static class TradeCalculationHelper
         };
     }
 
-    public static UkOptionTradeCalculator CreateOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorporateActionList tradeList, ResidencyStatusRecord? residencyStatusRecord = null)
+    public static UkOptionTradeCalculator CreateOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorporateActionList tradeList, ResidencyStatusRecord? residencyStatusRecord = null,
+        OptionCalculationSetting? optionCalculationSetting = null)
     {
         residencyStatusRecord ??= new();
         TradeTaxCalculationFactory tradeTaxCalculationFactory = new(residencyStatusRecord);
-        return new UkOptionTradeCalculator(section104Pools, tradeList, new UKTaxYear(), tradeTaxCalculationFactory);
+        return new UkOptionTradeCalculator(section104Pools, tradeList, new UKTaxYear(), tradeTaxCalculationFactory, optionCalculationSetting: optionCalculationSetting);
     }
 
     public static UkTradeCalculator CreateUkTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorporateActionList tradeList, ResidencyStatusRecord? residencyStatusRecord = null)

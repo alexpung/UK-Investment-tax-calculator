@@ -98,4 +98,13 @@ public class ResidencyStatusRecord
         var match = Ranges.FirstOrDefault(r => r.Start <= DateOnly.FromDateTime(date) && DateOnly.FromDateTime(date) <= r.End);
         return match is not null ? match.End.ToDateTime(new TimeOnly(0, 0)) : DateTime.MaxValue;
     }
+
+    /// <summary>
+    /// Gains realised during temporary non-residence are taxed in the period of return, i.e. the day after the temporary non-residence period ends.
+    /// </summary>
+    public DateTime GetTemporaryNonResidentTaxableDate(DateTime date)
+    {
+        DateTime endDate = GetResidencyStatusPeriodEnd(date);
+        return endDate <= DateTime.MaxValue.AddDays(-1) ? endDate.AddDays(1) : endDate;
+    }
 }
