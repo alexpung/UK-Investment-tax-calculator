@@ -49,15 +49,7 @@ public class TradeCalculationResult(ITaxYear taxYear, ResidencyStatusRecord resi
         {
             if (trade.ResidencyStatusAtTrade == ResidencyStatus.TemporaryNonResident)
             {
-                DateTime endDate = residencyStatusRecord.GetResidencyStatusPeriodEnd(trade.Date);
-                if (endDate <= DateTime.MaxValue.AddDays(-1))
-                {
-                    trade.TaxableDate = endDate.AddDays(1);
-                }
-                else
-                {
-                    trade.TaxableDate = endDate;
-                }
+                trade.TaxableDate = residencyStatusRecord.GetTemporaryNonResidentTaxableDate(trade.Date);
             }
             _calculatedTrade.Add(trade);
         }

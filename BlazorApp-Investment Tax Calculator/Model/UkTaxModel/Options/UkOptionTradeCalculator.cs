@@ -169,12 +169,13 @@ public class UkOptionTradeCalculator(UkSection104Pools section104Pools, ITradeAn
     /// If a written option is closed in a later tax year, list the closing cost as a tax refund for the tax year the option was written.
     /// Returns false if the option is closed in the same tax year or the user chose to deduct the closing cost in the tax year the option was written,
     /// in which case the closing cost should be deducted normally.
+    /// Tax years are based on the taxable date, so trades during temporary non-residence count in the year of return.
     /// </summary>
     private bool RefundIfNotInSameYear(TradePairSorter<OptionTradeTaxCalculation> tradePairSorter, WrappedMoney refundAmount, string closingDescription)
     {
         if (optionCalculationSetting?.DeductClosingCostInWrittenTaxYear is true) return false;
-        int writtenTaxYear = taxYear.ToTaxYear(tradePairSorter.EarlierTrade.Date);
-        int closingTaxYear = taxYear.ToTaxYear(tradePairSorter.LatterTrade.Date);
+        int writtenTaxYear = taxYear.ToTaxYear(tradePairSorter.EarlierTrade.TaxableDate);
+        int closingTaxYear = taxYear.ToTaxYear(tradePairSorter.LatterTrade.TaxableDate);
         if (writtenTaxYear == closingTaxYear) return false;
         tradePairSorter.DisposalTrade.TaxRepayList.Add(
             new TaxRepay(

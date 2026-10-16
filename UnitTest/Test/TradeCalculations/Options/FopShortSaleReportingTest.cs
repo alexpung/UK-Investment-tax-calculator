@@ -340,4 +340,58 @@ public class FopShortSaleReportingTest
         proceedsY2024.Amount.ShouldBe(0m, "TNR option closed in same period should not be taxable on return");
         gainsY2024.Amount.ShouldBe(0m, "TNR option closed in same period should not be taxable on return");
     }
+
+    [Theory]
+    [InlineData("10-May-24 10:00:00", 400, 0)]
+    [InlineData("10-May-25 10:00:00", 1000, 600)]
+    public void TemporaryNonResidentShortOptionClosedAfterReturnRefundUsesYearOfReturnTest(string buyBackDate, decimal expectedGainInYearOfReturn, decimal expectedRefund)
+    {
+        // Written during temporary non-residence, so the premium is taxed in the year of return (2024-25)
+        var shortOptionTrade = new OptionTrade
+        {
+            AssetName = "AAPL 260116C00150000",
+            Date = DateTime.Parse("10-Dec-22 10:00:00", CultureInfo.InvariantCulture),
+            Underlying = "AAPL",
+            StrikePrice = new WrappedMoney(150),
+            ExpiryDate = DateTime.Parse("16-Jan-26 16:00:00", CultureInfo.InvariantCulture),
+            PUTCALL = PUTCALL.CALL,
+            Multiplier = 100,
+            TradeReason = TradeReason.OrderedTrade,
+            Quantity = 1,
+            GrossProceed = new DescribedMoney(1000, "GBP", 1),
+            Expenses = [],
+            AcquisitionDisposal = TradeType.DISPOSAL,
+            Description = "Short AAPL Call"
+        };
+
+        var buyBackTrade = new OptionTrade
+        {
+            AssetName = "AAPL 260116C00150000",
+            Date = DateTime.Parse(buyBackDate, CultureInfo.InvariantCulture),
+            Underlying = "AAPL",
+            StrikePrice = new WrappedMoney(150),
+            ExpiryDate = DateTime.Parse("16-Jan-26 16:00:00", CultureInfo.InvariantCulture),
+            PUTCALL = PUTCALL.CALL,
+            Multiplier = 100,
+            TradeReason = TradeReason.OrderedTrade,
+            Quantity = 1,
+            GrossProceed = new DescribedMoney(600, "GBP", 1),
+            Expenses = [],
+            AcquisitionDisposal = TradeType.ACQUISITION,
+            Description = "Buy back AAPL Call after return"
+        };
+
+        var residencyStatusRecord = new ResidencyStatusRecord();
+        residencyStatusRecord.SetResidencyStatus(new DateOnly(2022, 4, 6), new DateOnly(2024, 4, 5), ResidencyStatus.TemporaryNonResident);
+        residencyStatusRecord.SetResidencyStatus(new DateOnly(2024, 4, 6), DateOnly.MaxValue, ResidencyStatus.Resident);
+
+        List<ITradeTaxCalculation> trades = TradeCalculationHelper.CalculateTrades([shortOptionTrade, buyBackTrade], out _, residencyStatusRecord);
+        TradeCalculationResult report = new(new UKTaxYear(), residencyStatusRecord);
+        report.SetResult(trades);
+
+        report.GetTotalGain([2024], AssetGroupType.OTHERASSETS).Amount.ShouldBe(expectedGainInYearOfReturn);
+        var disposalCalc = trades.OfType<OptionTradeTaxCalculation>().Single(c => c.AcquisitionDisposal == TradeType.DISPOSAL);
+        disposalCalc.TaxRepayList.Sum(taxRepay => taxRepay.RefundAmount.Amount).ShouldBe(expectedRefund);
+        disposalCalc.TaxRepayList.ShouldAllBe(taxRepay => taxRepay.WrittenTaxYear == 2024 && taxRepay.ClosingTaxYear == 2025);
+    }
 }

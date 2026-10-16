@@ -68,6 +68,10 @@ public class TradeTaxCalculationFactory(ResidencyStatusRecord residencyStatusRec
         foreach (var trade in tradeCalculations)
         {
             trade.ResidencyStatusAtTrade = residencyStatusRecord.GetResidencyStatus(DateOnly.FromDateTime(trade.Date));
+            if (trade.ResidencyStatusAtTrade == ResidencyStatus.TemporaryNonResident)
+            {
+                trade.TaxableDate = residencyStatusRecord.GetTemporaryNonResidentTaxableDate(trade.Date);
+            }
         }
     }
 }
