@@ -1,0 +1,153 @@
+@using InvestmentTaxCalculator.Parser
+
+@if (IsVisible && Request is not null && Selected is not null)
+{
+    <div class="modal fade show d-block" tabindex="-1" role="dialog" style="background-color: rgba(0,0,0,0.5);">
+      <div class="modal-dialog modal-xl modal-dialog-scrollable" role="document">
+        <div class="modal-content bg-dark text-white">
+          <div class="modal-header">
+            <h5 class="modal-title">Map CSV Columns</h5>
+          </div>
+          <div class="modal-body">
+            <div class="alert alert-warning">
+                The columns of <strong>@Request.FileName</strong> do not match a known format. Brokers sometimes rename or
+                add columns to their exports. Choose the format of the file and which column in the file holds each field.
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="csv-format-select">File format</label>
+                <select id="csv-format-select" class="form-select" value="@_selectedIndex" @onchange="OnFormatChanged">
+                    @for (int i = 0; i < _choices.Count; i++)
+                    {
+                        <option value="@i">@_choices[i].Parser.FormatName</option>
+                    }
+                </select>
+            </div>
+            <table class="table table-dark table-sm align-middle">
+                <thead>
+                    <tr>
+                        <th>Field</th>
+                        <th>Description</th>
+                        <th>Column in file</th>
+                        <th>First row value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (CsvColumnDefinition column in Selected.Parser.Columns)
+                    {
+                        string mappedHeader = Selected.ColumnMap.TryGetHeader(column.Key, out string? header) ? header : string.Empty;
+                        <tr>
+                            <td>
+                                @column.Key
+                                @if (column.Required)
+                                {
+                                    <span class="text-danger" title="Required">*</span>
+                                }
+                            </td>
+                            <td class="small text-muted">@column.Description</td>
+                            <td>
+                                <select class="form-select form-select-sm @(column.Required && mappedHeader == string.Empty ? "is-invalid" : "")"
+                                        value="@mappedHeader" @onchange="e => Selected.ColumnMap.Set(column.Key, e.Value as string)">
+                                    <option value="">(not mapped)</option>
+                                    @foreach (string fileHeader in Request.Headers.Distinct())
+                                    {
+                                        <option value="@fileHeader">@fileHeader</option>
+                                    }
+                                </select>
+                            </td>
+                            <td class="small">@GetSampleValue(mappedHeader)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            @{ IReadOnlyList<string> problems = Problems; }
+            @if (problems.Count > 0)
+            {
+                <div class="alert alert-danger">
+                    <ul class="mb-0">
+                        @foreach (string problem in problems)
+                        {
+                            <li>@problem</li>
+                        }
+                    </ul>
+                </div>
+            }
+            <p class="small text-muted mb-0">
+                Fields marked <span class="text-danger">*</span> are required. Other columns in the file are ignored.
+                The mapping is reused for other files with the same columns until the page is reloaded.
+            </p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-success" disabled="@(problems.Count > 0)" @onclick="() => Close(true)">Import</button>
+            <button type="button" class="btn btn-secondary" @onclick="() => Close(false)">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+}
+
+@code {
+    public bool IsVisible { get; private set; }
+    public CsvColumnMappingRequest? Request { get; private set; }
+    private List<CsvColumnMappingChoice> _choices = [];
+    private int _selectedIndex;
+    private TaskCompletionSource<CsvColumnMappingChoice?>? _tcs;
+
+    private CsvColumnMappingChoice? Selected => _selectedIndex < _choices.Count ? _choices[_selectedIndex] : null;
+
+    private bool CanImport => Selected is not null && Problems.Count == 0;
+
+    private IReadOnlyList<string> Problems
+    {
+        get
+        {
+            if (Request is null || Selected is null) return [];
+            try
+            {
+                return Request.Validate(Selected);
+            }
+            catch (Exception ex)
+            {
+                return [$"The file cannot be read with this mapping: {ex.Message}"];
+            }
+        }
+    }
+
+    public Task<CsvColumnMappingChoice?> ShowAsync(CsvColumnMappingRequest request)
+    {
+        Request = request;
+        // Work on copies so the suggested mappings are not changed if the user cancels.
+        _choices = request.Candidates.Select(candidate => candidate with { ColumnMap = candidate.ColumnMap.Clone() }).ToList();
+        // Preselect the format with the most required columns found automatically.
+        _selectedIndex = _choices
+            .Select((choice, index) => (index, missing: CsvColumnMapper.GetMissingRequiredColumns(choice.Parser.Columns, choice.ColumnMap).Count))
+            .OrderBy(x => x.missing)
+            .Select(x => x.index)
+            .FirstOrDefault();
+        IsVisible = true;
+        _tcs = new TaskCompletionSource<CsvColumnMappingChoice?>();
+        StateHasChanged();
+        return _tcs.Task;
+    }
+
+    private void OnFormatChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value as string, out int index) && index >= 0 && index < _choices.Count) _selectedIndex = index;
+    }
+
+    private string GetSampleValue(string header)
+    {
+        if (Request is null || header == string.Empty || Request.SampleRows.Count == 0) return string.Empty;
+        int index = Array.IndexOf(Request.Headers, header);
+        string[] firstRow = Request.SampleRows[0];
+        return index >= 0 && index < firstRow.Length ? firstRow[index] : string.Empty;
+    }
+
+    private void Close(bool import)
+    {
+        CsvColumnMappingChoice? result = import && CanImport ? Selected : null;
+        IsVisible = false;
+        StateHasChanged();
+        _tcs?.TrySetResult(result);
+        _tcs = null;
+    }
+}

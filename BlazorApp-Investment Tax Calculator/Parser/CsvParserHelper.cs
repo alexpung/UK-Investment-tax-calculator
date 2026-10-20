@@ -4,6 +4,18 @@ namespace InvestmentTaxCalculator.Parser;
 
 public static class CsvParserHelper
 {
+    private static readonly string[] _acceptedCsvContentTypes = ["text/csv", "application/csv", "application/vnd.ms-excel"];
+
+    /// <summary>
+    /// Browsers on systems with Excel installed often report CSV as application/vnd.ms-excel,
+    /// and content types may carry parameters (e.g. "text/csv; charset=utf-8") or differ in casing.
+    /// </summary>
+    public static bool IsCsvContentType(string? contentType)
+    {
+        string mimeType = contentType?.Split(';')[0].Trim() ?? string.Empty;
+        return _acceptedCsvContentTypes.Contains(mimeType, StringComparer.OrdinalIgnoreCase);
+    }
+
     public static string GetFieldSafe(this CsvHelper.CsvReader csv, string fieldName)
     {
         string? fieldValue = csv.GetField(fieldName);

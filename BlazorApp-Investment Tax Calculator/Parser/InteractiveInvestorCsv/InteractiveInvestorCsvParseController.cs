@@ -1,4 +1,4 @@
-using CsvHelper;
+﻿using CsvHelper;
 using CsvHelper.Configuration;
 
 using InvestmentTaxCalculator.Enumerations;
@@ -19,8 +19,9 @@ namespace InvestmentTaxCalculator.Parser.InteractiveInvestorCsv;
 /// Note: trade Debit/Credit amounts are all-in cash movements, so dealing charges are
 /// already included in an acquisition cost / netted off a disposal proceed.
 /// </summary>
-public partial class InteractiveInvestorCsvParseController : ITaxEventFileParser
+public partial class InteractiveInvestorCsvParseController : IColumnMappableCsvParser
 {
+    // Logical column keys, mapped to the actual file headers via CsvColumnMap
     private const string _dateName = "Date";
     private const string _settlementDateName = "Settlement Date";
     private const string _symbolName = "Symbol";
@@ -31,7 +32,22 @@ public partial class InteractiveInvestorCsvParseController : ITaxEventFileParser
     private const string _debitName = "Debit";
     private const string _creditName = "Credit";
 
-    private static readonly string[] _acceptedContentTypes = ["text/csv", "application/csv", "application/vnd.ms-excel"];
+    public string FormatName => "interactive investor";
+
+    // Settlement Date, Sedol and Price are not read but only used to recognise the file format.
+    public IReadOnlyList<CsvColumnDefinition> Columns { get; } =
+    [
+        new(_dateName, "Trade date (dd/MM/yyyy)", true, ["Date"]),
+        new(_symbolName, "Ticker symbol", true, ["Symbol"]),
+        new(_quantityName, "Number of shares traded", true, ["Quantity"]),
+        new(_descriptionName, "Transaction description", true, ["Description"]),
+        new(_debitName, "Cash paid out in GBP", true, ["Debit"]),
+        new(_creditName, "Cash received in GBP", true, ["Credit"]),
+        new(_settlementDateName, "Settlement date", false, ["Settlement Date"]),
+        new(_sedolName, "SEDOL of the instrument", false, ["Sedol"]),
+        new(_priceName, "Price per share", false, ["Price"]),
+    ];
+
     private static readonly string[] _acceptedDateFormats = ["dd/MM/yyyy", "dd-MM-yyyy", "dd/MM/yy"];
 
     [GeneratedRegex(@"\bDIV(IDEND)?S?\b", RegexOptions.IgnoreCase)]
@@ -46,8 +62,14 @@ public partial class InteractiveInvestorCsvParseController : ITaxEventFileParser
         MissingFieldFound = null
     };
 
-    public TaxEventLists ParseFile(string data)
+    public TaxEventLists ParseFile(string data) => ParseFile(data, CsvColumnMapper.AutoMap(Columns, CsvColumnMapper.ReadHeaders(data)));
+
+    public IReadOnlyList<string> ValidateColumnMap(string data, CsvColumnMap columnMap)
+        => CsvColumnMapper.GetMissingRequiredColumnMessages(Columns, columnMap);
+
+    public TaxEventLists ParseFile(string data, CsvColumnMap columnMap)
     {
+        CsvColumnMapper.ThrowIfInvalid(this, data, columnMap);
         var taxEvents = new TaxEventLists();
         using var reader = new StringReader(data);
         using var csv = new CsvReader(reader, _config);
@@ -56,12 +78,12 @@ public partial class InteractiveInvestorCsvParseController : ITaxEventFileParser
 
         while (csv.Read())
         {
-            string symbol = csv.GetField(_symbolName)?.Trim() ?? string.Empty;
-            string description = csv.GetField(_descriptionName)?.Trim() ?? string.Empty;
-            decimal? quantity = ParseNullableDecimal(csv.GetField(_quantityName));
-            decimal? debit = ParseNullableDecimal(csv.GetField(_debitName));
-            decimal? credit = ParseNullableDecimal(csv.GetField(_creditName));
-            DateTime date = ParseDate(csv);
+            string symbol = csv.GetField(columnMap[_symbolName])?.Trim() ?? string.Empty;
+            string description = csv.GetField(columnMap[_descriptionName])?.Trim() ?? string.Empty;
+            decimal? quantity = ParseNullableDecimal(csv.GetField(columnMap[_quantityName]));
+            decimal? debit = ParseNullableDecimal(csv.GetField(columnMap[_debitName]));
+            decimal? credit = ParseNullableDecimal(csv.GetField(columnMap[_creditName]));
+            DateTime date = ParseDate(csv, columnMap[_dateName]);
 
             if (IsTradeRow(symbol, quantity, debit, credit))
             {
@@ -130,11 +152,11 @@ public partial class InteractiveInvestorCsvParseController : ITaxEventFileParser
         };
     }
 
-    private static DateTime ParseDate(CsvReader csv)
+    private static DateTime ParseDate(CsvReader csv, string dateHeader)
     {
         // ii is a GB platform: dates are day-first, so they are parsed with explicit dd/MM formats
         // rather than culture-dependent parsing that could read them as MM/dd.
-        string dateString = csv.GetFieldSafe(_dateName);
+        string dateString = csv.GetFieldSafe(dateHeader);
         if (DateTime.TryParseExact(dateString, _acceptedDateFormats, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime date))
         {
             return date;
@@ -155,19 +177,12 @@ public partial class InteractiveInvestorCsvParseController : ITaxEventFileParser
 
     public bool CheckFileValidity(string data, string contentType)
     {
-        // Browsers on systems with Excel installed often report CSV as application/vnd.ms-excel,
-        // and content types may carry parameters (e.g. "text/csv; charset=utf-8") or differ in casing.
-        string mimeType = contentType?.Split(';')[0].Trim() ?? string.Empty;
-        if (!_acceptedContentTypes.Contains(mimeType, StringComparer.OrdinalIgnoreCase)) return false;
+        if (!CsvParserHelper.IsCsvContentType(contentType)) return false;
         try
         {
-            using var reader = new StringReader(data);
-            using var csv = new CsvReader(reader, _config);
-            csv.Read();
-            csv.ReadHeader();
-            string[] headers = csv.HeaderRecord ?? [];
-            string[] requiredFields = [_dateName, _settlementDateName, _symbolName, _sedolName, _quantityName, _priceName, _descriptionName, _debitName, _creditName];
-            return requiredFields.All(field => headers.Contains(field));
+            // The headers are fairly generic, so all of them must be present to recognise the file automatically.
+            CsvColumnMap map = CsvColumnMapper.AutoMap(Columns, CsvColumnMapper.ReadHeaders(data));
+            return Columns.All(column => map.TryGetHeader(column.Key, out _));
         }
         catch
         {

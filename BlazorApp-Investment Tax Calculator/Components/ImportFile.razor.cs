@@ -13,6 +13,7 @@ public partial class ImportFile : IDisposable
     [Inject] public required ShareIdentityRegistry ShareIdentityRegistry { get; set; }
 
     private DuplicateWarningModal duplicateModal = default!;
+    private CsvColumnMappingModal columnMappingModal = default!;
 
     protected override void OnInitialized()
     {
@@ -43,7 +44,7 @@ public partial class ImportFile : IDisposable
             {
                 try
                 {
-                    TaxEventLists events = await fileParseController.ReadFile(file);
+                    TaxEventLists events = await fileParseController.ReadFile(file, columnMappingModal.ShowAsync);
                     ShowDividendRegionUnknownWarning(events);
                     // Build share identities over already imported events and the new file together, so a symbol
                     // pair split across statements (e.g. "DIS" in one and "DISm" in another) resolves to the same
