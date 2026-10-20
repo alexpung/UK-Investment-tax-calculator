@@ -5,14 +5,13 @@ using InvestmentTaxCalculator.Enumerations;
 using InvestmentTaxCalculator.Model;
 using InvestmentTaxCalculator.Model.TaxEvents;
 
-using System.Collections.Immutable;
 using System.Globalization;
 
 namespace InvestmentTaxCalculator.Parser.Trading212Csv;
 
-public class Trading212CsvParseController : ITaxEventFileParser
+public class Trading212CsvParseController : IColumnMappableCsvParser
 {
-    // Core column names
+    // Logical column keys, mapped to the actual file headers via CsvColumnMap
     private const string _actionName = "Action";
     private const string _timeName = "Time";
     private const string _tickerName = "Ticker";
@@ -20,9 +19,25 @@ public class Trading212CsvParseController : ITaxEventFileParser
     private const string _isinName = "ISIN";
     private const string _quantityName = "No. of shares";
     private const string _totalGbpName = "Total (GBP)";
+    private const string _totalCurrencyName = "Currency (Total)";
 
     // Dividend-specific columns
     private const string _withholdingTaxName = "Withholding tax";
+
+    public string FormatName => "Trading 212";
+
+    public IReadOnlyList<CsvColumnDefinition> Columns { get; } =
+    [
+        new(_actionName, "Transaction type, e.g. Market buy, Dividend (Ordinary), Interest on cash", true, ["Action"]),
+        new(_timeName, "Date and time of the transaction", true, ["Time", "Time (UTC)"]),
+        new(_tickerName, "Ticker symbol", true, ["Ticker"]),
+        new(_isinName, "ISIN of the instrument", true, ["ISIN"]),
+        new(_quantityName, "Number of shares traded", true, ["No. of shares"]),
+        new(_totalGbpName, "Total cash amount of the transaction in GBP", true, ["Total (GBP)", "Total"]),
+        new(_totalCurrencyName, "Currency of the total amount, which must be GBP", false, ["Currency (Total)"]),
+        new(_nameName, "Instrument name, used to describe dividends", false, ["Name"]),
+        new(_withholdingTaxName, "Withholding tax deducted from dividends", false, ["Withholding tax"]),
+    ];
 
     private readonly CsvConfiguration _config = new(CultureInfo.InvariantCulture)
     {
@@ -30,7 +45,9 @@ public class Trading212CsvParseController : ITaxEventFileParser
         MissingFieldFound = args => throw new InvalidDataException($"Field missing at index {args.Index} on row {args.Context.Parser?.Row}")
     };
 
-    public TaxEventLists ParseFile(string data)
+    public TaxEventLists ParseFile(string data) => ParseFile(data, CsvColumnMapper.AutoMapOrThrow(this, data));
+
+    public TaxEventLists ParseFile(string data, CsvColumnMap columnMap)
     {
         var trades = new TaxEventLists();
         using var reader = new StringReader(data);
@@ -40,33 +57,50 @@ public class Trading212CsvParseController : ITaxEventFileParser
 
         while (csv.Read())
         {
-            string action = csv.GetFieldSafe(_actionName);
+            string action = csv.GetFieldSafe(columnMap[_actionName]);
 
             // Determine transaction type based on Action field
             if (action.Contains("buy", StringComparison.OrdinalIgnoreCase) ||
                 action.Contains("sell", StringComparison.OrdinalIgnoreCase))
             {
-                trades.Trades.Add(ParseTrade(csv, action));
+                trades.Trades.Add(ParseTrade(csv, columnMap, action));
             }
             else if (action.Contains("dividend", StringComparison.OrdinalIgnoreCase))
             {
-                ParseDividend(csv, trades);
+                ParseDividend(csv, columnMap, trades);
             }
             else if (action.Equals("Interest on cash", StringComparison.OrdinalIgnoreCase))
             {
-                trades.InterestIncomes.Add(ParseInterest(csv));
+                trades.InterestIncomes.Add(ParseInterest(csv, columnMap));
             }
             // Ignore other action types (deposits, withdrawals, etc.)
         }
         return trades;
     }
 
-    private static Trade ParseTrade(CsvReader csv, string action)
+    private static decimal GetTotalGbp(CsvReader csv, CsvColumnMap columnMap)
     {
-        decimal totalGbp = csv.GetFieldSafe<decimal>(_totalGbpName);
-        decimal quantity = csv.GetFieldSafe<decimal>(_quantityName);
-        string ticker = csv.GetFieldSafe(_tickerName);
-        DateTime date = DateTimeOffset.Parse(csv.GetFieldSafe(_timeName), CultureInfo.InvariantCulture).DateTime;
+        // Newer exports have a plain "Total" column with its currency in "Currency (Total)" instead of "Total (GBP)".
+        if (columnMap.TryGetHeader(_totalCurrencyName, out string? currencyHeader))
+        {
+            string? currency = csv.GetField(currencyHeader);
+            if (!string.IsNullOrWhiteSpace(currency) && !currency.Trim().Equals(WrappedMoney.BaseCurrency, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidDataException($"Total on row {csv.Context.Parser?.Row} is in {currency}, only {WrappedMoney.BaseCurrency} totals are supported.");
+            }
+        }
+        return csv.GetFieldSafe<decimal>(columnMap[_totalGbpName]);
+    }
+
+    private static DateTime GetTime(CsvReader csv, CsvColumnMap columnMap)
+        => DateTimeOffset.Parse(csv.GetFieldSafe(columnMap[_timeName]), CultureInfo.InvariantCulture).DateTime;
+
+    private static Trade ParseTrade(CsvReader csv, CsvColumnMap columnMap, string action)
+    {
+        decimal totalGbp = GetTotalGbp(csv, columnMap);
+        decimal quantity = csv.GetFieldSafe<decimal>(columnMap[_quantityName]);
+        string ticker = csv.GetFieldSafe(columnMap[_tickerName]);
+        DateTime date = GetTime(csv, columnMap);
 
         // Determine if buy or sell
         TradeType tradeType = action.Contains("buy", StringComparison.OrdinalIgnoreCase)
@@ -76,7 +110,7 @@ public class Trading212CsvParseController : ITaxEventFileParser
         // Total (GBP) is negative for buys, positive for sells in Trading212 CSV
         // We need absolute value for GrossProceed
         decimal grossProceedAmount = Math.Abs(totalGbp);
-        string isin = csv.GetFieldSafe(_isinName);
+        string isin = csv.GetFieldSafe(columnMap[_isinName]);
 
         return new Trade
         {
@@ -89,13 +123,13 @@ public class Trading212CsvParseController : ITaxEventFileParser
         };
     }
 
-    private static void ParseDividend(CsvReader csv, TaxEventLists trades)
+    private static void ParseDividend(CsvReader csv, CsvColumnMap columnMap, TaxEventLists trades)
     {
-        decimal totalGbp = csv.GetFieldSafe<decimal>(_totalGbpName);
-        string ticker = csv.GetFieldSafe(_tickerName);
-        string name = csv.GetFieldSafe(_nameName);
-        DateTime date = DateTimeOffset.Parse(csv.GetFieldSafe(_timeName), CultureInfo.InvariantCulture).DateTime;
-        string isin = csv.GetFieldSafe(_isinName);
+        decimal totalGbp = GetTotalGbp(csv, columnMap);
+        string ticker = csv.GetFieldSafe(columnMap[_tickerName]);
+        string name = columnMap.TryGetHeader(_nameName, out string? nameHeader) ? csv.GetFieldSafe(nameHeader) : ticker;
+        DateTime date = GetTime(csv, columnMap);
+        string isin = csv.GetFieldSafe(columnMap[_isinName]);
 
         // Add dividend income
         trades.Dividends.Add(new Dividend
@@ -109,7 +143,8 @@ public class Trading212CsvParseController : ITaxEventFileParser
         });
 
         // Parse withholding tax if present
-        if (csv.TryGetField<decimal>(_withholdingTaxName, out decimal withholdingTax) && withholdingTax != 0)
+        if (columnMap.TryGetHeader(_withholdingTaxName, out string? withholdingTaxHeader) &&
+            csv.TryGetField<decimal>(withholdingTaxHeader, out decimal withholdingTax) && withholdingTax != 0)
         {
             trades.Dividends.Add(new Dividend
             {
@@ -123,10 +158,10 @@ public class Trading212CsvParseController : ITaxEventFileParser
         }
     }
 
-    private static InterestIncome ParseInterest(CsvReader csv)
+    private static InterestIncome ParseInterest(CsvReader csv, CsvColumnMap columnMap)
     {
-        decimal totalGbp = csv.GetFieldSafe<decimal>(_totalGbpName);
-        DateTime date = DateTimeOffset.Parse(csv.GetFieldSafe(_timeName), CultureInfo.InvariantCulture).DateTime;
+        decimal totalGbp = GetTotalGbp(csv, columnMap);
+        DateTime date = GetTime(csv, columnMap);
 
         return new InterestIncome
         {
@@ -138,30 +173,5 @@ public class Trading212CsvParseController : ITaxEventFileParser
     }
 
     public bool CheckFileValidity(string data, string contentType)
-    {
-        if (contentType != "text/csv") return false;
-
-        try
-        {
-            using var reader = new StringReader(data);
-            using var csv = new CsvReader(reader, _config);
-            csv.Read();
-            csv.ReadHeader();
-            string[] headers = csv.HeaderRecord ?? [];
-
-            // Required fields for Trading212 CSV
-            string[] requiredFields = { _actionName, _timeName, _tickerName, _quantityName, _totalGbpName };
-
-            if (!requiredFields.All(field => headers.Contains(field))) return false;
-            return true;
-        }
-        catch (InvalidDataException)
-        {
-            throw; // Re-throw to provide helpful error message
-        }
-        catch
-        {
-            return false;
-        }
-    }
+        => CsvParserHelper.IsCsvContentType(contentType) && CsvColumnMapper.CanAutoMap(Columns, data);
 }

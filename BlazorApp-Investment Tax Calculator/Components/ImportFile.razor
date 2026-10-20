@@ -39,7 +39,8 @@
             <div class="card-body">
                 <p class="text-muted small mb-3">
                     Select one or more statement files to import. Supported formats: Interactive Brokers (XML),
-                    Trading 212 and Freetrade (CSV), and JSON files previously exported by this app.
+                    Trading 212, Freetrade and interactive investor (CSV), and JSON files previously exported by this app.
+                    If a CSV file's columns are not recognised, you will be asked to map them.
                     Files are read locally in your browser.
                 </p>
                 <InputFile OnChange="LoadFiles" multiple class="form-control" disabled="@FileImportState.IsProcessing" />
@@ -172,3 +173,4 @@
 </div>
 
 <DuplicateWarningModal @ref="duplicateModal" />
+<CsvColumnMappingModal @ref="columnMappingModal" />
