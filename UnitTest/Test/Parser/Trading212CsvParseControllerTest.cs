@@ -164,8 +164,8 @@ public class Trading212CsvParseControllerTest
     [Fact]
     public void TestParseWithUserColumnMap()
     {
-        string csvData = "Type of action,Executed at,ISIN,Symbol,Shares,Amount GBP\n" +
-            "Market buy,2024-01-15 10:30:00,US0378331005,AAPL,10,-1181.10";
+        string csvData = "Type of action,Executed at,ISIN,Symbol,Shares,Amount,Amount currency\n" +
+            "Market buy,2024-01-15 10:30:00,US0378331005,AAPL,10,-1181.10,GBP";
         var parser = new Trading212CsvParseController();
         parser.CheckFileValidity(csvData, "text/csv").ShouldBeFalse();
 
@@ -175,12 +175,41 @@ public class Trading212CsvParseControllerTest
         map.Set("ISIN", "ISIN");
         map.Set("Ticker", "Symbol");
         map.Set("No. of shares", "Shares");
-        map.Set("Total (GBP)", "Amount GBP");
+        map.Set("Total (GBP)", "Amount");
+        map.Set("Currency (Total)", "Amount currency");
         var result = parser.ParseFile(csvData, map);
 
         result.Trades.Count.ShouldBe(1);
         result.Trades[0].AssetName.ShouldBe("AAPL");
         result.Trades[0].Quantity.ShouldBe(10);
         result.Trades[0].GrossProceed.Amount.Amount.ShouldBe(1181.10m);
+    }
+
+    [Fact]
+    public void TestPlainTotalWithoutCurrencyMappingIsRejected()
+    {
+        string csvData = "Action,Time,ISIN,Ticker,No. of shares,Amount,Amount currency\n" +
+            "Market buy,2024-01-15 10:30:00,US0378331005,AAPL,10,-1500.00,USD";
+        var parser = new Trading212CsvParseController();
+        var map = CsvColumnMapper.AutoMap(parser.Columns, CsvColumnMapper.ReadHeaders(csvData));
+        map.Set("Total (GBP)", "Amount");
+
+        parser.ValidateColumnMap(csvData, map).ShouldHaveSingleItem().ShouldContain("Currency (Total)");
+        Should.Throw<InvalidDataException>(() => parser.ParseFile(csvData, map));
+
+        map.Set("Currency (Total)", "Amount currency");
+        parser.ValidateColumnMap(csvData, map).ShouldBeEmpty();
+        Should.Throw<InvalidDataException>(() => parser.ParseFile(csvData, map)).Message.ShouldContain("USD");
+    }
+
+    [Fact]
+    public void TestLegacyTotalGbpHeaderNeedsNoCurrencyMapping()
+    {
+        string csvData = SampleCsvHeader + "\n" +
+            "Market buy,2024-01-15 10:30:00,US0378331005,AAPL,Apple Inc.,10,150.00,USD,1.27,-1500.00,-1181.10,,,5.91,2.36,,,T123,,,";
+        var parser = new Trading212CsvParseController();
+        var map = CsvColumnMapper.AutoMap(parser.Columns, CsvColumnMapper.ReadHeaders(csvData));
+
+        parser.ValidateColumnMap(csvData, map).ShouldBeEmpty();
     }
 }

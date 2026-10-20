@@ -7,7 +7,9 @@ namespace InvestmentTaxCalculator.Parser;
 
 /// <summary>Information shown to the user when a CSV file's columns need to be mapped manually.</summary>
 /// <param name="Candidates">Each CSV format the file could be, with the columns that could be matched automatically.</param>
-public record CsvColumnMappingRequest(string FileName, string[] Headers, List<string[]> SampleRows, List<CsvColumnMappingChoice> Candidates);
+/// <param name="Validate">Problems with a choice that would stop the file being imported, empty if it can be imported.</param>
+public record CsvColumnMappingRequest(string FileName, string[] Headers, List<string[]> SampleRows, List<CsvColumnMappingChoice> Candidates,
+    Func<CsvColumnMappingChoice, IReadOnlyList<string>> Validate);
 
 /// <summary>A CSV format together with how its columns map to the file headers.</summary>
 public record CsvColumnMappingChoice(IColumnMappableCsvParser Parser, CsvColumnMap ColumnMap);
@@ -54,14 +56,15 @@ public class FileParseController(IEnumerable<ITaxEventFileParser> taxEventFilePa
         (string[] headers, List<string[]> sampleRows) = CsvColumnMapper.ReadPreview(data, MappingPreviewRowCount);
         List<IColumnMappableCsvParser> mappableParsers = taxEventFileParsers.OfType<IColumnMappableCsvParser>().ToList();
 
-        CsvColumnMappingChoice? choice = FindConfirmedColumnMap(mappableParsers, headers);
+        CsvColumnMappingChoice? choice = FindConfirmedColumnMap(mappableParsers, headers, data);
         bool isNewMapping = choice is null;
         if (choice is null && requestColumnMapping is not null)
         {
             List<CsvColumnMappingChoice> candidates = mappableParsers
                 .Select(parser => new CsvColumnMappingChoice(parser, CsvColumnMapper.AutoMap(parser.Columns, headers, _confirmedColumnMaps.GetValueOrDefault(parser.FormatName))))
                 .ToList();
-            choice = await requestColumnMapping(new CsvColumnMappingRequest(fileName, headers, sampleRows, candidates));
+            choice = await requestColumnMapping(new CsvColumnMappingRequest(fileName, headers, sampleRows, candidates,
+                candidate => candidate.Parser.ValidateColumnMap(data, candidate.ColumnMap)));
             if (choice is null)
             {
                 toastService?.ShowWarning($"Import of {fileName} cancelled as its columns were not mapped.");
@@ -74,17 +77,12 @@ public class FileParseController(IEnumerable<ITaxEventFileParser> taxEventFilePa
             return;
         }
 
-        List<CsvColumnDefinition> missing = CsvColumnMapper.GetMissingRequiredColumns(choice.Parser.Columns, choice.ColumnMap);
-        if (missing.Count > 0)
-        {
-            throw new InvalidDataException($"Required {choice.Parser.FormatName} column(s) not mapped: {string.Join(", ", missing.Select(column => column.Key))}.");
-        }
         taxEvents.AddData(choice.Parser.ParseFile(data, choice.ColumnMap));
         // Only remember a mapping that parsed successfully.
         if (isNewMapping) _confirmedColumnMaps[choice.Parser.FormatName] = choice.ColumnMap.Clone();
     }
 
-    private CsvColumnMappingChoice? FindConfirmedColumnMap(List<IColumnMappableCsvParser> parsers, string[] headers)
+    private CsvColumnMappingChoice? FindConfirmedColumnMap(List<IColumnMappableCsvParser> parsers, string[] headers, string data)
     {
         foreach (IColumnMappableCsvParser parser in parsers)
         {
@@ -92,11 +90,16 @@ public class FileParseController(IEnumerable<ITaxEventFileParser> taxEventFilePa
             // Reuse the mapping only if the file has every header the user picked, i.e. it has the same layout.
             if (!confirmed.Mappings.Values.All(headers.Contains)) continue;
             CsvColumnMap map = CsvColumnMapper.AutoMap(parser.Columns, headers, confirmed);
-            if (CsvColumnMapper.GetMissingRequiredColumns(parser.Columns, map).Count == 0) return new CsvColumnMappingChoice(parser, map);
+            if (parser.ValidateColumnMap(data, map).Count == 0) return new CsvColumnMappingChoice(parser, map);
         }
         return null;
     }
 
     private static bool IsCsvFile(string fileName, string contentType)
-        => CsvParserHelper.IsCsvContentType(contentType) || fileName.EndsWith(".csv", StringComparison.OrdinalIgnoreCase);
+    {
+        if (fileName.EndsWith(".csv", StringComparison.OrdinalIgnoreCase)) return true;
+        // application/vnd.ms-excel is also used for binary .xls workbooks, so it is only trusted together with a .csv extension.
+        string mimeType = contentType?.Split(';')[0].Trim() ?? string.Empty;
+        return !mimeType.Equals("application/vnd.ms-excel", StringComparison.OrdinalIgnoreCase) && CsvParserHelper.IsCsvContentType(contentType);
+    }
 }

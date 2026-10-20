@@ -62,10 +62,14 @@ public partial class InteractiveInvestorCsvParseController : IColumnMappableCsvP
         MissingFieldFound = null
     };
 
-    public TaxEventLists ParseFile(string data) => ParseFile(data, CsvColumnMapper.AutoMapOrThrow(this, data));
+    public TaxEventLists ParseFile(string data) => ParseFile(data, CsvColumnMapper.AutoMap(Columns, CsvColumnMapper.ReadHeaders(data)));
+
+    public IReadOnlyList<string> ValidateColumnMap(string data, CsvColumnMap columnMap)
+        => CsvColumnMapper.GetMissingRequiredColumnMessages(Columns, columnMap);
 
     public TaxEventLists ParseFile(string data, CsvColumnMap columnMap)
     {
+        CsvColumnMapper.ThrowIfInvalid(this, data, columnMap);
         var taxEvents = new TaxEventLists();
         using var reader = new StringReader(data);
         using var csv = new CsvReader(reader, _config);

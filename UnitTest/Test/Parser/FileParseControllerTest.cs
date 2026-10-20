@@ -103,8 +103,8 @@ public class FileParseControllerTest
         return mockFile;
     }
 
-    private const string RenamedTrading212Csv = "Type of action,Executed at,ISIN,Symbol,Shares,Amount GBP\n" +
-        "Market buy,2024-01-15 10:30:00,US0378331005,AAPL,10,-1181.10";
+    private const string RenamedTrading212Csv = "Type of action,Executed at,ISIN,Symbol,Shares,Amount,Amount currency\n" +
+        "Market buy,2024-01-15 10:30:00,US0378331005,AAPL,10,-1181.10,GBP";
 
     private static CsvColumnMappingChoice MapRenamedTrading212(CsvColumnMappingRequest request)
     {
@@ -114,7 +114,8 @@ public class FileParseControllerTest
         map.Set("Time", "Executed at");
         map.Set("Ticker", "Symbol");
         map.Set("No. of shares", "Shares");
-        map.Set("Total (GBP)", "Amount GBP");
+        map.Set("Total (GBP)", "Amount");
+        map.Set("Currency (Total)", "Amount currency");
         return candidate with { ColumnMap = map };
     }
 
@@ -132,7 +133,7 @@ public class FileParseControllerTest
 
         received.ShouldNotBeNull();
         received.FileName.ShouldBe("statement.csv");
-        received.Headers.ShouldBe(["Type of action", "Executed at", "ISIN", "Symbol", "Shares", "Amount GBP"]);
+        received.Headers.ShouldBe(["Type of action", "Executed at", "ISIN", "Symbol", "Shares", "Amount", "Amount currency"]);
         received.SampleRows.Count.ShouldBe(1);
         received.Candidates.Count.ShouldBe(2);
         // ISIN is found automatically using the known header name.
@@ -186,5 +187,40 @@ public class FileParseControllerTest
         file.ContentType.Returns("text/xml");
         await controller.ReadFile(file, _ => { asked = true; return Task.FromResult<CsvColumnMappingChoice?>(null); });
         asked.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task TestExcelWorkbookDoesNotAskForColumnMapping()
+    {
+        FileParseController controller = new([new Trading212CsvParseController()]);
+        bool asked = false;
+        IBrowserFile file = MockIBrowserFile("binary workbook content");
+        file.Name.Returns("statement.xls");
+        file.ContentType.Returns("application/vnd.ms-excel");
+        await controller.ReadFile(file, _ => { asked = true; return Task.FromResult<CsvColumnMappingChoice?>(null); });
+        asked.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task TestMappingRequestValidatesChoices()
+    {
+        FileParseController controller = new([new Trading212CsvParseController()]);
+        IReadOnlyList<string>? suggestedProblems = null;
+        IReadOnlyList<string>? withoutCurrencyProblems = null;
+        IReadOnlyList<string>? mappedProblems = null;
+        await controller.ReadFile(MockCsvFile(RenamedTrading212Csv), request =>
+        {
+            suggestedProblems = request.Validate(request.Candidates[0]);
+            CsvColumnMappingChoice mapped = MapRenamedTrading212(request);
+            mappedProblems = request.Validate(mapped);
+            CsvColumnMap withoutCurrency = mapped.ColumnMap.Clone();
+            withoutCurrency.Set("Currency (Total)", null);
+            withoutCurrencyProblems = request.Validate(mapped with { ColumnMap = withoutCurrency });
+            return Task.FromResult<CsvColumnMappingChoice?>(null);
+        });
+        suggestedProblems.ShouldNotBeNull().ShouldNotBeEmpty();
+        mappedProblems.ShouldNotBeNull().ShouldBeEmpty();
+        // "Amount" is not the legacy "Total (GBP)" header, so the currency column must be mapped too.
+        withoutCurrencyProblems.ShouldNotBeNull().ShouldHaveSingleItem().ShouldContain("Currency (Total)");
     }
 }

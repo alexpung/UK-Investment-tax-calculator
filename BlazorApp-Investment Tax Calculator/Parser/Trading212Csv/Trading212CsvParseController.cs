@@ -45,10 +45,24 @@ public class Trading212CsvParseController : IColumnMappableCsvParser
         MissingFieldFound = args => throw new InvalidDataException($"Field missing at index {args.Index} on row {args.Context.Parser?.Row}")
     };
 
-    public TaxEventLists ParseFile(string data) => ParseFile(data, CsvColumnMapper.AutoMapOrThrow(this, data));
+    public TaxEventLists ParseFile(string data) => ParseFile(data, CsvColumnMapper.AutoMap(Columns, CsvColumnMapper.ReadHeaders(data)));
+
+    public IReadOnlyList<string> ValidateColumnMap(string data, CsvColumnMap columnMap)
+    {
+        List<string> problems = CsvColumnMapper.GetMissingRequiredColumnMessages(Columns, columnMap);
+        // Only the legacy "Total (GBP)" header states its currency; any other total column needs its currency column to check it is GBP.
+        if (columnMap.TryGetHeader(_totalGbpName, out string? totalHeader) &&
+            !totalHeader.Trim().Equals(_totalGbpName, StringComparison.OrdinalIgnoreCase) &&
+            !columnMap.TryGetHeader(_totalCurrencyName, out _))
+        {
+            problems.Add($"Column '{_totalCurrencyName}' must be mapped to check the total column '{totalHeader}' is in {WrappedMoney.BaseCurrency.ToUpperInvariant()}.");
+        }
+        return problems;
+    }
 
     public TaxEventLists ParseFile(string data, CsvColumnMap columnMap)
     {
+        CsvColumnMapper.ThrowIfInvalid(this, data, columnMap);
         var trades = new TaxEventLists();
         using var reader = new StringReader(data);
         using var csv = new CsvReader(reader, _config);
@@ -86,7 +100,7 @@ public class Trading212CsvParseController : IColumnMappableCsvParser
             string? currency = csv.GetField(currencyHeader);
             if (!string.IsNullOrWhiteSpace(currency) && !currency.Trim().Equals(WrappedMoney.BaseCurrency, StringComparison.OrdinalIgnoreCase))
             {
-                throw new InvalidDataException($"Total on row {csv.Context.Parser?.Row} is in {currency}, only {WrappedMoney.BaseCurrency} totals are supported.");
+                throw new InvalidDataException($"Total on row {csv.Context.Parser?.Row} is in {currency}, only {WrappedMoney.BaseCurrency.ToUpperInvariant()} totals are supported.");
             }
         }
         return csv.GetFieldSafe<decimal>(columnMap[_totalGbpName]);

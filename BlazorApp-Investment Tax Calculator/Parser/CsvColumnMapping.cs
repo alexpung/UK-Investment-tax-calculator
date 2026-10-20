@@ -57,6 +57,13 @@ public interface IColumnMappableCsvParser : ITaxEventFileParser
     /// <summary>Name of the file format shown to the user, e.g. "Trading 212".</summary>
     string FormatName { get; }
     IReadOnlyList<CsvColumnDefinition> Columns { get; }
+
+    /// <summary>
+    /// Problems that would stop the file being parsed correctly with the column map, e.g. missing required columns,
+    /// or columns only needed for some files such as dividend columns when the file has dividends. Empty if the map can be used.
+    /// </summary>
+    IReadOnlyList<string> ValidateColumnMap(string data, CsvColumnMap columnMap);
+
     TaxEventLists ParseFile(string data, CsvColumnMap columnMap);
 }
 
@@ -129,14 +136,15 @@ public static class CsvColumnMapper
         }
     }
 
-    public static CsvColumnMap AutoMapOrThrow(IColumnMappableCsvParser parser, string data)
+    public static List<string> GetMissingRequiredColumnMessages(IEnumerable<CsvColumnDefinition> columns, CsvColumnMap map)
+        => GetMissingRequiredColumns(columns, map).Select(column => $"Required column '{column.Key}' is not mapped.").ToList();
+
+    public static void ThrowIfInvalid(IColumnMappableCsvParser parser, string data, CsvColumnMap map)
     {
-        CsvColumnMap map = AutoMap(parser.Columns, ReadHeaders(data));
-        List<CsvColumnDefinition> missing = GetMissingRequiredColumns(parser.Columns, map);
-        if (missing.Count > 0)
+        IReadOnlyList<string> problems = parser.ValidateColumnMap(data, map);
+        if (problems.Count > 0)
         {
-            throw new InvalidDataException($"Cannot find the required {parser.FormatName} column(s): {string.Join(", ", missing.Select(column => column.Key))}.");
+            throw new InvalidDataException($"Cannot read the file as {parser.FormatName}: {string.Join(" ", problems)}");
         }
-        return map;
     }
 }

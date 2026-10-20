@@ -47,10 +47,37 @@ public class FreeTradeCsvParseController : IColumnMappableCsvParser
         MissingFieldFound = args => throw new InvalidDataException($"Field missing at index {args.Index} on row {args.Context.Parser?.Row}")
     };
 
-    public TaxEventLists ParseFile(string data) => ParseFile(data, CsvColumnMapper.AutoMapOrThrow(this, data));
+    public TaxEventLists ParseFile(string data) => ParseFile(data, CsvColumnMapper.AutoMap(Columns, CsvColumnMapper.ReadHeaders(data)));
+
+    public IReadOnlyList<string> ValidateColumnMap(string data, CsvColumnMap columnMap)
+    {
+        List<string> problems = CsvColumnMapper.GetMissingRequiredColumnMessages(Columns, columnMap);
+        if (columnMap.TryGetHeader(_typeName, out string? typeHeader) && HasDividendRows(data, typeHeader))
+        {
+            foreach (string key in new[] { _dividendPayDateName, _dividendWithheldTaxName }.Where(key => !columnMap.TryGetHeader(key, out _)))
+            {
+                problems.Add($"Column '{key}' must be mapped as the file has dividends.");
+            }
+        }
+        return problems;
+    }
+
+    private bool HasDividendRows(string data, string typeHeader)
+    {
+        using var reader = new StringReader(data);
+        using var csv = new CsvReader(reader, _config);
+        csv.Read();
+        csv.ReadHeader();
+        while (csv.Read())
+        {
+            if (csv.GetField(typeHeader) == "DIVIDEND") return true;
+        }
+        return false;
+    }
 
     public TaxEventLists ParseFile(string data, CsvColumnMap columnMap)
     {
+        CsvColumnMapper.ThrowIfInvalid(this, data, columnMap);
         var trades = new TaxEventLists();
         using var reader = new StringReader(data);
         using var csv = new CsvReader(reader, _config);

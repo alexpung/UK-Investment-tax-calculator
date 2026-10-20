@@ -1,5 +1,6 @@
-using InvestmentTaxCalculator.Enumerations;
+﻿using InvestmentTaxCalculator.Enumerations;
 using InvestmentTaxCalculator.Model.TaxEvents;
+using InvestmentTaxCalculator.Parser;
 using InvestmentTaxCalculator.Parser.FreeTradeCsv;
 
 namespace UnitTest.Test.Parser;
@@ -60,5 +61,26 @@ public class FreeTradeCsvParseControllerTest
         var interest = result.InterestIncomes[0];
         interest.AssetName.ShouldBe("Broker interest");
         interest.Amount.Amount.Amount.ShouldBe(5.50m);
+    }
+
+    [Fact]
+    public void TestDividendColumnsMustBeMappedOnlyWhenFileHasDividends()
+    {
+        const string renamedHeader = "Type,Timestamp,Ticker,Title,ISIN,Quantity,Price per share,Total Amount,Currency,Buy / Sell,Paid on,Dividend Amount Per Share,Tax withheld";
+        string ordersOnly = renamedHeader + "\n" +
+            "ORDER,2024-01-15T10:30:00.000Z,AAPL,Apple Inc.,US0378331005,10,150.00,1500.00,USD,BUY,,,";
+        string withDividend = ordersOnly + "\n" +
+            "DIVIDEND,2024-03-10T09:00:00.000Z,AAPL,Apple Inc.,US0378331005,,,25.00,USD,,2024-03-10,0.25,3.75";
+        var parser = new FreeTradeCsvParseController();
+        CsvColumnMap map = CsvColumnMapper.AutoMap(parser.Columns, CsvColumnMapper.ReadHeaders(ordersOnly));
+
+        parser.ValidateColumnMap(ordersOnly, map).ShouldBeEmpty();
+        parser.ValidateColumnMap(withDividend, map).Count.ShouldBe(2);
+        Should.Throw<InvalidDataException>(() => parser.ParseFile(withDividend, map));
+
+        map.Set("Dividend Pay Date", "Paid on");
+        map.Set("Dividend Withheld Tax Amount", "Tax withheld");
+        parser.ValidateColumnMap(withDividend, map).ShouldBeEmpty();
+        parser.ParseFile(withDividend, map).Dividends.Count.ShouldBe(2);
     }
 }

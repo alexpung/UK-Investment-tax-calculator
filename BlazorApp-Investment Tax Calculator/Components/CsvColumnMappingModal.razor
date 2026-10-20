@@ -59,13 +59,25 @@
                     }
                 </tbody>
             </table>
+            @{ IReadOnlyList<string> problems = Problems; }
+            @if (problems.Count > 0)
+            {
+                <div class="alert alert-danger">
+                    <ul class="mb-0">
+                        @foreach (string problem in problems)
+                        {
+                            <li>@problem</li>
+                        }
+                    </ul>
+                </div>
+            }
             <p class="small text-muted mb-0">
                 Fields marked <span class="text-danger">*</span> are required. Other columns in the file are ignored.
                 The mapping is reused for other files with the same columns until the page is reloaded.
             </p>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-success" disabled="@(!CanImport)" @onclick="() => Close(true)">Import</button>
+            <button type="button" class="btn btn-success" disabled="@(problems.Count > 0)" @onclick="() => Close(true)">Import</button>
             <button type="button" class="btn btn-secondary" @onclick="() => Close(false)">Cancel</button>
           </div>
         </div>
@@ -82,7 +94,23 @@
 
     private CsvColumnMappingChoice? Selected => _selectedIndex < _choices.Count ? _choices[_selectedIndex] : null;
 
-    private bool CanImport => Selected is not null && CsvColumnMapper.GetMissingRequiredColumns(Selected.Parser.Columns, Selected.ColumnMap).Count == 0;
+    private bool CanImport => Selected is not null && Problems.Count == 0;
+
+    private IReadOnlyList<string> Problems
+    {
+        get
+        {
+            if (Request is null || Selected is null) return [];
+            try
+            {
+                return Request.Validate(Selected);
+            }
+            catch (Exception ex)
+            {
+                return [$"The file cannot be read with this mapping: {ex.Message}"];
+            }
+        }
+    }
 
     public Task<CsvColumnMappingChoice?> ShowAsync(CsvColumnMappingRequest request)
     {
