@@ -10,9 +10,9 @@ Live app: https://alexpung.github.io/UK-Investment-tax-calculator/
 
 ## Solution layout
 
-- `BlazorApp-Investment Tax Calculator/InvestmentTaxCalculator.csproj` — the Blazor WASM app (target `net10.0`). Root namespace `InvestmentTaxCalculator`.
+- `BlazorApp-Investment Tax Calculator/InvestmentTaxCalculator.csproj` — the Blazor WASM app (target `net11.0`). Root namespace `InvestmentTaxCalculator`.
 - `UnitTest/UnitTest.csproj` — xUnit unit tests, references the app project directly.
-- `PlaywrightTests/PlaywrightTests.csproj` — NUnit + Playwright end-to-end browser tests (target `net10.0-windows...`, Windows-only).
+- `PlaywrightTests/PlaywrightTests.csproj` — NUnit + Playwright end-to-end browser tests (target `net11.0`, Windows-only).
 - `CapitalGainCalculator.sln` ties the three together.
 - `TaxExamples/` — sample broker files (IB XML, options, futures) and matching expected text output, used as fixtures by the unit tests (copied into test output via `<None Update>` in `UnitTest.csproj`).
 
