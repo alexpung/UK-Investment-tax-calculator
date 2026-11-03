@@ -1,8 +1,10 @@
 // Chooses how each report grid (RadzenDataGrid with the "mobile-cards" class) is laid out, based on the
 // table and the space it has rather than on the device:
 //   table  - the table fits its panel at comfortable column widths: show a normal table.
-//   scroll - it does not fit, but the panel is wide (desktop): keep comfortable widths and scroll sideways.
-//   cards  - it does not fit and the panel is narrow (phones, tablets, split screens): one card per row.
+//   scroll - it is a little too wide (at most 25%) for a wide panel (desktop): scroll sideways, with the
+//            first column pinned.
+//   cards  - otherwise: one card per row. Phones, tablets and split screens, and on desktops tables so wide
+//            that scrolling would hide most of each row (e.g. Trade Matches' 13 columns).
 // The styles for each layout live in css/app.css under data-layout. Re-evaluated when a grid is added,
 // resized or its rows change (paging, filtering, recalculation).
 (() => {
@@ -13,6 +15,8 @@
     // 980px puts tablets (e.g. a Surface Pro in landscape, grids about 920-970px wide beside the sidebar) on
     // cards and laptops or desktops (grids about 990px and up at 1440px wide) on scrolling tables.
     const CARDS_BELOW_WIDTH = 980;
+    // Scroll only tables at most this much wider than their panel; wider ones read better as cards.
+    const MAX_SCROLL_RATIO = 1.25;
 
     const lastWidth = new WeakMap();
     const pending = new Set();
@@ -27,8 +31,11 @@
         // Sizing pass: lay the table out at comfortable widths and see whether it fits. Reading offsetWidth
         // forces a synchronous layout, and the final layout is set before the browser paints.
         grid.setAttribute("data-layout", "measure");
-        const fits = table.offsetWidth <= panel.clientWidth + 1;
-        const layout = fits ? "table" : grid.clientWidth >= CARDS_BELOW_WIDTH ? "scroll" : "cards";
+        const needed = table.offsetWidth;
+        const available = panel.clientWidth;
+        let layout = "cards";
+        if (needed <= available + 1) layout = "table";
+        else if (grid.clientWidth >= CARDS_BELOW_WIDTH && needed <= available * MAX_SCROLL_RATIO) layout = "scroll";
         grid.setAttribute("data-layout", layout);
         lastWidth.set(grid, grid.clientWidth);
     }

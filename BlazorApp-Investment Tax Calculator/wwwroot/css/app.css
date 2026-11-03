@@ -569,7 +569,7 @@ h1, h2, h3, h4, h5, h6 {
 .main-content-wrapper .container-fluid > .row > .col-xl-10.mx-auto {
     flex: 0 0 auto;
     width: 100%;
-    max-width: 1400px;
+    max-width: 1800px;
 }
 
 .badge.text-bg-info {
@@ -662,7 +662,7 @@ h1, h2, h3, h4, h5, h6 {
    - data-layout="table" (and before the script runs): the table fills its panel, sharing out the width;
      words wrap only where space runs out.
    - data-layout="measure" / "scroll": the narrowest readable table: amounts and dates on one line,
-     headers and free text wrapping between words, headers at least 4.5rem wide. "measure" is the script's
+     headers and free text wrapping between words, headers at least 4rem wide. "measure" is the script's
      sizing pass; "scroll" is used on wide screens when even that is wider than the panel, which then
      scrolls sideways (narrower screens get cards instead).
 */
@@ -678,9 +678,14 @@ h1, h2, h3, h4, h5, h6 {
     text-overflow: clip;
 }
 
+/* Amounts, quantities and dates (marked by MobileCardGrid.LabelCell) stay on one line */
+.rz-data-grid.mobile-cards:not([data-layout="cards"]) .rz-grid-table td[data-nowrap] .rz-cell-data {
+    white-space: nowrap;
+}
+
 .rz-data-grid.mobile-cards:not([data-layout="cards"]) .rz-grid-table thead th .rz-column-title-content {
     display: inline-block;
-    min-width: 4.5rem;
+    min-width: 4rem;
     overflow-wrap: normal;
     word-break: normal;
 }
@@ -699,6 +704,26 @@ h1, h2, h3, h4, h5, h6 {
 
 .rz-data-grid.mobile-cards .rz-grid-table thead th .rz-sortable-column-icon.rzi-sort {
     display: none;
+}
+
+/* Editable cells (e.g. Additional Information on Trade Matches): wide enough to read a comment */
+.rz-data-grid.mobile-cards:not([data-layout="cards"]) .rz-grid-table td .rz-textbox {
+    min-width: 14rem;
+}
+
+/* Scrolling tables keep their first column (date, asset, tax year) in view */
+.rz-data-grid.mobile-cards[data-layout="scroll"] .rz-grid-table > thead > tr:first-child > th:first-child,
+.rz-data-grid.mobile-cards[data-layout="scroll"] .rz-grid-table > tbody > tr > td:first-child:not(.rz-col-icon) {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background: var(--wf-surface);
+    box-shadow: inset -1px 0 0 var(--wf-border-soft);
+}
+
+.rz-data-grid.mobile-cards[data-layout="scroll"] .rz-grid-table > thead > tr:first-child > th:first-child {
+    z-index: 2;
+    background: var(--rz-grid-header-background-color);
 }
 
 .rz-data-grid.mobile-cards:is([data-layout="measure"], [data-layout="scroll"]) .rz-grid-table,
@@ -837,6 +862,17 @@ h1, h2, h3, h4, h5, h6 {
     text-transform: uppercase;
     color: var(--wf-accent);
     margin-bottom: 0.1rem;
+}
+
+/* Editable cells: the input takes the full width of the card under its label */
+.rz-data-grid.mobile-cards[data-layout="cards"] tr.rz-data-row > td .rz-cell-data:has(.rz-textbox) {
+    flex: 1 1 100%;
+    margin-left: 0;
+    margin-top: 0.15rem;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] tr.rz-data-row > td .rz-textbox {
+    width: 100%;
 }
 
 /* The empty spacer cell grouped grids put in front of each row */
