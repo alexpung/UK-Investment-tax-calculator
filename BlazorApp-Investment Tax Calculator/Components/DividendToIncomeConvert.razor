@@ -5,110 +5,213 @@
 @inject DividendToIncomeConvertViewModel _dividendToIncomeViewModel
 @inject ToastService _toastService
 
-<div class="card mb-3">
+<div class="card mb-4">
     <div class="card-body">
-        <h5 class="card-title">Convert ETF dividends to taxable income</h5>
+        <h3 class="h5 card-title">Convert ETF dividends to taxable income</h3>
         <p class="card-text">Select tickers that should be taxed as income. The resulting income type will be "ETF dividend income".</p>
-        <p class="card-text">Where an offshore fund holds more than 60% of assets in interest-bearing (or economically similar) 
-            form, any distribution or excess of reported income is treated as a payment of yearly interest</p>
-        <p class="card-text">If you have already run the calculation, it runs again automatically when you leave this page.</p>
-        <div class="mb-3" id="container">
-            <div class="d-flex flex-wrap gap-3">
-                @foreach (var dividend in AvailableTickers)
-                {
-                    <div class="d-flex align-items-center" style="min-width:160px;">
-                        <RadzenCheckBox TValue="bool" Value="_selected.Contains(dividend.CanonicalAssetName)"
-                                        Change="@(v => Toggle(dividend.CanonicalAssetName, v))" Name="@($"chk_{dividend.Id}")" />
-                        <RadzenLabel Text="@dividend.CanonicalAssetName" Component="@($"chk_{dividend.Id}")" class="ms-2" />
-                    </div>
-                }
-            </div>
+        <div class="alert alert-info alert-custom mb-2">
+            Where an offshore fund holds more than 60% of assets in interest-bearing (or economically similar)
+            form, any distribution or excess of reported income is treated as a payment of yearly interest.
         </div>
-
-        <div class="d-flex gap-2">
-            <button class="btn btn-primary" @onclick="ConvertSelected">Convert selected</button>
-            <button class="btn btn-outline-secondary" @onclick="ClearSelection">Clear</button>
-        </div>
+        <p class="card-text small text-muted-custom mb-0">If you have already run the calculation, it runs again automatically when you leave this page.</p>
     </div>
 </div>
 
-<style>
-    /* make the listview responsive and allow items to flow horizontally and wrap */
-    #container .e-listview {
-        box-shadow: 0 1px 4px #ddd;
-        border-bottom: 1px solid #ddd;
-        width: 100%; /* use available width */
-    }
+<div class="card mb-4" data-testid="dividend-tickers">
+    <div class="card-header d-flex flex-wrap align-items-baseline justify-content-between gap-2">
+        <h3 class="mb-0">Dividend-paying tickers</h3>
+        <span class="text-muted-custom small">@_allRows.Count ticker@(_allRows.Count == 1 ? "" : "s")</span>
+    </div>
+    <div class="card-body">
+        @if (_allRows.Count == 0 && _convertedRows.Count > 0)
+        {
+            <p class="text-muted-custom mb-0" data-testid="all-converted">
+                All dividend-paying tickers have been converted to income.
+            </p>
+        }
+        else if (_allRows.Count == 0)
+        {
+            <p class="text-muted-custom mb-0">
+                No dividends to convert. Import your statements on the <a href="MainCalculatorPage">Import data</a> page first.
+            </p>
+        }
+        else
+        {
+            <div class="convert-toolbar">
+                <label class="convert-search">
+                    <span class="visually-hidden">Search tickers</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M20 20l-4-4" /></svg>
+                    <input type="search" placeholder="Search tickers" value="@_search" @oninput="OnSearch" />
+                </label>
+                <div class="convert-filter" role="group" aria-label="Show">
+                    <button type="button" class="@(_fundsOnly ? "" : "is-active")" aria-pressed="@(!_fundsOnly)" @onclick="() => SetFundsOnly(false)">All (@_allRows.Count)</button>
+                    <button type="button" class="@(_fundsOnly ? "is-active" : "")" aria-pressed="@_fundsOnly" @onclick="() => SetFundsOnly(true)">Funds only (@_allRows.Count(r => r.IsFund))</button>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-primary ms-auto" @onclick="SelectAllShown" disabled="@(_shownRows.Count == 0)">
+                    Select all shown (@_shownRows.Count)
+                </button>
+            </div>
 
-    /* make the UL that contains items a flex container so LI items flow horizontally */
-    #container .e-listview .e-list-parent {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px; /* spacing between items */
-        padding: 8px;
-        margin: 0;
-        list-style: none;
-    }
+            <RadzenDataGrid TItem="DividendTickerSummary" Data="@_shownRows"
+                            AllowPaging="true" PageSize="15" PageSizeOptions="@_pageSizeOptions"
+                            AllowSorting="true" CellRender="@(args => MobileCardGrid.LabelCell(args))"
+                            EmptyText="No tickers match your search."
+                            class="w-100 mobile-cards">
+                <Columns>
+                    <RadzenDataGridColumn TItem="DividendTickerSummary" Property="@nameof(DividendTickerSummary.Ticker)" Title="Ticker">
+                        <Template Context="row">
+                            <label class="convert-ticker">
+                                <input type="checkbox" checked="@_selected.Contains(row.Ticker)" @onchange="e => Toggle(row.Ticker, e.Value is true)" />
+                                <span>@row.Ticker</span>
+                            </label>
+                        </Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="DividendTickerSummary" Property="@nameof(DividendTickerSummary.IsFund)" Title="Type">
+                        <Template Context="row">@(row.IsFund ? "Fund" : "Other")</Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="DividendTickerSummary" Property="@nameof(DividendTickerSummary.Payments)" Title="Payments" TextAlign="TextAlign.Right" />
+                    <RadzenDataGridColumn TItem="DividendTickerSummary" Property="TotalDividend.Amount" Title="Total dividends" TextAlign="TextAlign.Right">
+                        <Template Context="row">@row.TotalDividend</Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="DividendTickerSummary" Property="@nameof(DividendTickerSummary.FirstPayment)" Title="First payment" FormatString="{0:d}" />
+                    <RadzenDataGridColumn TItem="DividendTickerSummary" Property="@nameof(DividendTickerSummary.LastPayment)" Title="Last payment" FormatString="{0:d}" />
+                </Columns>
+            </RadzenDataGrid>
 
-    /* each list item becomes a flex child that can grow to fill remaining space,
-        but will not shrink below the flex-basis (min size) */
-    #container .e-listview .e-list-item {
-        box-sizing: border-box;
-        flex: 1 1 220px; /* grow, shrink, base width */
-        min-width: 160px; /* smallest acceptable width before wrapping */
-        max-width: 32%; /* optional: limit overly large items on wide screens */
-        height: auto; /* let content determine height */
-        display: flex;
-        align-items: center;
-        padding: 8px 12px;
-        background: transparent;
-    }
+            <div class="convert-actions" aria-live="polite">
+                <div class="convert-selection">
+                    @if (_selected.Count == 0)
+                    {
+                        <span class="text-muted-custom">No tickers selected</span>
+                    }
+                    else
+                    {
+                        <span class="convert-selection-count">@_selected.Count selected</span>
+                        @foreach (var ticker in _selected.Order(StringComparer.OrdinalIgnoreCase).Take(MaxChips))
+                        {
+                            <span class="convert-chip">
+                                @ticker
+                                <button type="button" aria-label="@($"Remove {ticker}")" @onclick="() => Toggle(ticker, false)">×</button>
+                            </span>
+                        }
+                        @if (_selected.Count > MaxChips)
+                        {
+                            <span class="text-muted-custom">and @(_selected.Count - MaxChips) more</span>
+                        }
+                    }
+                </div>
+                <div class="convert-buttons">
+                    <button class="btn btn-outline-secondary" @onclick="ClearSelection" disabled="@(_selected.Count == 0)">Clear</button>
+                    <button class="btn btn-primary" @onclick="ConvertSelected" disabled="@(_selected.Count == 0)">
+                        @if (_selected.Count == 0)
+                        {
+                            <span>Convert selected</span>
+                        }
+                        else
+                        {
+                            <span>Convert @_selected.Count<span class="convert-button-long"> ticker@(_selected.Count == 1 ? "" : "s") to income</span></span>
+                        }
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
+</div>
 
-    /* item inner content: keep checkbox + label inline and aligned */
-    #container .e-listview .e-list-item .e-text-content {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        width: 100%;
-        justify-content: flex-start; /* left align text and checkbox */
-        cursor: pointer;
-    }
-
-    /* let the text flow and wrap as needed */
-    #container .e-listview .e-list-text {
-        white-space: normal;
-        overflow: visible;
-        text-overflow: clip;
-    }
-</style>
+<div class="card" data-testid="converted-tickers">
+    <div class="card-header">
+        <h3 class="mb-0">Already taxed as income</h3>
+    </div>
+    <div class="card-body">
+        @if (_convertedRows.Count == 0)
+        {
+            <p class="text-muted-custom mb-0">No tickers have been converted yet.</p>
+        }
+        else
+        {
+            <p class="text-muted-custom small">
+                These tickers' dividends are now "ETF dividend income". To undo a conversion, import your statements again.
+            </p>
+            <RadzenDataGrid TItem="ConvertedTickerSummary" Data="@_convertedRows"
+                            AllowPaging="true" PageSize="15" AllowSorting="true"
+                            CellRender="@(args => MobileCardGrid.LabelCell(args))"
+                            class="w-100 mobile-cards">
+                <Columns>
+                    <RadzenDataGridColumn TItem="ConvertedTickerSummary" Property="@nameof(ConvertedTickerSummary.Ticker)" Title="Ticker" />
+                    <RadzenDataGridColumn TItem="ConvertedTickerSummary" Property="@nameof(ConvertedTickerSummary.Payments)" Title="Payments" TextAlign="TextAlign.Right" />
+                    <RadzenDataGridColumn TItem="ConvertedTickerSummary" Property="TotalIncome.Amount" Title="Total income" TextAlign="TextAlign.Right">
+                        <Template Context="row">@row.TotalIncome</Template>
+                    </RadzenDataGridColumn>
+                </Columns>
+            </RadzenDataGrid>
+        }
+    </div>
+</div>
 
 @code {
     /// <summary>Raised after tickers have been converted to income.</summary>
     [Parameter] public EventCallback OnConverted { get; set; }
 
+    private const int MaxChips = 8;
+    private readonly int[] _pageSizeOptions = { 15, 50, 100 };
     private readonly HashSet<string> _selected = new(StringComparer.OrdinalIgnoreCase);
 
-    private IEnumerable<Dividend> AvailableTickers => _dividendToIncomeViewModel.SelectableTickers;
+    private IReadOnlyList<DividendTickerSummary> _allRows = [];
+    private List<DividendTickerSummary> _shownRows = [];
+    private IReadOnlyList<ConvertedTickerSummary> _convertedRows = [];
+    private string _search = string.Empty;
+    private bool _fundsOnly;
 
-    private void Toggle(string assetName, bool isChecked)
+    protected override void OnInitialized() => Refresh();
+
+    private void Refresh()
     {
-        if (isChecked) _selected.Add(assetName);
-        else _selected.Remove(assetName);
+        _allRows = _dividendToIncomeViewModel.GetTickerSummaries();
+        _convertedRows = _dividendToIncomeViewModel.GetConvertedSummaries();
+        // Drop selections for tickers that no longer have dividends to convert
+        _selected.IntersectWith(_allRows.Select(row => row.Ticker));
+        ApplyFilter();
+    }
+
+    private void ApplyFilter()
+    {
+        string search = _search.Trim();
+        _shownRows = [.. _allRows
+            .Where(row => !_fundsOnly || row.IsFund)
+            .Where(row => search.Length == 0 || row.Ticker.Contains(search, StringComparison.OrdinalIgnoreCase))];
+    }
+
+    private void OnSearch(ChangeEventArgs e)
+    {
+        _search = e.Value?.ToString() ?? string.Empty;
+        ApplyFilter();
+    }
+
+    private void SetFundsOnly(bool fundsOnly)
+    {
+        _fundsOnly = fundsOnly;
+        ApplyFilter();
+    }
+
+    private void SelectAllShown() => _selected.UnionWith(_shownRows.Select(row => row.Ticker));
+
+    private void Toggle(string ticker, bool isChecked)
+    {
+        if (isChecked) _selected.Add(ticker);
+        else _selected.Remove(ticker);
     }
 
     private async Task ConvertSelected()
     {
-        if (!_dividendToIncomeViewModel.SelectableTickers.Any() || _selected.Count == 0) return;
+        if (_selected.Count == 0) return;
         try
         {
             HashSet<string> selectedTickers = _selected.ToHashSet(StringComparer.OrdinalIgnoreCase);
             _dividendToIncomeViewModel.ConvertDividendsToIncome(selectedTickers);
             _toastService.ShowInformation($"Converted {selectedTickers.Count} ticker(s).");
             _selected.Clear();
+            Refresh();
             await OnConverted.InvokeAsync();
-
-            // notify UI and other components (they bind to shared TaxEventLists)
-            await InvokeAsync(StateHasChanged);
         }
         catch (Exception ex)
         {
