@@ -84,4 +84,15 @@ public class WorkflowStepsTests
         WorkflowSteps.NextStep(null).ShouldBe(WorkflowSteps.All[0]);
         WorkflowSteps.NextStep(WorkflowSteps.All[^1]).ShouldBeNull();
     }
+
+    [Theory]
+    [InlineData(0, 1)]
+    [InlineData(1, 2)]
+    [InlineData(2, 3)]
+    [InlineData(3, 4)]
+    [InlineData(4, 5)]
+    public void NextStep_ReturnsFollowingStep(int index, int nextIndex)
+    {
+        WorkflowSteps.NextStep(WorkflowSteps.All[index]).ShouldBe(WorkflowSteps.All[nextIndex]);
+    }
 }

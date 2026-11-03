@@ -86,4 +86,9 @@
     }).observe(document.documentElement, { childList: true, subtree: true, characterData: true });
 
     gridsIn(document.documentElement).forEach(watch);
+
+    // Font loads change text widths without changing a grid's width or its DOM: re-check every grid.
+    document.fonts?.addEventListener("loadingdone", () => {
+        document.querySelectorAll(GRID_SELECTOR).forEach(schedule);
+    });
 })();

@@ -101,11 +101,11 @@
                             <Template Context="ca">
                                 @if (ca is ExcessReportableIncome eri)
                                 {
-                                    <span>@eri.Amount.Amount.ToString()</span>
+                                    <span class="text-nowrap">@eri.Amount.Amount.ToString()</span>
                                 }
                                 else if (ca is FundEqualisation fe)
                                 {
-                                    <span>@fe.Amount.Amount.ToString()</span>
+                                    <span class="text-nowrap">@fe.Amount.Amount.ToString()</span>
                                 }
                             </Template>
                         </RadzenDataGridColumn>
@@ -113,11 +113,11 @@
                             <Template Context="ca">
                                 @if (ca is ExcessReportableIncome eri)
                                 {
-                                    <span>@eri.Amount.BaseCurrencyAmount.Amount.ToString("N2")</span>
+                                    <span class="text-nowrap">@eri.Amount.BaseCurrencyAmount.Amount.ToString("N2")</span>
                                 }
                                 else if (ca is FundEqualisation fe)
                                 {
-                                    <span>@fe.Amount.BaseCurrencyAmount.Amount.ToString("N2")</span>
+                                    <span class="text-nowrap">@fe.Amount.BaseCurrencyAmount.Amount.ToString("N2")</span>
                                 }
                             </Template>
                         </RadzenDataGridColumn>

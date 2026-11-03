@@ -26,6 +26,12 @@ public class TaxCalculationService(
 {
     private bool _isCalculating = false;
     public bool IsCalculating => _isCalculating;
+
+    /// <summary>
+    /// True once a calculation has completed successfully. Results can legitimately be empty (e.g. no trades and
+    /// only non-resident income), so "has this been calculated" must not be inferred from the result collections.
+    /// </summary>
+    public bool HasCompletedCalculation { get; private set; }
     public CalculationTrigger CurrentTrigger { get; private set; } = CalculationTrigger.Manual;
     public event Action? OnStateChanged;
 
@@ -52,6 +58,7 @@ public class TaxCalculationService(
 
             dividendCalculationResult.SetResult(await Task.Run(dividendCalculator.CalculateTax));
             years.SetYears(GetSelectableYears());
+            HasCompletedCalculation = true;
 
             toastService.ShowInformation("Calculation completed.");
         }

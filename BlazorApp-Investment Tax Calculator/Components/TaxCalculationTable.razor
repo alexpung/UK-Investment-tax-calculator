@@ -36,7 +36,7 @@
                                 <RadzenDataGridColumn TItem="TradeTaxCalculationViewModel" Title="Gain (Loss)" Width="120px" Sortable="false">
                                     <Template Context="trade">
                                         @{ var cssClass = (trade.Gain?.Amount ?? 0m) >= 0 ? "text-success" : "text-danger"; }
-                                        <span class="@cssClass fw-bold">@trade.Gain</span>
+                                        <span class="@cssClass fw-bold text-nowrap">@trade.Gain</span>
                                     </Template>
                                 </RadzenDataGridColumn>
                             </Columns>
@@ -82,7 +82,7 @@
                                 <RadzenDataGridColumn TItem="TradeTaxCalculationViewModel" Title="Gain (Loss)" Width="150px" Sortable="false">
                                     <Template Context="trade">
                                         @{ var cssClass = (trade.Gain?.Amount ?? 0m) >= 0 ? "text-success" : "text-danger"; }
-                                        <span class="@cssClass fw-bold">@trade.Gain</span>
+                                        <span class="@cssClass fw-bold text-nowrap">@trade.Gain</span>
                                     </Template>
                                 </RadzenDataGridColumn>
                             </Columns>

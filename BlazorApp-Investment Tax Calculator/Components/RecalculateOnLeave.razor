@@ -1,10 +1,7 @@
-@using InvestmentTaxCalculator.Model
 @using InvestmentTaxCalculator.Services
 @implements IDisposable
 @inject NavigationManager NavigationManager
 @inject TaxCalculationService TaxCalculationService
-@inject TradeCalculationResult TradeCalculationResult
-@inject DividendCalculationResult DividendCalculationResult
 
 @*
     Re-runs the tax calculation when the user navigates away from a page whose inputs changed, so the
@@ -23,14 +20,11 @@
         _registration = NavigationManager.RegisterLocationChangingHandler(OnLocationChanging);
     }
 
-    private bool HasCalculationResults =>
-        !TradeCalculationResult.CalculatedTrade.IsEmpty || DividendCalculationResult.DividendSummary.Count > 0;
-
     private async ValueTask OnLocationChanging(LocationChangingContext context)
     {
         if (!_hasChanges) return;
         _hasChanges = false;
-        if (HasCalculationResults)
+        if (TaxCalculationService.HasCompletedCalculation)
         {
             await TaxCalculationService.CalculateAsync(CalculationTrigger.NavigationRefresh);
         }

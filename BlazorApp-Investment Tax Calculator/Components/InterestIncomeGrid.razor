@@ -26,10 +26,10 @@
             </RadzenDataGridColumn>
             <RadzenDataGridColumn TItem="InterestIncome" Property="Amount.Description" Title="Description" />
             <RadzenDataGridColumn TItem="InterestIncome" Title="Local Currency Amount" TextAlign="TextAlign.Right" Sortable="false">
-                <Template Context="income">@income.Amount.Amount</Template>
+                <Template Context="income"><span class="text-nowrap">@income.Amount.Amount</span></Template>
             </RadzenDataGridColumn>
             <RadzenDataGridColumn TItem="InterestIncome" Title="Sterling Amount" TextAlign="TextAlign.Right" Sortable="false">
-                <Template Context="income">@income.Amount.BaseCurrencyAmount</Template>
+                <Template Context="income"><span class="text-nowrap">@income.Amount.BaseCurrencyAmount</span></Template>
             </RadzenDataGridColumn>
             <RadzenDataGridColumn TItem="InterestIncome" Title="Next coupon payable in the same tax year" Sortable="false">
                 <Template Context="income">

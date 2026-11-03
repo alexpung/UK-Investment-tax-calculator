@@ -30,12 +30,12 @@
                 <RadzenDataGridColumn TItem="ImportedTradeRow" Property="@nameof(ImportedTradeRow.Quantity)" Title="Quantity" Width="120px" TextAlign="TextAlign.Right" />
                 <RadzenDataGridColumn TItem="ImportedTradeRow" Title="Gross Proceed" Width="160px" Sortable="false">
                     <Template Context="row">
-                        <span>@row.Trade.GrossProceed.Display()</span>
+                        <span class="text-nowrap">@row.Trade.GrossProceed.Display()</span>
                     </Template>
                 </RadzenDataGridColumn>
                 <RadzenDataGridColumn TItem="ImportedTradeRow" Title="Net Proceed" Width="140px" Sortable="false">
                     <Template Context="row">
-                        <span>@row.Trade.NetProceed</span>
+                        <span class="text-nowrap">@row.Trade.NetProceed</span>
                     </Template>
                 </RadzenDataGridColumn>
                 <RadzenDataGridColumn TItem="ImportedTradeRow" Property="@nameof(ImportedTradeRow.Description)" Title="Description" />

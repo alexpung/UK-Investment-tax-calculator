@@ -5,8 +5,6 @@
 @implements IDisposable
 @inject NavigationManager Navigation
 @inject TaxEventLists TaxEventLists
-@inject TradeCalculationResult TradeCalculationResult
-@inject DividendCalculationResult DividendCalculationResult
 @inject TaxCalculationService TaxCalculationService
 @inject FileImportStateService FileImportState
 
@@ -105,7 +103,7 @@
         bool done = step.Number switch
         {
             1 => TaxEventLists.GetTotalNumberOfEvents() > 0,
-            2 => !TradeCalculationResult.CalculatedTrade.IsEmpty || DividendCalculationResult.DividendSummary.Count > 0,
+            2 => TaxCalculationService.HasCompletedCalculation,
             _ => false
         };
         return done ? StepState.Done : StepState.Upcoming;

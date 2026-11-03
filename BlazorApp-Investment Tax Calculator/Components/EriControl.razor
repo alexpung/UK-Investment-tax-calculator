@@ -45,12 +45,14 @@
                     </div>
 
                     string isin = GetIsinForTicker(SelectedTicker, PeriodEndDate.Value);
+                    string regionCode = isin.Length < 2 ? isin : isin[..2];
+                    CountryCode detectedRegion = isin.Length < 2 ? CountryCode.UnknownRegion : CountryCode.GetRegionByTwoDigitCode(regionCode);
                     @if (!string.IsNullOrEmpty(isin))
                     {
                         <div class="form-field">
                             <label class="form-label">Detected region <span class="form-label-note">ISIN @isin</span></label>
-                            <div class="form-control form-control-readonly" title="@CountryCode.GetRegionByTwoDigitCode(isin[..2]).CountryName (@isin[..2])">
-                                <span class="form-control-readonly-text">@CountryCode.GetRegionByTwoDigitCode(isin[..2]).CountryName (@isin[..2])</span>
+                            <div class="form-control form-control-readonly" title="@detectedRegion.CountryName (@regionCode)">
+                                <span class="form-control-readonly-text">@detectedRegion.CountryName (@regionCode)</span>
                             </div>
                         </div>
                     }

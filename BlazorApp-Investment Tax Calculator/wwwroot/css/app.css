@@ -805,6 +805,10 @@ h1, h2, h3, h4, h5, h6 {
     display: none;
 }
 
+.rz-data-grid.mobile-cards .rz-grid-table thead th:is([aria-sort="ascending"], [aria-sort="descending"]) .rz-sortable-column-icon {
+    display: inline-block;
+}
+
 /* Editable cells (e.g. Additional Information on Trade Matches): wide enough to read a comment */
 .rz-data-grid.mobile-cards:not([data-layout="cards"]) .rz-grid-table td .rz-textbox {
     min-width: 14rem;
@@ -835,8 +839,8 @@ h1, h2, h3, h4, h5, h6 {
    Card layout: each row becomes a card. The first column (tax year, trade, asset...) is the card title
    and every other column is a label / value line. Labels come from the data-label attribute
    MobileCardGrid.LabelCell puts on each cell; data-group starts a titled section for grouped columns
-   (e.g. "Listed Shares" / "Other Assets"). The header row, and so column filters and sorting, is hidden
-   in this layout; paging still works.
+   (e.g. "Listed Shares" / "Other Assets"). The header row becomes a row of sort / filter chips above the
+   cards (below), and paging still works.
    js/responsive-grids.js sets data-layout="cards" on a grid only when its table does not fit the space
    available with readable columns, so the switch depends on the table and its container, not the device.
 */
@@ -864,9 +868,86 @@ h1, h2, h3, h4, h5, h6 {
     font-size: 0.9375rem;
 }
 
-.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > colgroup,
-.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > thead {
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > colgroup {
     display: none;
+}
+
+/*
+   The header row stays, restyled as a row of chips above the cards: Radzen's own header cells keep their
+   sort (click / Enter) and filter buttons working, keyboard accessible, and show the active sort and filter.
+   Headers with neither control are hidden.
+*/
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > thead {
+    display: block;
+    margin-bottom: 0.75rem;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > thead::before {
+    content: "Sort and filter";
+    display: block;
+    margin-bottom: 0.35rem;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--wf-muted);
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > thead > tr {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > thead > tr + tr {
+    margin-top: 0.4rem;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > thead > tr > th {
+    display: flex;
+    align-items: center;
+    flex: none;
+    width: auto !important;
+    min-width: 0 !important;
+    min-height: 2rem;
+    padding: 0 0.1rem;
+    border: 1px solid var(--wf-border);
+    border-radius: 999px;
+    background: var(--wf-surface);
+    text-align: left !important;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > thead > tr > th:not(.rz-sortable-column):not(:has(.rz-grid-filter-icon)) {
+    display: none;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > thead > tr > th > div {
+    display: flex;
+    align-items: center;
+    /* Radzen pads the header cell's inner wrapper by 0.75rem top and bottom */
+    padding-block: 0 !important;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > thead th .rz-column-title {
+    padding: 0.25rem 0.25rem 0.25rem 0.5rem;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > thead th .rz-column-title-content {
+    white-space: nowrap;
+    min-width: 0 !important;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--wf-ink);
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > thead th .rz-column-resizer {
+    display: none;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > thead th[aria-sort="ascending"],
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > thead th[aria-sort="descending"] {
+    border-color: var(--wf-forest);
+    background: var(--wf-lime-wash);
 }
 
 /* One column of cards on phones, two or three side by side on tablets */

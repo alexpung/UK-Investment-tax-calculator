@@ -49,4 +49,31 @@ public class IncomeTaxableDividendSelectionTests : PlaywrightTestBase
             await Expect(Page.Locator(".convert-actions")).ToContainTextAsync("No tickers selected");
         }
     }
+
+    [Test]
+    public async Task ConvertingAfterCalculating_RecalculatesWhenLeavingThePage()
+    {
+        // TaxExample.xml: £555.00 of dividends with -£166.50 withholding tax, no interest income
+        await NavigateAndWaitForBlazorAsync("/MainCalculatorPage");
+        await Page.Locator("input[type='file']").First.SetInputFilesAsync(TestDataPath);
+        await Expect(Page.Locator(".metric-card:has-text('Total Tax Events') .metric-value")).Not.ToHaveTextAsync("0",
+            new LocatorAssertionsToHaveTextOptions { Timeout = 30000 });
+        await GoToCalculatePageAsync();
+        await Page.Locator("button:has-text('Start Calculation')").ClickAsync();
+        await Expect(Page.Locator("text=Calculation completed").First).ToBeVisibleAsync(new LocatorAssertionsToBeVisibleOptions { Timeout = 60000 });
+
+        var totals = Page.Locator(".rz-grid-table tfoot").First;
+        await NavigateViaSidebarAsync("Dividend/Income Summary", "**/DividendYearlyTaxSummaryPage");
+        await Expect(totals).ToContainTextAsync("£555.00");
+
+        await NavigateViaSidebarAsync("Income taxable dividend selection", "**/ConvertPage");
+        await Page.Locator("[data-testid='dividend-tickers'] .convert-ticker input").First.CheckAsync();
+        await Page.Locator(".convert-buttons .btn-primary").ClickAsync();
+        await Expect(Page.Locator("[data-testid='converted-tickers'] tr.rz-data-row")).ToHaveCountAsync(1);
+
+        // Leaving the page re-runs the calculation: the dividends are now taxed as interest income
+        await NavigateViaSidebarAsync("Dividend/Income Summary", "**/DividendYearlyTaxSummaryPage");
+        await Expect(totals).ToContainTextAsync("£388.50", new LocatorAssertionsToContainTextOptions { Timeout = 30000 });
+        await Expect(totals).Not.ToContainTextAsync("£555.00");
+    }
 }
