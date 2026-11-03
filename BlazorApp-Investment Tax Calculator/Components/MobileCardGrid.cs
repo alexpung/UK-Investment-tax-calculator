@@ -3,9 +3,9 @@ using Radzen;
 namespace InvestmentTaxCalculator.Components;
 
 /// <summary>
-/// Supports the phone layout of report grids. On narrow screens a grid with the <see cref="CssClass"/> class
-/// shows each row as a card (see app.css), so every cell needs to carry its column title: there is no visible
-/// header row to read it from.
+/// Supports the responsive layout of report grids. A grid with the <see cref="CssClass"/> class is shown as a
+/// table when it fits its space and as one card per row when it does not (chosen by wwwroot/js/responsive-grids.js,
+/// styled in app.css). Cards have no header row, so every cell carries its column title.
 /// <para>Use on a grid as <c>CellRender="@(args => MobileCardGrid.LabelCell(args))"</c>.</para>
 /// </summary>
 public static class MobileCardGrid

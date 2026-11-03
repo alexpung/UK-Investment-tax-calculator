@@ -120,9 +120,9 @@ body {
     background-color: var(--wf-ground);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1099.98px) {
     .main-content-wrapper {
-        padding: 4.25rem 1rem 2rem;
+        padding: 4.25rem 1.5rem 2rem;
         /* Leave room for the fixed menu button */
     }
 }
@@ -604,13 +604,20 @@ h1, h2, h3, h4, h5, h6 {
 .data-panel {
     background: var(--wf-surface);
     border-radius: var(--wf-radius-lg);
-    padding: 0.25rem 1.5rem 1.5rem;
+    padding: 0.25rem 1rem 1rem;
     margin-bottom: 1.5rem;
     box-shadow: 0 1px 2px rgba(14, 51, 38, 0.04);
 }
 
+/* The grid rows inside panels carried Bootstrap gutters plus a "me-3" margin: let the grid use the width */
 .data-panel > .row {
+    margin-left: 0;
     margin-right: 0 !important;
+}
+
+.data-panel > .row > .col {
+    padding-left: 0;
+    padding-right: 0;
 }
 
 .data-panel h3 {
@@ -644,10 +651,320 @@ h1, h2, h3, h4, h5, h6 {
     border-radius: var(--wf-radius-lg);
 }
 
+
+/* ===================================
+   Report grids: table or cards, chosen per grid by js/responsive-grids.js
+   =================================== */
+
+/*
+   Table layouts. Radzen gives every column an equal fixed share of the width, which cuts amounts off
+   with "…" while short columns waste space. Instead columns are sized to their content:
+   - data-layout="table" (and before the script runs): the table fills its panel, sharing out the width;
+     words wrap only where space runs out.
+   - data-layout="measure" / "scroll": the narrowest readable table: amounts and dates on one line,
+     headers and free text wrapping between words, headers at least 4.5rem wide. "measure" is the script's
+     sizing pass; "scroll" is used on wide screens when even that is wider than the panel, which then
+     scrolls sideways (narrower screens get cards instead).
+*/
+.rz-data-grid.mobile-cards:not([data-layout="cards"]) .rz-grid-table,
+.rz-data-grid.mobile-cards:not([data-layout="cards"]) .rz-grid-table.rz-grid-table-fixed {
+    table-layout: auto !important;
+    width: 100% !important;
+}
+
+.rz-data-grid.mobile-cards:not([data-layout="cards"]) .rz-grid-table td .rz-cell-data {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+}
+
+.rz-data-grid.mobile-cards:not([data-layout="cards"]) .rz-grid-table thead th .rz-column-title-content {
+    display: inline-block;
+    min-width: 4.5rem;
+    overflow-wrap: normal;
+    word-break: normal;
+}
+
+/* Fixed column widths only made sense for Radzen's fixed layout; content sizing replaces them */
+.rz-data-grid.mobile-cards:not([data-layout="cards"]) .rz-grid-table > colgroup > col,
+.rz-data-grid.mobile-cards:not([data-layout="cards"]) .rz-grid-table > thead th,
+.rz-data-grid.mobile-cards:not([data-layout="cards"]) .rz-grid-table > tbody td {
+    width: auto !important;
+}
+
+/* Header chrome: trim padding and only show the sort arrow once the column is sorted */
+.rz-data-grid.mobile-cards .rz-grid-table thead th .rz-column-title {
+    padding-inline: 0.5rem 0.25rem;
+}
+
+.rz-data-grid.mobile-cards .rz-grid-table thead th .rz-sortable-column-icon.rzi-sort {
+    display: none;
+}
+
+.rz-data-grid.mobile-cards:is([data-layout="measure"], [data-layout="scroll"]) .rz-grid-table,
+.rz-data-grid.mobile-cards:is([data-layout="measure"], [data-layout="scroll"]) .rz-grid-table.rz-grid-table-fixed {
+    width: min-content !important;
+    min-width: 100%;
+}
+
+/*
+   Card layout: each row becomes a card. The first column (tax year, trade, asset...) is the card title
+   and every other column is a label / value line. Labels come from the data-label attribute
+   MobileCardGrid.LabelCell puts on each cell; data-group starts a titled section for grouped columns
+   (e.g. "Listed Shares" / "Other Assets"). The header row, and so column filters and sorting, is hidden
+   in this layout; paging still works.
+   js/responsive-grids.js sets data-layout="cards" on a grid only when its table does not fit the space
+   available with readable columns, so the switch depends on the table and its container, not the device.
+*/
+.rz-data-grid.mobile-cards[data-layout="cards"] {
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    overflow: visible;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-data-grid-data {
+    overflow: visible;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-group-header {
+    display: none;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table,
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table.rz-grid-table-fixed {
+    display: block;
+    width: 100% !important;
+    table-layout: auto !important;
+    background: transparent;
+    font-size: 0.9375rem;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > colgroup,
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > thead {
+    display: none;
+}
+
+/* One column of cards on phones, two or three side by side on tablets */
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > tbody {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+    align-items: start;
+    gap: 0.6rem;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > tbody > tr.rz-group-row,
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > tbody > tr.rz-datatable-emptymessage-row {
+    grid-column: 1 / -1;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table tr {
+    display: block;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] tr.rz-data-row {
+    background: var(--wf-surface-2);
+    border-radius: var(--wf-radius-md);
+    padding: 0.2rem 0.9rem 0.45rem;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] tr.rz-data-row > td {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.1rem 1rem;
+    padding: 0.45rem 0;
+    border: 0;
+    border-top: 1px solid var(--wf-border-soft);
+    background: transparent !important;
+    text-align: right !important;
+    white-space: normal;
+    /* Columns given a fixed Width set it inline on every cell */
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] tr.rz-data-row > td::before {
+    content: attr(data-label);
+    order: -1;
+    flex: 1 1 8rem;
+    text-align: left;
+    color: var(--wf-muted);
+    font-size: 0.8125rem;
+    font-weight: 500;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] tr.rz-data-row > td:not([data-label])::before {
+    content: none;
+}
+
+/* Short values sit at the right edge; a value long enough to wrap fills the line, left-aligned */
+.rz-data-grid.mobile-cards[data-layout="cards"] tr.rz-data-row > td .rz-cell-data {
+    margin-left: auto;
+    text-align: left;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    overflow-wrap: anywhere;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    max-width: 100%;
+}
+
+/* Card title: the row's first column */
+.rz-data-grid.mobile-cards[data-layout="cards"] tr.rz-data-row > td:first-child,
+.rz-data-grid.mobile-cards[data-layout="cards"] tr.rz-data-row > td.rz-col-icon + td {
+    display: block;
+    text-align: left !important;
+    border-top: 0;
+    padding: 0.55rem 0 0.4rem;
+    font-size: 1.125rem;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] tr.rz-data-row > td:first-child .rz-cell-data,
+.rz-data-grid.mobile-cards[data-layout="cards"] tr.rz-data-row > td.rz-col-icon + td .rz-cell-data {
+    font-weight: 800;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] tr.rz-data-row > td:first-child::before,
+.rz-data-grid.mobile-cards[data-layout="cards"] tr.rz-data-row > td.rz-col-icon + td::before {
+    display: block;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--wf-accent);
+    margin-bottom: 0.1rem;
+}
+
+/* The empty spacer cell grouped grids put in front of each row */
+.rz-data-grid.mobile-cards[data-layout="cards"] tr.rz-data-row > td.rz-col-icon {
+    display: none;
+}
+
+/* Grouped columns: the first cell of a group starts a titled section of the card */
+.rz-data-grid.mobile-cards[data-layout="cards"] tr.rz-data-row > td[data-group] {
+    margin-top: 0.4rem;
+    border-top: 1.5px solid var(--wf-forest);
+    padding-top: 0.5rem;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] tr.rz-data-row > td[data-group]::before {
+    content: attr(data-group);
+    order: -2;
+    flex: 0 0 100%;
+    color: var(--wf-ink);
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 0.25rem;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] tr.rz-data-row > td[data-group]::after {
+    content: attr(data-label);
+    order: -1;
+    flex: 1 1 8rem;
+    text-align: left;
+    color: var(--wf-muted);
+    font-size: 0.8125rem;
+    font-weight: 500;
+}
+
+/* Group rows (e.g. "Tax Year: 2020" on the dividend summary) become section headings */
+.rz-data-grid.mobile-cards[data-layout="cards"] tr.rz-group-row {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-top: 0.5rem;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] tr.rz-group-row > td {
+    display: block;
+    border: 0;
+    padding: 0;
+    background: transparent;
+    font-weight: 800;
+    font-size: 1rem;
+}
+
+/* Footer totals (dividend summary): one "Totals" card */
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > tfoot {
+    display: block;
+    margin-top: 0.6rem;
+    max-width: 30rem;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > tfoot > tr {
+    display: block;
+    background: var(--wf-lime-wash);
+    border-radius: var(--wf-radius-md);
+    padding: 0.55rem 0.9rem 0.45rem;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > tfoot > tr::before {
+    content: "Totals";
+    display: block;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--wf-accent);
+    padding-bottom: 0.3rem;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > tfoot > tr > td {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    padding: 0.45rem 0;
+    border: 0;
+    border-top: 1px solid var(--wf-border-soft);
+    background: transparent;
+    text-align: right !important;
+    width: auto !important;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > tfoot > tr > td::before {
+    content: attr(data-label);
+    flex: 1 1 8rem;
+    text-align: left;
+    color: var(--wf-muted);
+    font-size: 0.8125rem;
+    font-weight: 500;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > tfoot > tr > td.rz-col-icon,
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > tfoot > tr > td:has(.rz-column-footer:empty) {
+    display: none;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > tfoot .footer-prefix {
+    display: none;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] tr.rz-datatable-emptymessage-row > td {
+    display: block;
+    border: 0;
+    padding: 1rem;
+    border-radius: var(--wf-radius-md);
+    background: var(--wf-surface-2);
+    color: var(--wf-muted);
+    text-align: center;
+}
+
 /* ===================================
    Phones and small tablets
    =================================== */
 @media (max-width: 768px) {
+    .main-content-wrapper {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
     /* Stop the page, container, panel and grid padding from stacking up */
     .main-content-wrapper .container-fluid {
         padding-left: 0;
@@ -693,260 +1010,6 @@ h1, h2, h3, h4, h5, h6 {
 
     .page-header {
         margin-bottom: 1.25rem;
-    }
-
-    /*
-       Report grids on phones: each row becomes a card. The first column (tax year, trade, asset...) is the
-       card title and every other column is a label / value line. Labels come from the data-label attribute
-       MobileCardGrid.LabelCell puts on each cell; data-group starts a titled section for grouped columns
-       (e.g. "Listed Shares" / "Other Assets"). The header row, and so column filters and sorting, is
-       hidden on phones; paging still works.
-    */
-    .rz-data-grid.mobile-cards {
-        border: 0;
-        border-radius: 0;
-        background: transparent;
-        overflow: visible;
-    }
-
-    .rz-data-grid.mobile-cards .rz-data-grid-data {
-        overflow: visible;
-    }
-
-    .rz-data-grid.mobile-cards .rz-group-header {
-        display: none;
-    }
-
-    .rz-data-grid.mobile-cards .rz-grid-table,
-    .rz-data-grid.mobile-cards .rz-grid-table.rz-grid-table-fixed {
-        display: block;
-        width: 100% !important;
-        table-layout: auto !important;
-        background: transparent;
-        font-size: 0.9375rem;
-    }
-
-    .rz-data-grid.mobile-cards .rz-grid-table > colgroup,
-    .rz-data-grid.mobile-cards .rz-grid-table > thead {
-        display: none;
-    }
-
-    .rz-data-grid.mobile-cards .rz-grid-table > tbody {
-        display: flex;
-        flex-direction: column;
-        gap: 0.6rem;
-    }
-
-    .rz-data-grid.mobile-cards .rz-grid-table tr {
-        display: block;
-    }
-
-    .rz-data-grid.mobile-cards tr.rz-data-row {
-        background: var(--wf-surface-2);
-        border-radius: var(--wf-radius-md);
-        padding: 0.2rem 0.9rem 0.45rem;
-    }
-
-    .rz-data-grid.mobile-cards tr.rz-data-row > td {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: space-between;
-        align-items: baseline;
-        gap: 0.1rem 1rem;
-        padding: 0.45rem 0;
-        border: 0;
-        border-top: 1px solid var(--wf-border-soft);
-        background: transparent !important;
-        text-align: right !important;
-        white-space: normal;
-        /* Columns given a fixed Width set it inline on every cell */
-        width: auto !important;
-        min-width: 0 !important;
-        max-width: none !important;
-    }
-
-    .rz-data-grid.mobile-cards tr.rz-data-row > td::before {
-        content: attr(data-label);
-        order: -1;
-        flex: 1 1 8rem;
-        text-align: left;
-        color: var(--wf-muted);
-        font-size: 0.8125rem;
-        font-weight: 500;
-    }
-
-    .rz-data-grid.mobile-cards tr.rz-data-row > td:not([data-label])::before {
-        content: none;
-    }
-
-    /* Short values sit at the right edge; a value long enough to wrap fills the line, left-aligned */
-    .rz-data-grid.mobile-cards tr.rz-data-row > td .rz-cell-data {
-        margin-left: auto;
-        text-align: left;
-        white-space: normal;
-        overflow: visible;
-        text-overflow: clip;
-        overflow-wrap: anywhere;
-        font-weight: 600;
-        font-variant-numeric: tabular-nums;
-        max-width: 100%;
-    }
-
-    /* Card title: the row's first column */
-    .rz-data-grid.mobile-cards tr.rz-data-row > td:first-child,
-    .rz-data-grid.mobile-cards tr.rz-data-row > td.rz-col-icon + td {
-        display: block;
-        text-align: left !important;
-        border-top: 0;
-        padding: 0.55rem 0 0.4rem;
-        font-size: 1.125rem;
-    }
-
-    .rz-data-grid.mobile-cards tr.rz-data-row > td:first-child .rz-cell-data,
-    .rz-data-grid.mobile-cards tr.rz-data-row > td.rz-col-icon + td .rz-cell-data {
-        font-weight: 800;
-    }
-
-    .rz-data-grid.mobile-cards tr.rz-data-row > td:first-child::before,
-    .rz-data-grid.mobile-cards tr.rz-data-row > td.rz-col-icon + td::before {
-        display: block;
-        font-size: 0.6875rem;
-        font-weight: 700;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-        color: var(--wf-accent);
-        margin-bottom: 0.1rem;
-    }
-
-    /* The empty spacer cell grouped grids put in front of each row */
-    .rz-data-grid.mobile-cards tr.rz-data-row > td.rz-col-icon {
-        display: none;
-    }
-
-    /* Grouped columns: the first cell of a group starts a titled section of the card */
-    .rz-data-grid.mobile-cards tr.rz-data-row > td[data-group] {
-        margin-top: 0.4rem;
-        border-top: 1.5px solid var(--wf-forest);
-        padding-top: 0.5rem;
-    }
-
-    .rz-data-grid.mobile-cards tr.rz-data-row > td[data-group]::before {
-        content: attr(data-group);
-        order: -2;
-        flex: 0 0 100%;
-        color: var(--wf-ink);
-        font-size: 0.75rem;
-        font-weight: 800;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-        margin-bottom: 0.25rem;
-    }
-
-    .rz-data-grid.mobile-cards tr.rz-data-row > td[data-group]::after {
-        content: attr(data-label);
-        order: -1;
-        flex: 1 1 8rem;
-        text-align: left;
-        color: var(--wf-muted);
-        font-size: 0.8125rem;
-        font-weight: 500;
-    }
-
-    /* Group rows (e.g. "Tax Year: 2020" on the dividend summary) become section headings */
-    .rz-data-grid.mobile-cards tr.rz-group-row {
-        display: flex;
-        align-items: center;
-        gap: 0.25rem;
-        margin-top: 0.5rem;
-    }
-
-    .rz-data-grid.mobile-cards tr.rz-group-row > td {
-        display: block;
-        border: 0;
-        padding: 0;
-        background: transparent;
-        font-weight: 800;
-        font-size: 1rem;
-    }
-
-    /* Footer totals (dividend summary): one "Totals" card */
-    .rz-data-grid.mobile-cards .rz-grid-table > tfoot {
-        display: block;
-        margin-top: 0.6rem;
-    }
-
-    .rz-data-grid.mobile-cards .rz-grid-table > tfoot > tr {
-        display: block;
-        background: var(--wf-lime-wash);
-        border-radius: var(--wf-radius-md);
-        padding: 0.55rem 0.9rem 0.45rem;
-    }
-
-    .rz-data-grid.mobile-cards .rz-grid-table > tfoot > tr::before {
-        content: "Totals";
-        display: block;
-        font-size: 0.6875rem;
-        font-weight: 700;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-        color: var(--wf-accent);
-        padding-bottom: 0.3rem;
-    }
-
-    .rz-data-grid.mobile-cards .rz-grid-table > tfoot > tr > td {
-        display: flex;
-        justify-content: space-between;
-        align-items: baseline;
-        gap: 1rem;
-        padding: 0.45rem 0;
-        border: 0;
-        border-top: 1px solid var(--wf-border-soft);
-        background: transparent;
-        text-align: right !important;
-        width: auto !important;
-    }
-
-    .rz-data-grid.mobile-cards .rz-grid-table > tfoot > tr > td::before {
-        content: attr(data-label);
-        flex: 1 1 8rem;
-        text-align: left;
-        color: var(--wf-muted);
-        font-size: 0.8125rem;
-        font-weight: 500;
-    }
-
-    .rz-data-grid.mobile-cards .rz-grid-table > tfoot > tr > td.rz-col-icon,
-    .rz-data-grid.mobile-cards .rz-grid-table > tfoot > tr > td:has(.rz-column-footer:empty) {
-        display: none;
-    }
-
-    .rz-data-grid.mobile-cards .rz-grid-table > tfoot .footer-prefix {
-        display: none;
-    }
-
-    .rz-data-grid.mobile-cards tr.rz-datatable-emptymessage-row > td {
-        display: block;
-        border: 0;
-        padding: 1rem;
-        border-radius: var(--wf-radius-md);
-        background: var(--wf-surface-2);
-        color: var(--wf-muted);
-        text-align: center;
-    }
-
-    /* Grids not opted in to cards keep a scrollable table with content-sized columns */
-    .rz-data-grid:not(.mobile-cards) .rz-grid-table,
-    .rz-data-grid:not(.mobile-cards) .rz-grid-table.rz-grid-table-fixed {
-        table-layout: auto !important;
-        width: auto !important;
-        min-width: 100%;
-    }
-
-    .rz-data-grid:not(.mobile-cards) .rz-grid-table td,
-    .rz-data-grid:not(.mobile-cards) .rz-grid-table td .rz-cell-data {
-        white-space: nowrap;
-        overflow: visible;
-        text-overflow: clip;
     }
 
     /* Summary tiles (import statistics, tax summary) become one statement-style list */
@@ -1030,8 +1093,11 @@ h1, h2, h3, h4, h5, h6 {
         flex: 1 1 auto;
         justify-content: center;
     }
+}
 
-    /* Notifications: bottom of the screen, full width, so they do not cover the page header */
+/* Wherever the sidebar is a slide-out menu (below 1100px) */
+@media (max-width: 1099.98px) {
+    /* Notifications: full width at the bottom, so they do not cover the page header or Next buttons */
     .rz-notification {
         inset-block-start: auto;
         inset-block-end: 0.75rem;
