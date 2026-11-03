@@ -643,3 +643,140 @@ h1, h2, h3, h4, h5, h6 {
     border: 0;
     border-radius: var(--wf-radius-lg);
 }
+
+/* ===================================
+   Phones and small tablets
+   =================================== */
+@media (max-width: 768px) {
+    /* Stop the page, container, panel and grid padding from stacking up */
+    .main-content-wrapper .container-fluid {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .main-content-wrapper .container-fluid > .row {
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .main-content-wrapper .container-fluid > .row > [class*="col-"] {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .data-panel {
+        padding: 0.25rem 0.75rem 0.75rem;
+        border-radius: var(--wf-radius-md);
+    }
+
+    .data-panel > .row {
+        margin-left: 0;
+        margin-right: 0 !important;
+    }
+
+    .data-panel > .row > .col {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .data-panel > .row.my-4 {
+        margin-top: 1rem !important;
+        margin-bottom: 0.75rem !important;
+    }
+
+    .card {
+        --bs-card-spacer-x: 0.85rem;
+        --bs-card-spacer-y: 0.85rem;
+        --bs-card-border-radius: var(--wf-radius-md);
+        --bs-card-inner-border-radius: var(--wf-radius-md);
+    }
+
+    .page-header {
+        margin-bottom: 1.25rem;
+    }
+
+    /*
+       Report grids: Radzen gives every column an equal fixed share of the grid width, which on a
+       phone squeezes each column to a few pixels. Size columns to their content instead: amounts stay
+       on one line, headers wrap between words, and a table wider than the screen scrolls sideways
+       inside its own grid (.rz-data-grid-data already scrolls) rather than the whole page.
+    */
+    .rz-data-grid .rz-grid-table,
+    .rz-data-grid .rz-grid-table.rz-grid-table-fixed {
+        table-layout: auto !important;
+        width: auto !important;
+        min-width: 100%;
+    }
+
+    .rz-data-grid .rz-grid-table td,
+    .rz-data-grid .rz-grid-table td .rz-cell-data {
+        white-space: nowrap;
+        overflow: visible;
+        text-overflow: clip;
+    }
+
+    .rz-data-grid .rz-grid-table thead th {
+        min-width: 5.5rem;
+        vertical-align: bottom;
+    }
+
+    .rz-data-grid .rz-grid-table thead th .rz-column-title-content {
+        overflow-wrap: normal;
+        word-break: normal;
+        hyphens: manual;
+    }
+
+    .rz-data-grid {
+        --rz-grid-cell-padding: 0.45rem 0.5rem;
+    }
+
+    /* Pager: keep controls on one line and drop the page-size label */
+    .rz-pager {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.25rem;
+    }
+
+    .rz-pager .rz-pager-summary,
+    .rz-pager .rz-pager-page-size-text {
+        display: none;
+    }
+
+    /* Tab strip (Disposal Summary): scroll the tabs, not the page */
+    .rz-tabview-nav {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+
+    .rz-tabview-nav > li {
+        flex: none;
+    }
+
+    /* The step strip: put the Next buttons on their own line, full width */
+    .workflow-progress {
+        padding: 0.5rem 0 0.85rem;
+    }
+
+    .workflow-progress-actions {
+        width: 100%;
+    }
+
+    .workflow-progress-actions > a {
+        flex: 1 1 auto;
+        justify-content: center;
+    }
+
+    /* Notifications: bottom of the screen, full width, so they do not cover the page header */
+    .rz-notification {
+        inset-block-start: auto;
+        inset-block-end: 0.75rem;
+        inset-inline: 0.75rem;
+    }
+
+    .rz-notification-item-wrapper {
+        width: auto;
+        min-width: 0;
+        margin: 0.5rem 0 0;
+    }
+}

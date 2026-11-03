@@ -241,7 +241,7 @@
 .mobile-nav-toggle {
     display: none;
     position: fixed;
-    top: 0.85rem;
+    top: 0.5rem;
     left: 1rem;
     z-index: 1100;
     background-color: var(--wf-forest);
@@ -280,6 +280,17 @@
 
     .mobile-nav-toggle {
         display: flex;
+    }
+
+    /* Solid bar behind the menu button so scrolled content does not show through it */
+    .app-container::before {
+        content: "";
+        position: fixed;
+        inset: 0 0 auto 0;
+        height: 3.75rem;
+        z-index: 1050;
+        background: var(--wf-ground);
+        border-bottom: 1px solid var(--wf-border);
     }
 
     .main-content-wrapper {
