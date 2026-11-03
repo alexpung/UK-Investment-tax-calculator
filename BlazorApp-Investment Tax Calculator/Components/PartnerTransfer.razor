@@ -41,7 +41,7 @@
                                        Placeholder="Select or Enter Ticker" />
                     @if (!string.IsNullOrWhiteSpace(_ticker))
                     {
-                        <div class="form-text text-info">
+                        <div class="form-text form-text-accent">
                             Holding on @_date.ToShortDateString(): <strong>@_currentHolding.ToString("F4")</strong> shares
                         </div>
                     }

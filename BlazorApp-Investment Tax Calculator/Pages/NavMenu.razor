@@ -57,8 +57,10 @@
                         <span class="workflow-line"></span>
                     </div>
                     <div class="workflow-body">
-                        <div class="workflow-title"><span class="visually-hidden">Step @step.Number: </span>@step.Title</div>
-                        <div class="workflow-hint">@step.Hint</div>
+                        <div class="workflow-title" title="@step.Hint"><span class="visually-hidden">Step @step.Number: </span>@step.Title@if (step.IsOptional)
+                            {
+                                <span class="workflow-optional-tag">Optional</span>
+                            }</div>
                         <ul class="workflow-links">
                             @foreach (var link in step.Links)
                             {
@@ -103,7 +105,7 @@
         bool done = step.Number switch
         {
             1 => TaxEventLists.GetTotalNumberOfEvents() > 0,
-            3 => !TradeCalculationResult.CalculatedTrade.IsEmpty || DividendCalculationResult.DividendSummary.Count > 0,
+            2 => !TradeCalculationResult.CalculatedTrade.IsEmpty || DividendCalculationResult.DividendSummary.Count > 0,
             _ => false
         };
         return done ? StepState.Done : StepState.Upcoming;

@@ -1,14 +1,112 @@
 /* ===================================
    Main Styles for UK Investment Tax Calculator
+   "Guided" theme: light mint ground, forest-green workflow sidebar, lime highlight.
    =================================== */
 
-/* Root Variables */
-:root {
-    --sidebar-width: 250px;
-    --transition-speed: 0.3s;
+/* Self-hosted fonts (SIL Open Font License 1.1 - see the Acknowledgement page) */
+@font-face {
+    font-family: 'Manrope';
+    font-style: normal;
+    font-weight: 400 800;
+    font-display: swap;
+    src: url('../fonts/Manrope-Variable.woff2') format('woff2');
 }
 
-/* Layout Styles */
+/* Design tokens */
+:root {
+    --sidebar-width: 280px;
+    --transition-speed: 0.2s;
+
+    --wf-font-sans: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+    --wf-forest: #0E3326;
+    --wf-forest-line: #2E5747;
+    --wf-on-forest: #D5E6DC;
+    --wf-on-forest-muted: #9DBDAD;
+    --wf-lime: #C6F06B;
+    --wf-lime-soft: #DCEFC0;
+    --wf-lime-wash: #F1F8E4;
+
+    --wf-ground: #EEF3EF;
+    --wf-surface: #FFFFFF;
+    --wf-surface-2: #F4F8F5;
+    --wf-ink: #12261D;
+    --wf-muted: #4A5D53;
+    --wf-border: #D3DED7;
+    --wf-border-soft: #E3EBE6;
+    --wf-accent: #1D6B4F;
+    --wf-accent-hover: #124733;
+    --wf-loss: #B0451A;
+
+    --wf-radius-lg: 18px;
+    --wf-radius-md: 14px;
+    --wf-radius-sm: 10px;
+
+    /* Bootstrap overrides */
+    --bs-body-bg: var(--wf-ground);
+    --bs-body-color: var(--wf-ink);
+    --bs-body-font-family: var(--wf-font-sans);
+    --bs-heading-color: var(--wf-ink);
+    --bs-secondary-color: var(--wf-muted);
+    --bs-border-color: var(--wf-border);
+    --bs-link-color: var(--wf-accent);
+    --bs-link-color-rgb: 29, 107, 79;
+    --bs-link-hover-color: var(--wf-accent-hover);
+    --bs-link-hover-color-rgb: 18, 71, 51;
+    --bs-primary: var(--wf-accent);
+    --bs-primary-rgb: 29, 107, 79;
+    --bs-success: #1D6B4F;
+    --bs-success-rgb: 29, 107, 79;
+    --bs-danger: #B0451A;
+    --bs-danger-rgb: 176, 69, 26;
+    --bs-card-bg: var(--wf-surface);
+
+    /* Radzen overrides (material theme) */
+    --rz-text-font-family: var(--wf-font-sans);
+    --rz-body-background-color: var(--wf-ground);
+    --rz-primary: #1D6B4F;
+    --rz-primary-light: #2E8564;
+    --rz-primary-lighter: rgba(29, 107, 79, 0.12);
+    --rz-primary-dark: #124733;
+    --rz-primary-darker: #0E3326;
+    --rz-on-primary: #FFFFFF;
+    --rz-on-primary-lighter: #124733;
+    --rz-secondary: #1D6B4F;
+    --rz-secondary-light: #2E8564;
+    --rz-secondary-lighter: rgba(29, 107, 79, 0.12);
+    --rz-secondary-dark: #124733;
+    --rz-secondary-darker: #0E3326;
+    --rz-success: #1D6B4F;
+    --rz-success-dark: #124733;
+    --rz-success-darker: #0E3326;
+    --rz-success-light: #2E8564;
+    --rz-text-color: var(--wf-ink);
+    --rz-text-title-color: var(--wf-ink);
+    --rz-text-secondary-color: var(--wf-muted);
+    --rz-link-color: var(--wf-accent);
+    --rz-link-hover-color: var(--wf-accent-hover);
+    --rz-border-radius: 8px;
+    --rz-button-border-radius: 999px;
+    --rz-card-border-radius: var(--wf-radius-lg);
+    --rz-grid-header-background-color: var(--wf-surface-2);
+    /* Tighter cells than Material's default so wide money columns are not cut off */
+    --rz-grid-cell-padding: 0.5rem 0.5rem;
+}
+
+body {
+    font-family: var(--wf-font-sans);
+    background-color: var(--wf-ground);
+    color: var(--wf-ink);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.num,
+.metric-value {
+    font-variant-numeric: tabular-nums;
+}
+
+/* Layout */
 .app-container {
     min-height: 100vh;
     display: flex;
@@ -17,31 +115,120 @@
 
 .main-content-wrapper {
     flex: 1;
-    padding: 2rem;
-    background-color: var(--bs-body-bg);
+    min-width: 0;
+    padding: 0 2rem 3rem;
+    background-color: var(--wf-ground);
 }
 
 @media (max-width: 768px) {
     .main-content-wrapper {
-        padding: 1rem;
-        padding-top: 4.5rem;
-        /* Prevent overlap with fixed hamburger button */
+        padding: 4.25rem 1rem 2rem;
+        /* Leave room for the fixed menu button */
     }
+}
+
+/* Workflow progress strip at the top of every page */
+.workflow-progress {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem 1.5rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--wf-border);
+}
+
+.workflow-progress-location {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.5rem;
+    font-size: 0.8125rem;
+}
+
+.workflow-progress-step {
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--wf-accent);
+}
+
+.workflow-progress-page {
+    color: var(--wf-muted);
+}
+
+.workflow-progress-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.workflow-next,
+.btn-workflow-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 1.1rem;
+    border-radius: 999px;
+    background: var(--wf-forest);
+    color: #FFFFFF;
+    font-size: 0.875rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: background-color var(--transition-speed);
+}
+
+.workflow-next:hover,
+.btn-workflow-primary:hover {
+    background: var(--wf-accent-hover);
+    color: #FFFFFF;
+}
+
+.btn-workflow-primary {
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+}
+
+.workflow-next-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.55rem 1rem;
+    border-radius: 999px;
+    border: 1.5px solid var(--wf-border);
+    color: var(--wf-ink);
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.workflow-next-secondary:hover {
+    border-color: var(--wf-forest);
+    color: var(--wf-ink);
+}
+
+.workflow-optional {
+    font-weight: 500;
+    color: var(--wf-muted);
 }
 
 /* Page Styles */
 .page-header {
-    margin-bottom: 2rem;
-    padding-bottom: 1rem;
+    margin: 0.5rem 0 2rem;
+    padding: 0;
+    text-align: left;
     outline: none !important;
     border: none !important;
 }
 
 .page-title {
-    font-size: 2.5rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-    color: var(--bs-heading-color);
+    font-size: clamp(2rem, 1.5rem + 1.6vw, 2.75rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    margin-bottom: 0.6rem;
+    color: var(--wf-ink);
     outline: none !important;
     box-shadow: none !important;
     border: none !important;
@@ -49,9 +236,14 @@
 }
 
 .page-subtitle {
-    color: var(--bs-secondary-color);
-    font-size: 1.1rem;
-    max-width: 700px;
+    color: var(--wf-muted);
+    font-size: 1.0625rem;
+    max-width: 720px;
+    margin: 0;
+}
+
+/* Centred headers (e.g. the home page hero) keep their subtitle centred too */
+.page-header.text-center .page-subtitle {
     margin: 0 auto;
 }
 
@@ -61,76 +253,237 @@
     box-shadow: none !important;
 }
 
-/* Card Enhancements */
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--wf-font-sans);
+    color: var(--wf-ink);
+    letter-spacing: -0.01em;
+}
+
+/* Cards */
+.card {
+    --bs-card-bg: var(--wf-surface);
+    --bs-card-border-color: transparent;
+    --bs-card-border-radius: var(--wf-radius-lg);
+    --bs-card-inner-border-radius: var(--wf-radius-lg);
+    --bs-card-cap-bg: transparent;
+    --bs-card-spacer-x: 1.5rem;
+    --bs-card-spacer-y: 1.25rem;
+    color: var(--wf-ink);
+    border: 0;
+    box-shadow: 0 1px 2px rgba(14, 51, 38, 0.04);
+}
+
+.card-header {
+    padding-top: 1.25rem;
+    padding-bottom: 0.25rem;
+    border-bottom: 0;
+    background: transparent;
+}
+
+.card-header h3,
+.card-header .h3 {
+    font-size: 1.375rem;
+    font-weight: 700;
+}
+
+.card-header h4,
+.card-header h5 {
+    font-weight: 700;
+}
+
+/* Cards inside cards become tinted panels */
+.card .card {
+    --bs-card-bg: var(--wf-surface-2);
+    --bs-card-border-radius: var(--wf-radius-md);
+    --bs-card-inner-border-radius: var(--wf-radius-md);
+    box-shadow: none;
+}
+
 .feature-card {
-    border: 1px solid var(--bs-border-color);
     height: 100%;
 }
 
 .feature-icon {
-    font-size: 2.5rem;
+    font-size: 2.25rem;
     margin-bottom: 1rem;
-    color: var(--bs-primary);
 }
 
-/* Alert Enhancements */
+/* Metric tiles (import statistics and tax summary) */
+.metric-card {
+    --bs-card-bg: var(--wf-surface-2);
+    --bs-card-border-radius: var(--wf-radius-md);
+    box-shadow: none;
+    height: 100%;
+}
+
+.card .metric-card {
+    --bs-card-bg: var(--wf-surface-2);
+}
+
+.metric-card .metric-label {
+    color: var(--wf-muted) !important;
+    font-size: 0.75rem;
+}
+
+.metric-card .metric-value {
+    font-weight: 700;
+    color: var(--wf-ink);
+}
+
+/* Next steps card on the import page */
+.next-steps-card .card-body > p {
+    max-width: 760px;
+}
+
+.next-steps-list {
+    padding-left: 1.25rem;
+    margin: 0.5rem 0 1.5rem;
+}
+
+.next-steps-list > li {
+    margin-bottom: 1rem;
+    padding-left: 0.25rem;
+}
+
+.next-steps-list > li::marker {
+    font-weight: 700;
+    color: var(--wf-accent);
+}
+
+.next-steps-list > li > a,
+.next-steps-list > li > strong {
+    display: block;
+    font-weight: 700;
+}
+
+.next-steps-list > li > span {
+    display: block;
+    color: var(--wf-muted);
+    font-size: 0.9375rem;
+}
+
+.next-steps-sublist {
+    margin: 0.5rem 0 0;
+    padding-left: 1.1rem;
+    color: var(--wf-muted);
+    font-size: 0.9375rem;
+}
+
+.next-steps-sublist li {
+    margin-bottom: 0.25rem;
+}
+
+.next-steps-sublist a {
+    font-weight: 600;
+}
+
+/* Alerts: rounded tinted panels */
+.alert {
+    --bs-alert-border-radius: var(--wf-radius-md);
+    border: 0;
+}
+
 .alert-custom {
-    border-left: 4px solid;
-    border-radius: 0.375rem;
+    border-radius: var(--wf-radius-md);
 }
 
-.alert-custom.alert-warning {
-    border-left-color: var(--bs-warning);
+.alert-warning {
+    --bs-alert-bg: #FFF3D6;
+    --bs-alert-color: #4A3500;
+    --bs-alert-link-color: #4A3500;
 }
 
-.alert-custom.alert-info {
-    border-left-color: var(--bs-info);
+.alert-info {
+    --bs-alert-bg: #E3F0EA;
+    --bs-alert-color: #10392A;
+    --bs-alert-link-color: #10392A;
 }
 
-.alert-custom.alert-secondary {
-    border-left-color: var(--bs-secondary);
+.alert-secondary {
+    --bs-alert-bg: var(--wf-surface-2);
+    --bs-alert-color: var(--wf-ink);
+    --bs-alert-link-color: var(--wf-ink);
 }
 
-.alert-custom.alert-danger {
-    border-left-color: var(--bs-danger);
+.alert-danger {
+    --bs-alert-bg: #FBE7DF;
+    --bs-alert-color: #6B240A;
+    --bs-alert-link-color: #6B240A;
+}
+
+.alert-success {
+    --bs-alert-bg: var(--wf-lime-wash);
+    --bs-alert-color: #10392A;
+    --bs-alert-link-color: #10392A;
+}
+
+.alert-heading {
+    font-weight: 700;
+}
+
+/* Bootstrap buttons used on a few pages, matched to the Radzen ones */
+.btn {
+    --bs-btn-border-radius: 999px;
+    --bs-btn-font-weight: 600;
+}
+
+.btn-primary {
+    --bs-btn-bg: var(--wf-forest);
+    --bs-btn-border-color: var(--wf-forest);
+    --bs-btn-hover-bg: var(--wf-accent-hover);
+    --bs-btn-hover-border-color: var(--wf-accent-hover);
+    --bs-btn-active-bg: var(--wf-accent-hover);
+    --bs-btn-active-border-color: var(--wf-accent-hover);
+    --bs-btn-disabled-bg: var(--wf-forest);
+    --bs-btn-disabled-border-color: var(--wf-forest);
+}
+
+.btn-outline-primary {
+    --bs-btn-color: var(--wf-forest);
+    --bs-btn-border-color: var(--wf-forest);
+    --bs-btn-hover-bg: var(--wf-forest);
+    --bs-btn-hover-border-color: var(--wf-forest);
+    --bs-btn-active-bg: var(--wf-forest);
+    --bs-btn-active-border-color: var(--wf-forest);
 }
 
 /* Link Styles */
 .link-styled {
-    color: var(--bs-link-color);
+    color: var(--wf-accent);
     text-decoration: none;
+    font-weight: 600;
     transition: color var(--transition-speed);
 }
 
 .link-styled:hover {
-    color: var(--bs-link-hover-color);
+    color: var(--wf-accent-hover);
     text-decoration: underline;
 }
 
 /* Section Spacing */
 .section {
-    margin-bottom: 3rem;
+    margin-bottom: 2rem;
 }
 
 .section-title {
-    font-size: 1.75rem;
-    font-weight: 600;
-    margin-bottom: 1.5rem;
-    color: var(--bs-heading-color);
+    font-size: 1.375rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--wf-ink);
 }
 
 .manual-money-entry {
-    border: 1px solid var(--bs-border-color);
-    border-radius: 0.375rem;
+    border: 1px solid var(--wf-border-soft);
+    border-radius: var(--wf-radius-sm);
     padding: 0.75rem;
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--wf-surface-2);
 }
 
 .manual-money-entry-title {
     display: block;
     font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--bs-info);
+    font-weight: 700;
+    color: var(--wf-accent);
     margin-bottom: 0.5rem;
 }
 
@@ -142,7 +495,19 @@
 
 /* Utility Classes */
 .text-muted-custom {
-    color: var(--bs-secondary-color) !important;
+    color: var(--wf-muted) !important;
+}
+
+.text-muted {
+    color: var(--wf-muted) !important;
+}
+
+.text-success {
+    color: var(--wf-accent) !important;
+}
+
+.text-danger {
+    color: var(--wf-loss) !important;
 }
 
 /* Preserve newlines in toast/notification messages so multi-line details wrap correctly */
@@ -178,6 +543,43 @@
 /* Denser typography recovers horizontal room for many-column tables */
 .rz-data-grid .rz-grid-table {
     font-size: 0.8125rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.rz-data-grid {
+    border-radius: var(--wf-radius-md);
+    border-color: var(--wf-border-soft);
+    overflow: hidden;
+}
+
+.rz-data-grid .rz-grid-table thead th {
+    font-weight: 700;
+    color: var(--wf-muted);
+}
+
+/* Radzen buttons: sentence case instead of the Material uppercase */
+.rz-button {
+    text-transform: none;
+    letter-spacing: normal;
+    font-weight: 700;
+}
+
+/* Wider content column so the many-column report grids fit */
+.main-content-wrapper .container-fluid > .row > .col-lg-10.mx-auto,
+.main-content-wrapper .container-fluid > .row > .col-xl-10.mx-auto {
+    flex: 0 0 auto;
+    width: 100%;
+    max-width: 1400px;
+}
+
+.badge.text-bg-info {
+    background-color: var(--wf-lime-soft) !important;
+    color: var(--wf-forest) !important;
+}
+
+/* Radzen tabs */
+.rz-tabview-nav {
+    border-bottom: 1px solid var(--wf-border-soft);
 }
 
 /* Loading Screen Styles */
@@ -192,4 +594,52 @@
     width: 3rem;
     height: 3rem;
     margin-bottom: 1rem;
+}
+
+.spinner-border.text-primary {
+    color: var(--wf-accent) !important;
+}
+
+/* Panels wrapping report grids (summary and raw data pages) */
+.data-panel {
+    background: var(--wf-surface);
+    border-radius: var(--wf-radius-lg);
+    padding: 0.25rem 1.5rem 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 2px rgba(14, 51, 38, 0.04);
+}
+
+.data-panel > .row {
+    margin-right: 0 !important;
+}
+
+.data-panel h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+/* Read-only values shown in form layouts (e.g. ERI quantity, FX rate) */
+.form-control-readonly {
+    background: var(--wf-lime-wash);
+    border-color: var(--wf-border-soft);
+    color: var(--wf-ink);
+    font-variant-numeric: tabular-nums;
+}
+
+.form-text-accent {
+    color: var(--wf-accent);
+}
+
+.card-highlight {
+    --bs-card-bg: var(--wf-lime-wash);
+}
+
+.list-group {
+    --bs-list-group-bg: var(--wf-surface);
+    --bs-list-group-border-color: var(--wf-border-soft);
+}
+
+.modal-content {
+    border: 0;
+    border-radius: var(--wf-radius-lg);
 }

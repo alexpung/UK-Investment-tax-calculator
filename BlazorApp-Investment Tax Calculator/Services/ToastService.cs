@@ -34,7 +34,7 @@ public class ToastService(ILogger<ToastService> logger)
 
     public void ShowInformation(string content)
     {
-        ShowToastTrigger?.Invoke(new ToastOption() { Title = "Infromation", Content = content, Type = ToastOptionType.Info });
+        ShowToastTrigger?.Invoke(new ToastOption() { Title = "Information", Content = content, Type = ToastOptionType.Info });
     }
 
     public void ShowSuccess(string content)

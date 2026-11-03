@@ -10,7 +10,7 @@ public record WorkflowLink(string Text, string PageAddress);
 /// <summary>
 /// One numbered step of the tax workflow, grouping the pages used at that point.
 /// </summary>
-public record WorkflowStep(int Number, string Title, string Hint, IReadOnlyList<WorkflowLink> Links)
+public record WorkflowStep(int Number, string Title, string Hint, IReadOnlyList<WorkflowLink> Links, bool IsOptional = false)
 {
     public bool Contains(string relativePath) => Links.Any(link => PathMatches(link.PageAddress, relativePath));
 
@@ -22,10 +22,12 @@ public record WorkflowStep(int Number, string Title, string Hint, IReadOnlyList<
 }
 
 /// <summary>
-/// The order in which the app is used: import statements, adjust what the import produced,
-/// calculate, review the results, check the workings and finally produce the report.
-/// The adjust step comes after import because its pages (e.g. bond ETF income selection,
-/// ERI and equalisation) choose from tickers that only exist once data has been imported.
+/// The order in which the app is used: import statements, calculate, adjust, review the results,
+/// check the workings and finally produce the report.
+/// The adjust step comes after the first calculation because its pages pick from what the import and
+/// calculation produce: bond ETF income selection lists imported dividend tickers, while ERI/equalisation,
+/// corporate actions and manual entries pick from the Section 104 pools a calculation builds.
+/// Each adjust page re-runs the calculation when the user leaves it after making a change.
 /// </summary>
 public static class WorkflowSteps
 {
@@ -38,18 +40,18 @@ public static class WorkflowSteps
         [
             new("Import data", ImportPage),
         ]),
-        new(2, "Adjust", "Optional · uses your imported data",
+        new(2, "Calculate", "Run the calculation and export",
+        [
+            new("Calculate & export", CalculatePage),
+        ]),
+        new(3, "Adjust", "Recalculates when you leave a page you changed",
         [
             new("Income taxable dividend selection", "ConvertPage"),
             new("ERI and Equalisation", "AddExcessReportableIncome"),
             new("Corporate Actions and Events", "corporate-actions"),
             new("Add Manual Entries", "AddTradePage"),
             new("Residency Status", "ResidencyStatusPage"),
-        ]),
-        new(3, "Calculate", "Run the calculation and export",
-        [
-            new("Calculate & export", CalculatePage),
-        ]),
+        ], IsOptional: true),
         new(4, "Review", "Tax summaries",
         [
             new("CGT Yearly Summary", "CgtYearlyTaxSummaryPage"),

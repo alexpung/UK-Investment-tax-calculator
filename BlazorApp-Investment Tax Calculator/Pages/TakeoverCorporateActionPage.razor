@@ -12,11 +12,11 @@
 @inject ShareIdentityRegistry _shareIdentityRegistry
 @inject NavigationManager _navigationManager
 
-<div class="container-fluid py-5">
+<div class="container-fluid py-4">
     <div class="row">
         <div class="col-lg-10 mx-auto">
             <!-- Page Header -->
-            <div class="page-header text-center mb-5">
+            <div class="page-header">
                 <h1 class="page-title">Corporate Actions and User Events</h1>
                 <p class="page-subtitle">Select an action/event type to configure and record entries</p>
             </div>
@@ -24,9 +24,9 @@
             <!-- Action Selector -->
             <div class="row mb-5 justify-content-center">
                 <div class="col-md-5">
-                    <div class="card bg-dark border-secondary shadow-sm">
+                    <div class="card">
                         <div class="card-body">
-                            <label class="form-label text-info fw-bold">Select Action/Event Type</label>
+                            <label class="form-label fw-bold">Select Action/Event Type</label>
                             <RadzenDropDown TValue="string" Data="@_actionTypes" @bind-Value="@_selectedAction"
                                             Placeholder="Choose an action/event type" Change="@OnActionTypeChanged" class="w-100" />
                         </div>

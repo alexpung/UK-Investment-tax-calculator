@@ -54,21 +54,30 @@ public class PlaywrightTestBase : PageTest
     }
 
     /// <summary>
-    /// Expands a navigation category by clicking its header.
+    /// Waits for a workflow step in the sidebar to be visible. Steps are always expanded, so their
+    /// links can be clicked straight away once the step is shown.
     /// </summary>
-    protected async Task ExpandNavCategoryAsync(string categoryTitle)
+    protected async Task WaitForWorkflowStepAsync(string stepTitle)
     {
-        var categoryButton = Page.Locator($".category-header:has-text('{categoryTitle}')");
-        await categoryButton.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible });
-        
-        var isExpanded = await categoryButton.GetAttributeAsync("class");
-        if (isExpanded?.Contains("expanded") != true)
-        {
-            await categoryButton.ClickAsync();
-            // Wait for animation and content to render
-            await Task.Delay(500);
-        }
+        var step = Page.Locator($".sidebar-nav .workflow-step:has(.workflow-title:has-text('{stepTitle}'))").First;
+        await step.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible });
     }
+
+    /// <summary>
+    /// Clicks a sidebar link (client-side navigation, so imported data is kept) and waits for its route.
+    /// </summary>
+    protected async Task NavigateViaSidebarAsync(string linkText, string urlGlob)
+    {
+        var link = Page.Locator($".sidebar-nav .nav-link-custom:text-is('{linkText}')").First;
+        await link.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible });
+        await link.ClickAsync();
+        await Page.WaitForURLAsync(urlGlob, new PageWaitForURLOptions { Timeout = 15000 });
+    }
+
+    /// <summary>
+    /// Moves from the import page to the Calculate &amp; export page, keeping the imported data.
+    /// </summary>
+    protected Task GoToCalculatePageAsync() => NavigateViaSidebarAsync("Calculate & export", "**/CalculatePage");
 
     /// <summary>
     /// Waits for a specific visible text to appear on the page.

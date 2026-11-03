@@ -17,11 +17,11 @@
 @inject TaxCalculationService TaxCalculationService
 @inject ShareIdentityRegistry ShareIdentityRegistry
 
-<div class="container-fluid py-5">
+<div class="container-fluid py-4">
     <div class="row">
         <div class="col-lg-10 mx-auto">
             <!-- Page Header -->
-            <div class="page-header text-center mb-5">
+            <div class="page-header">
                 <h1 class="page-title">ERI and Fund Equalisation</h1>
                 <p class="page-subtitle">Manage Excess Reportable Income and fund equalisation payments</p>
             </div>
@@ -44,7 +44,7 @@
                         <li><strong>Accumulating Funds:</strong> For accumulating funds with equalisation, you must <strong>add the Excess Reportable Income (ERI) first</strong>. Once added, you can then select that ERI entry in the Equalisation section to reduce it.</li>
                         <li><strong>Ticker Selection:</strong> Some available tickers may be standard stocks (non-funds). Ensure you only apply ERI or Equalisation to appropriate offshore fund assets.</li>
                         <li><strong>Manual Matching:</strong> You are responsible for matching equalisation payments to the correct corresponding income event as per your broker's tax reports.</li>
-                        <li><strong>Export & Backup:</strong> All manual entries are saved automatically to the session. You can export the entire session (including ERI and Equalisation) for future use from the <a href="MainCalculatorPage" class="alert-link">Main Import/Export page</a>.</li>
+                        <li><strong>Export & Backup:</strong> All manual entries are saved automatically to the session. You can export the entire session (including ERI and Equalisation) for future use from the <a href="CalculatePage" class="alert-link">Calculate &amp; export page</a>.</li>
                     </ul>
                 </div>
             </div>
@@ -53,7 +53,7 @@
             {
                 <div class="alert alert-danger alert-custom mb-4" role="alert">
                     <h5 class="alert-heading">Calculations Required</h5>
-                    <p class="mb-0">No Section 104 pools found. Please run the calculation first in the <a href="MainCalculatorPage" class="alert-link">Import/Export page</a> before adding entries, so that available tickers and quantities can be populated.</p>
+                    <p class="mb-0">No Section 104 pools found. Please run the calculation first on the <a href="CalculatePage" class="alert-link">Calculate &amp; export page</a> before adding entries, so that available tickers and quantities can be populated.</p>
                 </div>
             }
 
@@ -131,7 +131,7 @@
 <style>
     .form-control-plaintext {
         font-weight: bold;
-        color: #17a2b8;
+        color: var(--wf-accent);
     }
 </style>
 

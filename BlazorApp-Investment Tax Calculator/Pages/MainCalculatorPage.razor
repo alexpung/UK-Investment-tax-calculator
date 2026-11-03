@@ -19,43 +19,32 @@
                 <ImportFile/>
             </div>
 
-            <!-- What to do before calculating -->
+            <!-- What happens next -->
             <div class="card next-steps-card" data-testid="next-steps">
                 <div class="card-header">
-                    <h3 class="mb-0">Before you calculate</h3>
+                    <h3 class="mb-0">What happens next</h3>
                 </div>
                 <div class="card-body">
-                    <p class="text-muted-custom">
-                        These adjustments use the tickers and funds found in your imported data, so make them after importing.
-                        They are optional — skip any that do not apply to you.
-                    </p>
-
-                    <div class="alert alert-warning alert-custom" role="alert">
-                        <h5 class="alert-heading">Bond ETF Notice</h5>
-                        <p class="mb-0">
-                            If you have bond ETF holdings, you need to use the <a href="ConvertPage" class="alert-link">Income taxable dividend selection</a> page
-                            to indicate which tickers should be treated as income, before running the calculation.
-                        </p>
-                    </div>
-
-                    <ul class="next-steps-list">
+                    <ol class="next-steps-list">
                         <li>
-                            <a href="AddExcessReportableIncome">ERI and Equalisation</a>
-                            <span>Add excess reportable income and equalisation payments for offshore reporting funds you hold.</span>
+                            <a href="@WorkflowSteps.CalculatePage">Calculate &amp; export</a>
+                            <span>Run the calculation to see your totals and export the results.</span>
                         </li>
                         <li>
-                            <a href="corporate-actions">Corporate Actions and Events</a>
-                            <span>Enter takeovers, spin-offs and other events that your broker statements do not fully describe.</span>
+                            <strong>Adjust, if needed</strong>
+                            <span>
+                                These pages pick from the tickers and holdings your data and calculation produce, so use them after the first calculation.
+                                The calculation runs again when you leave a page you changed.
+                            </span>
+                            <ul class="next-steps-sublist">
+                                <li><a href="ConvertPage">Income taxable dividend selection</a> — bond ETFs whose distributions are taxed as interest.</li>
+                                <li><a href="AddExcessReportableIncome">ERI and Equalisation</a> — offshore reporting funds.</li>
+                                <li><a href="corporate-actions">Corporate Actions and Events</a> — takeovers, spin-offs and other events your broker does not fully report.</li>
+                                <li><a href="AddTradePage">Add Manual Entries</a> — trades, dividends or interest missing from your statements.</li>
+                                <li><a href="ResidencyStatusPage">Residency Status</a> — periods of non-residence or split years.</li>
+                            </ul>
                         </li>
-                        <li>
-                            <a href="AddTradePage">Add Manual Entries</a>
-                            <span>Add trades, dividends or interest missing from your statements.</span>
-                        </li>
-                        <li>
-                            <a href="ResidencyStatusPage">Residency Status</a>
-                            <span>Record periods of non-residence or split years.</span>
-                        </li>
-                    </ul>
+                    </ol>
 
                     <a href="@WorkflowSteps.CalculatePage" class="btn-workflow-primary">Continue to Calculate <span aria-hidden="true">→</span></a>
                 </div>

@@ -62,7 +62,7 @@
                                  @bind-ElectSmallCash="@_electSmallCash"
                                  Title="Cash Component"
                                  CheckboxHelpText="If cash is less than £3,000 OR less than 5% of total value and this is elected, the cash is not treated as a disposal; it reduces the Section 104 cost basis instead."
-                                 CssBackgroundColor="#374151">
+                                 CssBackgroundColor="#F4F8F5">
                     <ChildContent>
                         <div class="alert @(_fractionalRemoved > FractionalTolerance ? "alert-info" : "alert-warning") py-2 mb-0">
                             Fractional Shares Removed: <strong>@_fractionalRemoved.ToString("F6")</strong>

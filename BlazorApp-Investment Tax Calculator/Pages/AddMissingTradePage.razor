@@ -12,19 +12,19 @@
 @inject ShareIdentityRegistry ShareIdentityRegistry
 @inject NavigationManager NavigationManager
 
-<div class="container-fluid py-5">
+<div class="container-fluid py-4">
     <div class="row">
         <div class="col-lg-10 mx-auto">
-            <div class="page-header text-center mb-5">
+            <div class="page-header">
                 <h1 class="page-title">Add Manual Entries</h1>
                 <p class="page-subtitle">Manually add trades, dividends, and income entries that are not included in your imported data</p>
             </div>
 
             <div class="row mb-5 justify-content-center">
                 <div class="col-md-5">
-                    <div class="card bg-dark border-secondary shadow-sm">
+                    <div class="card entry-type-card">
                         <div class="card-body">
-                            <label class="form-label text-info fw-bold">Select Manual Entry Type</label>
+                            <label class="form-label fw-bold">Select Manual Entry Type</label>
                             <RadzenDropDown TValue="string" Data="@_entryTypes" TextProperty="DisplayName" ValueProperty="Key"
                                             Value="@_selectedEntryKey" Placeholder="Choose an entry type" Change="@OnEntryTypeChanged" class="w-100" />
                             <div class="small text-muted mt-2">@SelectedEntryType.Description</div>

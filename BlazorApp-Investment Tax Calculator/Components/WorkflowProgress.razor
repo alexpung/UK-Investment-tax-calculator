@@ -23,11 +23,10 @@
     @if (_next is not null)
     {
         <div class="workflow-progress-actions">
-            @if (_next.Number == 2)
+            @if (_next.IsOptional && WorkflowSteps.NextStep(_next) is { } afterOptional)
             {
                 <a class="workflow-next-secondary" href="@_next.Links[0].PageAddress">@_next.Title <span class="workflow-optional">(optional)</span></a>
-                var calculate = WorkflowSteps.NextStep(_next)!;
-                <a class="workflow-next" href="@calculate.Links[0].PageAddress">Next: @calculate.Title <span aria-hidden="true">→</span></a>
+                <a class="workflow-next" href="@afterOptional.Links[0].PageAddress">Next: @afterOptional.Title <span aria-hidden="true">→</span></a>
             }
             else
             {

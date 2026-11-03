@@ -10,8 +10,8 @@
 @inject ToastService ToastService
 @inject CurrencyService CurrencyService
 
-<div class="card bg-secondary text-white">
-    <div class="card-header bg-info text-dark">
+<div class="card">
+    <div class="card-header">
         <h5 class="mb-0">Add Excess Reportable Income (ERI)</h5>
     </div>
     <div class="card-body">
@@ -40,7 +40,7 @@
                 {
                     <div class="col-md-6 col-lg-4">
                         <label class="form-label">Quantity at Period End</label>
-                        <div class="form-control bg-dark text-info border-info">@Quantity.ToString("N4")</div>
+                        <div class="form-control form-control-readonly">@Quantity.ToString("N4")</div>
                     </div>
 
                     <div class="col-md-6 col-lg-4">
@@ -68,7 +68,7 @@
                         string isin = GetIsinForTicker(SelectedTicker, PeriodEndDate.Value);
                         <div class="col-md-6 col-lg-4">
                             <label class="form-label">Detected Region (from ISIN: @isin)</label>
-                            <div class="form-control bg-dark text-info border-info">
+                            <div class="form-control form-control-readonly">
                                 @CountryCode.GetRegionByTwoDigitCode(isin[..2]).CountryName (@isin[..2])
                             </div>
                         </div>

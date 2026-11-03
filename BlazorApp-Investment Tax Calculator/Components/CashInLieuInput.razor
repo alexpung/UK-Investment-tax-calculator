@@ -1,12 +1,12 @@
 @using InvestmentTaxCalculator.Model
 @using InvestmentTaxCalculator.Services
 
-<div class="card mb-3 text-white" style="background-color: @CssBackgroundColor;">
+<div class="card mb-3" style="--bs-card-bg: @CssBackgroundColor;">
     <div class="card-body">
         <h5>@Title</h5>
         @if (!string.IsNullOrEmpty(Description))
         {
-            <div class="form-text mb-2 text-white-50">@Description</div>
+            <div class="form-text mb-2">@Description</div>
         }
         <div class="row mb-3">
              <div class="col-md-4">
@@ -32,7 +32,7 @@
                 <RadzenLabel Text="@CheckboxLabel" Component="electSmallCash" class="ms-2" />
                 @if (!string.IsNullOrEmpty(CheckboxHelpText))
                 {
-                    <div class="form-text text-white-50">
+                    <div class="form-text">
                         @CheckboxHelpText
                     </div>
                 }
@@ -60,7 +60,7 @@
     [Parameter] public string Description { get; set; } = "";
     [Parameter] public string CheckboxLabel { get; set; } = "Elect Small Cash Treatment (if applicable)";
     [Parameter] public string CheckboxHelpText { get; set; } = "";
-    [Parameter] public string CssBackgroundColor { get; set; } = "#1e3a8a";
+    [Parameter] public string CssBackgroundColor { get; set; } = "#EEF3FA";
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     private List<CurrencyViewModel> _currencies = [];

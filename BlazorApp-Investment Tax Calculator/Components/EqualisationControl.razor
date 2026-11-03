@@ -10,8 +10,8 @@
 @inject ToastService ToastService
 @inject CurrencyService CurrencyService
 
-<div class="card bg-secondary text-white">
-    <div class="card-header bg-warning text-dark">
+<div class="card">
+    <div class="card-header">
         <h5 class="mb-0">Add Fund Equalisation</h5>
     </div>
     <div class="card-body">
@@ -48,12 +48,12 @@
 
                         <div class="col-md-6 col-lg-2">
                             <label class="form-label">Currency</label>
-                            <div class="form-control bg-dark text-info border-info">@Currency</div>
+                            <div class="form-control form-control-readonly">@Currency</div>
                         </div>
 
                         <div class="col-md-6 col-lg-2">
                             <label class="form-label">Exchange Rate</label>
-                            <div class="form-control bg-dark text-info border-info">@FxRate.ToString("N8")</div>
+                            <div class="form-control form-control-readonly">@FxRate.ToString("N8")</div>
                         </div>
 
                         <div class="col-12 mt-4 d-flex justify-content-center">

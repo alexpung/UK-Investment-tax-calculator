@@ -22,7 +22,7 @@
                            Placeholder="Select Asset" />
         @if (!string.IsNullOrEmpty(SourceTicker))
         {
-            <div class="form-text text-info">
+            <div class="form-text form-text-accent">
                 Holding on @Date.ToShortDateString(): <strong>@CurrentHolding</strong> shares
             </div>
         }
@@ -60,7 +60,7 @@
         </div>
         @if (DestinationInfo != null)
         {
-            <div class="form-text text-info mt-1">
+            <div class="form-text form-text-accent mt-1">
                 @DestinationInfo
             </div>
         }
