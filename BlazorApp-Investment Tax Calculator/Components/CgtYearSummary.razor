@@ -16,7 +16,8 @@
             <RadzenDataGrid @ref="taxYearReportGrid" TItem="TaxYearCgtReport" Data="@_taxYearReports"
                             AllowPaging="true" PageSize="25" PageSizeOptions="@_pageSizeOptions"
                             AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Advanced"
-                            AllowColumnResize="true" class="w-100">
+                            AllowColumnResize="true" CellRender="@(args => MobileCardGrid.LabelCell(args))"
+                            class="w-100 mobile-cards">
                 <Columns>
                     <RadzenDataGridColumn TItem="TaxYearCgtReport" Property="@nameof(TaxYearCgtReport.TaxYear)" Title="Tax Year" TextAlign="TextAlign.Right" FilterMode="FilterMode.CheckBoxList" />
                     <RadzenDataGridColumn TItem="TaxYearCgtReport" Property="@nameof(TaxYearCgtReport.TotalGainInYear)" Title="Total Gain in Year" FormatString="{0:C2}" TextAlign="TextAlign.Right" />

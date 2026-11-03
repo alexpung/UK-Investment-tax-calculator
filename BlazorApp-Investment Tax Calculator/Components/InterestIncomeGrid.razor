@@ -15,7 +15,8 @@
         </div>
     </div>
     <RadzenDataGrid TItem="InterestIncome" Data="@_taxEventLists.InterestIncomes" AllowPaging="true" PageSize="25"
-                    PageSizeOptions="@_pageSizeOptions" AllowSorting="true" AllowColumnResize="true" class="w-100">
+                    PageSizeOptions="@_pageSizeOptions" AllowSorting="true" AllowColumnResize="true" CellRender="@(args => MobileCardGrid.LabelCell(args))"
+                            class="w-100 mobile-cards">
         <Columns>
             <RadzenDataGridColumn TItem="InterestIncome" Property="@nameof(InterestIncome.Id)" Title="ID" Width="80px" TextAlign="TextAlign.Right" />
             <RadzenDataGridColumn TItem="InterestIncome" Property="@nameof(InterestIncome.AssetName)" Title="Asset" />

@@ -21,7 +21,8 @@
             <RadzenDataGrid @ref="importedDividendGrid" TItem="DividendViewModel" Data="@_dividendViewModels"
                             AllowPaging="true" PageSize="25" PageSizeOptions="@_pageSizeOptions"
                             AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Advanced"
-                            AllowColumnResize="true" class="w-100">
+                            AllowColumnResize="true" CellRender="@(args => MobileCardGrid.LabelCell(args))"
+                            class="w-100 mobile-cards">
                 <Columns>
                     <RadzenDataGridColumn TItem="DividendViewModel" Property="@nameof(DividendViewModel.Date)" Title="Date" FormatString="{0:d}" />
                     <RadzenDataGridColumn TItem="DividendViewModel" Property="@nameof(DividendViewModel.DividendType)" Title="Dividend/Withholding Tax" FilterMode="FilterMode.CheckBoxList" />

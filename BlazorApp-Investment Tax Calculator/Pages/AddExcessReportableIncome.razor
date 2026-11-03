@@ -76,7 +76,8 @@
             <!-- Corporate Action History Table -->
             <div class="section">
                 <h3 class="mb-3">Corporate Action History (ERI & Equalisation)</h3>
-                <RadzenDataGrid TItem="CorporateAction" Data="@History" AllowPaging="true" PageSize="10" AllowSorting="true" AllowColumnResize="true" class="w-100">
+                <RadzenDataGrid TItem="CorporateAction" Data="@History" AllowPaging="true" PageSize="10" AllowSorting="true" AllowColumnResize="true" CellRender="@(args => MobileCardGrid.LabelCell(args))"
+                            class="w-100 mobile-cards">
                     <Columns>
                         <RadzenDataGridColumn TItem="CorporateAction" Property="@nameof(CorporateAction.AssetName)" Title="Ticker" Width="120px" />
                         <RadzenDataGridColumn TItem="CorporateAction" Property="@nameof(CorporateAction.Date)" Title="Date" FormatString="{0:d}" Width="150px" />

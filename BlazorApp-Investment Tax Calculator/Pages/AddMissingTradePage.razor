@@ -1,5 +1,6 @@
 @page "/AddTradePage"
 
+@using InvestmentTaxCalculator.Components
 @using InvestmentTaxCalculator.Components.ManualEntries
 @using InvestmentTaxCalculator.Enumerations
 @using InvestmentTaxCalculator.Model
@@ -70,7 +71,8 @@
                 else
                 {
                     <RadzenDataGrid TItem="AddedManualEntryRow" Data="@_addedEntries" AllowPaging="true" PageSize="10"
-                                    AllowSorting="true" AllowColumnResize="true" class="w-100">
+                                    AllowSorting="true" AllowColumnResize="true" CellRender="@(args => MobileCardGrid.LabelCell(args))"
+                            class="w-100 mobile-cards">
                         <Columns>
                             <RadzenDataGridColumn TItem="AddedManualEntryRow" Property="@nameof(AddedManualEntryRow.EventDate)" Title="Event Date" FormatString="{0:d}" Width="130px" />
                             <RadzenDataGridColumn TItem="AddedManualEntryRow" Property="@nameof(AddedManualEntryRow.EntryType)" Title="Type" Width="160px" />

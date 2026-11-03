@@ -12,7 +12,8 @@
     </div>
     <div class="card-body">
         <RadzenDataGrid @ref="_grid" TItem="CorporateAction" Data="@_taxEventLists.CorporateActions"
-                        AllowPaging="true" PageSize="10" AllowSorting="true" AllowColumnResize="true" class="w-100">
+                        AllowPaging="true" PageSize="10" AllowSorting="true" AllowColumnResize="true" CellRender="@(args => MobileCardGrid.LabelCell(args))"
+                            class="w-100 mobile-cards">
             <Columns>
                 <RadzenDataGridColumn TItem="CorporateAction" Property="@nameof(CorporateAction.Date)" Title="Date" FormatString="{0:d}" Width="120px" />
                 <RadzenDataGridColumn TItem="CorporateAction" Property="@nameof(CorporateAction.AssetName)" Title="Asset" Width="150px" />

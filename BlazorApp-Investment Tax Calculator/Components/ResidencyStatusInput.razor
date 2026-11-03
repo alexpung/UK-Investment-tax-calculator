@@ -67,7 +67,8 @@
         <hr />
 
         <h6>Configured ranges</h6>
-        <RadzenDataGrid TItem="ResidencyStatusRecord.RangeEntry" Data="@GetRanges()" AllowPaging="true" PageSize="10" AllowSorting="true" class="w-100">
+        <RadzenDataGrid TItem="ResidencyStatusRecord.RangeEntry" Data="@GetRanges()" AllowPaging="true" PageSize="10" AllowSorting="true" CellRender="@(args => MobileCardGrid.LabelCell(args))"
+                            class="w-100 mobile-cards">
             <Columns>
                 <RadzenDataGridColumn TItem="ResidencyStatusRecord.RangeEntry" Property="@nameof(ResidencyStatusRecord.RangeEntry.Start)" Title="Start" FormatString="{0:dd-MMM-yyyy}" TextAlign="TextAlign.Center" Width="150px" />
                 <RadzenDataGridColumn TItem="ResidencyStatusRecord.RangeEntry" Property="@nameof(ResidencyStatusRecord.RangeEntry.End)" Title="End" FormatString="{0:dd-MMM-yyyy}" TextAlign="TextAlign.Center" Width="150px" />

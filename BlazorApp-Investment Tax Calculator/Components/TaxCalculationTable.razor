@@ -23,7 +23,8 @@
                         <RadzenDataGrid @ref="overviewGrid" TItem="TradeTaxCalculationViewModel" Data="@_trades"
                                         AllowPaging="true" PageSize="25" PageSizeOptions="@_pageSizeOptions"
                                         AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Advanced"
-                                        AllowColumnResize="true" class="w-100">
+                                        AllowColumnResize="true" CellRender="@(args => MobileCardGrid.LabelCell(args))"
+                            class="w-100 mobile-cards">
                             <Columns>
                                 <RadzenDataGridColumn TItem="TradeTaxCalculationViewModel" Property="@nameof(TradeTaxCalculationViewModel.TradeId)" Title="Trade ID" Width="100px" />
                                 <RadzenDataGridColumn TItem="TradeTaxCalculationViewModel" Property="@nameof(TradeTaxCalculationViewModel.Date)" Title="Date" FormatString="{0:d}" Width="120px" />
@@ -48,7 +49,8 @@
                         <RadzenDataGrid @ref="matchingGrid" TItem="TradeTaxCalculationViewModel" Data="@_trades"
                                         AllowPaging="true" PageSize="25" PageSizeOptions="@_pageSizeOptions"
                                         AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Advanced"
-                                        AllowColumnResize="true" class="w-100">
+                                        AllowColumnResize="true" CellRender="@(args => MobileCardGrid.LabelCell(args))"
+                            class="w-100 mobile-cards">
                             <Columns>
                                 <RadzenDataGridColumn TItem="TradeTaxCalculationViewModel" Property="@nameof(TradeTaxCalculationViewModel.Date)" Title="Date" FormatString="{0:d}" Width="120px" />
                                 <RadzenDataGridColumn TItem="TradeTaxCalculationViewModel" Property="@nameof(TradeTaxCalculationViewModel.AssetName)" Title="Asset Name" Width="150px" FilterMode="FilterMode.CheckBoxList" />
@@ -68,7 +70,8 @@
                         <RadzenDataGrid @ref="calculationGrid" TItem="TradeTaxCalculationViewModel" Data="@_trades"
                                         AllowPaging="true" PageSize="25" PageSizeOptions="@_pageSizeOptions"
                                         AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Advanced"
-                                        AllowColumnResize="true" class="w-100">
+                                        AllowColumnResize="true" CellRender="@(args => MobileCardGrid.LabelCell(args))"
+                            class="w-100 mobile-cards">
                             <Columns>
                                 <RadzenDataGridColumn TItem="TradeTaxCalculationViewModel" Property="@nameof(TradeTaxCalculationViewModel.Date)" Title="Date" FormatString="{0:d}" Width="120px" />
                                 <RadzenDataGridColumn TItem="TradeTaxCalculationViewModel" Property="@nameof(TradeTaxCalculationViewModel.AssetName)" Title="Asset Name" Width="150px" FilterMode="FilterMode.CheckBoxList" />
