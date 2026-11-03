@@ -124,8 +124,8 @@ public class ManualEntryTests : PlaywrightTestBase
     /// </summary>
     private async Task SelectEntryType(string entryTypeName)
     {
-        // The entry type dropdown is inside .card.bg-dark
-        var dropdown = Page.Locator(".card.bg-dark .rz-dropdown");
+        // The entry type dropdown is inside the entry type picker card
+        var dropdown = Page.Locator(".entry-type-card .rz-dropdown");
         await dropdown.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible, Timeout = 5000 });
         await dropdown.ClickAsync();
 
@@ -141,7 +141,7 @@ public class ManualEntryTests : PlaywrightTestBase
     /// </summary>
     private async Task FillFirstComboBox(string value)
     {
-        var input = Page.Locator(".card.bg-secondary .rz-autocomplete input").First;
+        var input = Page.Locator(".manual-entry-form .rz-autocomplete input").First;
         await input.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible, Timeout = 5000 });
         await input.ClickAsync();
         await input.FillAsync(value);
@@ -167,7 +167,7 @@ public class ManualEntryTests : PlaywrightTestBase
     private async Task FillNumericByLabel(string labelText, string value)
     {
         // Find label, go to parent container, find the input
-        var label = Page.Locator($".card.bg-secondary label.form-label:text-is('{labelText}')").First;
+        var label = Page.Locator($".manual-entry-form label.form-label:text-is('{labelText}')").First;
         var container = label.Locator("xpath=..");
         var input = container.Locator("input").First;
 

@@ -10,7 +10,7 @@
 
 @inject TradeCalculationResult tradeCalculationResult
 
-<div class="bg-dark text-light">
+<div class="data-panel">
     <div class="row my-4">
         <div class="col">
             <h3>Matching Details</h3>
@@ -30,7 +30,8 @@
             <RadzenDataGrid @ref="tradeMatchesGrid" TItem="TradeMatch" Data="@_tradeMatches"
                             AllowPaging="true" PageSize="25" PageSizeOptions="@_pageSizeOptions"
                             AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Advanced"
-                            AllowColumnResize="true" class="w-100">
+                            AllowColumnResize="true" CellRender="@(args => MobileCardGrid.LabelCell(args))"
+                            class="w-100 mobile-cards">
                 <Columns>
                     <RadzenDataGridColumn TItem="TradeMatch" Property="@nameof(TradeMatch.Date)" Title="Disposal Date" />
                     <RadzenDataGridColumn TItem="TradeMatch" Property="@nameof(TradeMatch.AssetTypeDescription)" Title="Asset Type" Sortable="false" FilterMode="FilterMode.CheckBoxList" />

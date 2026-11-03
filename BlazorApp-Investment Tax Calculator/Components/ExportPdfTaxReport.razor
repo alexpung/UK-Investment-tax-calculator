@@ -1,7 +1,7 @@
 @using InvestmentTaxCalculator.Services.PdfExport.Sections
 @using InvestmentTaxCalculator.Services.PdfExport;
 
-<div class="bg-dark text-light">
+<div class="data-panel">
     <div class="row">
         <div class="col">
             <h3>Export Calculation Result to PDF</h3>
@@ -16,7 +16,7 @@
             {
                 var index = i;
                 var section = PdfExportService.AllSections[index];
-                <div class="list-group-item d-flex align-items-center justify-content-between bg-dark text-light">
+                <div class="list-group-item d-flex align-items-center justify-content-between">
                     <div class="d-flex align-items-center">
                         <RadzenCheckBox TValue="bool" Value="IsSelected(section.Name)"
                                         Change="@(v => ToggleSection(section.Name, v))" Name="@($"sec_{index}")" />

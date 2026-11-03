@@ -5,7 +5,7 @@
 @using System.Linq
 
 @inject TaxEventLists _taxEventLists
-<div class="bg-dark text-light">
+<div class="data-panel">
     <div class="row my-4">
         <div class="col">
             <h3>Interest Income List</h3>
@@ -15,7 +15,8 @@
         </div>
     </div>
     <RadzenDataGrid TItem="InterestIncome" Data="@_taxEventLists.InterestIncomes" AllowPaging="true" PageSize="25"
-                    PageSizeOptions="@_pageSizeOptions" AllowSorting="true" AllowColumnResize="true" class="w-100">
+                    PageSizeOptions="@_pageSizeOptions" AllowSorting="true" AllowColumnResize="true" CellRender="@(args => MobileCardGrid.LabelCell(args))"
+                            class="w-100 mobile-cards">
         <Columns>
             <RadzenDataGridColumn TItem="InterestIncome" Property="@nameof(InterestIncome.Id)" Title="ID" Width="80px" TextAlign="TextAlign.Right" />
             <RadzenDataGridColumn TItem="InterestIncome" Property="@nameof(InterestIncome.AssetName)" Title="Asset" />
@@ -25,10 +26,10 @@
             </RadzenDataGridColumn>
             <RadzenDataGridColumn TItem="InterestIncome" Property="Amount.Description" Title="Description" />
             <RadzenDataGridColumn TItem="InterestIncome" Title="Local Currency Amount" TextAlign="TextAlign.Right" Sortable="false">
-                <Template Context="income">@income.Amount.Amount</Template>
+                <Template Context="income"><span class="text-nowrap">@income.Amount.Amount</span></Template>
             </RadzenDataGridColumn>
             <RadzenDataGridColumn TItem="InterestIncome" Title="Sterling Amount" TextAlign="TextAlign.Right" Sortable="false">
-                <Template Context="income">@income.Amount.BaseCurrencyAmount</Template>
+                <Template Context="income"><span class="text-nowrap">@income.Amount.BaseCurrencyAmount</span></Template>
             </RadzenDataGridColumn>
             <RadzenDataGridColumn TItem="InterestIncome" Title="Next coupon payable in the same tax year" Sortable="false">
                 <Template Context="income">

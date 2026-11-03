@@ -1,0 +1,79 @@
+@page "/CalculatePage"
+
+@using InvestmentTaxCalculator.Components
+@using InvestmentTaxCalculator.Services
+@implements IDisposable
+@inject TaxCalculationService TaxCalculationService
+
+<PageTitle>Calculate &amp; export · UK Investment Tax Calculator</PageTitle>
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-xl-10 mx-auto">
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1 class="page-title">Calculate &amp; export</h1>
+                <p class="page-subtitle">Run the UK tax calculation on your imported data, review the totals and export the results</p>
+            </div>
+
+            <!-- Bond ETF Notice -->
+            <div class="alert alert-warning alert-custom mb-4" role="alert">
+                <h5 class="alert-heading">Bond ETF Notice</h5>
+                <p class="mb-0">
+                    If you have bond ETF holdings, you need to use the <a href="ConvertPage" class="alert-link">Income taxable dividend selection</a> page
+                    to indicate which tickers should be treated as income. If you do this after calculating, the calculation runs again when you leave that page.
+                </p>
+            </div>
+
+            <!-- Calculation Section -->
+            <div class="section">
+                <StartCalculation OnCalculated="HandleCalculated"/>
+            </div>
+
+            <!-- Results Section -->
+            <div class="section">
+                <CalculationSummary ShouldReRender="@calculationVersion"></CalculationSummary>
+            </div>
+
+            <!-- Export Section -->
+            <div class="section">
+                <ExportFile/>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private int calculationVersion = 0;
+    private bool _wasCalculating;
+
+    protected override void OnInitialized()
+    {
+        _wasCalculating = TaxCalculationService.IsCalculating;
+        TaxCalculationService.OnStateChanged += HandleTaxCalculationStateChanged;
+    }
+
+    private Task HandleCalculated()
+    {
+        calculationVersion++;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private void HandleTaxCalculationStateChanged()
+    {
+        bool isCalculating = TaxCalculationService.IsCalculating;
+        if (_wasCalculating && !isCalculating)
+        {
+            calculationVersion++;
+        }
+
+        _wasCalculating = isCalculating;
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        TaxCalculationService.OnStateChanged -= HandleTaxCalculationStateChanged;
+    }
+}

@@ -35,6 +35,54 @@ public class DividendToIncomeConvertViewModelTest
         converted.IsSameAsset("META").ShouldBeTrue();
     }
 
+    [Fact]
+    public void TickerSummaries_GroupDividendsPerTicker()
+    {
+        Trade fundTrade = CreateTrade("IGLT", "GB00B1FZS350", "01-Jan-21 10:00:00") with { AssetType = AssetCategoryType.FUND };
+        TaxEventLists taxEventLists = new();
+        taxEventLists.AddData([
+            fundTrade,
+            CreateDividend("IGLT", "GB00B1FZS350", "01-Mar-21 10:00:00", 100),
+            CreateDividend("IGLT", "GB00B1FZS350", "01-Sep-21 10:00:00", 50),
+            CreateDividend("IGLT", "GB00B1FZS350", "01-Sep-21 10:00:00", -15, DividendType.WITHHOLDING),
+            CreateDividend("ABC", "US0000000001", "15-Jun-22 10:00:00", 20),
+        ]);
+        new ShareIdentityRegistry().RegisterEvents(taxEventLists.AllEvents);
+
+        var summaries = new DividendToIncomeConvertViewModel(taxEventLists).GetTickerSummaries();
+
+        summaries.Select(s => s.Ticker).ShouldBe(["ABC", "IGLT"]);
+        DividendTickerSummary iglt = summaries[1];
+        iglt.IsFund.ShouldBeTrue();
+        iglt.Payments.ShouldBe(2, "withholding tax entries are not payments");
+        iglt.TotalDividend.ShouldBe(new WrappedMoney(150));
+        iglt.FirstPayment.ShouldBe(new DateTime(2021, 3, 1, 10, 0, 0));
+        iglt.LastPayment.ShouldBe(new DateTime(2021, 9, 1, 10, 0, 0));
+        summaries[0].IsFund.ShouldBeFalse("no fund trades for ABC");
+    }
+
+    [Fact]
+    public void ConvertedSummaries_ListTickersAlreadyTaxedAsIncome()
+    {
+        TaxEventLists taxEventLists = new();
+        taxEventLists.AddData([
+            CreateDividend("IGLT", "GB00B1FZS350", "01-Mar-21 10:00:00", 100),
+            CreateDividend("IGLT", "GB00B1FZS350", "01-Sep-21 10:00:00", 50),
+            CreateDividend("ABC", "US0000000001", "15-Jun-22 10:00:00", 20),
+        ]);
+        new ShareIdentityRegistry().RegisterEvents(taxEventLists.AllEvents);
+        DividendToIncomeConvertViewModel viewModel = new(taxEventLists);
+        viewModel.GetConvertedSummaries().ShouldBeEmpty();
+
+        viewModel.ConvertDividendsToIncome(["IGLT"]);
+
+        ConvertedTickerSummary converted = viewModel.GetConvertedSummaries().ShouldHaveSingleItem();
+        converted.Ticker.ShouldBe("IGLT");
+        converted.Payments.ShouldBe(2);
+        converted.TotalIncome.ShouldBe(new WrappedMoney(150));
+        viewModel.GetTickerSummaries().Select(s => s.Ticker).ShouldBe(["ABC"], "converted tickers have no dividends left to convert");
+    }
+
     private static Trade CreateTrade(string assetName, string isin, string date) => new()
     {
         AssetName = assetName,
@@ -46,13 +94,14 @@ public class DividendToIncomeConvertViewModelTest
         GrossProceed = new DescribedMoney(1000, "GBP", 1),
     };
 
-    private static Dividend CreateDividend(string assetName, string isin, string date) => new()
+    private static Dividend CreateDividend(string assetName, string isin, string date, decimal amount = 100,
+        DividendType type = DividendType.DIVIDEND) => new()
     {
         AssetName = assetName,
         Isin = isin,
         Date = DateTime.Parse(date, CultureInfo.InvariantCulture),
-        DividendType = DividendType.DIVIDEND,
+        DividendType = type,
         CompanyLocation = CountryCode.GetRegionByTwoDigitCode("US"),
-        Proceed = new DescribedMoney(100, "GBP", 1),
+        Proceed = new DescribedMoney(amount, "GBP", 1),
     };
 }

@@ -41,7 +41,7 @@ public class CalculationWorkflowTests : PlaywrightTestBase
         await NavigateAndWaitForBlazorAsync("/MainCalculatorPage");
 
         // Verify the Import Data card is visible
-        await Expect(Page.Locator("text=Import Data")).ToBeVisibleAsync();
+        await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Import Data", Exact = true })).ToBeVisibleAsync();
 
         // Get initial event count (should be 0)
         var totalEventsCard = Page.Locator(".metric-card:has-text('Total Tax Events') .metric-value");
@@ -79,6 +79,9 @@ public class CalculationWorkflowTests : PlaywrightTestBase
         var totalEventsCard = Page.Locator(".metric-card:has-text('Total Tax Events') .metric-value");
         var eventCount = await ParseMetricValueAsync(totalEventsCard, "Total Tax Events (before calc)");
         Assert.That(eventCount, Is.EqualTo(ExpectedTotalEvents), "Should have expected events before calculation");
+
+        // The calculation lives on the next workflow step
+        await GoToCalculatePageAsync();
 
         // Find and click the Start Calculation button
         var calcButton = Page.Locator("button:has-text('Start Calculation')");
@@ -128,7 +131,7 @@ public class CalculationWorkflowTests : PlaywrightTestBase
         await LoadAndCalculateAsync();
 
         // Navigate to CGT Yearly Summary page
-        await ExpandNavCategoryAsync("Tax summaries");
+        await WaitForWorkflowStepAsync("Review");
         await Page.Locator(".nav-link-custom:has-text('CGT Yearly Summary')").ClickAsync();
         await Page.WaitForURLAsync("**/CgtYearlyTaxSummaryPage", new PageWaitForURLOptions { Timeout = 10000 });
         
@@ -149,7 +152,7 @@ public class CalculationWorkflowTests : PlaywrightTestBase
         await LoadAndCalculateAsync();
 
         // Navigate to Dividend Data page
-        await ExpandNavCategoryAsync("Raw Data");
+        await WaitForWorkflowStepAsync("Check the workings");
         await Page.Locator(".nav-link-custom:has-text('Dividend/Income Data')").ClickAsync();
         await Page.WaitForURLAsync("**/DividendDataPage", new PageWaitForURLOptions { Timeout = 10000 });
 
@@ -170,7 +173,7 @@ public class CalculationWorkflowTests : PlaywrightTestBase
         await LoadAndCalculateAsync();
 
         // Navigate to Dividend/Income Summary page
-        await ExpandNavCategoryAsync("Tax summaries");
+        await WaitForWorkflowStepAsync("Review");
         await Page.Locator(".nav-link-custom:has-text('Dividend/Income Summary')").ClickAsync();
         await Page.WaitForURLAsync("**/DividendYearlyTaxSummaryPage", new PageWaitForURLOptions { Timeout = 10000 });
 
@@ -213,7 +216,7 @@ public class CalculationWorkflowTests : PlaywrightTestBase
         await LoadAndCalculateAsync();
 
         // Navigate to Section 104 Data page
-        await ExpandNavCategoryAsync("Raw Data");
+        await WaitForWorkflowStepAsync("Check the workings");
         await Page.Locator(".nav-link-custom:has-text('Section 104 Data')").ClickAsync();
         await Page.WaitForURLAsync("**/Section104DataPage", new PageWaitForURLOptions { Timeout = 10000 });
 
@@ -316,7 +319,9 @@ public class CalculationWorkflowTests : PlaywrightTestBase
         var eventCount = await ParseMetricValueAsync(totalEventsCard, "Total Tax Events");
         TestContext.WriteLine($"Events after upload: {eventCount}");
         Assert.That(eventCount, Is.EqualTo(ExpectedTotalEvents), "Should have expected events after upload");
-        
+
+        await GoToCalculatePageAsync();
+
         var calcButton = Page.Locator("button:has-text('Start Calculation')");
         await Expect(calcButton).ToBeEnabledAsync(new LocatorAssertionsToBeEnabledOptions { Timeout = 15000 });
         await calcButton.ClickAsync();

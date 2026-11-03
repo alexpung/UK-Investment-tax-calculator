@@ -7,8 +7,8 @@
 @inject CurrencyService CurrencyService
 @inject ToastService ToastService
 
-<div class="card bg-secondary text-white">
-    <div class="card-header bg-info text-dark">
+<div class="card manual-entry-form">
+    <div class="card-header">
         <h5 class="mb-0">@(IsEditing ? "Edit Dividend" : "Add Dividend")</h5>
     </div>
     <div class="card-body">
@@ -48,7 +48,7 @@
 
         @if (CanShowCalculationPreview)
         {
-            <div class="alert alert-dark border-info mt-4 mb-0">
+            <div class="alert alert-info mt-4 mb-0">
                 <div class="row g-2">
                     <div class="col-md-4"><strong>Amount (GBP):</strong> @AmountInGbp.ToString("N2")</div>
                     <div class="col-md-4"><strong>Dividend Received (GBP):</strong> @DividendReceivedInGbp.ToString("N2")</div>

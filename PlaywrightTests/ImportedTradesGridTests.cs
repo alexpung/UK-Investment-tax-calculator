@@ -14,7 +14,7 @@ public class ImportedTradesGridTests : PlaywrightTestBase
         await NavigateAndWaitForBlazorAsync("/MainCalculatorPage");
         await UploadTestFileAsync();
 
-        await ExpandNavCategoryAsync("Raw Data");
+        await WaitForWorkflowStepAsync("Check the workings");
         await Page.Locator(".nav-link-custom:has-text('Imported Trades')").ClickAsync();
         await Page.WaitForURLAsync("**/ImportedTradesDataPage", new PageWaitForURLOptions { Timeout = 10000 });
         await Page.WaitForSelectorAsync("#ImportedTradesGrid", new PageWaitForSelectorOptions

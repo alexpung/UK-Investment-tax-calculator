@@ -8,7 +8,7 @@ namespace PlaywrightTests;
 /// 1. Add a manual stock acquisition (100 units, £1000, 01/01/2025)
 /// 2. Add a manual stock disposal (50 units, £600, 01/08/2025)
 /// 3. Add an ERI on the ERI &amp; Equalisation page (period end 01/06/2025, 0.2/share)
-/// 4. Go to Import &amp; Export and press Start Calculation several times
+/// 4. Go to Calculate &amp; export and press Start Calculation several times
 /// 5. Export trades text and the data JSON
 /// Expected: disposal allowable cost £510 (uplift £10 under reg. 99(5)), pool +£10.
 /// </summary>
@@ -49,16 +49,17 @@ public class EriGapReproTests : PlaywrightTestBase
         await WaitForToast("added");
 
         // ── Step 3: add ERI (SPA navigation triggers a recalculation first) ──
-        await NavigateViaSidebar("Configurations and manual inputs", "ERI and Equalisation");
+        await NavigateViaSidebar("Adjust", "ERI and Equalisation");
         await FillDateByPlaceholder("Pick period end date", "01/06/2025");
         await Page.ScreenshotAsync(new() { Path = Path.Combine(TestContext.CurrentContext.WorkDirectory, "eri-page.png"), FullPage = true });
         await SelectTickerDropdown("Test fund");
-        await FillNumericByLabel("Income Per Share (Local Currency)", "0.2");
+        // The label shows the selected currency, GBP by default
+        await FillNumericByLabel("Income per share (GBP)", "0.2");
         await ClickButtonByText("Add ERI Entry");
         await WaitForToast("Successfully added ERI");
 
-        // ── Step 4: go to import page (SPA), press Start Calculation a few times ──
-        await NavigateViaSidebar("Import + PDF", "Import/Export");
+        // ── Step 4: go to the calculate page (SPA), press Start Calculation a few times ──
+        await NavigateViaSidebar("Calculate", "Calculate & export");
         for (int i = 0; i < 3; i++)
         {
             await ClickButtonByText("Start Calculation");
@@ -87,7 +88,7 @@ public class EriGapReproTests : PlaywrightTestBase
 
     private async Task NavigateViaSidebar(string categoryTitle, string linkText)
     {
-        await ExpandNavCategoryAsync(categoryTitle);
+        await WaitForWorkflowStepAsync(categoryTitle);
         var link = Page.Locator($".sidebar-nav a:has-text('{linkText}')").First;
         await link.WaitForAsync(new() { State = WaitForSelectorState.Visible, Timeout = 5000 });
         await link.ClickAsync();

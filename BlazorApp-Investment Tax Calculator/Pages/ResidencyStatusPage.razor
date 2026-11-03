@@ -2,11 +2,11 @@
 
 @using InvestmentTaxCalculator.Components
 
-<div class="container-fluid py-5">
+<div class="container-fluid py-4">
     <div class="row">
         <div class="col-lg-10 mx-auto">
             <!-- Page Header -->
-            <div class="page-header text-center mb-5">
+            <div class="page-header">
                 <h1 class="page-title">Residency Status</h1>
                 <p class="page-subtitle">Configure your UK tax residency periods for accurate tax calculations</p>
             </div>
@@ -82,8 +82,13 @@
 
             <!-- Main Component Section -->
             <div class="section">
-                <ResidencyStatusInput />
+                <ResidencyStatusInput OnChanged="() => _recalculate.MarkChanged()" />
+                <RecalculateOnLeave @ref="_recalculate" />
             </div>
         </div>
     </div>
 </div>
+
+@code {
+    private RecalculateOnLeave _recalculate = default!;
+}

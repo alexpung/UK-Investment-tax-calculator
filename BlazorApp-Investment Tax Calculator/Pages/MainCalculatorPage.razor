@@ -1,81 +1,54 @@
 @page "/MainCalculatorPage"
 
 @using InvestmentTaxCalculator.Components
-@using InvestmentTaxCalculator.Services
-@implements IDisposable
-@inject TaxCalculationService TaxCalculationService
-<div class="container-fluid py-5">
+@using InvestmentTaxCalculator.ViewModel
+
+<PageTitle>Import data · UK Investment Tax Calculator</PageTitle>
+
+<div class="container-fluid py-4">
     <div class="row">
-        <div class="col-lg-10 mx-auto">
+        <div class="col-xl-10 mx-auto">
             <!-- Page Header -->
-            <div class="page-header text-center mb-5">
-                <h1 class="page-title">Import & Export</h1>
-                <p class="page-subtitle">Manage your tax data - import broker statements and export calculation results</p>
+            <div class="page-header">
+                <h1 class="page-title">Import data</h1>
+                <p class="page-subtitle">Import broker statements, or a JSON session previously exported by this app</p>
             </div>
 
             <!-- Import Section -->
-            <div class="section mb-5">
+            <div class="section">
                 <ImportFile/>
             </div>
 
-            <!-- Bond ETF Notice -->
-            <div class="alert alert-warning alert-custom mb-4" role="alert">
-                <h5 class="alert-heading">Bond ETF Notice</h5>
-                <p class="mb-0">
-                    If you have bond ETF holdings, you need to use the <strong>Income taxable dividend selection</strong> page 
-                    to indicate which tickers should be treated as income, before running the calculation.
-                </p>
-            </div>
+            <!-- What happens next -->
+            <div class="card next-steps-card" data-testid="next-steps">
+                <div class="card-header">
+                    <h3 class="mb-0">What happens next</h3>
+                </div>
+                <div class="card-body">
+                    <ol class="next-steps-list">
+                        <li>
+                            <a href="@WorkflowSteps.CalculatePage">Calculate &amp; export</a>
+                            <span>Run the calculation to see your totals and export the results.</span>
+                        </li>
+                        <li>
+                            <strong>Adjust, if needed</strong>
+                            <span>
+                                These pages pick from the tickers and holdings your data and calculation produce, so use them after the first calculation.
+                                The calculation runs again when you leave a page you changed.
+                            </span>
+                            <ul class="next-steps-sublist">
+                                <li><a href="ConvertPage">Income taxable dividend selection</a> — bond ETFs whose distributions are taxed as interest.</li>
+                                <li><a href="AddExcessReportableIncome">ERI and Equalisation</a> — offshore reporting funds.</li>
+                                <li><a href="corporate-actions">Corporate Actions and Events</a> — takeovers, spin-offs and other events your broker does not fully report.</li>
+                                <li><a href="AddTradePage">Add Manual Entries</a> — trades, dividends or interest missing from your statements.</li>
+                                <li><a href="ResidencyStatusPage">Residency Status</a> — periods of non-residence or split years.</li>
+                            </ul>
+                        </li>
+                    </ol>
 
-            <!-- Calculation Section -->
-            <div class="section mb-5">
-                <StartCalculation OnCalculated="HandleCalculated"/>
-            </div>
-
-            <!-- Results Section -->
-            <div class="section mb-5">
-                <CalculationSummary ShouldReRender="@calculationVersion"></CalculationSummary>
-            </div>
-
-            <!-- Export Section -->
-            <div class="section">
-                <ExportFile/>
+                    <a href="@WorkflowSteps.CalculatePage" class="btn-workflow-primary">Continue to Calculate <span aria-hidden="true">→</span></a>
+                </div>
             </div>
         </div>
     </div>
 </div>
-
-@code {
-    private int calculationVersion = 0;
-    private bool _wasCalculating;
-
-    protected override void OnInitialized()
-    {
-        _wasCalculating = TaxCalculationService.IsCalculating;
-        TaxCalculationService.OnStateChanged += HandleTaxCalculationStateChanged;
-    }
-
-    private Task HandleCalculated()
-    {
-        calculationVersion++;
-        StateHasChanged();
-        return Task.CompletedTask;
-    }
-
-    private void HandleTaxCalculationStateChanged()
-    {
-        bool isCalculating = TaxCalculationService.IsCalculating;
-        if (_wasCalculating && !isCalculating)
-        {
-            calculationVersion++;
-        }
-
-        _wasCalculating = isCalculating;
-        _ = InvokeAsync(StateHasChanged);
-    }
-
-    public void Dispose()
-    {
-        TaxCalculationService.OnStateChanged -= HandleTaxCalculationStateChanged;
-    }
-}

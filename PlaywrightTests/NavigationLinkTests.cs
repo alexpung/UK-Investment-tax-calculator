@@ -16,7 +16,7 @@ public class NavigationLinkTests : PlaywrightTestBase
         
         // Verify the home page loads with the sidebar navigation
         await Expect(Page.Locator(".sidebar-nav")).ToBeVisibleAsync();
-        await Expect(Page.Locator("text=UK Tax Calculator")).ToBeVisibleAsync();
+        await Expect(Page.Locator(".sidebar-brand:has-text('UK Investment')")).ToBeVisibleAsync();
     }
 
     [Test]
@@ -26,6 +26,7 @@ public class NavigationLinkTests : PlaywrightTestBase
         var linksToTest = new (string Path, string ExpectedText)[]
         {
             ("/MainCalculatorPage", "Import Data"),
+            ("/CalculatePage", "Calculate Taxes"),
             ("/PdfReportPage", "PDF"),
             ("/CgtYearlyTaxSummaryPage", "CGT"),
             ("/DividendYearlyTaxSummaryPage", "Dividend"),
@@ -102,48 +103,44 @@ public class NavigationLinkTests : PlaywrightTestBase
         await homeLink.ClickAsync();
         await Page.WaitForURLAsync("**/");
 
-        // Expand Import + PDF category and test a link
-        await ExpandNavCategoryAsync("Import + PDF");
-        var importLink = Page.Locator(".nav-link-custom:has-text('Import/Export')");
-        await Expect(importLink).ToBeVisibleAsync();
-        await importLink.ClickAsync();
-        await Page.WaitForURLAsync("**/MainCalculatorPage");
-        
-        // Verify we navigated successfully - wait for page content
+        // Follow the first two workflow steps
+        await WaitForWorkflowStepAsync("Import");
+        await NavigateViaSidebarAsync("Import data", "**/MainCalculatorPage");
         await WaitForTextAsync("Import Data");
+
+        await NavigateViaSidebarAsync("Calculate & export", "**/CalculatePage");
+        await WaitForTextAsync("Calculate Taxes");
     }
 
     [Test]
-    public async Task NavMenuCategories_ExpandAndCollapse()
+    public async Task WorkflowSteps_ShowEveryPageWithoutExpanding()
     {
         await NavigateAndWaitForBlazorAsync("/");
 
-        // Get the category content element that shows/hides
-        var categoryContent = Page.Locator(".category-header:has-text('Tax summaries') + .category-content");
-        
-        // Initially should not have 'show' class
-        var initialClasses = await categoryContent.GetAttributeAsync("class") ?? "";
-        var initiallyExpanded = initialClasses.Contains("show");
-        Assert.That(initiallyExpanded, Is.False, "Category should be initially collapsed");
+        var steps = Page.Locator(".sidebar-nav .workflow-step");
+        Assert.That(await steps.CountAsync(), Is.EqualTo(6), "Sidebar should show the six workflow steps");
 
-        // Test expanding - click the category header
-        var categoryHeader = Page.Locator(".category-header:has-text('Tax summaries')");
-        await Expect(categoryHeader).ToBeVisibleAsync();
-        await categoryHeader.ClickAsync();
-        
-        // Wait for expand animation
-        await Task.Delay(500);
-        
-        // Verify category expanded - check for 'show' class on content
-        var expandedClasses = await categoryContent.GetAttributeAsync("class") ?? "";
-        Assert.That(expandedClasses.Contains("show"), Is.True, "Category content should have 'show' class when expanded");
+        string[] expectedLinks =
+        [
+            "Import data", "Calculate & export", "Income taxable dividend selection", "ERI and Equalisation",
+            "Corporate Actions and Events", "Add Manual Entries", "Residency Status", "CGT Yearly Summary",
+            "Dividend/Income Summary", "Disposal Summary", "Trade Matches", "Imported Trades",
+            "Dividend/Income Data", "Section 104 Data", "PDF Report", "Acknowledgement"
+        ];
+        foreach (var linkText in expectedLinks)
+        {
+            await Expect(Page.Locator($".sidebar-nav .nav-link-custom:text-is('{linkText}')")).ToBeVisibleAsync();
+        }
+    }
 
-        // Click again to collapse
-        await categoryHeader.ClickAsync();
-        await Task.Delay(500);
-        
-        // Verify category collapsed - 'show' class should be removed
-        var collapsedClasses = await categoryContent.GetAttributeAsync("class") ?? "";
-        Assert.That(collapsedClasses.Contains("show"), Is.False, "Category content should not have 'show' class when collapsed");
+    [Test]
+    public async Task WorkflowStep_IsMarkedCurrentForActivePage()
+    {
+        await NavigateAndWaitForBlazorAsync("/CgtYearlyTaxSummaryPage");
+
+        var currentStep = Page.Locator(".sidebar-nav .workflow-step.is-current");
+        await Expect(currentStep).ToHaveCountAsync(1);
+        await Expect(currentStep.Locator(".workflow-title")).ToContainTextAsync("Review");
+        await Expect(Page.Locator("[data-testid='workflow-progress']")).ToContainTextAsync("Step 4 of 6");
     }
 }

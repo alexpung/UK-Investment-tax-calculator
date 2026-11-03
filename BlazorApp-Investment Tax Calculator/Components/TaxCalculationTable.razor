@@ -11,7 +11,7 @@
 
 @inject TradeCalculationResult tradeCalculationResult
 
-<div class="card bg-dark text-light">
+<div class="card">
     <div class="card-header">
         <h3 class="mb-0">Disposal Calculation Summary</h3>
     </div>
@@ -23,7 +23,8 @@
                         <RadzenDataGrid @ref="overviewGrid" TItem="TradeTaxCalculationViewModel" Data="@_trades"
                                         AllowPaging="true" PageSize="25" PageSizeOptions="@_pageSizeOptions"
                                         AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Advanced"
-                                        AllowColumnResize="true" class="w-100">
+                                        AllowColumnResize="true" CellRender="@(args => MobileCardGrid.LabelCell(args))"
+                            class="w-100 mobile-cards">
                             <Columns>
                                 <RadzenDataGridColumn TItem="TradeTaxCalculationViewModel" Property="@nameof(TradeTaxCalculationViewModel.TradeId)" Title="Trade ID" Width="100px" />
                                 <RadzenDataGridColumn TItem="TradeTaxCalculationViewModel" Property="@nameof(TradeTaxCalculationViewModel.Date)" Title="Date" FormatString="{0:d}" Width="120px" />
@@ -35,7 +36,7 @@
                                 <RadzenDataGridColumn TItem="TradeTaxCalculationViewModel" Title="Gain (Loss)" Width="120px" Sortable="false">
                                     <Template Context="trade">
                                         @{ var cssClass = (trade.Gain?.Amount ?? 0m) >= 0 ? "text-success" : "text-danger"; }
-                                        <span class="@cssClass fw-bold">@trade.Gain</span>
+                                        <span class="@cssClass fw-bold text-nowrap">@trade.Gain</span>
                                     </Template>
                                 </RadzenDataGridColumn>
                             </Columns>
@@ -48,7 +49,8 @@
                         <RadzenDataGrid @ref="matchingGrid" TItem="TradeTaxCalculationViewModel" Data="@_trades"
                                         AllowPaging="true" PageSize="25" PageSizeOptions="@_pageSizeOptions"
                                         AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Advanced"
-                                        AllowColumnResize="true" class="w-100">
+                                        AllowColumnResize="true" CellRender="@(args => MobileCardGrid.LabelCell(args))"
+                            class="w-100 mobile-cards">
                             <Columns>
                                 <RadzenDataGridColumn TItem="TradeTaxCalculationViewModel" Property="@nameof(TradeTaxCalculationViewModel.Date)" Title="Date" FormatString="{0:d}" Width="120px" />
                                 <RadzenDataGridColumn TItem="TradeTaxCalculationViewModel" Property="@nameof(TradeTaxCalculationViewModel.AssetName)" Title="Asset Name" Width="150px" FilterMode="FilterMode.CheckBoxList" />
@@ -68,7 +70,8 @@
                         <RadzenDataGrid @ref="calculationGrid" TItem="TradeTaxCalculationViewModel" Data="@_trades"
                                         AllowPaging="true" PageSize="25" PageSizeOptions="@_pageSizeOptions"
                                         AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Advanced"
-                                        AllowColumnResize="true" class="w-100">
+                                        AllowColumnResize="true" CellRender="@(args => MobileCardGrid.LabelCell(args))"
+                            class="w-100 mobile-cards">
                             <Columns>
                                 <RadzenDataGridColumn TItem="TradeTaxCalculationViewModel" Property="@nameof(TradeTaxCalculationViewModel.Date)" Title="Date" FormatString="{0:d}" Width="120px" />
                                 <RadzenDataGridColumn TItem="TradeTaxCalculationViewModel" Property="@nameof(TradeTaxCalculationViewModel.AssetName)" Title="Asset Name" Width="150px" FilterMode="FilterMode.CheckBoxList" />
@@ -79,7 +82,7 @@
                                 <RadzenDataGridColumn TItem="TradeTaxCalculationViewModel" Title="Gain (Loss)" Width="150px" Sortable="false">
                                     <Template Context="trade">
                                         @{ var cssClass = (trade.Gain?.Amount ?? 0m) >= 0 ? "text-success" : "text-danger"; }
-                                        <span class="@cssClass fw-bold">@trade.Gain</span>
+                                        <span class="@cssClass fw-bold text-nowrap">@trade.Gain</span>
                                     </Template>
                                 </RadzenDataGridColumn>
                             </Columns>

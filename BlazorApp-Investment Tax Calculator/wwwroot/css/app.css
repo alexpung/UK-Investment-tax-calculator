@@ -1,14 +1,112 @@
 /* ===================================
    Main Styles for UK Investment Tax Calculator
+   "Guided" theme: light mint ground, forest-green workflow sidebar, lime highlight.
    =================================== */
 
-/* Root Variables */
-:root {
-    --sidebar-width: 250px;
-    --transition-speed: 0.3s;
+/* Self-hosted fonts (SIL Open Font License 1.1 - see the Acknowledgement page) */
+@font-face {
+    font-family: 'Manrope';
+    font-style: normal;
+    font-weight: 400 800;
+    font-display: swap;
+    src: url('../fonts/Manrope-Variable.woff2') format('woff2');
 }
 
-/* Layout Styles */
+/* Design tokens */
+:root {
+    --sidebar-width: 280px;
+    --transition-speed: 0.2s;
+
+    --wf-font-sans: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+    --wf-forest: #0E3326;
+    --wf-forest-line: #2E5747;
+    --wf-on-forest: #D5E6DC;
+    --wf-on-forest-muted: #9DBDAD;
+    --wf-lime: #C6F06B;
+    --wf-lime-soft: #DCEFC0;
+    --wf-lime-wash: #F1F8E4;
+
+    --wf-ground: #EEF3EF;
+    --wf-surface: #FFFFFF;
+    --wf-surface-2: #F4F8F5;
+    --wf-ink: #12261D;
+    --wf-muted: #4A5D53;
+    --wf-border: #D3DED7;
+    --wf-border-soft: #E3EBE6;
+    --wf-accent: #1D6B4F;
+    --wf-accent-hover: #124733;
+    --wf-loss: #B0451A;
+
+    --wf-radius-lg: 18px;
+    --wf-radius-md: 14px;
+    --wf-radius-sm: 10px;
+
+    /* Bootstrap overrides */
+    --bs-body-bg: var(--wf-ground);
+    --bs-body-color: var(--wf-ink);
+    --bs-body-font-family: var(--wf-font-sans);
+    --bs-heading-color: var(--wf-ink);
+    --bs-secondary-color: var(--wf-muted);
+    --bs-border-color: var(--wf-border);
+    --bs-link-color: var(--wf-accent);
+    --bs-link-color-rgb: 29, 107, 79;
+    --bs-link-hover-color: var(--wf-accent-hover);
+    --bs-link-hover-color-rgb: 18, 71, 51;
+    --bs-primary: var(--wf-accent);
+    --bs-primary-rgb: 29, 107, 79;
+    --bs-success: #1D6B4F;
+    --bs-success-rgb: 29, 107, 79;
+    --bs-danger: #B0451A;
+    --bs-danger-rgb: 176, 69, 26;
+    --bs-card-bg: var(--wf-surface);
+
+    /* Radzen overrides (material theme) */
+    --rz-text-font-family: var(--wf-font-sans);
+    --rz-body-background-color: var(--wf-ground);
+    --rz-primary: #1D6B4F;
+    --rz-primary-light: #2E8564;
+    --rz-primary-lighter: rgba(29, 107, 79, 0.12);
+    --rz-primary-dark: #124733;
+    --rz-primary-darker: #0E3326;
+    --rz-on-primary: #FFFFFF;
+    --rz-on-primary-lighter: #124733;
+    --rz-secondary: #1D6B4F;
+    --rz-secondary-light: #2E8564;
+    --rz-secondary-lighter: rgba(29, 107, 79, 0.12);
+    --rz-secondary-dark: #124733;
+    --rz-secondary-darker: #0E3326;
+    --rz-success: #1D6B4F;
+    --rz-success-dark: #124733;
+    --rz-success-darker: #0E3326;
+    --rz-success-light: #2E8564;
+    --rz-text-color: var(--wf-ink);
+    --rz-text-title-color: var(--wf-ink);
+    --rz-text-secondary-color: var(--wf-muted);
+    --rz-link-color: var(--wf-accent);
+    --rz-link-hover-color: var(--wf-accent-hover);
+    --rz-border-radius: 8px;
+    --rz-button-border-radius: 999px;
+    --rz-card-border-radius: var(--wf-radius-lg);
+    --rz-grid-header-background-color: var(--wf-surface-2);
+    /* Tighter cells than Material's default so wide money columns are not cut off */
+    --rz-grid-cell-padding: 0.5rem 0.5rem;
+}
+
+body {
+    font-family: var(--wf-font-sans);
+    background-color: var(--wf-ground);
+    color: var(--wf-ink);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.num,
+.metric-value {
+    font-variant-numeric: tabular-nums;
+}
+
+/* Layout */
 .app-container {
     min-height: 100vh;
     display: flex;
@@ -17,31 +115,120 @@
 
 .main-content-wrapper {
     flex: 1;
-    padding: 2rem;
-    background-color: var(--bs-body-bg);
+    min-width: 0;
+    padding: 0 2rem 3rem;
+    background-color: var(--wf-ground);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1099.98px) {
     .main-content-wrapper {
-        padding: 1rem;
-        padding-top: 4.5rem;
-        /* Prevent overlap with fixed hamburger button */
+        padding: 4.25rem 1.5rem 2rem;
+        /* Leave room for the fixed menu button */
     }
+}
+
+/* Workflow progress strip at the top of every page */
+.workflow-progress {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem 1.5rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--wf-border);
+}
+
+.workflow-progress-location {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.5rem;
+    font-size: 0.8125rem;
+}
+
+.workflow-progress-step {
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--wf-accent);
+}
+
+.workflow-progress-page {
+    color: var(--wf-muted);
+}
+
+.workflow-progress-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.workflow-next,
+.btn-workflow-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 1.1rem;
+    border-radius: 999px;
+    background: var(--wf-forest);
+    color: #FFFFFF;
+    font-size: 0.875rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: background-color var(--transition-speed);
+}
+
+.workflow-next:hover,
+.btn-workflow-primary:hover {
+    background: var(--wf-accent-hover);
+    color: #FFFFFF;
+}
+
+.btn-workflow-primary {
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+}
+
+.workflow-next-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.55rem 1rem;
+    border-radius: 999px;
+    border: 1.5px solid var(--wf-border);
+    color: var(--wf-ink);
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.workflow-next-secondary:hover {
+    border-color: var(--wf-forest);
+    color: var(--wf-ink);
+}
+
+.workflow-optional {
+    font-weight: 500;
+    color: var(--wf-muted);
 }
 
 /* Page Styles */
 .page-header {
-    margin-bottom: 2rem;
-    padding-bottom: 1rem;
+    margin: 0.5rem 0 2rem;
+    padding: 0;
+    text-align: left;
     outline: none !important;
     border: none !important;
 }
 
 .page-title {
-    font-size: 2.5rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-    color: var(--bs-heading-color);
+    font-size: clamp(2rem, 1.5rem + 1.6vw, 2.75rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    margin-bottom: 0.6rem;
+    color: var(--wf-ink);
     outline: none !important;
     box-shadow: none !important;
     border: none !important;
@@ -49,9 +236,14 @@
 }
 
 .page-subtitle {
-    color: var(--bs-secondary-color);
-    font-size: 1.1rem;
-    max-width: 700px;
+    color: var(--wf-muted);
+    font-size: 1.0625rem;
+    max-width: 720px;
+    margin: 0;
+}
+
+/* Centred headers (e.g. the home page hero) keep their subtitle centred too */
+.page-header.text-center .page-subtitle {
     margin: 0 auto;
 }
 
@@ -61,76 +253,237 @@
     box-shadow: none !important;
 }
 
-/* Card Enhancements */
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--wf-font-sans);
+    color: var(--wf-ink);
+    letter-spacing: -0.01em;
+}
+
+/* Cards */
+.card {
+    --bs-card-bg: var(--wf-surface);
+    --bs-card-border-color: transparent;
+    --bs-card-border-radius: var(--wf-radius-lg);
+    --bs-card-inner-border-radius: var(--wf-radius-lg);
+    --bs-card-cap-bg: transparent;
+    --bs-card-spacer-x: 1.5rem;
+    --bs-card-spacer-y: 1.25rem;
+    color: var(--wf-ink);
+    border: 0;
+    box-shadow: 0 1px 2px rgba(14, 51, 38, 0.04);
+}
+
+.card-header {
+    padding-top: 1.25rem;
+    padding-bottom: 0.25rem;
+    border-bottom: 0;
+    background: transparent;
+}
+
+.card-header h3,
+.card-header .h3 {
+    font-size: 1.375rem;
+    font-weight: 700;
+}
+
+.card-header h4,
+.card-header h5 {
+    font-weight: 700;
+}
+
+/* Cards inside cards become tinted panels */
+.card .card {
+    --bs-card-bg: var(--wf-surface-2);
+    --bs-card-border-radius: var(--wf-radius-md);
+    --bs-card-inner-border-radius: var(--wf-radius-md);
+    box-shadow: none;
+}
+
 .feature-card {
-    border: 1px solid var(--bs-border-color);
     height: 100%;
 }
 
 .feature-icon {
-    font-size: 2.5rem;
+    font-size: 2.25rem;
     margin-bottom: 1rem;
-    color: var(--bs-primary);
 }
 
-/* Alert Enhancements */
+/* Metric tiles (import statistics and tax summary) */
+.metric-card {
+    --bs-card-bg: var(--wf-surface-2);
+    --bs-card-border-radius: var(--wf-radius-md);
+    box-shadow: none;
+    height: 100%;
+}
+
+.card .metric-card {
+    --bs-card-bg: var(--wf-surface-2);
+}
+
+.metric-card .metric-label {
+    color: var(--wf-muted) !important;
+    font-size: 0.75rem;
+}
+
+.metric-card .metric-value {
+    font-weight: 700;
+    color: var(--wf-ink);
+}
+
+/* Next steps card on the import page */
+.next-steps-card .card-body > p {
+    max-width: 760px;
+}
+
+.next-steps-list {
+    padding-left: 1.25rem;
+    margin: 0.5rem 0 1.5rem;
+}
+
+.next-steps-list > li {
+    margin-bottom: 1rem;
+    padding-left: 0.25rem;
+}
+
+.next-steps-list > li::marker {
+    font-weight: 700;
+    color: var(--wf-accent);
+}
+
+.next-steps-list > li > a,
+.next-steps-list > li > strong {
+    display: block;
+    font-weight: 700;
+}
+
+.next-steps-list > li > span {
+    display: block;
+    color: var(--wf-muted);
+    font-size: 0.9375rem;
+}
+
+.next-steps-sublist {
+    margin: 0.5rem 0 0;
+    padding-left: 1.1rem;
+    color: var(--wf-muted);
+    font-size: 0.9375rem;
+}
+
+.next-steps-sublist li {
+    margin-bottom: 0.25rem;
+}
+
+.next-steps-sublist a {
+    font-weight: 600;
+}
+
+/* Alerts: rounded tinted panels */
+.alert {
+    --bs-alert-border-radius: var(--wf-radius-md);
+    border: 0;
+}
+
 .alert-custom {
-    border-left: 4px solid;
-    border-radius: 0.375rem;
+    border-radius: var(--wf-radius-md);
 }
 
-.alert-custom.alert-warning {
-    border-left-color: var(--bs-warning);
+.alert-warning {
+    --bs-alert-bg: #FFF3D6;
+    --bs-alert-color: #4A3500;
+    --bs-alert-link-color: #4A3500;
 }
 
-.alert-custom.alert-info {
-    border-left-color: var(--bs-info);
+.alert-info {
+    --bs-alert-bg: #E3F0EA;
+    --bs-alert-color: #10392A;
+    --bs-alert-link-color: #10392A;
 }
 
-.alert-custom.alert-secondary {
-    border-left-color: var(--bs-secondary);
+.alert-secondary {
+    --bs-alert-bg: var(--wf-surface-2);
+    --bs-alert-color: var(--wf-ink);
+    --bs-alert-link-color: var(--wf-ink);
 }
 
-.alert-custom.alert-danger {
-    border-left-color: var(--bs-danger);
+.alert-danger {
+    --bs-alert-bg: #FBE7DF;
+    --bs-alert-color: #6B240A;
+    --bs-alert-link-color: #6B240A;
+}
+
+.alert-success {
+    --bs-alert-bg: var(--wf-lime-wash);
+    --bs-alert-color: #10392A;
+    --bs-alert-link-color: #10392A;
+}
+
+.alert-heading {
+    font-weight: 700;
+}
+
+/* Bootstrap buttons used on a few pages, matched to the Radzen ones */
+.btn {
+    --bs-btn-border-radius: 999px;
+    --bs-btn-font-weight: 600;
+}
+
+.btn-primary {
+    --bs-btn-bg: var(--wf-forest);
+    --bs-btn-border-color: var(--wf-forest);
+    --bs-btn-hover-bg: var(--wf-accent-hover);
+    --bs-btn-hover-border-color: var(--wf-accent-hover);
+    --bs-btn-active-bg: var(--wf-accent-hover);
+    --bs-btn-active-border-color: var(--wf-accent-hover);
+    --bs-btn-disabled-bg: var(--wf-forest);
+    --bs-btn-disabled-border-color: var(--wf-forest);
+}
+
+.btn-outline-primary {
+    --bs-btn-color: var(--wf-forest);
+    --bs-btn-border-color: var(--wf-forest);
+    --bs-btn-hover-bg: var(--wf-forest);
+    --bs-btn-hover-border-color: var(--wf-forest);
+    --bs-btn-active-bg: var(--wf-forest);
+    --bs-btn-active-border-color: var(--wf-forest);
 }
 
 /* Link Styles */
 .link-styled {
-    color: var(--bs-link-color);
+    color: var(--wf-accent);
     text-decoration: none;
+    font-weight: 600;
     transition: color var(--transition-speed);
 }
 
 .link-styled:hover {
-    color: var(--bs-link-hover-color);
+    color: var(--wf-accent-hover);
     text-decoration: underline;
 }
 
 /* Section Spacing */
 .section {
-    margin-bottom: 3rem;
+    margin-bottom: 2rem;
 }
 
 .section-title {
-    font-size: 1.75rem;
-    font-weight: 600;
-    margin-bottom: 1.5rem;
-    color: var(--bs-heading-color);
+    font-size: 1.375rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--wf-ink);
 }
 
 .manual-money-entry {
-    border: 1px solid var(--bs-border-color);
-    border-radius: 0.375rem;
+    border: 1px solid var(--wf-border-soft);
+    border-radius: var(--wf-radius-sm);
     padding: 0.75rem;
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--wf-surface-2);
 }
 
 .manual-money-entry-title {
     display: block;
     font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--bs-info);
+    font-weight: 700;
+    color: var(--wf-accent);
     margin-bottom: 0.5rem;
 }
 
@@ -142,7 +495,19 @@
 
 /* Utility Classes */
 .text-muted-custom {
-    color: var(--bs-secondary-color) !important;
+    color: var(--wf-muted) !important;
+}
+
+.text-muted {
+    color: var(--wf-muted) !important;
+}
+
+.text-success {
+    color: var(--wf-accent) !important;
+}
+
+.text-danger {
+    color: var(--wf-loss) !important;
 }
 
 /* Preserve newlines in toast/notification messages so multi-line details wrap correctly */
@@ -178,6 +543,43 @@
 /* Denser typography recovers horizontal room for many-column tables */
 .rz-data-grid .rz-grid-table {
     font-size: 0.8125rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.rz-data-grid {
+    border-radius: var(--wf-radius-md);
+    border-color: var(--wf-border-soft);
+    overflow: hidden;
+}
+
+.rz-data-grid .rz-grid-table thead th {
+    font-weight: 700;
+    color: var(--wf-muted);
+}
+
+/* Radzen buttons: sentence case instead of the Material uppercase */
+.rz-button {
+    text-transform: none;
+    letter-spacing: normal;
+    font-weight: 700;
+}
+
+/* Wider content column so the many-column report grids fit */
+.main-content-wrapper .container-fluid > .row > .col-lg-10.mx-auto,
+.main-content-wrapper .container-fluid > .row > .col-xl-10.mx-auto {
+    flex: 0 0 auto;
+    width: 100%;
+    max-width: 1800px;
+}
+
+.badge.text-bg-info {
+    background-color: var(--wf-lime-soft) !important;
+    color: var(--wf-forest) !important;
+}
+
+/* Radzen tabs */
+.rz-tabview-nav {
+    border-bottom: 1px solid var(--wf-border-soft);
 }
 
 /* Loading Screen Styles */
@@ -192,4 +594,912 @@
     width: 3rem;
     height: 3rem;
     margin-bottom: 1rem;
+}
+
+.spinner-border.text-primary {
+    color: var(--wf-accent) !important;
+}
+
+/* Panels wrapping report grids (summary and raw data pages) */
+.data-panel {
+    background: var(--wf-surface);
+    border-radius: var(--wf-radius-lg);
+    padding: 0.25rem 1rem 1rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 2px rgba(14, 51, 38, 0.04);
+}
+
+/* The grid rows inside panels carried Bootstrap gutters plus a "me-3" margin: let the grid use the width */
+.data-panel > .row {
+    margin-left: 0;
+    margin-right: 0 !important;
+}
+
+.data-panel > .row > .col {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.data-panel h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+/* Read-only values shown in form layouts (e.g. ERI quantity, FX rate) */
+.form-control-readonly {
+    background: var(--wf-lime-wash);
+    border-color: var(--wf-border-soft);
+    color: var(--wf-ink);
+    font-variant-numeric: tabular-nums;
+}
+
+/*
+   Form grid for entry forms (ERI, equalisation): as many columns as the card has room for, and every
+   field's input sits on the row's bottom edge, so a label that wraps never pushes its input out of line.
+*/
+.card-body:has(> .form-grid) {
+    container-type: inline-size;
+}
+
+/* 1, 2 or 4 columns from the card's own width, so groups of four fields never leave one on its own */
+.form-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+    align-items: end;
+}
+
+@container (min-width: 26rem) {
+    .form-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@container (min-width: 52rem) {
+    .form-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+.form-grid + .form-grid-follow {
+    margin-top: 1rem;
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-width: 0;
+}
+
+.form-field > .form-label {
+    margin-bottom: 0.35rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.form-field-wide {
+    grid-column: span 2;
+}
+
+@container (max-width: 25.99rem) {
+    .form-field-wide {
+        grid-column: auto;
+    }
+}
+
+.form-section-title {
+    margin: 1.25rem 0 0.6rem;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--wf-accent);
+}
+
+.form-section-title:first-child {
+    margin-top: 0;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--wf-border-soft);
+}
+
+/* Read-only values match the height of the Radzen inputs beside them */
+.form-control-readonly {
+    display: flex;
+    align-items: center;
+    min-height: var(--rz-input-height, 2.5rem);
+    padding-block: 0;
+}
+
+.form-control-readonly-text {
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.form-label-note {
+    margin-left: 0.35rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--wf-muted);
+    white-space: nowrap;
+}
+
+.form-text-accent {
+    color: var(--wf-accent);
+}
+
+.card-highlight {
+    --bs-card-bg: var(--wf-lime-wash);
+}
+
+.list-group {
+    --bs-list-group-bg: var(--wf-surface);
+    --bs-list-group-border-color: var(--wf-border-soft);
+}
+
+.modal-content {
+    border: 0;
+    border-radius: var(--wf-radius-lg);
+}
+
+/* ===================================
+   Report grids: table or cards, chosen per grid by js/responsive-grids.js
+   =================================== */
+
+/*
+   Table layouts. Radzen gives every column an equal fixed share of the width, which cuts amounts off
+   with "…" while short columns waste space. Instead columns are sized to their content:
+   - data-layout="table" (and before the script runs): the table fills its panel, sharing out the width;
+     words wrap only where space runs out.
+   - data-layout="measure" / "scroll": the narrowest readable table: amounts and dates on one line,
+     headers and free text wrapping between words, headers at least 4rem wide. "measure" is the script's
+     sizing pass; "scroll" is used on wide screens when even that is wider than the panel, which then
+     scrolls sideways (narrower screens get cards instead).
+*/
+.rz-data-grid.mobile-cards:not([data-layout="cards"]) .rz-grid-table,
+.rz-data-grid.mobile-cards:not([data-layout="cards"]) .rz-grid-table.rz-grid-table-fixed {
+    table-layout: auto !important;
+    width: 100% !important;
+}
+
+.rz-data-grid.mobile-cards:not([data-layout="cards"]) .rz-grid-table td .rz-cell-data {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+}
+
+/* Amounts, quantities and dates (marked by MobileCardGrid.LabelCell) stay on one line */
+.rz-data-grid.mobile-cards:not([data-layout="cards"]) .rz-grid-table td[data-nowrap] .rz-cell-data {
+    white-space: nowrap;
+}
+
+.rz-data-grid.mobile-cards:not([data-layout="cards"]) .rz-grid-table thead th .rz-column-title-content {
+    display: inline-block;
+    min-width: 4rem;
+    overflow-wrap: normal;
+    word-break: normal;
+}
+
+/* Fixed column widths only made sense for Radzen's fixed layout; content sizing replaces them */
+.rz-data-grid.mobile-cards:not([data-layout="cards"]) .rz-grid-table > colgroup > col,
+.rz-data-grid.mobile-cards:not([data-layout="cards"]) .rz-grid-table > thead th,
+.rz-data-grid.mobile-cards:not([data-layout="cards"]) .rz-grid-table > tbody td {
+    width: auto !important;
+}
+
+/* Header chrome: trim padding and only show the sort arrow once the column is sorted */
+.rz-data-grid.mobile-cards .rz-grid-table thead th .rz-column-title {
+    padding-inline: 0.5rem 0.25rem;
+}
+
+.rz-data-grid.mobile-cards .rz-grid-table thead th .rz-sortable-column-icon.rzi-sort {
+    display: none;
+}
+
+.rz-data-grid.mobile-cards .rz-grid-table thead th:is([aria-sort="ascending"], [aria-sort="descending"]) .rz-sortable-column-icon {
+    display: inline-block;
+}
+
+/* Editable cells (e.g. Additional Information on Trade Matches): wide enough to read a comment */
+.rz-data-grid.mobile-cards:not([data-layout="cards"]) .rz-grid-table td .rz-textbox {
+    min-width: 14rem;
+}
+
+/* Scrolling tables keep their first column (date, asset, tax year) in view */
+.rz-data-grid.mobile-cards[data-layout="scroll"] .rz-grid-table > thead > tr:first-child > th:first-child,
+.rz-data-grid.mobile-cards[data-layout="scroll"] .rz-grid-table > tbody > tr > td:first-child:not(.rz-col-icon) {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background: var(--wf-surface);
+    box-shadow: inset -1px 0 0 var(--wf-border-soft);
+}
+
+.rz-data-grid.mobile-cards[data-layout="scroll"] .rz-grid-table > thead > tr:first-child > th:first-child {
+    z-index: 2;
+    background: var(--rz-grid-header-background-color);
+}
+
+.rz-data-grid.mobile-cards:is([data-layout="measure"], [data-layout="scroll"]) .rz-grid-table,
+.rz-data-grid.mobile-cards:is([data-layout="measure"], [data-layout="scroll"]) .rz-grid-table.rz-grid-table-fixed {
+    width: min-content !important;
+    min-width: 100%;
+}
+
+/*
+   Card layout: each row becomes a card. The first column (tax year, trade, asset...) is the card title
+   and every other column is a label / value line. Labels come from the data-label attribute
+   MobileCardGrid.LabelCell puts on each cell; data-group starts a titled section for grouped columns
+   (e.g. "Listed Shares" / "Other Assets"). The header row becomes a row of sort / filter chips above the
+   cards (below), and paging still works.
+   js/responsive-grids.js sets data-layout="cards" on a grid only when its table does not fit the space
+   available with readable columns, so the switch depends on the table and its container, not the device.
+*/
+.rz-data-grid.mobile-cards[data-layout="cards"] {
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    overflow: visible;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-data-grid-data {
+    overflow: visible;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-group-header {
+    display: none;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table,
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table.rz-grid-table-fixed {
+    display: block;
+    width: 100% !important;
+    table-layout: auto !important;
+    background: transparent;
+    font-size: 0.9375rem;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > colgroup {
+    display: none;
+}
+
+/*
+   The header row stays, restyled as a row of chips above the cards: Radzen's own header cells keep their
+   sort (click / Enter) and filter buttons working, keyboard accessible, and show the active sort and filter.
+   Headers with neither control are hidden.
+*/
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > thead {
+    display: block;
+    margin-bottom: 0.75rem;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > thead::before {
+    content: "Sort and filter";
+    display: block;
+    margin-bottom: 0.35rem;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--wf-muted);
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > thead > tr {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > thead > tr + tr {
+    margin-top: 0.4rem;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > thead > tr > th {
+    display: flex;
+    align-items: center;
+    flex: none;
+    width: auto !important;
+    min-width: 0 !important;
+    min-height: 2rem;
+    padding: 0 0.1rem;
+    border: 1px solid var(--wf-border);
+    border-radius: 999px;
+    background: var(--wf-surface);
+    text-align: left !important;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > thead > tr > th:not(.rz-sortable-column):not(:has(.rz-grid-filter-icon)) {
+    display: none;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > thead > tr > th > div {
+    display: flex;
+    align-items: center;
+    /* Radzen pads the header cell's inner wrapper by 0.75rem top and bottom */
+    padding-block: 0 !important;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > thead th .rz-column-title {
+    padding: 0.25rem 0.25rem 0.25rem 0.5rem;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > thead th .rz-column-title-content {
+    white-space: nowrap;
+    min-width: 0 !important;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--wf-ink);
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > thead th .rz-column-resizer {
+    display: none;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > thead th[aria-sort="ascending"],
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > thead th[aria-sort="descending"] {
+    border-color: var(--wf-forest);
+    background: var(--wf-lime-wash);
+}
+
+/* One column of cards on phones, two or three side by side on tablets */
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > tbody {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+    align-items: start;
+    gap: 0.6rem;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > tbody > tr.rz-group-row,
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > tbody > tr.rz-datatable-emptymessage-row {
+    grid-column: 1 / -1;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table tr {
+    display: block;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] tr.rz-data-row {
+    background: var(--wf-surface-2);
+    border-radius: var(--wf-radius-md);
+    padding: 0.2rem 0.9rem 0.45rem;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] tr.rz-data-row > td {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.1rem 1rem;
+    padding: 0.45rem 0;
+    border: 0;
+    border-top: 1px solid var(--wf-border-soft);
+    background: transparent !important;
+    text-align: right !important;
+    white-space: normal;
+    /* Columns given a fixed Width set it inline on every cell */
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] tr.rz-data-row > td::before {
+    content: attr(data-label);
+    order: -1;
+    flex: 1 1 8rem;
+    text-align: left;
+    color: var(--wf-muted);
+    font-size: 0.8125rem;
+    font-weight: 500;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] tr.rz-data-row > td:not([data-label])::before {
+    content: none;
+}
+
+/* Short values sit at the right edge; a value long enough to wrap fills the line, left-aligned */
+.rz-data-grid.mobile-cards[data-layout="cards"] tr.rz-data-row > td .rz-cell-data {
+    margin-left: auto;
+    text-align: left;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    overflow-wrap: anywhere;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    max-width: 100%;
+}
+
+/* Card title: the row's first column */
+.rz-data-grid.mobile-cards[data-layout="cards"] tr.rz-data-row > td:first-child,
+.rz-data-grid.mobile-cards[data-layout="cards"] tr.rz-data-row > td.rz-col-icon + td {
+    display: block;
+    text-align: left !important;
+    border-top: 0;
+    padding: 0.55rem 0 0.4rem;
+    font-size: 1.125rem;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] tr.rz-data-row > td:first-child .rz-cell-data,
+.rz-data-grid.mobile-cards[data-layout="cards"] tr.rz-data-row > td.rz-col-icon + td .rz-cell-data {
+    font-weight: 800;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] tr.rz-data-row > td:first-child::before,
+.rz-data-grid.mobile-cards[data-layout="cards"] tr.rz-data-row > td.rz-col-icon + td::before {
+    display: block;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--wf-accent);
+    margin-bottom: 0.1rem;
+}
+
+/* Editable cells: the input takes the full width of the card under its label */
+.rz-data-grid.mobile-cards[data-layout="cards"] tr.rz-data-row > td .rz-cell-data:has(.rz-textbox) {
+    flex: 1 1 100%;
+    margin-left: 0;
+    margin-top: 0.15rem;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] tr.rz-data-row > td .rz-textbox {
+    width: 100%;
+}
+
+/* The empty spacer cell grouped grids put in front of each row */
+.rz-data-grid.mobile-cards[data-layout="cards"] tr.rz-data-row > td.rz-col-icon {
+    display: none;
+}
+
+/* Grouped columns: the first cell of a group starts a titled section of the card */
+.rz-data-grid.mobile-cards[data-layout="cards"] tr.rz-data-row > td[data-group] {
+    margin-top: 0.4rem;
+    border-top: 1.5px solid var(--wf-forest);
+    padding-top: 0.5rem;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] tr.rz-data-row > td[data-group]::before {
+    content: attr(data-group);
+    order: -2;
+    flex: 0 0 100%;
+    color: var(--wf-ink);
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 0.25rem;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] tr.rz-data-row > td[data-group]::after {
+    content: attr(data-label);
+    order: -1;
+    flex: 1 1 8rem;
+    text-align: left;
+    color: var(--wf-muted);
+    font-size: 0.8125rem;
+    font-weight: 500;
+}
+
+/* Group rows (e.g. "Tax Year: 2020" on the dividend summary) become section headings */
+.rz-data-grid.mobile-cards[data-layout="cards"] tr.rz-group-row {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-top: 0.5rem;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] tr.rz-group-row > td {
+    display: block;
+    border: 0;
+    padding: 0;
+    background: transparent;
+    font-weight: 800;
+    font-size: 1rem;
+}
+
+/* Footer totals (dividend summary): one "Totals" card */
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > tfoot {
+    display: block;
+    margin-top: 0.6rem;
+    max-width: 30rem;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > tfoot > tr {
+    display: block;
+    background: var(--wf-lime-wash);
+    border-radius: var(--wf-radius-md);
+    padding: 0.55rem 0.9rem 0.45rem;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > tfoot > tr::before {
+    content: "Totals";
+    display: block;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--wf-accent);
+    padding-bottom: 0.3rem;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > tfoot > tr > td {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    padding: 0.45rem 0;
+    border: 0;
+    border-top: 1px solid var(--wf-border-soft);
+    background: transparent;
+    text-align: right !important;
+    width: auto !important;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > tfoot > tr > td::before {
+    content: attr(data-label);
+    flex: 1 1 8rem;
+    text-align: left;
+    color: var(--wf-muted);
+    font-size: 0.8125rem;
+    font-weight: 500;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > tfoot > tr > td.rz-col-icon,
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > tfoot > tr > td:has(.rz-column-footer:empty) {
+    display: none;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] .rz-grid-table > tfoot .footer-prefix {
+    display: none;
+}
+
+.rz-data-grid.mobile-cards[data-layout="cards"] tr.rz-datatable-emptymessage-row > td {
+    display: block;
+    border: 0;
+    padding: 1rem;
+    border-radius: var(--wf-radius-md);
+    background: var(--wf-surface-2);
+    color: var(--wf-muted);
+    text-align: center;
+}
+
+/* ===================================
+   Phones and small tablets
+   =================================== */
+@media (max-width: 768px) {
+    .main-content-wrapper {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    /* Stop the page, container, panel and grid padding from stacking up */
+    .main-content-wrapper .container-fluid {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .main-content-wrapper .container-fluid > .row {
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .main-content-wrapper .container-fluid > .row > [class*="col-"] {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .data-panel {
+        padding: 0.25rem 0.75rem 0.75rem;
+        border-radius: var(--wf-radius-md);
+    }
+
+    .data-panel > .row {
+        margin-left: 0;
+        margin-right: 0 !important;
+    }
+
+    .data-panel > .row > .col {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .data-panel > .row.my-4 {
+        margin-top: 1rem !important;
+        margin-bottom: 0.75rem !important;
+    }
+
+    .card {
+        --bs-card-spacer-x: 0.85rem;
+        --bs-card-spacer-y: 0.85rem;
+        --bs-card-border-radius: var(--wf-radius-md);
+        --bs-card-inner-border-radius: var(--wf-radius-md);
+    }
+
+    .page-header {
+        margin-bottom: 1.25rem;
+    }
+
+    /* Summary tiles (import statistics, tax summary) become one statement-style list */
+    .row:has(> [class*="col-"] > .metric-card) {
+        --bs-gutter-x: 0;
+        --bs-gutter-y: 0;
+        margin: 0;
+        background: var(--wf-surface);
+        border-radius: var(--wf-radius-md);
+        padding: 0.15rem 0.9rem;
+    }
+
+    .card .row:has(> [class*="col-"] > .metric-card) {
+        background: var(--wf-surface-2);
+    }
+
+    .row:has(> [class*="col-"] > .metric-card) > [class*="col-"] + [class*="col-"] {
+        border-top: 1px solid var(--wf-border-soft);
+    }
+
+    .metric-card,
+    .card .metric-card {
+        --bs-card-bg: transparent;
+        border-radius: 0;
+    }
+
+    .metric-card .card-body {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 1rem;
+        padding: 0.65rem 0;
+    }
+
+    .metric-card .metric-label {
+        font-size: 0.875rem;
+        font-weight: 500;
+        text-transform: none;
+        letter-spacing: normal;
+    }
+
+    .metric-card .metric-value {
+        font-size: 1rem;
+        text-align: right;
+        white-space: nowrap;
+    }
+
+    /* Pager: keep controls on one line and drop the page-size label */
+    .rz-pager {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.25rem;
+    }
+
+    .rz-pager .rz-pager-summary,
+    .rz-pager .rz-pager-page-size-text {
+        display: none;
+    }
+
+    /* Tab strip (Disposal Summary): scroll the tabs, not the page */
+    .rz-tabview-nav {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+
+    .rz-tabview-nav > li {
+        flex: none;
+    }
+
+    /* The step strip: put the Next buttons on their own line, full width */
+    .workflow-progress {
+        padding: 0.5rem 0 0.85rem;
+    }
+
+    .workflow-progress-actions {
+        width: 100%;
+    }
+
+    .workflow-progress-actions > a {
+        flex: 1 1 auto;
+        justify-content: center;
+    }
+}
+
+/* Wherever the sidebar is a slide-out menu (below 1100px) */
+@media (max-width: 1099.98px) {
+    /* Notifications: full width at the bottom, so they do not cover the page header or Next buttons */
+    .rz-notification {
+        inset-block-start: auto;
+        inset-block-end: 0.75rem;
+        inset-inline: 0.75rem;
+    }
+
+    .rz-notification-item-wrapper {
+        width: auto;
+        min-width: 0;
+        margin: 0.5rem 0 0;
+    }
+}
+
+/* ===================================
+   Income taxable dividend selection
+   =================================== */
+.convert-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+}
+
+.convert-search {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1 1 14rem;
+    max-width: 22rem;
+    padding: 0 0.75rem;
+    min-height: 2.5rem;
+    border: 1.5px solid var(--wf-border);
+    border-radius: 999px;
+    background: var(--wf-surface);
+    color: var(--wf-muted);
+}
+
+.convert-search:focus-within {
+    border-color: var(--wf-accent);
+}
+
+.convert-search input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    outline: none;
+    background: transparent;
+    color: var(--wf-ink);
+    font: inherit;
+}
+
+.convert-filter {
+    display: inline-flex;
+    padding: 0.2rem;
+    border-radius: 999px;
+    background: var(--wf-surface-2);
+}
+
+.convert-filter button {
+    border: 0;
+    background: none;
+    border-radius: 999px;
+    padding: 0.4rem 0.85rem;
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--wf-muted);
+}
+
+.convert-filter button.is-active {
+    background: var(--wf-forest);
+    color: #FFFFFF;
+}
+
+.convert-ticker {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin: 0;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.convert-ticker input {
+    width: 1.1rem;
+    height: 1.1rem;
+    flex: none;
+    accent-color: var(--wf-accent);
+}
+
+/* Selection summary and actions stay in view while scrolling a long ticker list */
+.convert-actions {
+    position: sticky;
+    bottom: 0.75rem;
+    z-index: 5;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: var(--wf-radius-md);
+    background: var(--wf-surface);
+    border: 1px solid var(--wf-border);
+    box-shadow: 0 8px 24px rgba(14, 51, 38, 0.12);
+}
+
+.convert-selection {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+    min-width: 0;
+    font-size: 0.875rem;
+}
+
+.convert-selection-count {
+    font-weight: 700;
+    margin-right: 0.25rem;
+}
+
+.convert-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    padding: 0.15rem 0.25rem 0.15rem 0.6rem;
+    border-radius: 999px;
+    background: var(--wf-lime-soft);
+    color: var(--wf-forest);
+    font-weight: 600;
+}
+
+.convert-chip button {
+    border: 0;
+    background: none;
+    color: inherit;
+    font-size: 1rem;
+    line-height: 1;
+    padding: 0.1rem 0.35rem;
+    border-radius: 999px;
+}
+
+.convert-chip button:hover {
+    background: rgba(14, 51, 38, 0.1);
+}
+
+.convert-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-left: auto;
+}
+
+@media (max-width: 575.98px) {
+    .convert-search {
+        max-width: none;
+    }
+
+    .convert-toolbar .ms-auto {
+        margin-left: 0 !important;
+    }
+
+    /* Keep the pinned bar short on phones: the count and the two buttons, no chips */
+    .convert-actions {
+        flex-wrap: nowrap;
+        padding: 0.6rem 0.75rem;
+        gap: 0.5rem;
+    }
+
+    .convert-selection .convert-chip,
+    .convert-selection .convert-chip ~ span {
+        display: none;
+    }
+
+    .convert-buttons {
+        flex-wrap: nowrap;
+    }
+
+    .convert-buttons .btn {
+        white-space: nowrap;
+        padding-inline: 0.85rem;
+    }
+
+    .convert-button-long {
+        display: none;
+    }
 }

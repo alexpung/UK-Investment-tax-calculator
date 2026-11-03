@@ -67,7 +67,8 @@
         <hr />
 
         <h6>Configured ranges</h6>
-        <RadzenDataGrid TItem="ResidencyStatusRecord.RangeEntry" Data="@GetRanges()" AllowPaging="true" PageSize="10" AllowSorting="true" class="w-100">
+        <RadzenDataGrid TItem="ResidencyStatusRecord.RangeEntry" Data="@GetRanges()" AllowPaging="true" PageSize="10" AllowSorting="true" CellRender="@(args => MobileCardGrid.LabelCell(args))"
+                            class="w-100 mobile-cards">
             <Columns>
                 <RadzenDataGridColumn TItem="ResidencyStatusRecord.RangeEntry" Property="@nameof(ResidencyStatusRecord.RangeEntry.Start)" Title="Start" FormatString="{0:dd-MMM-yyyy}" TextAlign="TextAlign.Center" Width="150px" />
                 <RadzenDataGridColumn TItem="ResidencyStatusRecord.RangeEntry" Property="@nameof(ResidencyStatusRecord.RangeEntry.End)" Title="End" FormatString="{0:dd-MMM-yyyy}" TextAlign="TextAlign.Center" Width="150px" />
@@ -83,8 +84,8 @@
         align-items: stretch;
         gap: 2px;
         height: 48px;
-        border: 1px solid rgba(255,255,255,0.08);
-        background: rgba(0,0,0,0.25);
+        border: 1px solid var(--wf-border-soft);
+        background: var(--wf-surface-2);
         padding: 4px;
         border-radius: 4px;
         overflow: hidden;
@@ -92,7 +93,7 @@
     }
 
     .timeline-empty {
-        color: #bbb;
+        color: var(--wf-muted);
         padding: 8px;
     }
 
@@ -116,6 +117,9 @@
 </style>
 
 @code {
+    /// <summary>Raised after a residency range has been recorded.</summary>
+    [Parameter] public EventCallback OnChanged { get; set; }
+
     // bound DateTime values for the date pickers; convert to DateOnly when calling model
     private DateTime StartDateTime { get; set; } = DateTime.Today;
     private DateTime EndDateTime { get; set; } = DateTime.Today;
@@ -128,7 +132,7 @@
     // Residency enum options for dropdown
     private ResidencyEnum[] ResidencyOptions => (ResidencyEnum[])Enum.GetValues(typeof(ResidencyEnum));
 
-    private void ApplyRange()
+    private async Task ApplyRange()
     {
         var start = StartUnbounded ? DateOnly.MinValue : DateOnly.FromDateTime(StartDateTime.Date);
         var end = EndUnbounded ? DateOnly.MaxValue : DateOnly.FromDateTime(EndDateTime.Date);
@@ -142,6 +146,7 @@
         ResidencyStatusRecord.SetResidencyStatus(start, end, SelectedStatus);
 
         StateHasChanged();
+        await OnChanged.InvokeAsync();
     }
 
     private void ResetInputs()
