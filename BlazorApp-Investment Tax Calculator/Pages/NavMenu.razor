@@ -1,7 +1,17 @@
-﻿@inject NavigationManager Navigation
+﻿@using InvestmentTaxCalculator.Model
+@using InvestmentTaxCalculator.Services
+@using InvestmentTaxCalculator.ViewModel
+@using Microsoft.AspNetCore.Components.Routing
+@implements IDisposable
+@inject NavigationManager Navigation
+@inject TaxEventLists TaxEventLists
+@inject TradeCalculationResult TradeCalculationResult
+@inject DividendCalculationResult DividendCalculationResult
+@inject TaxCalculationService TaxCalculationService
+@inject FileImportStateService FileImportState
 
-<button class="mobile-nav-toggle" @onclick="ToggleMenu" aria-label="Toggle navigation">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;">
+<button class="mobile-nav-toggle" @onclick="ToggleMenu" aria-label="Toggle navigation" aria-expanded="@(SidebarToggle ? "true" : "false")">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <line x1="3" y1="12" x2="21" y2="12"></line>
         <line x1="3" y1="6" x2="21" y2="6"></line>
         <line x1="3" y1="18" x2="21" y2="18"></line>
@@ -9,138 +19,128 @@
     Menu
 </button>
 
-<nav class="sidebar-nav @(SidebarToggle ? "show" : "")">
-    <div class="sidebar-header">
-        <span class="sidebar-brand">
-            UK Tax Calculator
-        </span>
-    </div>
-    
-    <div class="sidebar-menu">
-        <ul class="nav flex-column">
-            <li class="nav-item">
-                <NavLink href="" class="nav-link-custom" Match="NavLinkMatch.All" @onclick="CloseMenuOnMobile">
-                    <span class="nav-icon">🏠</span>
-                    <span>Home</span>
-                </NavLink>
-            </li>
+@if (SidebarToggle)
+{
+    <div class="sidebar-backdrop" @onclick="ToggleMenu"></div>
+}
 
-            @foreach (var category in Categories)
+<nav class="sidebar-nav @(SidebarToggle ? "show" : "")" aria-label="Tax workflow">
+    <div class="sidebar-header">
+        <NavLink href="" class="sidebar-brand" Match="NavLinkMatch.All" @onclick="CloseMenuOnMobile">
+            <span class="brand-mark" aria-hidden="true">£</span>
+            <span class="brand-text">UK Investment<br />Tax Calculator</span>
+        </NavLink>
+    </div>
+
+    <div class="sidebar-menu">
+        <NavLink href="" class="nav-link-custom nav-home" Match="NavLinkMatch.All" @onclick="CloseMenuOnMobile">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" /></svg>
+            <span>Home</span>
+        </NavLink>
+
+        <ol class="workflow-steps">
+            @foreach (var step in WorkflowSteps.All)
             {
-                <li class="nav-item category-item">
-                    <button class="category-header @(category.IsExpanded ? "expanded" : "")" @onclick="() => ToggleCategory(category)">
-                        <span class="category-title">@category.Title</span>
-                        <svg class="category-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="6 9 12 15 18 9"></polyline>
-                        </svg>
-                    </button>
-                    <div class="category-content @(category.IsExpanded ? "show" : "")">
-                        <ul class="nav flex-column">
-                            @foreach (var item in category.Items)
+                var state = GetState(step);
+                <li class="workflow-step @CssClassFor(state)" aria-current="@(state == StepState.Current ? "step" : null)">
+                    <div class="workflow-marker" aria-hidden="true">
+                        <span class="workflow-number">
+                            @if (state == StepState.Done)
                             {
-                                <li class="nav-item sub-item">
-                                    <NavLink href="@item.PageAddress" class="nav-link-custom" Match="NavLinkMatch.All" @onclick="CloseMenuOnMobile">
-                                        <span class="nav-icon">@item.Icon</span>
-                                        <span>@item.Text</span>
-                                    </NavLink>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l5 5 9-10" /></svg>
+                            }
+                            else
+                            {
+                                @step.Number
+                            }
+                        </span>
+                        <span class="workflow-line"></span>
+                    </div>
+                    <div class="workflow-body">
+                        <div class="workflow-title"><span class="visually-hidden">Step @step.Number: </span>@step.Title</div>
+                        <div class="workflow-hint">@step.Hint</div>
+                        <ul class="workflow-links">
+                            @foreach (var link in step.Links)
+                            {
+                                <li>
+                                    <NavLink href="@link.PageAddress" class="nav-link-custom" Match="NavLinkMatch.All" @onclick="CloseMenuOnMobile">@link.Text</NavLink>
                                 </li>
                             }
                         </ul>
                     </div>
                 </li>
             }
+        </ol>
 
-            <li class="nav-item">
-                <NavLink href="AcknowledgementPage" class="nav-link-custom" Match="NavLinkMatch.All" @onclick="CloseMenuOnMobile">
-                    <span class="nav-icon">ℹ️</span>
-                    <span>Acknowledgement</span>
-                </NavLink>
-            </li>
-        </ul>
-    </div>
-    
-    <div class="sidebar-footer d-md-none">
-        <button class="btn btn-outline-light close-menu-btn" @onclick="ToggleMenu">
-            Close Menu
-        </button>
+        <div class="sidebar-footer">
+            <NavLink href="AcknowledgementPage" class="nav-link-custom nav-footer-link" Match="NavLinkMatch.All" @onclick="CloseMenuOnMobile">Acknowledgement</NavLink>
+            <div class="sidebar-footer-actions">
+                <a href="https://github.com/sponsors/alexpung" target="_blank" rel="noopener noreferrer">Sponsor</a>
+                <a href="https://github.com/alexpung/UK-Investment-tax-calculator" target="_blank" rel="noopener noreferrer">Star on GitHub</a>
+            </div>
+        </div>
     </div>
 </nav>
 
 @code {
     public bool SidebarToggle { get; set; } = false;
-    
-    public class MenuItem
-    {
-        public required string Text { get; set; }
-        public required string PageAddress { get; set; }
-        public required string Icon { get; set; }
-    }
 
-    public class MenuCategory
-    {
-        public required string Title { get; set; }
-        public List<MenuItem> Items { get; set; } = new();
-        public bool IsExpanded { get; set; } = false;
-    }
-    
-    public List<MenuCategory> Categories { get; set; } = new();
+    private enum StepState { Upcoming, Current, Done }
+
+    private string _relativePath = "";
 
     protected override void OnInitialized()
     {
-        Categories = new List<MenuCategory>
-        {
-            new MenuCategory { 
-                Title = "Import + PDF",
-                Items = new() {
-                    new MenuItem { Text = "Import/Export", PageAddress = "MainCalculatorPage", Icon = "📁" },
-                    new MenuItem { Text = "PDF Report", PageAddress = "PdfReportPage", Icon = "📄" }
-                }
-            },
-            new MenuCategory { 
-                Title = "Tax summaries",
-                Items = new() {
-                    new MenuItem { Text = "CGT Yearly Summary", PageAddress = "CgtYearlyTaxSummaryPage", Icon = "📊" },
-                    new MenuItem { Text = "Dividend/Income Summary", PageAddress = "DividendYearlyTaxSummaryPage", Icon = "💰" },
-                    new MenuItem { Text = "Disposal Summary", PageAddress = "CalculationViewPage", Icon = "📈" }
-                }
-            },
-            new MenuCategory { 
-                Title = "Raw Data",
-                Items = new() {
-                    new MenuItem { Text = "Trade Matches", PageAddress = "TradeMatchPage", Icon = "🔄" },
-                    new MenuItem { Text = "Imported Trades", PageAddress = "ImportedTradesDataPage", Icon = "🧾" },
-                    new MenuItem { Text = "Dividend/Income Data", PageAddress = "DividendDataPage", Icon = "💵" },
-                    new MenuItem { Text = "Section 104 Data", PageAddress = "Section104DataPage", Icon = "📋" }
-                }
-            },
-            new MenuCategory { 
-                Title = "Configurations and manual inputs",
-                Items = new() {
-                    new MenuItem { Text = "Add Manual Entries", PageAddress = "AddTradePage", Icon = "➕" },
-                    new MenuItem { Text = "Residency Status", PageAddress = "ResidencyStatusPage", Icon = "🌍" },
-                    new MenuItem { Text = "ERI and Equalisation", PageAddress = "AddExcessReportableIncome", Icon = "⚖️" },
-                    new MenuItem { Text = "Corporate Actions and Events", PageAddress = "corporate-actions", Icon = "🏢" },
-                    new MenuItem { Text = "Income taxable dividend selection", PageAddress = "ConvertPage", Icon = "🔀" }
-                }
-            }
-        };
+        _relativePath = Navigation.ToBaseRelativePath(Navigation.Uri);
+        Navigation.LocationChanged += HandleLocationChanged;
+        TaxCalculationService.OnStateChanged += HandleStateChanged;
+        FileImportState.OnChange += HandleStateChanged;
     }
 
-    private void ToggleCategory(MenuCategory category)
+    private StepState GetState(WorkflowStep step)
     {
-        category.IsExpanded = !category.IsExpanded;
+        if (step.Contains(_relativePath)) return StepState.Current;
+        bool done = step.Number switch
+        {
+            1 => TaxEventLists.GetTotalNumberOfEvents() > 0,
+            3 => !TradeCalculationResult.CalculatedTrade.IsEmpty || DividendCalculationResult.DividendSummary.Count > 0,
+            _ => false
+        };
+        return done ? StepState.Done : StepState.Upcoming;
     }
-    
+
+    private static string CssClassFor(StepState state) => state switch
+    {
+        StepState.Current => "is-current",
+        StepState.Done => "is-done",
+        _ => "is-upcoming"
+    };
+
+    private void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        _relativePath = Navigation.ToBaseRelativePath(e.Location);
+        StateHasChanged();
+    }
+
+    private void HandleStateChanged() => _ = InvokeAsync(StateHasChanged);
+
     public void ToggleMenu()
     {
         SidebarToggle = !SidebarToggle;
     }
-    
+
     private void CloseMenuOnMobile()
     {
         if (SidebarToggle)
         {
             SidebarToggle = false;
         }
+    }
+
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= HandleLocationChanged;
+        TaxCalculationService.OnStateChanged -= HandleStateChanged;
+        FileImportState.OnChange -= HandleStateChanged;
     }
 }

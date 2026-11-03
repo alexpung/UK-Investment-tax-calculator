@@ -13,8 +13,13 @@
 
             <!-- Main Content Section -->
             <div class="section">
-                <DividendToIncomeConvert />
+                <DividendToIncomeConvert OnConverted="() => _recalculate.MarkChanged()" />
+                <RecalculateOnLeave @ref="_recalculate" />
             </div>
         </div>
     </div>
 </div>
+
+@code {
+    private RecalculateOnLeave _recalculate = default!;
+}

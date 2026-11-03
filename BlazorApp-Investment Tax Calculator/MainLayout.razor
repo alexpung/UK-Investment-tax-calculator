@@ -10,6 +10,7 @@
 <div class="app-container">
     <NavMenu />
     <main class="main-content-wrapper">
+        <WorkflowProgress />
         @Body
         <ToastComponent />
     </main>
@@ -19,9 +20,9 @@
 {
     <div class="calc-overlay" role="status" aria-live="polite" aria-label="@OverlayTitle">
         <div class="calc-overlay-card">
-            <div class="spinner-border text-info mb-3" role="presentation"></div>
+            <div class="spinner-border mb-3" role="presentation"></div>
             <div class="fw-semibold">@OverlayTitle</div>
-            <div class="small text-light-emphasis">@OverlaySubtitle</div>
+            <div class="calc-overlay-subtitle">@OverlaySubtitle</div>
         </div>
     </div>
 }
@@ -31,7 +32,7 @@
         position: fixed;
         inset: 0;
         z-index: 2000;
-        background-color: rgba(10, 14, 25, 0.55);
+        background-color: rgba(14, 51, 38, 0.45);
         backdrop-filter: blur(2px);
         display: flex;
         align-items: center;
@@ -41,13 +42,21 @@
 
     .calc-overlay-card {
         width: min(460px, 92vw);
-        background: #0f172a;
-        border: 1px solid #334155;
-        border-radius: 12px;
-        padding: 1.25rem;
+        background: var(--wf-forest);
+        border-radius: 18px;
+        padding: 1.5rem;
         text-align: center;
-        color: #e2e8f0;
-        box-shadow: 0 14px 40px rgba(2, 6, 23, 0.45);
+        color: #FFFFFF;
+        box-shadow: 0 18px 48px rgba(14, 51, 38, 0.35);
+    }
+
+    .calc-overlay-card .spinner-border {
+        color: var(--wf-lime);
+    }
+
+    .calc-overlay-subtitle {
+        font-size: 0.875rem;
+        color: var(--wf-on-forest-muted);
     }
 </style>
 

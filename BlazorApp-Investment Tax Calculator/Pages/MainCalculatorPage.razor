@@ -1,81 +1,65 @@
 @page "/MainCalculatorPage"
 
 @using InvestmentTaxCalculator.Components
-@using InvestmentTaxCalculator.Services
-@implements IDisposable
-@inject TaxCalculationService TaxCalculationService
-<div class="container-fluid py-5">
+@using InvestmentTaxCalculator.ViewModel
+
+<PageTitle>Import data · UK Investment Tax Calculator</PageTitle>
+
+<div class="container-fluid py-4">
     <div class="row">
-        <div class="col-lg-10 mx-auto">
+        <div class="col-xl-10 mx-auto">
             <!-- Page Header -->
-            <div class="page-header text-center mb-5">
-                <h1 class="page-title">Import & Export</h1>
-                <p class="page-subtitle">Manage your tax data - import broker statements and export calculation results</p>
+            <div class="page-header">
+                <h1 class="page-title">Import data</h1>
+                <p class="page-subtitle">Import broker statements, or a JSON session previously exported by this app</p>
             </div>
 
             <!-- Import Section -->
-            <div class="section mb-5">
+            <div class="section">
                 <ImportFile/>
             </div>
 
-            <!-- Bond ETF Notice -->
-            <div class="alert alert-warning alert-custom mb-4" role="alert">
-                <h5 class="alert-heading">Bond ETF Notice</h5>
-                <p class="mb-0">
-                    If you have bond ETF holdings, you need to use the <strong>Income taxable dividend selection</strong> page 
-                    to indicate which tickers should be treated as income, before running the calculation.
-                </p>
-            </div>
+            <!-- What to do before calculating -->
+            <div class="card next-steps-card" data-testid="next-steps">
+                <div class="card-header">
+                    <h3 class="mb-0">Before you calculate</h3>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted-custom">
+                        These adjustments use the tickers and funds found in your imported data, so make them after importing.
+                        They are optional — skip any that do not apply to you.
+                    </p>
 
-            <!-- Calculation Section -->
-            <div class="section mb-5">
-                <StartCalculation OnCalculated="HandleCalculated"/>
-            </div>
+                    <div class="alert alert-warning alert-custom" role="alert">
+                        <h5 class="alert-heading">Bond ETF Notice</h5>
+                        <p class="mb-0">
+                            If you have bond ETF holdings, you need to use the <a href="ConvertPage" class="alert-link">Income taxable dividend selection</a> page
+                            to indicate which tickers should be treated as income, before running the calculation.
+                        </p>
+                    </div>
 
-            <!-- Results Section -->
-            <div class="section mb-5">
-                <CalculationSummary ShouldReRender="@calculationVersion"></CalculationSummary>
-            </div>
+                    <ul class="next-steps-list">
+                        <li>
+                            <a href="AddExcessReportableIncome">ERI and Equalisation</a>
+                            <span>Add excess reportable income and equalisation payments for offshore reporting funds you hold.</span>
+                        </li>
+                        <li>
+                            <a href="corporate-actions">Corporate Actions and Events</a>
+                            <span>Enter takeovers, spin-offs and other events that your broker statements do not fully describe.</span>
+                        </li>
+                        <li>
+                            <a href="AddTradePage">Add Manual Entries</a>
+                            <span>Add trades, dividends or interest missing from your statements.</span>
+                        </li>
+                        <li>
+                            <a href="ResidencyStatusPage">Residency Status</a>
+                            <span>Record periods of non-residence or split years.</span>
+                        </li>
+                    </ul>
 
-            <!-- Export Section -->
-            <div class="section">
-                <ExportFile/>
+                    <a href="@WorkflowSteps.CalculatePage" class="btn-workflow-primary">Continue to Calculate <span aria-hidden="true">→</span></a>
+                </div>
             </div>
         </div>
     </div>
 </div>
-
-@code {
-    private int calculationVersion = 0;
-    private bool _wasCalculating;
-
-    protected override void OnInitialized()
-    {
-        _wasCalculating = TaxCalculationService.IsCalculating;
-        TaxCalculationService.OnStateChanged += HandleTaxCalculationStateChanged;
-    }
-
-    private Task HandleCalculated()
-    {
-        calculationVersion++;
-        StateHasChanged();
-        return Task.CompletedTask;
-    }
-
-    private void HandleTaxCalculationStateChanged()
-    {
-        bool isCalculating = TaxCalculationService.IsCalculating;
-        if (_wasCalculating && !isCalculating)
-        {
-            calculationVersion++;
-        }
-
-        _wasCalculating = isCalculating;
-        _ = InvokeAsync(StateHasChanged);
-    }
-
-    public void Dispose()
-    {
-        TaxCalculationService.OnStateChanged -= HandleTaxCalculationStateChanged;
-    }
-}

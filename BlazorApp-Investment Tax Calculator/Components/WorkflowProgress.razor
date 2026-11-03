@@ -1,0 +1,69 @@
+@using InvestmentTaxCalculator.ViewModel
+@using Microsoft.AspNetCore.Components.Routing
+@implements IDisposable
+@inject NavigationManager Navigation
+
+<div class="workflow-progress" data-testid="workflow-progress">
+    <div class="workflow-progress-location">
+        @if (_step is not null)
+        {
+            <span class="workflow-progress-step">Step @_step.Number of @WorkflowSteps.All.Count · @_step.Title</span>
+            @if (_link is not null && _step.Links.Count > 1)
+            {
+                <span class="workflow-progress-page" aria-hidden="true">›</span>
+                <span class="workflow-progress-page">@_link.Text</span>
+            }
+        }
+        else
+        {
+            <span class="workflow-progress-step">Start here</span>
+        }
+    </div>
+
+    @if (_next is not null)
+    {
+        <div class="workflow-progress-actions">
+            @if (_next.Number == 2)
+            {
+                <a class="workflow-next-secondary" href="@_next.Links[0].PageAddress">@_next.Title <span class="workflow-optional">(optional)</span></a>
+                var calculate = WorkflowSteps.NextStep(_next)!;
+                <a class="workflow-next" href="@calculate.Links[0].PageAddress">Next: @calculate.Title <span aria-hidden="true">→</span></a>
+            }
+            else
+            {
+                <a class="workflow-next" href="@_next.Links[0].PageAddress">@(_step is null ? "Start" : "Next"): @_next.Links[0].Text <span aria-hidden="true">→</span></a>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private WorkflowStep? _step;
+    private WorkflowLink? _link;
+    private WorkflowStep? _next;
+
+    protected override void OnInitialized()
+    {
+        Update(Navigation.Uri);
+        Navigation.LocationChanged += HandleLocationChanged;
+    }
+
+    private void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        Update(e.Location);
+        StateHasChanged();
+    }
+
+    private void Update(string uri)
+    {
+        string relativePath = Navigation.ToBaseRelativePath(uri);
+        _step = WorkflowSteps.FindStep(relativePath);
+        _link = WorkflowSteps.FindLink(relativePath);
+        _next = WorkflowSteps.NextStep(_step);
+    }
+
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= HandleLocationChanged;
+    }
+}

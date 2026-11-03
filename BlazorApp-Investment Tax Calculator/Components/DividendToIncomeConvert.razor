@@ -11,7 +11,7 @@
         <p class="card-text">Select tickers that should be taxed as income. The resulting income type will be "ETF dividend income".</p>
         <p class="card-text">Where an offshore fund holds more than 60% of assets in interest-bearing (or economically similar) 
             form, any distribution or excess of reported income is treated as a payment of yearly interest</p>
-        <p class="card-text"> You will need to run calculation again after conversion</p>
+        <p class="card-text">If you have already run the calculation, it runs again automatically when you leave this page.</p>
         <div class="mb-3" id="container">
             <div class="d-flex flex-wrap gap-3">
                 @foreach (var dividend in AvailableTickers)
@@ -83,6 +83,9 @@
 </style>
 
 @code {
+    /// <summary>Raised after tickers have been converted to income.</summary>
+    [Parameter] public EventCallback OnConverted { get; set; }
+
     private readonly HashSet<string> _selected = new(StringComparer.OrdinalIgnoreCase);
 
     private IEnumerable<Dividend> AvailableTickers => _dividendToIncomeViewModel.SelectableTickers;
@@ -102,6 +105,7 @@
             _dividendToIncomeViewModel.ConvertDividendsToIncome(selectedTickers);
             _toastService.ShowInformation($"Converted {selectedTickers.Count} ticker(s).");
             _selected.Clear();
+            await OnConverted.InvokeAsync();
 
             // notify UI and other components (they bind to shared TaxEventLists)
             await InvokeAsync(StateHasChanged);

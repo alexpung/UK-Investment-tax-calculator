@@ -1,0 +1,43 @@
+@using InvestmentTaxCalculator.Model
+@using InvestmentTaxCalculator.Services
+@implements IDisposable
+@inject NavigationManager NavigationManager
+@inject TaxCalculationService TaxCalculationService
+@inject TradeCalculationResult TradeCalculationResult
+@inject DividendCalculationResult DividendCalculationResult
+
+@*
+    Re-runs the tax calculation when the user navigates away from a page whose inputs changed, so the
+    results pages never show figures calculated before the change. Pages call MarkChanged() after a change.
+    Nothing is recalculated if no calculation has been run yet: the user still has to start the first one.
+*@
+
+@code {
+    private IDisposable? _registration;
+    private bool _hasChanges;
+
+    public void MarkChanged() => _hasChanges = true;
+
+    protected override void OnInitialized()
+    {
+        _registration = NavigationManager.RegisterLocationChangingHandler(OnLocationChanging);
+    }
+
+    private bool HasCalculationResults =>
+        !TradeCalculationResult.CalculatedTrade.IsEmpty || DividendCalculationResult.DividendSummary.Count > 0;
+
+    private async ValueTask OnLocationChanging(LocationChangingContext context)
+    {
+        if (!_hasChanges) return;
+        _hasChanges = false;
+        if (HasCalculationResults)
+        {
+            await TaxCalculationService.CalculateAsync(CalculationTrigger.NavigationRefresh);
+        }
+    }
+
+    public void Dispose()
+    {
+        _registration?.Dispose();
+    }
+}

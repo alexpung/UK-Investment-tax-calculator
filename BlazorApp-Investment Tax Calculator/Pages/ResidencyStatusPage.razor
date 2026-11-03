@@ -82,8 +82,13 @@
 
             <!-- Main Component Section -->
             <div class="section">
-                <ResidencyStatusInput />
+                <ResidencyStatusInput OnChanged="() => _recalculate.MarkChanged()" />
+                <RecalculateOnLeave @ref="_recalculate" />
             </div>
         </div>
     </div>
 </div>
+
+@code {
+    private RecalculateOnLeave _recalculate = default!;
+}

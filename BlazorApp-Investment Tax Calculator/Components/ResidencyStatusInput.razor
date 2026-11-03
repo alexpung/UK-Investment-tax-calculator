@@ -116,6 +116,9 @@
 </style>
 
 @code {
+    /// <summary>Raised after a residency range has been recorded.</summary>
+    [Parameter] public EventCallback OnChanged { get; set; }
+
     // bound DateTime values for the date pickers; convert to DateOnly when calling model
     private DateTime StartDateTime { get; set; } = DateTime.Today;
     private DateTime EndDateTime { get; set; } = DateTime.Today;
@@ -128,7 +131,7 @@
     // Residency enum options for dropdown
     private ResidencyEnum[] ResidencyOptions => (ResidencyEnum[])Enum.GetValues(typeof(ResidencyEnum));
 
-    private void ApplyRange()
+    private async Task ApplyRange()
     {
         var start = StartUnbounded ? DateOnly.MinValue : DateOnly.FromDateTime(StartDateTime.Date);
         var end = EndUnbounded ? DateOnly.MaxValue : DateOnly.FromDateTime(EndDateTime.Date);
@@ -142,6 +145,7 @@
         ResidencyStatusRecord.SetResidencyStatus(start, end, SelectedStatus);
 
         StateHasChanged();
+        await OnChanged.InvokeAsync();
     }
 
     private void ResetInputs()
