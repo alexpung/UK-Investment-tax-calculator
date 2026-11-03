@@ -53,7 +53,8 @@ public class EriGapReproTests : PlaywrightTestBase
         await FillDateByPlaceholder("Pick period end date", "01/06/2025");
         await Page.ScreenshotAsync(new() { Path = Path.Combine(TestContext.CurrentContext.WorkDirectory, "eri-page.png"), FullPage = true });
         await SelectTickerDropdown("Test fund");
-        await FillNumericByLabel("Income Per Share (Local Currency)", "0.2");
+        // The label shows the selected currency, GBP by default
+        await FillNumericByLabel("Income per share (GBP)", "0.2");
         await ClickButtonByText("Add ERI Entry");
         await WaitForToast("Successfully added ERI");
 

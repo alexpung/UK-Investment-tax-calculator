@@ -633,6 +633,106 @@ h1, h2, h3, h4, h5, h6 {
     font-variant-numeric: tabular-nums;
 }
 
+/*
+   Form grid for entry forms (ERI, equalisation): as many columns as the card has room for, and every
+   field's input sits on the row's bottom edge, so a label that wraps never pushes its input out of line.
+*/
+.card-body:has(> .form-grid) {
+    container-type: inline-size;
+}
+
+/* 1, 2 or 4 columns from the card's own width, so groups of four fields never leave one on its own */
+.form-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+    align-items: end;
+}
+
+@container (min-width: 26rem) {
+    .form-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@container (min-width: 52rem) {
+    .form-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+.form-grid + .form-grid-follow {
+    margin-top: 1rem;
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-width: 0;
+}
+
+.form-field > .form-label {
+    margin-bottom: 0.35rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.form-field-wide {
+    grid-column: span 2;
+}
+
+@container (max-width: 25.99rem) {
+    .form-field-wide {
+        grid-column: auto;
+    }
+}
+
+.form-section-title {
+    margin: 1.25rem 0 0.6rem;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--wf-accent);
+}
+
+.form-section-title:first-child {
+    margin-top: 0;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--wf-border-soft);
+}
+
+/* Read-only values match the height of the Radzen inputs beside them */
+.form-control-readonly {
+    display: flex;
+    align-items: center;
+    min-height: var(--rz-input-height, 2.5rem);
+    padding-block: 0;
+}
+
+.form-control-readonly-text {
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.form-label-note {
+    margin-left: 0.35rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--wf-muted);
+    white-space: nowrap;
+}
+
 .form-text-accent {
     color: var(--wf-accent);
 }
@@ -650,7 +750,6 @@ h1, h2, h3, h4, h5, h6 {
     border: 0;
     border-radius: var(--wf-radius-lg);
 }
-
 
 /* ===================================
    Report grids: table or cards, chosen per grid by js/responsive-grids.js
