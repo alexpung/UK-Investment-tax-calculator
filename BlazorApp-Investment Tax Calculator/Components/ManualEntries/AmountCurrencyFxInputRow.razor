@@ -5,7 +5,7 @@
     <div class="row g-2 manual-money-row">
         <div class="col-12 col-md-4 col-lg-4">
             <label class="form-label d-block">@AmountLabel</label>
-            <RadzenNumeric TValue="decimal" Value="@Amount" Change="@OnAmountChanged" class="w-100" />
+            <RadzenNumeric TValue="decimal" Value="@Amount" Format="@InputFormats.Money" Change="@OnAmountChanged" class="w-100" />
         </div>
 
         <div class="col-12 col-md-4 col-lg-4">
