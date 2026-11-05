@@ -39,11 +39,28 @@ public record CountryCode(string ThreeDigitCode, string CountryName)
         return UnknownRegion;
     }
 
+    /// <summary>
+    /// Regions most commonly encountered by UK investors (domicile of listed shares and funds),
+    /// listed at the top of region selection lists for convenience.
+    /// </summary>
+    public static readonly IReadOnlyList<string> CommonRegionCodes =
+    [
+        "GBR", "USA", "IRL", "LUX", "DEU", "FRA", "NLD", "CHE", "JPN", "CAN", "HKG", "AUS"
+    ];
+
+    /// <summary>
+    /// Returns all regions: Unknown Region first, then the commonly used regions in <see cref="CommonRegionCodes"/> order,
+    /// then the remaining regions in alphabetical order.
+    /// </summary>
     public static IReadOnlyList<CountryCode> GetAllRegions()
     {
-        return [UnknownRegion, .. _countryCodes
-            .OrderBy(kv => kv.Value)
-            .Select(kv => new CountryCode(kv.Key, kv.Value))];
+        HashSet<string> commonCodes = [.. CommonRegionCodes];
+        return [UnknownRegion,
+            .. CommonRegionCodes.Select(code => new CountryCode(code, _countryCodes[code])),
+            .. _countryCodes
+                .Where(kv => !commonCodes.Contains(kv.Key))
+                .OrderBy(kv => kv.Value)
+                .Select(kv => new CountryCode(kv.Key, kv.Value))];
     }
 
     private static readonly Dictionary<string, string> _countryCodes = new()
