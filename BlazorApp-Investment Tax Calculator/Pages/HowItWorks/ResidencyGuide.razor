@@ -1,0 +1,63 @@
+@page "/HowItWorks/residency"
+@using InvestmentTaxCalculator.Components
+
+<HowItWorksGuideLayout PageAddress="HowItWorks/residency">
+    <ChildContent>
+        <div class="section">
+            <p>
+                You set your residency periods on the <a href="ResidencyStatusPage" class="link-styled">Residency Status</a>
+                page. Any date not covered by a period counts as UK resident. The app does not work out your residency
+                status for you, so you must decide whether a period abroad is non-resident or temporary non-resident.
+            </p>
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr><th>Status</th><th>Capital gains</th><th>Dividends and interest</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>UK Resident</td>
+                            <td>Taxable</td>
+                            <td>Taxable</td>
+                        </tr>
+                        <tr>
+                            <td>UK Non-Resident</td>
+                            <td>Not taxable. Matches with a disposal in this period are marked non-taxable and left out of the yearly totals.</td>
+                            <td>Left out</td>
+                        </tr>
+                        <tr>
+                            <td>UK Temporary Non-Residence</td>
+                            <td>Taxable, in the tax year you return to the UK (the day after the period ends), unless the shares were both bought and sold in the same temporary non-resident period</td>
+                            <td>Left out</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>Use the non-resident part of a split year as a non-resident or temporary non-resident period.</p>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Effect on matching</h2>
+            <ul>
+                <li>
+                    The <a href="HowItWorks/30-day-rule" class="link-styled">30-day rule</a> only uses shares bought while
+                    you are UK resident. Shares bought on or after 22 March 2006 during a non-resident or temporary
+                    non-resident period are not matched under it, whatever your status when you sell.
+                </li>
+                <li>
+                    A disposal during temporary non-residence is matched in the usual order. Shares matched from the Section
+                    104 pool are first taken from those bought in the same temporary non-resident period, and that part is not
+                    taxable. The rest is taxable on your return.
+                </li>
+                <li>
+                    For <a href="HowItWorks/options" class="link-styled">written options</a>, the tax year of writing and of
+                    closing is also taken from this taxable date.
+                </li>
+            </ul>
+        </div>
+    </ChildContent>
+    <FurtherReading>
+        <li><a href="https://www.gov.uk/government/publications/temporary-non-residents-and-capital-gains-tax-hs278-self-assessment-helpsheet/hs278-temporary-non-residents-and-capital-gains-tax-2025" class="link-styled" target="_blank" rel="noopener noreferrer">HMRC HS278: temporary non-residents and Capital Gains Tax</a></li>
+        <li><a href="https://www.gov.uk/hmrc-internal-manuals/capital-gains-manual/cg51560" class="link-styled" target="_blank" rel="noopener noreferrer">HMRC CG51560</a>: the 30-day rule and non-residents</li>
+    </FurtherReading>
+</HowItWorksGuideLayout>

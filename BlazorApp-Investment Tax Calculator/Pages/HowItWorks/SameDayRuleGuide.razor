@@ -1,0 +1,90 @@
+@page "/HowItWorks/same-day-rule"
+@using InvestmentTaxCalculator.Components
+
+<HowItWorksGuideLayout PageAddress="HowItWorks/same-day-rule">
+    <ChildContent>
+        <div class="section">
+            <p>
+                Under TCGA 1992 s105(1), all shares of the same class bought on one day count as a single purchase, and all
+                shares sold on that day count as a single sale. The same-day match comes before every other rule. The app
+                does this before any matching takes place:
+            </p>
+            <ul>
+                <li>
+                    <strong>Trades are combined per day and per side.</strong> Every buy of a share on one calendar date
+                    becomes one combined acquisition, and every sell becomes one combined disposal. Their quantities add up,
+                    and so do their costs and proceeds. Fees are included (see
+                    <a href="HowItWorks/net-proceeds" class="link-styled">Net proceeds and fees</a>).
+                </li>
+                <li>
+                    <strong>Time of day does not matter.</strong> A buy made after a sell on the same day is still matched
+                    against it. The date used is the trade date in your broker statement. The app does not convert
+                    between time zones.
+                </li>
+                <li>
+                    <strong>Matching is by quantity.</strong> The combined disposal is matched against the combined
+                    acquisition up to whichever quantity is smaller.
+                </li>
+                <li>
+                    <strong>Leftover shares carry on.</strong> If more was sold than bought, the rest of the sale goes to the
+                    <a href="HowItWorks/30-day-rule" class="link-styled">30-day rule</a> and then the
+                    <a href="HowItWorks/section-104-pool" class="link-styled">Section 104 pool</a>. If more was bought than
+                    sold, the extra shares can still be matched with a disposal in the previous 30 days. Anything left after
+                    that goes into the pool.
+                </li>
+                <li>
+                    <strong>One combined trade, one disposal.</strong> On the Disposal Summary, a day's sells appear as a
+                    single disposal. The individual broker trades are on the Imported Trades page. The exported
+                    calculation file lists them under each disposal.
+                </li>
+            </ul>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <h2 class="h5 card-title">Worked example: two sells and a buy on the same day</h2>
+                <p>Before 10 June 2024 you hold 100 shares in the Section 104 pool, with a total cost of £1,000. On 10 June 2024:</p>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr><th>Time</th><th>Trade</th><th class="text-end">Gross</th><th class="text-end">Fee</th><th class="text-end">Used by the app</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>09:00</td><td>Sell 40</td><td class="text-end">£600</td><td class="text-end">£5</td><td class="text-end">£595 net proceeds</td></tr>
+                            <tr><td>11:00</td><td>Buy 50</td><td class="text-end">£700</td><td class="text-end">£10</td><td class="text-end">£710 cost</td></tr>
+                            <tr><td>15:00</td><td>Sell 40</td><td class="text-end">£600</td><td class="text-end">£5</td><td class="text-end">£595 net proceeds</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>
+                    The app combines the two sells into <strong>one disposal of 80 shares for £1,190</strong> net. The buy
+                    becomes one acquisition of 50 shares costing £710. The buy came after the first sell, but that makes no
+                    difference.
+                </p>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr><th>Match</th><th class="text-end">Shares</th><th class="text-end">Proceeds</th><th class="text-end">Allowable cost</th><th class="text-end">Gain</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Same day</td><td class="text-end">50</td><td class="text-end">£1,190 × 50/80 = £743.75</td><td class="text-end">£710.00</td><td class="text-end">£33.75</td></tr>
+                            <tr><td>Section 104</td><td class="text-end">30</td><td class="text-end">£1,190 × 30/80 = £446.25</td><td class="text-end">£1,000 × 30/100 = £300.00</td><td class="text-end">£146.25</td></tr>
+                            <tr class="fw-bold"><td>Total</td><td class="text-end">80</td><td class="text-end">£1,190.00</td><td class="text-end">£1,010.00</td><td class="text-end">£180.00</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="mb-0">
+                    Afterwards the pool holds 70 shares costing £700. The same-day purchase never enters the pool, because
+                    the same-day match uses all of it. How the £10 of selling fees is split between the two matches is shown in
+                    <a href="HowItWorks/net-proceeds" class="link-styled">Net proceeds and fees</a>.
+                </p>
+            </div>
+        </div>
+    </ChildContent>
+    <FurtherReading>
+        <li><a href="https://cgtvisualiser.co.uk/guides/same-day-rule/" class="link-styled" target="_blank" rel="noopener noreferrer">CGT Visualiser: same-day rule</a> (independent site)</li>
+        <li><a href="HowItWorks/share-identities" class="link-styled">Share identities</a>: which trades count as the same share</li>
+        <li><a href="https://www.gov.uk/hmrc-internal-manuals/capital-gains-manual/cg51560" class="link-styled" target="_blank" rel="noopener noreferrer">HMRC CG51560</a>: the same-day and 30-day rules</li>
+        <li><a href="https://www.legislation.gov.uk/ukpga/1992/12/section/105" class="link-styled" target="_blank" rel="noopener noreferrer">TCGA 1992 s105</a></li>
+    </FurtherReading>
+</HowItWorksGuideLayout>

@@ -1,0 +1,52 @@
+@page "/HowItWorks/short-sales"
+@using InvestmentTaxCalculator.Components
+
+<HowItWorksGuideLayout PageAddress="HowItWorks/short-sales">
+    <ChildContent>
+        <div class="section">
+            <p>
+                Sometimes a sale is still not fully matched after the <a href="HowItWorks/same-day-rule" class="link-styled">same-day rule</a>,
+                the <a href="HowItWorks/30-day-rule" class="link-styled">30-day rule</a> and the
+                <a href="HowItWorks/section-104-pool" class="link-styled">Section 104 pool</a>, because you sold more than you
+                held. The rest of the sale waits for later purchases:
+            </p>
+            <ul>
+                <li>
+                    It is matched with later acquisitions, earliest first (TCGA 1992 s105(2)). A purchase within 30 days is
+                    matched by the 30-day rule first, so this only applies to purchases after that window.
+                </li>
+                <li>These matches are labelled "Cover short selling" on the <a href="TradeMatchPage" class="link-styled">Trade Matches</a> page.</li>
+                <li>
+                    Until a later purchase is imported, the unmatched shares are left out of the gain, and the
+                    <a href="CalculationViewPage" class="link-styled">Disposal Summary</a> shows them as unmatched shares.
+                    The gain counts in the tax year of the sale.
+                </li>
+            </ul>
+            <p>
+                Options and futures follow the same matching steps, with some extra rules described in the
+                <a href="HowItWorks/options" class="link-styled">Options</a> and
+                <a href="HowItWorks/futures" class="link-styled">Futures</a> guides. For futures, selling to open a position
+                is treated as acquiring a short contract, so it is not a short sale in this sense.
+            </p>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <h2 class="h5 card-title">Worked example</h2>
+                <p>
+                    With no shares held, you sell 100 shares on 5 May 2024 for £1,000 less a £5 fee (net £995). On
+                    6 December 2024 you buy 100 shares for £500 plus a £5 fee (£505).
+                </p>
+                <p class="mb-0">
+                    The December purchase is more than 30 days after the sale, so it is matched as cover for the short sale:
+                    £995 − £505 = a <strong>gain of £490</strong>, in the 2024/25 tax year. Nothing is left in the pool.
+                </p>
+            </div>
+        </div>
+    </ChildContent>
+    <FurtherReading>
+        <li><a href="https://www.gov.uk/hmrc-internal-manuals/capital-gains-manual/cg51555" class="link-styled" target="_blank" rel="noopener noreferrer">HMRC CG51555</a>: the share identification order</li>
+        <li><a href="HowItWorks/30-day-rule" class="link-styled">30-day rule</a>: purchases within 30 days of the sale</li>
+        <li><a href="https://www.legislation.gov.uk/ukpga/1992/12/section/105" class="link-styled" target="_blank" rel="noopener noreferrer">TCGA 1992 s105</a></li>
+    </FurtherReading>
+</HowItWorksGuideLayout>

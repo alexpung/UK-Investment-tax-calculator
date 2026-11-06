@@ -1,0 +1,104 @@
+@page "/HowItWorks"
+@using InvestmentTaxCalculator.ViewModel
+
+<PageTitle>How the calculator works</PageTitle>
+
+<div class="container-fluid py-4 how-it-works">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <div class="page-header">
+                <h1 class="page-title">How the calculator works</h1>
+                <p class="page-subtitle">How this app applies UK tax rules to your trades, income and corporate actions, with worked examples</p>
+            </div>
+
+            <div class="section">
+                <p>
+                    The general rules are explained well elsewhere. These guides cover how <strong>this app</strong> applies them:
+                    which trades it groups together, which figures it uses, how it treats each kind of trade and income, and
+                    what it does not handle. You can then check its results against your own working or another calculator.
+                    The guides refer to the legislation and HMRC manuals where the app relies on them.
+                </p>
+            </div>
+
+            <div class="section">
+                <h2 class="section-title" id="matching-order">The order trades are matched in</h2>
+                <p>
+                    Each disposal is matched against acquisitions of the same share in this order. Each step only uses the
+                    shares that earlier steps left unmatched:
+                </p>
+                <ol>
+                    <li><strong><a href="HowItWorks/same-day-rule" class="link-styled">Same day</a>:</strong> shares bought on the same day as the disposal (TCGA 1992 s105(1)).</li>
+                    <li><strong><a href="HowItWorks/30-day-rule" class="link-styled">Next 30 days</a>:</strong> shares bought in the 30 days after the disposal, earliest first (s106A(5)).</li>
+                    <li><strong><a href="HowItWorks/section-104-pool" class="link-styled">Section 104 pool</a>:</strong> shares held before the disposal, at their average cost (s104).</li>
+                    <li><strong><a href="HowItWorks/short-sales" class="link-styled">Later acquisitions</a>:</strong> if all of that is not enough (a short sale), shares bought later, earliest first (s105(2)).</li>
+                </ol>
+                <p>
+                    The app runs each step for <em>every</em> share before it moves on to the next step. For example, all
+                    same-day matches are made before any 30-day match. A purchase that a same-day match uses up is no longer
+                    available to an earlier disposal's 30-day match. In every step, fees are included in the figures as
+                    described in <a href="HowItWorks/net-proceeds" class="link-styled">Net proceeds and fees</a>. Options and
+                    futures use the same steps, and "the same share" is decided as described in
+                    <a href="HowItWorks/share-identities" class="link-styled">Share identities</a>.
+                </p>
+            </div>
+
+            @foreach (string section in HowItWorksGuides.Sections)
+            {
+                <div class="section">
+                    <h2 class="section-title">@section</h2>
+                    <div class="row g-4">
+                        @foreach (var guide in HowItWorksGuides.InSection(section))
+                        {
+                            <div class="col-md-6">
+                                <div class="card feature-card">
+                                    <div class="card-body">
+                                        <h3 class="h5 card-title"><a href="@guide.PageAddress" class="link-styled">@guide.Title</a></h3>
+                                        <p class="card-text mb-0">@guide.Summary</p>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            <div class="section">
+                <h2 class="section-title" id="check-workings">Checking the workings in the app</h2>
+                <p>After you run a calculation, these pages show each step:</p>
+                <ul>
+                    <li><a href="TradeMatchPage" class="link-styled">Trade Matches</a> lists every match with its type (same day, bed and breakfast, Section 104, cover short selling), its quantities, proceeds and allowable cost.</li>
+                    <li><a href="CalculationViewPage" class="link-styled">Disposal Summary</a> shows each combined trade, how many of its shares each rule matched, and its proceeds, allowable cost and gain.</li>
+                    <li><a href="ImportedTradesDataPage" class="link-styled">Imported Trades</a> shows each broker trade with its gross and net amount.</li>
+                    <li><a href="Section104DataPage" class="link-styled">Section 104 Data</a> shows the pool's history for each share.</li>
+                    <li><a href="DividendDataPage" class="link-styled">Dividend/Income Data</a> lists every dividend, withholding tax and interest entry with its country.</li>
+                    <li><a href="CgtYearlyTaxSummaryPage" class="link-styled">CGT Yearly Summary</a> and <a href="DividendYearlyTaxSummaryPage" class="link-styled">Dividend/Income Summary</a> give the totals for your tax return.</li>
+                </ul>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h2 class="h5 card-title">Further reading</h2>
+                    <ul class="mb-0">
+                        <li>
+                            <a href="https://cgtvisualiser.co.uk/guides/" class="link-styled" target="_blank" rel="noopener noreferrer">CGT Visualiser guides</a>
+                            are plain-English explanations of the general rules. It is an independent site that is not connected
+                            with this app.
+                        </li>
+                        <li>
+                            HMRC's own guidance on the matching order is
+                            <a href="https://www.gov.uk/hmrc-internal-manuals/capital-gains-manual/cg51555" class="link-styled" target="_blank" rel="noopener noreferrer">CG51555</a>.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="alert alert-warning alert-custom" role="alert">
+                <strong>Not tax advice.</strong> These guides are design notes describing how the software calculates its
+                figures, provided for information only. They are not tax, legal or financial advice, and their accuracy,
+                completeness or applicability is not guaranteed. The app does not handle every exception in tax law. You are
+                responsible for checking what you report, and should consult a qualified professional about your own tax
+                position.
+            </div>
+        </div>
+    </div>
+</div>

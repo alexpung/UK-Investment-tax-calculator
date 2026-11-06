@@ -1,0 +1,67 @@
+@page "/HowItWorks/30-day-rule"
+@using InvestmentTaxCalculator.Components
+
+<HowItWorksGuideLayout PageAddress="HowItWorks/30-day-rule">
+    <ChildContent>
+        <div class="section">
+            <p>
+                After the <a href="HowItWorks/same-day-rule" class="link-styled">same-day rule</a>, any shares still unmatched
+                in a sale are matched with shares of the same company bought in the next 30 days, before the
+                <a href="HowItWorks/section-104-pool" class="link-styled">Section 104 pool</a> is used. This is the "bed and
+                breakfast" rule. In the app:
+            </p>
+            <ul>
+                <li>
+                    <strong>Window:</strong> acquisitions from 1 to 30 days after the disposal date, counted in calendar
+                    days. Acquisitions on the disposal day itself are handled by the same-day rule first.
+                </li>
+                <li>
+                    <strong>Order:</strong> the earliest acquisition in the window is matched first (TCGA 1992 s106A(5)(b)).
+                    If several disposals could use the same later purchase, the earlier disposal goes first (s106A(4)).
+                </li>
+                <li>
+                    <strong>Non-residents:</strong> an acquisition made on or after 22 March 2006 while you are not UK
+                    resident is not matched under this rule (s106A(5A), see
+                    <a href="https://www.gov.uk/hmrc-internal-manuals/capital-gains-manual/cg51560" class="link-styled" target="_blank" rel="noopener noreferrer">CG51560</a>).
+                    The app uses the periods you set on the <a href="ResidencyStatusPage" class="link-styled">Residency Status</a>
+                    page. The rule also covers acquisitions made while you are "Treaty non-resident", but the app has no
+                    separate setting for that.
+                </li>
+                <li>
+                    <strong>Corporate actions in the window:</strong> if a stock split or similar event falls between the
+                    disposal and the repurchase, the matched quantity is adjusted for it.
+                </li>
+                <li>
+                    <strong>Only what you import is seen:</strong> purchases inside an ISA or pension should not be in your
+                    imported files, so they are never matched. Do include any trades in the 30 days after the tax year ends,
+                    because they can change that year's result.
+                </li>
+            </ul>
+            <p>
+                Matches made under this rule are labelled "Bed and breakfast" on the
+                <a href="TradeMatchPage" class="link-styled">Trade Matches</a> page.
+            </p>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <h2 class="h5 card-title">Worked example</h2>
+                <p>
+                    You bought 1,000 shares in May 2024 for £4,990 plus a £10 fee, so the pool holds 1,000 shares costing
+                    £5,000. On 3 March 2025 you sell all 1,000 for £4,000 less a £10 fee (net £3,990). On 20 March 2025
+                    you buy 1,000 back for £4,100 plus a £10 fee (£4,110).
+                </p>
+                <p class="mb-0">
+                    The sale is matched with the March repurchase, not with the pool: £3,990 − £4,110 = a
+                    <strong>loss of £120</strong>. The pool keeps the original 1,000 shares at £5,000.
+                </p>
+            </div>
+        </div>
+    </ChildContent>
+    <FurtherReading>
+        <li><a href="https://cgtvisualiser.co.uk/guides/30-day-rule/" class="link-styled" target="_blank" rel="noopener noreferrer">CGT Visualiser: 30-day rule</a> (independent site)</li>
+        <li><a href="HowItWorks/residency" class="link-styled">Residency status</a>: how non-resident periods change matching</li>
+        <li><a href="https://www.gov.uk/hmrc-internal-manuals/capital-gains-manual/cg51560" class="link-styled" target="_blank" rel="noopener noreferrer">HMRC CG51560</a>: the same-day and 30-day rules</li>
+        <li><a href="https://www.legislation.gov.uk/ukpga/1992/12/section/106A" class="link-styled" target="_blank" rel="noopener noreferrer">TCGA 1992 s106A</a></li>
+    </FurtherReading>
+</HowItWorksGuideLayout>

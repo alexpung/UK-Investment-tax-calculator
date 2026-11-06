@@ -1,0 +1,50 @@
+@page "/HowItWorks/foreign-currency"
+@using InvestmentTaxCalculator.Components
+
+<HowItWorksGuideLayout PageAddress="HowItWorks/foreign-currency">
+    <ChildContent>
+        <div class="section">
+            <p>
+                Currency other than pounds is an asset for Capital Gains Tax. When you buy US shares, you first acquire
+                dollars and then dispose of them. If the pound value of the dollars changed while you held them, there is a
+                gain or loss on the currency as well as on the shares.
+            </p>
+            <h2 class="section-title">How the app finds currency trades</h2>
+            <ul>
+                <li>
+                    Currency trades come from <strong>Interactive Brokers</strong> statements only. Each movement of a
+                    non-sterling currency in the statement of funds becomes a trade in that currency. Money coming in is an
+                    acquisition and money going out is a disposal. Transfers between IBKR accounts ("System Transfer") are
+                    left out.
+                </li>
+                <li>
+                    Each movement is valued in pounds at the IBKR conversion rate for that day.
+                </li>
+                <li>
+                    You can also add currency trades by hand on the <a href="AddTradePage" class="link-styled">Add Manual
+                    Entries</a> page, or leave currency out by unticking "Load FX" on the
+                    <a href="MainCalculatorPage" class="link-styled">Import data</a> page.
+                </li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">How they are calculated</h2>
+            <ul>
+                <li>
+                    Each currency is treated like a share: it has its own Section 104 pool, and the same-day, 30-day and
+                    pool rules apply to it.
+                </li>
+                <li>Currency gains and losses are reported under "Other property, assets and gains".</li>
+            </ul>
+            <div class="alert alert-info alert-custom" role="note">
+                Whether currency held with a broker is chargeable can depend on your circumstances. Check before you
+                report these gains, and leave currency out of the import if it does not apply to you.
+            </div>
+        </div>
+    </ChildContent>
+    <FurtherReading>
+        <li><a href="https://cgtvisualiser.co.uk/guides/foreign-currency-shares/" class="link-styled" target="_blank" rel="noopener noreferrer">CGT Visualiser: foreign currency shares</a> (independent site)</li>
+        <li><a href="HowItWorks/net-proceeds" class="link-styled">Net proceeds and fees</a>: how share trades in other currencies are converted</li>
+    </FurtherReading>
+</HowItWorksGuideLayout>

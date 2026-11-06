@@ -1,0 +1,100 @@
+@page "/HowItWorks/net-proceeds"
+@using InvestmentTaxCalculator.Components
+
+<HowItWorksGuideLayout PageAddress="HowItWorks/net-proceeds">
+    <ChildContent>
+        <div class="section">
+            <h2 class="section-title">Fees go on the trade they belong to</h2>
+            <p>
+                Dealing costs are allowable, whether they are paid on a purchase or on a sale. The app puts them on the side
+                of the trade they belong to, so that every trade carries a single net figure:
+            </p>
+            <ul>
+                <li><strong>Acquisitions:</strong> cost = price paid <strong>+</strong> commission, stamp duty and other fees.</li>
+                <li><strong>Disposals:</strong> proceeds = amount received <strong>−</strong> commission and other fees, i.e. <strong>net proceeds</strong>.</li>
+            </ul>
+            <p>
+                Where the fees come from depends on the broker. For Interactive Brokers statements, commission and taxes
+                are read separately and converted to pounds at the exchange rate given in the statement. For FreeTrade,
+                Trading 212 and Interactive Investor exports, the app uses the broker's total amount in pounds, which already
+                includes the dealing charges. Some trades have later adjustments, such as an option premium that is added
+                to the shares it was exercised into. Those adjustments are applied to the same net figure.
+            </p>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Fees are split by quantity</h2>
+            <p>
+                When a trade is split across matches, its fees are split too, in proportion to quantity. Matches use the
+                trade's net figure × (shares matched ÷ total shares).
+            </p>
+            <p>
+                In the <a href="HowItWorks/same-day-rule" class="link-styled">same-day example</a>, two sells on one day
+                carry £5 of fees each. They are combined into one disposal of 80 shares with £10 of fees. 50 shares are
+                matched same day and 30 with the Section 104 pool, so the fees are split:
+            </p>
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr><th>Match</th><th class="text-end">Shares</th><th class="text-end">Share of selling fees</th><th class="text-end">Net proceeds</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Same day</td><td class="text-end">50</td><td class="text-end">£10 × 50/80 = £6.25</td><td class="text-end">£750 − £6.25 = £743.75</td></tr>
+                        <tr><td>Section 104</td><td class="text-end">30</td><td class="text-end">£10 × 30/80 = £3.75</td><td class="text-end">£450 − £3.75 = £446.25</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>
+                Because a day's trades are combined first, fees from all of that day's sells are added together before they
+                are split. You cannot assign a fee to one particular match.
+            </p>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">What the yearly summary shows</h2>
+            <p>
+                The <strong>Disposal Proceeds</strong> in the CGT Yearly Summary are <em>net</em> of selling fees, and the
+                <strong>Allowable Costs</strong> do <em>not</em> include selling fees again. The tax return only accepts whole
+                pounds, so the summary rounds in your favour: proceeds and gains down, allowable costs and losses up.
+            </p>
+            <p>
+                HMRC's computation working sheet in the
+                <a href="https://www.gov.uk/government/publications/self-assessment-capital-gains-summary-sa108" class="link-styled" target="_blank" rel="noopener noreferrer">SA108 notes</a>
+                works the same way. It subtracts the incidental costs of disposal from the proceeds to give "net disposal
+                proceeds", and the total costs include only the cost of acquisition.
+            </p>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Comparing with a calculator that uses gross proceeds</h2>
+            <p>
+                Some calculators and guides report gross proceeds instead and add the selling fees to allowable costs, for
+                example <a href="https://cgtvisualiser.co.uk/guides/how-to-calculate-capital-gains-tax-on-shares/" class="link-styled" target="_blank" rel="noopener noreferrer">CGT Visualiser</a>.
+                The gain is the same either way. Only the split between "proceeds" and "costs" moves by the amount of
+                the selling fees:
+            </p>
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr><th>Same-day example</th><th class="text-end">Proceeds</th><th class="text-end">Allowable costs</th><th class="text-end">Gain</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>This app (net proceeds)</td><td class="text-end">£1,190</td><td class="text-end">£1,010</td><td class="text-end">£180</td></tr>
+                        <tr><td>Gross proceeds, selling fees in costs</td><td class="text-end">£1,200</td><td class="text-end">£1,020</td><td class="text-end">£180</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="alert alert-info alert-custom" role="note">
+                If you compare this app with a calculator that uses gross proceeds, expect the proceeds and costs to differ
+                by the total selling fees while the gains agree. If you would rather enter gross proceeds on your return,
+                add the selling fees back to both figures. The Imported Trades page shows the gross and net amount of each
+                trade.
+            </div>
+        </div>
+    </ChildContent>
+    <FurtherReading>
+        <li><a href="https://cgtvisualiser.co.uk/guides/how-to-calculate-capital-gains-tax-on-shares/" class="link-styled" target="_blank" rel="noopener noreferrer">CGT Visualiser: how to calculate CGT on shares</a> (independent site)</li>
+        <li><a href="https://www.gov.uk/government/publications/self-assessment-capital-gains-summary-sa108" class="link-styled" target="_blank" rel="noopener noreferrer">HMRC SA108 Capital Gains summary and notes</a></li>
+        <li><a href="https://www.gov.uk/hmrc-internal-manuals/capital-gains-manual/cg15250" class="link-styled" target="_blank" rel="noopener noreferrer">HMRC CG15250</a>: incidental costs of acquisition and disposal</li>
+    </FurtherReading>
+</HowItWorksGuideLayout>

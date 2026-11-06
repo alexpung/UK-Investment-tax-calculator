@@ -1,0 +1,57 @@
+@page "/HowItWorks/interest"
+@using InvestmentTaxCalculator.Components
+
+<HowItWorksGuideLayout PageAddress="HowItWorks/interest">
+    <ChildContent>
+        <div class="section">
+            <h2 class="section-title">Types of interest entry</h2>
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr><th>Type</th><th>Where it comes from</th><th>How the app uses it</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Saving interest income</td><td>Interest on cash from any broker</td><td>Taxable interest. For Interactive Brokers it is assumed to come from the UK.</td></tr>
+                        <tr><td>Bond coupon</td><td>Interactive Brokers bond coupon payments</td><td>Taxable interest, with the country of the bond's issuer</td></tr>
+                        <tr><td>Accrued income profit or loss</td><td>Accrued interest when you sell or buy a bond</td><td>Taxable or deductible under the accrued income scheme (see below)</td></tr>
+                        <tr><td>ETF dividend income</td><td>Fund dividends you chose to treat as interest</td><td>Taxable interest</td></tr>
+                        <tr><td>Excess Reportable Income (Interest)</td><td>Added on the ERI and Equalisation page</td><td>Taxable interest</td></tr>
+                        <tr><td>Interest expense (not deductible)</td><td>Margin interest you paid to Interactive Brokers</td><td>Listed for reference only and left out of all totals</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>
+                Margin interest is not deducted because, if you report capital gains and do not run your investing as a
+                trade, it is normally not an allowable expense. Interest received while you are not UK resident is left out, as
+                for <a href="HowItWorks/dividends" class="link-styled">dividends</a>.
+            </p>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Accrued income on bonds</h2>
+            <p>
+                When you buy or sell a bond at a "dirty" price, the price includes interest built up since the last coupon.
+                The seller has an accrued income profit and the buyer an accrued income loss. These are taxed or deducted
+                when the next coupon is paid, not when you trade.
+            </p>
+            <ul>
+                <li>
+                    The app looks for the next coupon on the same bond after the trade. If that coupon is paid in the same tax
+                    year, the accrued income counts in that year.
+                </li>
+                <li>
+                    If the next coupon falls in a later tax year, or there is no later coupon in your files, the accrued income
+                    is moved to the following tax year.
+                </li>
+            </ul>
+            <p>
+                Check the result on the <a href="DividendDataPage" class="link-styled">Dividend/Income Data</a> page, for
+                example if you have not yet imported the statement with the next coupon.
+            </p>
+        </div>
+    </ChildContent>
+    <FurtherReading>
+        <li><a href="https://www.gov.uk/government/publications/accrued-income-scheme-hs343-self-assessment-helpsheet" class="link-styled" target="_blank" rel="noopener noreferrer">HMRC HS343: Accrued Income Scheme</a></li>
+        <li><a href="HowItWorks/dividends" class="link-styled">Dividends</a>: including fund dividends treated as interest</li>
+    </FurtherReading>
+</HowItWorksGuideLayout>

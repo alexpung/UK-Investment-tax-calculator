@@ -1,0 +1,52 @@
+@page "/HowItWorks/shares-and-funds"
+@using InvestmentTaxCalculator.Components
+
+<HowItWorksGuideLayout PageAddress="HowItWorks/shares-and-funds">
+    <ChildContent>
+        <div class="section">
+            <h2 class="section-title">Where share and fund trades come from</h2>
+            <ul>
+                <li>
+                    <strong>Interactive Brokers:</strong> orders with asset category "STK" are imported as stocks, and those
+                    with "FUND" as funds. IBKR reports mutual funds and some ETFs as "FUND", but many ETFs are reported as
+                    "STK", so they appear as stocks.
+                </li>
+                <li><strong>FreeTrade, Trading 212 and Interactive Investor:</strong> every trade is imported as a stock.</li>
+                <li>
+                    <strong>Manual entries:</strong> trades missing from your files can be added on the
+                    <a href="AddTradePage" class="link-styled">Add Manual Entries</a> page.
+                </li>
+            </ul>
+            <p>
+                On the <a href="MainCalculatorPage" class="link-styled">Import data</a> page you can choose which kinds of
+                trade and income to load, for example to leave out funds or foreign currency.
+            </p>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">How they are calculated</h2>
+            <ul>
+                <li>
+                    Stocks and funds use all the <a href="HowItWorks/same-day-rule" class="link-styled">matching rules</a>, with
+                    one <a href="HowItWorks/section-104-pool" class="link-styled">Section 104 pool</a> per
+                    <a href="HowItWorks/share-identities" class="link-styled">share identity</a>. Fees are handled as in
+                    <a href="HowItWorks/net-proceeds" class="link-styled">Net proceeds and fees</a>.
+                </li>
+                <li>
+                    Both are reported under <strong>"Listed shares and securities"</strong> in the CGT Yearly Summary. Options,
+                    futures and foreign currency go under "Other property, assets and gains".
+                </li>
+                <li>
+                    Whether a holding is a fund matters for income. On the
+                    <a href="ConvertPage" class="link-styled">Income taxable dividend selection</a> page you can treat a fund's
+                    dividends as interest, and offshore reporting funds can have
+                    <a href="HowItWorks/reporting-funds" class="link-styled">excess reportable income</a>.
+                </li>
+            </ul>
+        </div>
+    </ChildContent>
+    <FurtherReading>
+        <li><a href="HowItWorks/dividends" class="link-styled">Dividends</a>: income from shares and funds</li>
+        <li><a href="HowItWorks/limitations" class="link-styled">What the calculator does not handle</a>: including non-reporting offshore funds</li>
+    </FurtherReading>
+</HowItWorksGuideLayout>

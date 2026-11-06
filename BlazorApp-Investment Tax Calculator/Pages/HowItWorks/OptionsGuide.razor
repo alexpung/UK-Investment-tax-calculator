@@ -1,0 +1,97 @@
+@page "/HowItWorks/options"
+@using InvestmentTaxCalculator.Components
+
+<HowItWorksGuideLayout PageAddress="HowItWorks/options">
+    <ChildContent>
+        <div class="section">
+            <h2 class="section-title">Matching</h2>
+            <p>
+                Options of the same series (same underlying, type, strike and expiry) follow the same
+                <a href="HowItWorks/same-day-rule" class="link-styled">matching rules</a> as shares, including same day,
+                30 days, the Section 104 pool and short sales (CG55535). Options are reported under "Other property, assets
+                and gains".
+            </p>
+            <p>
+                An option can be traded, exercised, assigned and expire on the same day, and only part of a position can be
+                assigned. The app combines all of that day's trades in the series and matches each outcome in proportion
+                to its quantity.
+            </p>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Writing (selling) an option</h2>
+            <ul>
+                <li>Granting an option is a disposal of the option itself (CG55590).</li>
+                <li>
+                    The full premium, less the incidental costs of selling it, is taxed as a gain in the tax year the option
+                    is written (CG55536). The app does this even if the position is still open.
+                </li>
+                <li>
+                    If you buy the option back, or it is assigned or cash settled, in the same tax year, the closing cost is
+                    deducted as normal.
+                </li>
+                <li>
+                    If that happens in a <strong>later</strong> tax year, the closing cost is not deducted from the later
+                    year. Instead it is listed in the <strong>tax refund table</strong> on the
+                    <a href="CgtYearlyTaxSummaryPage" class="link-styled">CGT Yearly Summary</a> against the year the option
+                    was written. It is not a capital loss, so you claim it separately for that year. If you would rather
+                    deduct it directly in the year the option was written, for example because you had not yet filed that
+                    return, tick "Deduct closing cost of written options in the tax year the option was written" on the
+                    <a href="CalculatePage" class="link-styled">Calculate &amp; export</a> page.
+                </li>
+                <li>If a written option expires, you keep the premium and nothing is deducted from the disposal proceeds.</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Buying an option</h2>
+            <ul>
+                <li>Selling it is a normal disposal matched against the purchase.</li>
+                <li>
+                    If it expires, the full premium paid is an allowable cost against nil proceeds, giving a loss
+                    (CG55415, CG55416).
+                </li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Exercise and assignment</h2>
+            <p>
+                When an option is settled by delivery of the underlying shares, the grant or purchase and the exercise are
+                treated as a single transaction (CG55590 for the writer, CG55600 for the holder). The option itself has no
+                tax effect, and its premium moves to the share trade:
+            </p>
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr><th>What happened</th><th>Effect on the share trade</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>You exercise a call you bought</td><td>Premium and exercise costs are added to the cost of the shares bought</td></tr>
+                        <tr><td>You exercise a put you bought</td><td>Premium and exercise costs are deducted from the proceeds of the shares sold</td></tr>
+                        <tr><td>A call you wrote is assigned</td><td>Premium received, less assignment costs, is added to the proceeds of the shares sold</td></tr>
+                        <tr><td>A put you wrote is assigned</td><td>Premium received, less assignment costs, is deducted from the cost of the shares bought</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>
+                If a written option was taxed in an earlier year and is then assigned, the premium already taxed is listed in
+                the tax refund table, because it is now part of the share trade instead.
+            </p>
+            <p>
+                <strong>Cash-settled options</strong> (for example index options) have no share trade. The cash paid or
+                received on exercise or assignment is used as the option's own proceeds or cost.
+            </p>
+            <div class="alert alert-info alert-custom" role="note">
+                When importing, every exercise or assignment must have a matching share trade or cash settlement on the same
+                day in your files. If one is missing, the import stops with an error naming the option, which usually
+                means a statement is missing.
+            </div>
+        </div>
+    </ChildContent>
+    <FurtherReading>
+        <li><a href="https://www.gov.uk/hmrc-internal-manuals/capital-gains-manual/cg55535" class="link-styled" target="_blank" rel="noopener noreferrer">HMRC CG55535</a> and <a href="https://www.gov.uk/hmrc-internal-manuals/capital-gains-manual/cg55536" class="link-styled" target="_blank" rel="noopener noreferrer">CG55536</a>: traded options</li>
+        <li><a href="https://www.gov.uk/hmrc-internal-manuals/capital-gains-manual/cg55590" class="link-styled" target="_blank" rel="noopener noreferrer">HMRC CG55590</a> and <a href="https://www.gov.uk/hmrc-internal-manuals/capital-gains-manual/cg55600" class="link-styled" target="_blank" rel="noopener noreferrer">CG55600</a>: the grantor and the grantee</li>
+        <li><a href="https://www.gov.uk/hmrc-internal-manuals/capital-gains-manual/cg55415" class="link-styled" target="_blank" rel="noopener noreferrer">HMRC CG55415</a> and <a href="https://www.gov.uk/hmrc-internal-manuals/capital-gains-manual/cg55416" class="link-styled" target="_blank" rel="noopener noreferrer">CG55416</a>: losses on options that are abandoned</li>
+    </FurtherReading>
+</HowItWorksGuideLayout>

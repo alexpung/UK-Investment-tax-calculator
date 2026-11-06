@@ -1,4 +1,4 @@
-using InvestmentTaxCalculator.ViewModel;
+﻿using InvestmentTaxCalculator.ViewModel;
 
 using Microsoft.AspNetCore.Components;
 
@@ -11,7 +11,8 @@ namespace UnitTest.Test.ViewModel;
 public class WorkflowStepsTests
 {
     // Pages reached from the sidebar outside the numbered workflow.
-    private static readonly string[] PagesOutsideWorkflow = ["", "AcknowledgementPage"];
+    private static readonly string[] PagesOutsideWorkflow =
+        ["", "AcknowledgementPage", HowItWorksGuides.IndexPage, .. HowItWorksGuides.All.Select(guide => guide.PageAddress)];
 
     private static IEnumerable<string> RoutedPages() =>
         typeof(WorkflowSteps).Assembly.GetTypes()
@@ -72,6 +73,7 @@ public class WorkflowStepsTests
     [Theory]
     [InlineData("")]
     [InlineData("AcknowledgementPage")]
+    [InlineData("HowItWorks")]
     [InlineData("SomeUnknownPage")]
     public void FindStep_ReturnsNullOutsideWorkflow(string path)
     {

@@ -1,0 +1,49 @@
+@page "/HowItWorks/limitations"
+@using InvestmentTaxCalculator.Components
+
+<HowItWorksGuideLayout PageAddress="HowItWorks/limitations">
+    <ChildContent>
+        <div class="section">
+            <p>
+                The app handles the common cases for a private investor. These rules and situations are not covered, so check
+                them yourself if they apply to you.
+            </p>
+            <h2 class="section-title">Capital gains</h2>
+            <ul>
+                <li>Taper relief, and other reliefs and elections, are not applied.</li>
+                <li>
+                    Gains on non-reporting offshore funds are taxed as income (offshore income gains). The app treats them as
+                    ordinary capital gains.
+                </li>
+                <li>
+                    Trade dates are used as they appear in your broker statement, without converting time zones. A trade near
+                    midnight can fall on a different UK date.
+                </li>
+                <li>Purchases inside an ISA or pension are not seen unless you import them, so they are never matched.</li>
+            </ul>
+
+            <h2 class="section-title">Options and futures</h2>
+            <ul>
+                <li>Futures settled by delivery are not supported.</li>
+                <li>The app does not check whether a futures contract is traded on a recognised futures exchange.</li>
+                <li>
+                    Tax refunds for written options closed in a later tax year are listed for you to claim. They are not
+                    entered on any form for you.
+                </li>
+            </ul>
+
+            <h2 class="section-title">Income and residency</h2>
+            <ul>
+                <li>The app does not decide your residency status, and has no separate setting for "Treaty non-resident" periods.</li>
+                <li>Margin interest and other investment expenses are not deducted.</li>
+                <li>
+                    Excess reportable income, equalisation, takeovers and spin-offs are not reported by brokers, so they are only
+                    included if you add them.
+                </li>
+            </ul>
+        </div>
+    </ChildContent>
+    <FurtherReading>
+        <li><a href="HowItWorks" class="link-styled">All guides</a></li>
+    </FurtherReading>
+</HowItWorksGuideLayout>
