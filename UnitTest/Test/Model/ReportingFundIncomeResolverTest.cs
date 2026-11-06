@@ -2,6 +2,7 @@ using InvestmentTaxCalculator.Enumerations;
 using InvestmentTaxCalculator.Model;
 using InvestmentTaxCalculator.Model.TaxEvents;
 using InvestmentTaxCalculator.Model.UkTaxModel;
+using InvestmentTaxCalculator.Services;
 
 using Shouldly;
 
@@ -151,6 +152,34 @@ public class ReportingFundIncomeResolverTest
 
         equalisation.GetHashCode().ShouldBe(hashBefore);
         actions.Remove(equalisation).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void DividendCalculator_RunRepeatedly_DoesNotAccumulateDerivedIncome()
+    {
+        TaxEventLists lists = new();
+        Dividend stored = Distribution(100m, new DateTime(2024, 3, 1));
+        lists.Dividends.Add(stored);
+        lists.CorporateActions.Add(Eri());
+        lists.CorporateActions.Add(Equalisation(EqualisationIncomeSource.ExcessReportableIncome, 10m, DistributionDate));
+        lists.CorporateActions.Add(Equalisation(EqualisationIncomeSource.Distribution, 10m, stored.Date));
+        ToastService toastService = NSubstitute.Substitute.For<ToastService>(NSubstitute.Substitute.For<Microsoft.Extensions.Logging.ILogger<ToastService>>());
+        UkDividendCalculator calculator = new(lists, new UKTaxYear(), toastService, new ResidencyStatusRecord(), lists);
+
+        List<List<DividendSummary>> runs = [calculator.CalculateTax(), calculator.CalculateTax(), calculator.CalculateTax()];
+
+        // The stored data is exactly what was entered, however many times the calculation runs.
+        lists.Dividends.ShouldHaveSingleItem().ShouldBeSameAs(stored);
+        stored.Proceed.Amount.Amount.ShouldBe(100m);
+        lists.InterestIncomes.ShouldBeEmpty();
+        lists.CorporateActions.Count.ShouldBe(3);
+        // Every run gives the same income: ERI 50 USD - 10 USD equalisation, distribution 100 USD - 10 USD, at 0.8.
+        foreach (List<DividendSummary> summaries in runs)
+        {
+            summaries.SelectMany(s => s.RelatedDividendsAndTaxes).Count().ShouldBe(2);
+            summaries.Sum(s => s.TotalTaxableDividend).Amount.ShouldBe(104m);
+            summaries.Sum(s => s.TotalExcessReportableIncomeDividend).Amount.ShouldBe(32m);
+        }
     }
 
     [Fact]
