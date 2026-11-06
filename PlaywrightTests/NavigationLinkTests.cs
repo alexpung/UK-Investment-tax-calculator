@@ -1,4 +1,4 @@
-using Microsoft.Playwright;
+﻿using Microsoft.Playwright;
 using NUnit.Framework;
 
 namespace PlaywrightTests;
@@ -40,6 +40,7 @@ public class NavigationLinkTests : PlaywrightTestBase
             ("/AddExcessReportableIncome", "Reportable"),
             ("/corporate-actions", "Corporate"),
             ("/AcknowledgementPage", "Acknowledgement"),
+            ("/HowItWorks", "How the calculator works"),
             ("/ConvertPage", "dividend")
         };
 
@@ -125,7 +126,7 @@ public class NavigationLinkTests : PlaywrightTestBase
             "Import data", "Calculate & export", "Income taxable dividend selection", "ERI and Equalisation",
             "Corporate Actions and Events", "Add Manual Entries", "Residency Status", "CGT Yearly Summary",
             "Dividend/Income Summary", "Disposal Summary", "Trade Matches", "Imported Trades",
-            "Dividend/Income Data", "Section 104 Data", "PDF Report", "Acknowledgement"
+            "Dividend/Income Data", "Section 104 Data", "PDF Report", "How it works", "Acknowledgement"
         ];
         foreach (var linkText in expectedLinks)
         {
