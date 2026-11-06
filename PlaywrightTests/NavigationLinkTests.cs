@@ -41,6 +41,11 @@ public class NavigationLinkTests : PlaywrightTestBase
             ("/corporate-actions", "Corporate"),
             ("/AcknowledgementPage", "Acknowledgement"),
             ("/HowItWorks", "How the calculator works"),
+            ("/HowItWorks/same-day-rule", "Same-day rule"),
+            ("/HowItWorks/net-proceeds", "Net proceeds"),
+            ("/HowItWorks/30-day-rule", "30-day"),
+            ("/HowItWorks/section-104-pool", "Section 104 pool"),
+            ("/HowItWorks/short-sales", "Shares sold before"),
             ("/ConvertPage", "dividend")
         };
 

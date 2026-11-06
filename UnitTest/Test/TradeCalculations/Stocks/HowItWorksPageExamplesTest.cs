@@ -12,8 +12,8 @@ using UnitTest.Helper;
 namespace UnitTest.Test.TradeCalculations.Stocks;
 
 /// <summary>
-/// Keeps the worked examples on the "How it works" page (Pages/HowItWorksPage.razor) in step with the calculator.
-/// If one of these fails, update the figures on that page as well as the test.
+/// Keeps the worked examples in the "How the calculator works" guides (Pages/HowItWorks/) in step with the calculator.
+/// If one of these fails, update the figures in the matching guide as well as the test.
 /// </summary>
 public class HowItWorksPageExamplesTest
 {
@@ -81,5 +81,46 @@ public class HowItWorksPageExamplesTest
         disposal.Gain.ShouldBe(new WrappedMoney(-120m));
         section104Pools.GetExistingOrInitialise("ABC").Quantity.ShouldBe(1000);
         section104Pools.GetExistingOrInitialise("ABC").AcquisitionCostInBaseCurrency.ShouldBe(new WrappedMoney(5000m));
+    }
+
+    [Fact]
+    public void Section104Example_UsesAverageCostIncludingFees()
+    {
+        List<Trade> trades =
+        [
+            GbpTrade(TradeType.ACQUISITION, "01-Jan-24 10:00:00", 100, 990m, 10m),
+            GbpTrade(TradeType.ACQUISITION, "01-Feb-24 10:00:00", 200, 2590m, 10m),
+            GbpTrade(TradeType.DISPOSAL, "01-Jun-24 10:00:00", 150, 2250m, 10m),
+        ];
+
+        List<ITradeTaxCalculation> result = TradeCalculationHelper.CalculateTrades(trades, out UkSection104Pools section104Pools);
+
+        ITradeTaxCalculation disposal = result.Single(trade => trade.AcquisitionDisposal == TradeType.DISPOSAL);
+        disposal.MatchHistory.ShouldHaveSingleItem().TradeMatchType.ShouldBe(TaxMatchType.SECTION_104);
+        disposal.TotalProceeds.ShouldBe(new WrappedMoney(2240m));
+        disposal.TotalAllowableCost.ShouldBe(new WrappedMoney(1800m));
+        disposal.Gain.ShouldBe(new WrappedMoney(440m));
+        section104Pools.GetExistingOrInitialise("ABC").Quantity.ShouldBe(150);
+        section104Pools.GetExistingOrInitialise("ABC").AcquisitionCostInBaseCurrency.ShouldBe(new WrappedMoney(1800m));
+    }
+
+    [Fact]
+    public void ShortSaleExample_IsCoveredByThePurchaseAfterThe30DayWindow()
+    {
+        List<Trade> trades =
+        [
+            GbpTrade(TradeType.DISPOSAL, "05-May-24 10:00:00", 100, 1000m, 5m),
+            GbpTrade(TradeType.ACQUISITION, "06-Dec-24 10:00:00", 100, 500m, 5m),
+        ];
+
+        List<ITradeTaxCalculation> result = TradeCalculationHelper.CalculateTrades(trades, out UkSection104Pools section104Pools);
+
+        ITradeTaxCalculation disposal = result.Single(trade => trade.AcquisitionDisposal == TradeType.DISPOSAL);
+        disposal.MatchHistory.ShouldHaveSingleItem().TradeMatchType.ShouldBe(TaxMatchType.SHORTCOVER);
+        disposal.TotalProceeds.ShouldBe(new WrappedMoney(995m));
+        disposal.TotalAllowableCost.ShouldBe(new WrappedMoney(505m));
+        disposal.Gain.ShouldBe(new WrappedMoney(490m));
+        new UKTaxYear().ToTaxYear(disposal.Date).ShouldBe(2024);
+        section104Pools.GetExistingOrInitialise("ABC").Quantity.ShouldBe(0);
     }
 }

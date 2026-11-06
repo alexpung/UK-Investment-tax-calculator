@@ -1,0 +1,86 @@
+@using InvestmentTaxCalculator.ViewModel
+
+@* Shared frame for each "How the calculator works" guide: breadcrumb, heading, content, further reading,
+   previous/next links and the disclaimer. The guide's title comes from HowItWorksGuides. *@
+
+<PageTitle>@Guide.Title · How the calculator works</PageTitle>
+
+<div class="container-fluid py-4 how-it-works">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <nav aria-label="Breadcrumb">
+                <ol class="breadcrumb mb-2">
+                    <li class="breadcrumb-item"><a href="@HowItWorksGuides.IndexPage" class="link-styled">How the calculator works</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">@Guide.Title</li>
+                </ol>
+            </nav>
+
+            <div class="page-header">
+                <h1 class="page-title">@Guide.Title</h1>
+                <p class="page-subtitle">@Guide.Summary</p>
+            </div>
+
+            @ChildContent
+
+            @if (FurtherReading is not null)
+            {
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h2 class="h5 card-title">Further reading</h2>
+                        <ul class="mb-0">
+                            @FurtherReading
+                        </ul>
+                    </div>
+                </div>
+            }
+
+            <nav class="d-flex flex-wrap justify-content-between gap-3 mb-4" aria-label="Other guides">
+                <div>
+                    @if (_previous is not null)
+                    {
+                        <a href="@_previous.PageAddress" class="link-styled">← @_previous.Title</a>
+                    }
+                    else
+                    {
+                        <a href="@HowItWorksGuides.IndexPage" class="link-styled">← All guides</a>
+                    }
+                </div>
+                <div class="text-end">
+                    @if (_next is not null)
+                    {
+                        <a href="@_next.PageAddress" class="link-styled">@_next.Title →</a>
+                    }
+                    else
+                    {
+                        <a href="@HowItWorksGuides.IndexPage" class="link-styled">All guides →</a>
+                    }
+                </div>
+            </nav>
+
+            <div class="alert alert-warning alert-custom" role="alert">
+                <strong>Not tax advice.</strong> These guides describe how the software calculates its figures. They are not
+                tax, legal or financial advice. The app does not handle every exception in tax law. You are responsible for
+                checking what you report.
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    /// <summary>Route of the guide being shown, as registered in <see cref="HowItWorksGuides"/>.</summary>
+    [Parameter, EditorRequired] public string PageAddress { get; set; } = "";
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    /// <summary>List items (&lt;li&gt;) linking to sources for this guide.</summary>
+    [Parameter] public RenderFragment? FurtherReading { get; set; }
+
+    private HowItWorksGuide Guide { get; set; } = null!;
+    private HowItWorksGuide? _previous;
+    private HowItWorksGuide? _next;
+
+    protected override void OnParametersSet()
+    {
+        Guide = HowItWorksGuides.Find(PageAddress);
+        _previous = HowItWorksGuides.Previous(Guide);
+        _next = HowItWorksGuides.Next(Guide);
+    }
+}

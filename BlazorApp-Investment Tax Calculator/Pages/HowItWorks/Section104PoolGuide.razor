@@ -1,0 +1,49 @@
+@page "/HowItWorks/section-104-pool"
+@using InvestmentTaxCalculator.Components
+
+<HowItWorksGuideLayout PageAddress="HowItWorks/section-104-pool">
+    <ChildContent>
+        <div class="section">
+            <ul>
+                <li>
+                    Shares that the <a href="HowItWorks/same-day-rule" class="link-styled">same-day</a> and
+                    <a href="HowItWorks/30-day-rule" class="link-styled">30-day</a> rules do not use go into one pool per
+                    share. The pool's cost includes purchase fees, so it is an average cost.
+                </li>
+                <li>
+                    A disposal matched with the pool takes cost = pool cost × shares sold ÷ shares in the pool, so the
+                    average cost per share does not change.
+                </li>
+                <li>
+                    The app works through the pool in date order. Corporate actions that change the pool, such as stock
+                    splits, takeovers, spin-offs, return of capital and excess reportable income adjustments, are applied
+                    on their dates, between the trades.
+                </li>
+                <li>
+                    Every change to the pool is recorded, so you can follow the running quantity and cost on the
+                    <a href="Section104DataPage" class="link-styled">Section 104 Data</a> page.
+                </li>
+            </ul>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <h2 class="h5 card-title">Worked example</h2>
+                <p>
+                    You buy 100 shares for £990 plus a £10 fee (£1,000), then 200 shares for £2,590 plus a £10 fee (£2,600).
+                    The pool holds 300 shares costing £3,600, which is £12 a share.
+                </p>
+                <p>
+                    You then sell 150 shares for £2,250 less a £10 fee, so the net proceeds are £2,240. The allowable cost is
+                    £3,600 × 150/300 = £1,800, giving a <strong>gain of £440</strong>.
+                </p>
+                <p class="mb-0">The pool is left with 150 shares costing £1,800, still £12 a share.</p>
+            </div>
+        </div>
+    </ChildContent>
+    <FurtherReading>
+        <li><a href="https://cgtvisualiser.co.uk/guides/section-104-pool/" class="link-styled" target="_blank" rel="noopener noreferrer">CGT Visualiser: Section 104 pool</a> (independent site)</li>
+        <li><a href="https://github.com/alexpung/UK-Investment-tax-calculator/wiki/Corporate-Actions" class="link-styled" target="_blank" rel="noopener noreferrer">Project wiki: corporate actions</a></li>
+        <li><a href="https://www.legislation.gov.uk/ukpga/1992/12/section/104" class="link-styled" target="_blank" rel="noopener noreferrer">TCGA 1992 s104</a></li>
+    </FurtherReading>
+</HowItWorksGuideLayout>

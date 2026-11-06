@@ -11,7 +11,8 @@ namespace UnitTest.Test.ViewModel;
 public class WorkflowStepsTests
 {
     // Pages reached from the sidebar outside the numbered workflow.
-    private static readonly string[] PagesOutsideWorkflow = ["", "AcknowledgementPage", "HowItWorks"];
+    private static readonly string[] PagesOutsideWorkflow =
+        ["", "AcknowledgementPage", HowItWorksGuides.IndexPage, .. HowItWorksGuides.All.Select(guide => guide.PageAddress)];
 
     private static IEnumerable<string> RoutedPages() =>
         typeof(WorkflowSteps).Assembly.GetTypes()
