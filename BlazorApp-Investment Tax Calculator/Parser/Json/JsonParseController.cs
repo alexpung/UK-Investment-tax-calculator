@@ -1,5 +1,6 @@
 using InvestmentTaxCalculator.Model;
 using InvestmentTaxCalculator.Model.TaxEvents;
+using InvestmentTaxCalculator.Model.UkTaxModel;
 using InvestmentTaxCalculator.Services;
 
 using System.Text.Json;
@@ -24,6 +25,9 @@ public class JsonParseController(AssetTypeToLoadSetting assetTypeToLoadSetting, 
             // Restore user declared share links so they apply when the imported events are registered.
             shareIdentityRegistry.ImportManualLinks(result.ShareIdentityLinks);
         }
+        // Sessions saved by older versions hold ERI income and equalisation reductions already applied to the
+        // income events; convert them so the calculation does not apply them a second time.
+        ReportingFundLegacyMigration.Migrate(result);
         resultFiltered = assetTypeToLoadSetting.FilterTaxEvent(result);
         return resultFiltered;
     }

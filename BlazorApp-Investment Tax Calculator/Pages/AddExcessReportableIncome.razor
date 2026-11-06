@@ -35,6 +35,7 @@
                     <ol class="mb-2">
                         <li><strong>Add ERI:</strong> Enter the fund's accounting period end date, ticker, and income per share. This calculates the total ERI based on your holdings at that date.</li>
                         <li><strong>Add Equalisation:</strong> Select the fund ticker and the specific income event (Dividend or ERI) to be reduced by the equalisation amount.</li>
+                        <li><strong>Edit or Delete:</strong> Use the buttons in the history table below to correct a mistake. Only the entry itself is stored: the ERI income, the equalisation reduction and the Section 104 adjustments are worked out from the entries every time the calculation runs, so editing or deleting an entry is all that is needed.</li>
                     </ol>
                 </div>
 
@@ -60,13 +61,15 @@
             <!-- ERI and Equalisation Controls -->
             <div class="row g-4 mb-5">
                 <div class="col-xl-6">
-                    <EriControl IsCalculationMissing="@_isCalculationMissing"
+                    <EriControl @ref="_eriControl"
+                                IsCalculationMissing="@_isCalculationMissing"
                                 OnDataChanged="RefreshAll"
                                 AllowManualAssetNameInput="false"
                                 AssetCategoryFilter="@_stockAssetCategoryFilter" />
                 </div>
                 <div class="col-xl-6">
-                    <EqualisationControl IsCalculationMissing="@_isCalculationMissing"
+                    <EqualisationControl @ref="_equalisationControl"
+                                         IsCalculationMissing="@_isCalculationMissing"
                                          OnDataChanged="RefreshAll"
                                          AllowManualAssetNameInput="false"
                                          AssetCategoryFilter="@_stockAssetCategoryFilter" />
@@ -87,9 +90,13 @@
                                 {
                                     <span>ERI (@eri.IncomeType.GetDescription())</span>
                                 }
-                                else if (ca is FundEqualisation)
+                                else if (ca is FundEqualisation fe)
                                 {
                                     <span>Equalisation</span>
+                                    @if (!HasIncome(fe))
+                                    {
+                                        <div class="text-danger small" title="No ERI entry or fund distribution of this asset on this date was found, so no income is reduced. The cost reduction still applies.">Income not found</div>
+                                    }
                                 }
                                 else
                                 {
@@ -122,6 +129,14 @@
                             </Template>
                         </RadzenDataGridColumn>
                         <RadzenDataGridColumn TItem="CorporateAction" Property="@nameof(CorporateAction.Reason)" Title="Details" />
+                        <RadzenDataGridColumn TItem="CorporateAction" Title="Actions" Width="200px" TextAlign="TextAlign.Center" Sortable="false" Filterable="false">
+                            <Template Context="ca">
+                                <div class="d-flex gap-2 justify-content-center">
+                                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" Click="@(() => EditEntry(ca))" Text="Edit" class="flex-shrink-0" />
+                                    <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small" Click="@(() => DeleteEntry(ca))" Text="Delete" class="flex-shrink-0" />
+                                </div>
+                            </Template>
+                        </RadzenDataGridColumn>
                     </Columns>
                 </RadzenDataGrid>
             </div>
@@ -138,6 +153,8 @@
 
 @code {
     private List<CorporateAction> History { get; set; } = new();
+    private EriControl? _eriControl;
+    private EqualisationControl? _equalisationControl;
     
     private bool _isCalculationMissing = false;
     private bool _dataChanged = false;
@@ -169,6 +186,47 @@
         // calculation or file import.
         ShareIdentityRegistry.RegisterEvents(TaxEventLists.AllEvents);
         RefreshHistory();
+    }
+
+    private bool HasIncome(FundEqualisation equalisation) =>
+        ReportingFundIncomeResolver.FindExcessReportableIncome(equalisation, TaxEventLists.CorporateActions) is not null
+        || ReportingFundIncomeResolver.FindDistribution(equalisation, TaxEventLists.Dividends, TaxEventLists.InterestIncomes) is not null;
+
+    private void EditEntry(CorporateAction entry)
+    {
+        switch (entry)
+        {
+            case ExcessReportableIncome eri:
+                _eriControl?.BeginEdit(eri);
+                break;
+            case FundEqualisation equalisation:
+                _equalisationControl?.BeginEdit(equalisation);
+                break;
+        }
+    }
+
+    private void DeleteEntry(CorporateAction entry)
+    {
+        // Entries are self-contained: their income and Section 104 effects are derived at calculation time, so
+        // deleting the entry is all that is needed.
+        if (!TaxEventLists.CorporateActions.Remove(entry)) return;
+        switch (entry)
+        {
+            case ExcessReportableIncome eri:
+                _eriControl?.CancelEdit();
+                int orphaned = TaxEventLists.CorporateActions.OfType<FundEqualisation>()
+                    .Count(fe => fe.IncomeSource == EqualisationIncomeSource.ExcessReportableIncome && fe.IsSameAsset(eri.AssetName) && fe.Date == eri.Date
+                        && !HasIncome(fe));
+                ToastService.ShowInformation($"Removed ERI entry for {eri.AssetName}." + (orphaned > 0
+                    ? $" {orphaned} equalisation entr{(orphaned == 1 ? "y" : "ies")} for it now reduce no income; edit or delete them."
+                    : ""));
+                break;
+            case FundEqualisation equalisation:
+                _equalisationControl?.CancelEdit();
+                ToastService.ShowInformation($"Removed equalisation entry for {equalisation.AssetName}.");
+                break;
+        }
+        RefreshAll();
     }
 
     private async ValueTask OnLocationChanging(LocationChangingContext context)

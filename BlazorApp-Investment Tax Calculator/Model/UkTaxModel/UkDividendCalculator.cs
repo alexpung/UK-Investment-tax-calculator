@@ -6,11 +6,14 @@ using System.Linq;
 
 namespace InvestmentTaxCalculator.Model.UkTaxModel;
 
-public class UkDividendCalculator(IDividendLists dividendList, ITaxYear taxYear, ToastService toastService, ResidencyStatusRecord residencyStatusRecord) : IDividendCalculator
+public class UkDividendCalculator(IDividendLists storedIncome, ITaxYear taxYear, ToastService toastService, ResidencyStatusRecord residencyStatusRecord,
+    ITradeAndCorporateActionList? corporateActionList = null) : IDividendCalculator
 {
     public List<DividendSummary> CalculateTax()
     {
         _ = toastService;
+        // ERI income and equalisation reductions are worked out here from the stored entries, without changing them.
+        ResolvedIncome dividendList = ReportingFundIncomeResolver.Resolve(storedIncome, corporateActionList?.CorporateActions ?? []);
         List<DividendSummary> dividendSummaries = [];
         var groupedDividendsDict = dividendList.Dividends
             .Where(g => residencyStatusRecord.GetResidencyStatus(DateOnly.FromDateTime(g.Date)) == ResidencyStatus.Resident)

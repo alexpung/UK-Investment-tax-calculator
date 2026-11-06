@@ -5,6 +5,7 @@
 
 @inject ITradeAndCorporateActionList _taxEventLists
 @inject ToastService _toastService
+@inject NavigationManager _navigationManager
 
 <div class="card mt-4">
     <div class="card-header">
@@ -21,7 +22,14 @@
                 <RadzenDataGridColumn TItem="CorporateAction" Title="Actions" Width="220px" TextAlign="TextAlign.Center" Sortable="false" Filterable="false">
                     <Template Context="action">
                         <div class="d-flex gap-2 justify-content-center">
-                            <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" Click="@(() => EditAction(action))" Text="Edit" class="flex-shrink-0" />
+                            @if (action is ExcessReportableIncome or FundEqualisation)
+                            {
+                                <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" Click="@(() => _navigationManager.NavigateTo("AddExcessReportableIncome"))" Text="Edit" class="flex-shrink-0" title="Edit on the ERI and Fund Equalisation page" />
+                            }
+                            else
+                            {
+                                <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" Click="@(() => EditAction(action))" Text="Edit" class="flex-shrink-0" />
+                            }
                             <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small" Click="@(() => DeleteAction(action))" Text="Delete" class="flex-shrink-0" />
                         </div>
                     </Template>
