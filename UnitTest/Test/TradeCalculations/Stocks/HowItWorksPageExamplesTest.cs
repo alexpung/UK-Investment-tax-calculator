@@ -123,4 +123,33 @@ public class HowItWorksPageExamplesTest
         new UKTaxYear().ToTaxYear(disposal.Date).ShouldBe(2024);
         section104Pools.GetExistingOrInitialise("ABC").Quantity.ShouldBe(0);
     }
+
+    [Fact]
+    public void FuturesExample_TaxesTheContractValueGainLessDealingCosts()
+    {
+        FutureContractTrade Future(TradeType side, string date, decimal contractValue) => new()
+        {
+            AssetName = "XYZ Future",
+            AcquisitionDisposal = side,
+            Date = DateTime.Parse(date, CultureInfo.InvariantCulture),
+            Description = "XYZ Example Future",
+            Quantity = 1,
+            Expenses = [new DescribedMoney() { Description = "Commission", Amount = new(5m, "USD"), FxRate = 0.8m }],
+            GrossProceed = new() { Amount = WrappedMoney.GetBaseCurrencyZero() },
+            ContractValue = new() { Amount = new WrappedMoney(contractValue, "USD"), FxRate = 0.8m }
+        };
+        List<Trade> trades =
+        [
+            Future(TradeType.ACQUISITION, "01-Feb-24 10:00:00", 50000m),
+            Future(TradeType.DISPOSAL, "01-Jun-24 10:00:00", 52000m),
+        ];
+
+        List<ITradeTaxCalculation> result = TradeCalculationHelper.CalculateTrades(trades, out UkSection104Pools section104Pools);
+
+        ITradeTaxCalculation disposal = result.Single(trade => trade.AcquisitionDisposal == TradeType.DISPOSAL);
+        disposal.TotalProceeds.ShouldBe(new WrappedMoney(1600m));
+        disposal.TotalAllowableCost.ShouldBe(new WrappedMoney(8m));
+        disposal.Gain.ShouldBe(new WrappedMoney(1592m));
+        section104Pools.GetExistingOrInitialise("XYZ Future").Quantity.ShouldBe(0);
+    }
 }

@@ -46,6 +46,20 @@ public class NavigationLinkTests : PlaywrightTestBase
             ("/HowItWorks/30-day-rule", "30-day"),
             ("/HowItWorks/section-104-pool", "Section 104 pool"),
             ("/HowItWorks/short-sales", "Shares sold before"),
+            ("/HowItWorks/shares-and-funds", "Shares and funds"),
+            ("/HowItWorks/foreign-currency", "Foreign currency"),
+            ("/HowItWorks/options", "Options"),
+            ("/HowItWorks/futures", "Futures"),
+            ("/HowItWorks/dividends", "Dividends"),
+            ("/HowItWorks/interest", "Interest and bond income"),
+            ("/HowItWorks/reporting-funds", "Excess reportable income"),
+            ("/HowItWorks/stock-splits", "Stock splits"),
+            ("/HowItWorks/takeovers-and-spin-offs", "Takeovers and spin-offs"),
+            ("/HowItWorks/return-of-capital", "Return of capital"),
+            ("/HowItWorks/partner-transfers", "spouse or civil partner"),
+            ("/HowItWorks/share-identities", "Share identities"),
+            ("/HowItWorks/residency", "Residency status"),
+            ("/HowItWorks/limitations", "does not handle"),
             ("/ConvertPage", "dividend")
         };
 

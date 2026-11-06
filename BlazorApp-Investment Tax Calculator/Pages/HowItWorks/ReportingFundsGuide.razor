@@ -1,0 +1,67 @@
+@page "/HowItWorks/reporting-funds"
+@using InvestmentTaxCalculator.Components
+
+<HowItWorksGuideLayout PageAddress="HowItWorks/reporting-funds">
+    <ChildContent>
+        <div class="section">
+            <p>
+                Offshore reporting funds, such as many ETFs domiciled in Ireland or Luxembourg, report their income each
+                year. Income the fund kept rather than paid out is "excess reportable income" (ERI). It is taxed as if it was
+                paid to you, and it is added to the cost of your holding, so it is not taxed again when you sell. Brokers do
+                not report ERI, so you add it on the <a href="AddExcessReportableIncome" class="link-styled">ERI and
+                Equalisation</a> page. Run the calculation first, so that the page knows your holdings.
+            </p>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Adding excess reportable income</h2>
+            <ul>
+                <li>
+                    You enter the fund's reporting period end date, the ticker, the ERI per share from the fund's report, and
+                    whether it is dividend or interest income.
+                </li>
+                <li>
+                    The app takes your holding at the end of the reporting period, works out the total, and records it on the
+                    distribution date, which it takes as six months after the period end (SI 2009/3001 reg. 94).
+                </li>
+                <li>
+                    The income appears as Excess Reportable Income (Dividend) or (Interest) in your income for the tax year of
+                    the distribution date.
+                </li>
+                <li>
+                    The same amount is added to the cost of your holding. If you sold some units between the period end and
+                    the distribution date, those units' share is added to the allowable cost of that sale (reg. 99). The rest
+                    is added to the Section 104 pool on the distribution date.
+                </li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Equalisation</h2>
+            <ul>
+                <li>
+                    Part of a fund's first distribution after you buy can be equalisation, which is a return of part of what
+                    you paid rather than income.
+                </li>
+                <li>
+                    On the same page you pick the fund and the dividend or ERI entry it belongs to, and enter the equalisation
+                    amount. The app reduces that income by the amount and reduces the cost of your holding by the same amount.
+                </li>
+                <li>
+                    For an accumulating fund, add the ERI first and then attach the equalisation to that ERI entry.
+                    Equalisation on ERI is split between the pool and sales after the period end in the same way as the ERI.
+                </li>
+            </ul>
+            <div class="alert alert-info alert-custom" role="note">
+                There is a special rule for reporting funds that are sold before the end of a reporting period and bought
+                back within 30 days after it: you are treated as holding the units at the period end. The app does not
+                apply this rule, so you need to make the adjustment yourself.
+            </div>
+        </div>
+    </ChildContent>
+    <FurtherReading>
+        <li><a href="https://www.legislation.gov.uk/uksi/2009/3001/regulation/94" class="link-styled" target="_blank" rel="noopener noreferrer">Offshore Funds (Tax) Regulations 2009, reg. 94</a>: reported income</li>
+        <li><a href="https://www.legislation.gov.uk/uksi/2009/3001/regulation/99" class="link-styled" target="_blank" rel="noopener noreferrer">Offshore Funds (Tax) Regulations 2009, reg. 99</a>: disposals of interests</li>
+        <li><a href="HowItWorks/section-104-pool" class="link-styled">Section 104 pool</a></li>
+    </FurtherReading>
+</HowItWorksGuideLayout>

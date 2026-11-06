@@ -1,0 +1,69 @@
+@page "/HowItWorks/dividends"
+@using InvestmentTaxCalculator.Components
+
+<HowItWorksGuideLayout PageAddress="HowItWorks/dividends">
+    <ChildContent>
+        <div class="section">
+            <h2 class="section-title">Types of dividend entry</h2>
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr><th>Type</th><th>How the app uses it</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Dividend</td><td>Taxable dividend income</td></tr>
+                        <tr><td>Payment in lieu of dividend</td><td>Taxable dividend income</td></tr>
+                        <tr><td>Excess Reportable Income (Dividend)</td><td>Taxable dividend income, added from the <a href="HowItWorks/reporting-funds" class="link-styled">ERI and Equalisation</a> page</td></tr>
+                        <tr><td>Withholding tax</td><td>Foreign tax paid, shown separately against the dividends from the same country</td></tr>
+                        <tr><td>Return of capital</td><td>Not dividend income. It reduces the cost of the holding instead (see <a href="HowItWorks/return-of-capital" class="link-styled">Return of capital</a>)</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>
+                The <a href="DividendYearlyTaxSummaryPage" class="link-styled">Dividend/Income Summary</a> totals these by tax
+                year and by country, and the <a href="DividendDataPage" class="link-styled">Dividend/Income Data</a> page lists
+                every entry.
+            </p>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Which country a dividend comes from</h2>
+            <ul>
+                <li>
+                    The country is taken from the first two letters of the share's ISIN and matched against HMRC's list of
+                    countries. For Interactive Brokers, withholding tax entries described as "US TAX" or "CA TAX" are set to
+                    the US or Canada.
+                </li>
+                <li>
+                    The ISIN can be out of date in old statements, or its country may not be on HMRC's list. You then get a
+                    warning and the dividend is listed under an unknown region.
+                </li>
+                <li>Dividends imported from Interactive Investor have no ISIN, so they are always listed under an unknown region.</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Other rules</h2>
+            <ul>
+                <li>
+                    Only dividends received while you are UK resident are counted. Dividends in periods you mark as
+                    non-resident or temporary non-resident on the <a href="HowItWorks/residency" class="link-styled">Residency
+                    Status</a> page are left out.
+                </li>
+                <li>
+                    Some fund distributions, such as those from bond funds, are taxed as interest instead of dividends. On the
+                    <a href="ConvertPage" class="link-styled">Income taxable dividend selection</a> page you can choose
+                    tickers whose dividends are treated as "ETF dividend income", which is counted with interest.
+                </li>
+                <li>
+                    If a distribution includes equalisation, adding the equalisation on the ERI and Equalisation page reduces
+                    that dividend by the equalisation amount.
+                </li>
+            </ul>
+        </div>
+    </ChildContent>
+    <FurtherReading>
+        <li><a href="HowItWorks/interest" class="link-styled">Interest and bond income</a></li>
+        <li><a href="HowItWorks/reporting-funds" class="link-styled">Excess reportable income and equalisation</a></li>
+    </FurtherReading>
+</HowItWorksGuideLayout>

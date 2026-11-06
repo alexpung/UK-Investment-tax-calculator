@@ -1,0 +1,47 @@
+@page "/HowItWorks/share-identities"
+@using InvestmentTaxCalculator.Components
+
+<HowItWorksGuideLayout PageAddress="HowItWorks/share-identities">
+    <ChildContent>
+        <div class="section">
+            <p>
+                The matching rules and the Section 104 pool work per share. The app decides which trades belong to the same
+                share from the ticker and the ISIN:
+            </p>
+            <ul>
+                <li>By default, tickers with different names are different shares.</li>
+                <li>
+                    Trades with the <strong>same ISIN</strong> are the same share, even if the ticker differs. This covers
+                    renames and exchange suffixes. For example "DISm" and "DIS" with the same ISIN are one share, shown as
+                    "DIS".
+                </li>
+                <li>
+                    The <strong>same ticker with a different ISIN</strong> is kept as a separate share, because tickers are
+                    reused by unrelated companies after a delisting.
+                </li>
+                <li>
+                    A trade or event without an ISIN, such as a stock split, joins the share with the same ticker as long as
+                    no ISIN says otherwise.
+                </li>
+                <li>
+                    Options and futures are matched by their exact contract name, because a broker's ISIN for an option is the
+                    ISIN of the underlying share.
+                </li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Linking shares yourself</h2>
+            <p>
+                Some events change both the ticker and the ISIN, such as inserting a new holding company (a NewCo
+                reorganisation), or keep the ticker but issue a new ISIN for the same company. The app cannot tell these from
+                an unrelated company, so it keeps them separate. To treat them as one share, link the old and new tickers under
+                "Share identities" on the <a href="corporate-actions" class="link-styled">Corporate Actions and Events</a>
+                page. Links are saved with your session when you export it.
+            </p>
+        </div>
+    </ChildContent>
+    <FurtherReading>
+        <li><a href="HowItWorks/takeovers-and-spin-offs" class="link-styled">Takeovers and spin-offs</a>: when shares are exchanged for another company's</li>
+    </FurtherReading>
+</HowItWorksGuideLayout>

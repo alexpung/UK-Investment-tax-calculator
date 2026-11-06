@@ -1,0 +1,80 @@
+@page "/HowItWorks/takeovers-and-spin-offs"
+@using InvestmentTaxCalculator.Components
+
+<HowItWorksGuideLayout PageAddress="HowItWorks/takeovers-and-spin-offs">
+    <ChildContent>
+        <div class="section">
+            <p>
+                Brokers rarely report the details needed for these events, such as the market values used to split the
+                cost, so you enter them yourself on the <a href="corporate-actions" class="link-styled">Corporate Actions and
+                Events</a> page.
+            </p>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Takeovers and mergers</h2>
+            <ul>
+                <li>
+                    You enter the old company, the acquiring company, how many new shares you get for each old share, and any
+                    cash paid.
+                </li>
+                <li>
+                    For a share-for-share exchange, the old company's pool is emptied and its total cost moves to the new
+                    shares. The new shares are treated as if bought when the old ones were, so there is no disposal
+                    (TCGA 1992 s127 and s135).
+                </li>
+                <li>
+                    If you also receive cash, you enter the market value of the new shares as well. If the cash is small
+                    (£3,000 or less, or no more than 5% of the total value), you can choose to deduct it from the cost
+                    carried to the new shares instead of treating it as a disposal (s122). For takeovers this option is off
+                    unless you tick it. Otherwise the cash is a part disposal: the cost used is the old pool's cost ×
+                    cash ÷ (cash + value of the new shares), and the rest of the cost moves to the new shares.
+                </li>
+                <li>
+                    A takeover does not link the two companies for matching. For example, a sale of the old shares is not
+                    matched with a purchase of the new shares in the following 30 days.
+                </li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Spin-offs (demergers)</h2>
+            <ul>
+                <li>
+                    You enter the parent company, the new company, how many new shares you get for each parent share, and
+                    the market value of the parent and new shares at the spin-off date.
+                </li>
+                <li>
+                    The parent's pool cost is split by those market values. The new company gets cost × new value ÷
+                    (parent value + new value), and the parent keeps the rest. The number of shares in the parent does not
+                    change.
+                </li>
+                <li>
+                    New shares are kept to four decimal places. If you received cash for a fraction of a share, they are
+                    rounded down to whole shares and the cash is treated as for stock splits: if it is small it is
+                    deducted from cost by default, otherwise it is a part disposal.
+                </li>
+            </ul>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <h2 class="h5 card-title">Worked example: spin-off</h2>
+                <p>
+                    You hold 100 parent shares costing £6,000 and receive 50 shares in the new company. On the spin-off date
+                    the parent shares are worth £8,000 and the new shares £2,000.
+                </p>
+                <p class="mb-0">
+                    The new company takes £6,000 × 2,000 ÷ 10,000 = <strong>£1,200</strong> of cost for its 50 shares, and the
+                    parent keeps <strong>£4,800</strong> for its 100 shares.
+                </p>
+            </div>
+        </div>
+    </ChildContent>
+    <FurtherReading>
+        <li><a href="https://www.legislation.gov.uk/ukpga/1992/12/section/127" class="link-styled" target="_blank" rel="noopener noreferrer">TCGA 1992 s127</a>: reorganisations</li>
+        <li><a href="https://www.legislation.gov.uk/ukpga/1992/12/section/135" class="link-styled" target="_blank" rel="noopener noreferrer">TCGA 1992 s135</a>: exchange of securities</li>
+        <li><a href="https://www.legislation.gov.uk/ukpga/1992/12/section/122" class="link-styled" target="_blank" rel="noopener noreferrer">TCGA 1992 s122</a>: small capital distributions</li>
+        <li><a href="HowItWorks/share-identities" class="link-styled">Share identities</a>: when the company changes its ticker or ISIN without a takeover</li>
+    </FurtherReading>
+</HowItWorksGuideLayout>

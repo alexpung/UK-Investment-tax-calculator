@@ -1,0 +1,51 @@
+@page "/HowItWorks/stock-splits"
+@using InvestmentTaxCalculator.Components
+
+<HowItWorksGuideLayout PageAddress="HowItWorks/stock-splits">
+    <ChildContent>
+        <div class="section">
+            <h2 class="section-title">How a split changes your holding</h2>
+            <ul>
+                <li>
+                    Interactive Brokers statements include stock splits, so they are imported automatically. For other
+                    brokers, or to correct an imported split, use the
+                    <a href="corporate-actions" class="link-styled">Corporate Actions and Events</a> page.
+                </li>
+                <li>
+                    On the split date the Section 104 pool's quantity is multiplied by the split ratio and its total cost
+                    stays the same. A 2-for-1 split turns 100 shares costing £1,000 into 200 shares costing £1,000. Reverse
+                    splits work the same way with a ratio below one.
+                </li>
+                <li>
+                    When a disposal is matched with an acquisition on the other side of the split, for example a 30-day
+                    repurchase after a split, the matched quantity is adjusted by the split ratio.
+                </li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Cash in lieu of fractional shares</h2>
+            <p>
+                An imported split is assumed to have no rounding and no cash in lieu. If you received cash for a fraction
+                of a share, edit the split on the Corporate Actions and Events page and add the cash:
+            </p>
+            <ul>
+                <li>The fraction is removed from the pool, and the pool is rounded down to whole shares.</li>
+                <li>
+                    If the cash is small (£3,000 or less, or no more than 5% of the value of the holding), you can choose to
+                    deduct it from the pool's cost instead of treating it as a disposal (TCGA 1992 s122). This option is on by
+                    default.
+                </li>
+                <li>
+                    Otherwise the cash is a part disposal. The app creates a disposal for the fraction, with an allowable
+                    cost taken from the pool, and it appears in your disposals for that year.
+                </li>
+            </ul>
+        </div>
+    </ChildContent>
+    <FurtherReading>
+        <li><a href="https://cgtvisualiser.co.uk/guides/stock-splits/" class="link-styled" target="_blank" rel="noopener noreferrer">CGT Visualiser: stock splits</a> (independent site)</li>
+        <li><a href="https://www.legislation.gov.uk/ukpga/1992/12/section/122" class="link-styled" target="_blank" rel="noopener noreferrer">TCGA 1992 s122</a>: small capital distributions</li>
+        <li><a href="https://www.legislation.gov.uk/ukpga/1992/12/section/127" class="link-styled" target="_blank" rel="noopener noreferrer">TCGA 1992 s127</a>: reorganisations</li>
+    </FurtherReading>
+</HowItWorksGuideLayout>

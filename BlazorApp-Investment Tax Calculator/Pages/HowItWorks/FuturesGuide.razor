@@ -1,0 +1,73 @@
+@page "/HowItWorks/futures"
+@using InvestmentTaxCalculator.Components
+
+<HowItWorksGuideLayout PageAddress="HowItWorks/futures">
+    <ChildContent>
+        <div class="section">
+            <h2 class="section-title">Long and short positions</h2>
+            <ul>
+                <li>
+                    An outstanding futures contract is treated as an asset (TCGA 1992 s143). Selling a contract to open a
+                    position is an <em>acquisition</em> of a short contract, not a disposal.
+                </li>
+                <li>
+                    The app goes through each contract's trades in date order and tracks your open position, so it can label
+                    each trade as opening or closing a long or short position. A single trade that closes a short and opens a
+                    long, or the other way round, is split into two.
+                </li>
+                <li>
+                    Short positions are a separate asset, shown with "Short " in front of the contract name. Both long and
+                    short positions use the same <a href="HowItWorks/same-day-rule" class="link-styled">matching rules</a> as
+                    shares.
+                </li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Cost and gain</h2>
+            <ul>
+                <li>
+                    No money changes hands for the contract itself when you open a position, so the acquisition cost is only
+                    the dealing costs.
+                </li>
+                <li>
+                    The app records the contract value of each trade, and keeps it in the Section 104 pool alongside the cost.
+                    The profit or loss is the difference between the contract values of the selling and buying sides.
+                </li>
+                <li>A profit is added to the disposal proceeds, and a loss is added to the allowable cost.</li>
+                <li>
+                    Dealing costs are converted to pounds at the rate on the day each one was charged. The profit or loss is
+                    converted at the rate of the trade that closes the position.
+                </li>
+                <li>
+                    Margin payments are deposits, not payments for the contract (CG56060), so they do not change the
+                    calculation.
+                </li>
+                <li>Futures gains and losses are reported under "Other property, assets and gains".</li>
+            </ul>
+            <div class="alert alert-info alert-custom" role="note">
+                Settlement by delivery is not supported. The app also does not check whether a contract is traded on a
+                recognised futures exchange, which can affect how it is taxed.
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <h2 class="h5 card-title">Worked example</h2>
+                <p>
+                    You buy one contract with a contract value of $50,000, paying $5 in commission, and later sell it at a
+                    contract value of $52,000, paying another $5. Assume both fees convert to £4 each, and the rate on the
+                    closing trade is £0.80 per dollar.
+                </p>
+                <p class="mb-0">
+                    The contract profit is ($52,000 − $50,000) × 0.80 = £1,600, which becomes the disposal proceeds. The
+                    allowable cost is the two fees, £8, giving a <strong>gain of £1,592</strong>.
+                </p>
+            </div>
+        </div>
+    </ChildContent>
+    <FurtherReading>
+        <li><a href="https://www.legislation.gov.uk/ukpga/1992/12/section/143" class="link-styled" target="_blank" rel="noopener noreferrer">TCGA 1992 s143</a>: commodity and financial futures</li>
+        <li><a href="https://www.gov.uk/hmrc-internal-manuals/capital-gains-manual/cg56060" class="link-styled" target="_blank" rel="noopener noreferrer">HMRC CG56060</a>: futures margin payments</li>
+    </FurtherReading>
+</HowItWorksGuideLayout>

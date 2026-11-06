@@ -8,14 +8,15 @@
         <div class="col-lg-10 mx-auto">
             <div class="page-header">
                 <h1 class="page-title">How the calculator works</h1>
-                <p class="page-subtitle">How this app applies the UK share matching rules to your trades, with worked examples</p>
+                <p class="page-subtitle">How this app applies UK tax rules to your trades, income and corporate actions, with worked examples</p>
             </div>
 
             <div class="section">
                 <p>
                     The general rules are explained well elsewhere. These guides cover how <strong>this app</strong> applies them:
-                    which trades it groups together, which figures it uses, and in what order it matches trades. You can then
-                    check its results against your own working or another calculator.
+                    which trades it groups together, which figures it uses, how it treats each kind of trade and income, and
+                    what it does not handle. You can then check its results against your own working or another calculator.
+                    The guides refer to the legislation and HMRC manuals where the app relies on them.
                 </p>
             </div>
 
@@ -35,32 +36,31 @@
                     The app runs each step for <em>every</em> share before it moves on to the next step. For example, all
                     same-day matches are made before any 30-day match. A purchase that a same-day match uses up is no longer
                     available to an earlier disposal's 30-day match. In every step, fees are included in the figures as
-                    described in <a href="HowItWorks/net-proceeds" class="link-styled">Net proceeds and fees</a>.
-                </p>
-                <p>
-                    "The same share" means the same share identity. Trades with the same ISIN are treated as one share even
-                    when the ticker differs, for example with an exchange suffix. A reused ticker with a different ISIN is
-                    kept separate. You can link old and new tickers yourself, for example after a NewCo reorganisation. See the
-                    <a href="https://github.com/alexpung/UK-Investment-tax-calculator/wiki/Share-identities" class="link-styled" target="_blank" rel="noopener noreferrer">share identities wiki page</a>.
+                    described in <a href="HowItWorks/net-proceeds" class="link-styled">Net proceeds and fees</a>. Options and
+                    futures use the same steps, and "the same share" is decided as described in
+                    <a href="HowItWorks/share-identities" class="link-styled">Share identities</a>.
                 </p>
             </div>
 
-            <div class="section">
-                <h2 class="section-title">Guides</h2>
-                <div class="row g-4">
-                    @foreach (var guide in HowItWorksGuides.All)
-                    {
-                        <div class="col-md-6">
-                            <div class="card feature-card">
-                                <div class="card-body">
-                                    <h3 class="h5 card-title"><a href="@guide.PageAddress" class="link-styled">@guide.Title</a></h3>
-                                    <p class="card-text mb-0">@guide.Summary</p>
+            @foreach (string section in HowItWorksGuides.Sections)
+            {
+                <div class="section">
+                    <h2 class="section-title">@section</h2>
+                    <div class="row g-4">
+                        @foreach (var guide in HowItWorksGuides.InSection(section))
+                        {
+                            <div class="col-md-6">
+                                <div class="card feature-card">
+                                    <div class="card-body">
+                                        <h3 class="h5 card-title"><a href="@guide.PageAddress" class="link-styled">@guide.Title</a></h3>
+                                        <p class="card-text mb-0">@guide.Summary</p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    }
+                        }
+                    </div>
                 </div>
-            </div>
+            }
 
             <div class="section">
                 <h2 class="section-title" id="check-workings">Checking the workings in the app</h2>
@@ -70,7 +70,8 @@
                     <li><a href="CalculationViewPage" class="link-styled">Disposal Summary</a> shows each combined trade, how many of its shares each rule matched, and its proceeds, allowable cost and gain.</li>
                     <li><a href="ImportedTradesDataPage" class="link-styled">Imported Trades</a> shows each broker trade with its gross and net amount.</li>
                     <li><a href="Section104DataPage" class="link-styled">Section 104 Data</a> shows the pool's history for each share.</li>
-                    <li><a href="CgtYearlyTaxSummaryPage" class="link-styled">CGT Yearly Summary</a> gives the totals for your tax return, using net proceeds.</li>
+                    <li><a href="DividendDataPage" class="link-styled">Dividend/Income Data</a> lists every dividend, withholding tax and interest entry with its country.</li>
+                    <li><a href="CgtYearlyTaxSummaryPage" class="link-styled">CGT Yearly Summary</a> and <a href="DividendYearlyTaxSummaryPage" class="link-styled">Dividend/Income Summary</a> give the totals for your tax return.</li>
                 </ul>
             </div>
 
@@ -78,13 +79,6 @@
                 <div class="card-body">
                     <h2 class="h5 card-title">Further reading</h2>
                     <ul class="mb-0">
-                        <li>
-                            <a href="https://github.com/alexpung/UK-Investment-tax-calculator/wiki" class="link-styled" target="_blank" rel="noopener noreferrer">Project wiki</a>
-                            has design notes for this app, with references to the legislation and HMRC manuals, including
-                            <a href="https://github.com/alexpung/UK-Investment-tax-calculator/wiki/Traded-Financial-Options" class="link-styled" target="_blank" rel="noopener noreferrer">options</a> and
-                            <a href="https://github.com/alexpung/UK-Investment-tax-calculator/wiki/Future-Contracts" class="link-styled" target="_blank" rel="noopener noreferrer">futures</a>,
-                            which follow the same matching steps with some extra rules.
-                        </li>
                         <li>
                             <a href="https://cgtvisualiser.co.uk/guides/" class="link-styled" target="_blank" rel="noopener noreferrer">CGT Visualiser guides</a>
                             are plain-English explanations of the general rules. It is an independent site that is not connected
@@ -99,9 +93,11 @@
             </div>
 
             <div class="alert alert-warning alert-custom" role="alert">
-                <strong>Not tax advice.</strong> These guides describe how the software calculates its figures. They are not
-                tax, legal or financial advice. The app does not handle every exception in tax law. You are responsible for
-                checking what you report.
+                <strong>Not tax advice.</strong> These guides are design notes describing how the software calculates its
+                figures, provided for information only. They are not tax, legal or financial advice, and their accuracy,
+                completeness or applicability is not guaranteed. The app does not handle every exception in tax law. You are
+                responsible for checking what you report, and should consult a qualified professional about your own tax
+                position.
             </div>
         </div>
     </div>

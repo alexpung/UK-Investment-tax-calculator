@@ -1,0 +1,42 @@
+@page "/HowItWorks/return-of-capital"
+@using InvestmentTaxCalculator.Components
+
+<HowItWorksGuideLayout PageAddress="HowItWorks/return-of-capital">
+    <ChildContent>
+        <div class="section">
+            <ul>
+                <li>
+                    Interactive Brokers cash entries described as "Return of Capital" are imported as a return of capital,
+                    dated on the settlement date.
+                </li>
+                <li>
+                    They are not counted as dividend income. They appear on the
+                    <a href="DividendDataPage" class="link-styled">Dividend/Income Data</a> page with the type "Return of
+                    Capital" so you can see them.
+                </li>
+                <li>
+                    On that date, the amount in pounds is deducted from the cost of the share's Section 104 pool. The number of
+                    shares does not change, and nothing is matched or disposed of.
+                </li>
+                <li>
+                    The lower cost means a larger gain, or a smaller loss, when you later sell from the pool. You can follow
+                    the change on the <a href="Section104DataPage" class="link-styled">Section 104 Data</a> page.
+                </li>
+            </ul>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <h2 class="h5 card-title">Worked example</h2>
+                <p class="mb-0">
+                    Your pool holds 100 shares costing £2,000 when the company returns £150 of capital. The pool becomes 100
+                    shares costing <strong>£1,850</strong>. If you later sell all 100 for £2,500, the gain is £650.
+                </p>
+            </div>
+        </div>
+    </ChildContent>
+    <FurtherReading>
+        <li><a href="https://www.legislation.gov.uk/ukpga/1992/12/section/122" class="link-styled" target="_blank" rel="noopener noreferrer">TCGA 1992 s122</a>: capital distributions</li>
+        <li><a href="HowItWorks/section-104-pool" class="link-styled">Section 104 pool</a></li>
+    </FurtherReading>
+</HowItWorksGuideLayout>

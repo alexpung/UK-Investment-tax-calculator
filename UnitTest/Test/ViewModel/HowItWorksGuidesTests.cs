@@ -56,4 +56,24 @@ public class HowItWorksGuidesTests
         HowItWorksGuides.Find("howitworks/same-day-rule").ShouldBe(HowItWorksGuides.All[0]);
         Should.Throw<ArgumentException>(() => HowItWorksGuides.Find("HowItWorks/unknown"));
     }
+
+    [Fact]
+    public void EveryGuide_IsInAListedSection_AndEverySectionHasGuides()
+    {
+        foreach (var guide in HowItWorksGuides.All)
+        {
+            HowItWorksGuides.Sections.ShouldContain(guide.Section, $"Guide '{guide.Title}' should be in a section shown on the index page");
+        }
+        foreach (string section in HowItWorksGuides.Sections)
+        {
+            HowItWorksGuides.InSection(section).ShouldNotBeEmpty($"Section '{section}' should list at least one guide");
+        }
+    }
+
+    [Fact]
+    public void Guides_AreOrderedBySection_SoPreviousAndNextStayWithinReadingOrder()
+    {
+        var sectionOrder = HowItWorksGuides.All.Select(guide => HowItWorksGuides.Sections.ToList().IndexOf(guide.Section)).ToList();
+        sectionOrder.ShouldBe(sectionOrder.Order().ToList());
+    }
 }

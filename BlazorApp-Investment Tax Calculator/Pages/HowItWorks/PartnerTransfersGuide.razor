@@ -1,0 +1,45 @@
+@page "/HowItWorks/partner-transfers"
+@using InvestmentTaxCalculator.Components
+
+<HowItWorksGuideLayout PageAddress="HowItWorks/partner-transfers">
+    <ChildContent>
+        <div class="section">
+            <p>
+                Transfers between spouses or civil partners who live together are treated as giving neither a gain nor a loss
+                (TCGA 1992 s58). The shares move with their original cost. You record them on the
+                <a href="corporate-actions" class="link-styled">Corporate Actions and Events</a> page.
+            </p>
+            <ul>
+                <li>
+                    <strong>Gift to partner:</strong> you enter the share, date and number of shares. They are removed from your
+                    Section 104 pool at the pool's average cost, with no gain or loss. The cost transferred, which your partner needs
+                    for their own records, is shown in the pool's history on the
+                    <a href="Section104DataPage" class="link-styled">Section 104 Data</a> page. You cannot give more shares than the pool holds on that
+                    date.
+                </li>
+                <li>
+                    <strong>Received from partner:</strong> you enter the number of shares and the cost your partner had for
+                    them. They are added to your pool with that cost.
+                </li>
+                <li>
+                    Transfers only change the pool. They are not disposals or acquisitions for the same-day or 30-day rules.
+                </li>
+            </ul>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <h2 class="h5 card-title">Worked example</h2>
+                <p class="mb-0">
+                    Your pool holds 300 shares costing £3,600. You give 100 to your spouse. They leave the pool with
+                    £3,600 × 100/300 = <strong>£1,200</strong> of cost, and your pool keeps 200 shares costing £2,400. Your
+                    spouse records 100 shares received with a cost of £1,200.
+                </p>
+            </div>
+        </div>
+    </ChildContent>
+    <FurtherReading>
+        <li><a href="https://www.legislation.gov.uk/ukpga/1992/12/section/58" class="link-styled" target="_blank" rel="noopener noreferrer">TCGA 1992 s58</a>: spouses and civil partners</li>
+        <li><a href="HowItWorks/section-104-pool" class="link-styled">Section 104 pool</a></li>
+    </FurtherReading>
+</HowItWorksGuideLayout>
