@@ -6,7 +6,6 @@
 @inject ITradeAndCorporateActionList _taxEventLists
 @inject ToastService _toastService
 @inject NavigationManager _navigationManager
-@inject EriEqualisationService _eriEqualisationService
 
 <div class="card mt-4">
     <div class="card-header">
@@ -61,24 +60,6 @@
 
     private async Task DeleteAction(CorporateAction action)
     {
-        // ERI and equalisation entries also changed income events when added, so they are undone through the service.
-        if (action is ExcessReportableIncome or FundEqualisation)
-        {
-            try
-            {
-                if (action is ExcessReportableIncome eri) _eriEqualisationService.RemoveEri(eri);
-                else _eriEqualisationService.RemoveEqualisation((FundEqualisation)action);
-            }
-            catch (InvalidOperationException ex)
-            {
-                _toastService.ShowError(ex.Message);
-                return;
-            }
-            _toastService.ShowInformation("Event removed.");
-            await Refresh();
-            await OnActionDeleted.InvokeAsync();
-            return;
-        }
         if (_taxEventLists.CorporateActions.Remove(action))
         {
             _toastService.ShowInformation("Event removed.");

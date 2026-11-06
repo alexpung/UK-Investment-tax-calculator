@@ -9,7 +9,6 @@
 @inject TaxEventLists TaxEventLists
 @inject ToastService ToastService
 @inject CurrencyService CurrencyService
-@inject EriEqualisationService EriEqualisationService
 
 <div class="card">
     <div class="card-header">
@@ -19,7 +18,7 @@
         @if (_editingEri is not null)
         {
             <div class="alert alert-warning py-2 mb-3" role="alert">
-                Editing the ERI entry for <strong>@_editingEri.AssetName</strong> (period end @_editingEri.EffectiveReportingPeriodEndDate.ToString("d")). Saving replaces it and its income event.
+                Editing the ERI entry for <strong>@_editingEri.AssetName</strong> (period end @_editingEri.EffectiveReportingPeriodEndDate.ToString("d")). Saving replaces it; its income is recalculated from the new values.
             </div>
         }
         <div class="form-section-title">Holding</div>
@@ -219,18 +218,31 @@
             ? CountryCode.UnknownRegion
             : CountryCode.GetRegionByTwoDigitCode(isin[..2]);
 
-        try
+        DateTime distributionDate = PeriodEndDate.Value.AddMonths(6);
+        decimal totalAmountLocal = Quantity * IncomePerShare;
+        ExcessReportableIncome eri = new()
         {
-            bool isEdit = _editingEri is not null;
-            ExcessReportableIncome eri = isEdit
-                ? EriEqualisationService.UpdateEri(_editingEri!, SelectedTicker, PeriodEndDate.Value, Quantity, IncomePerShare, Currency, FxRate, SelectedIncomeType, isin, region)
-                : EriEqualisationService.AddEri(SelectedTicker, PeriodEndDate.Value, Quantity, IncomePerShare, Currency, FxRate, SelectedIncomeType, isin, region);
-            ToastService.ShowInformation($"Successfully {(isEdit ? "updated" : "added")} ERI of {eri.Amount.BaseCurrencyAmount} for {SelectedTicker}.");
+            AssetName = SelectedTicker,
+            Date = distributionDate,
+            ReportingPeriodEndDate = PeriodEndDate.Value,
+            IncomeType = SelectedIncomeType,
+            Amount = new DescribedMoney(totalAmountLocal, Currency, FxRate, $"ERI for {Quantity:N4} shares (Period End: {PeriodEndDate.Value:d})"),
+            Isin = isin,
+            IncomeLocation = region
+        };
+
+        // The ERI entry is the only thing stored: its dividend/interest income and section 104 uplift are derived
+        // from it at calculation time, so editing just swaps the entry.
+        int editIndex = _editingEri is null ? -1 : TaxEventLists.CorporateActions.IndexOf(_editingEri);
+        if (editIndex >= 0)
+        {
+            TaxEventLists.CorporateActions[editIndex] = eri;
+            ToastService.ShowInformation($"Successfully updated ERI of {eri.Amount.BaseCurrencyAmount} for {SelectedTicker}.");
         }
-        catch (InvalidOperationException ex)
+        else
         {
-            ToastService.ShowError(ex.Message);
-            return;
+            TaxEventLists.CorporateActions.Add(eri);
+            ToastService.ShowInformation($"Successfully added ERI of {eri.Amount.BaseCurrencyAmount} for {SelectedTicker}.");
         }
 
         ResetForm();

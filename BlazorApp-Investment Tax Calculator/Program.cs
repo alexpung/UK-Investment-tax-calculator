@@ -38,7 +38,6 @@ builder.Services.AddSingleton<TaxCalculationService>();
 builder.Services.AddSingleton<ShareIdentityRegistry>();
 builder.Services.AddSingleton<CurrencyService>();
 builder.Services.AddSingleton<ManualEntryTrackerService>();
-builder.Services.AddSingleton<EriEqualisationService>();
 builder.Services.AddScoped<FileImportStateService>();
 builder.Services.AddRadzenComponents();
 

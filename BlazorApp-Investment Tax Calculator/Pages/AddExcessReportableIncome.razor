@@ -16,7 +16,6 @@
 @inject IJSRuntime JSRuntime
 @inject TaxCalculationService TaxCalculationService
 @inject ShareIdentityRegistry ShareIdentityRegistry
-@inject EriEqualisationService EriEqualisationService
 
 <div class="container-fluid py-4">
     <div class="row">
@@ -36,7 +35,7 @@
                     <ol class="mb-2">
                         <li><strong>Add ERI:</strong> Enter the fund's accounting period end date, ticker, and income per share. This calculates the total ERI based on your holdings at that date.</li>
                         <li><strong>Add Equalisation:</strong> Select the fund ticker and the specific income event (Dividend or ERI) to be reduced by the equalisation amount.</li>
-                        <li><strong>Edit or Delete:</strong> Use the buttons in the history table below to correct a mistake. Deleting an ERI entry also removes the income it created; deleting an equalisation entry adds the amount back to the income it reduced. An ERI entry reduced by equalisation can only be changed after deleting that equalisation.</li>
+                        <li><strong>Edit or Delete:</strong> Use the buttons in the history table below to correct a mistake. Only the entry itself is stored: the ERI income, the equalisation reduction and the Section 104 adjustments are worked out from the entries every time the calculation runs, so editing or deleting an entry is all that is needed.</li>
                     </ol>
                 </div>
 
@@ -91,9 +90,13 @@
                                 {
                                     <span>ERI (@eri.IncomeType.GetDescription())</span>
                                 }
-                                else if (ca is FundEqualisation)
+                                else if (ca is FundEqualisation fe)
                                 {
                                     <span>Equalisation</span>
+                                    @if (!HasIncome(fe))
+                                    {
+                                        <div class="text-danger small" title="No ERI entry or fund distribution of this asset on this date was found, so no income is reduced. The cost reduction still applies.">Income not found</div>
+                                    }
                                 }
                                 else
                                 {
@@ -185,17 +188,15 @@
         RefreshHistory();
     }
 
+    private bool HasIncome(FundEqualisation equalisation) =>
+        ReportingFundIncomeResolver.FindExcessReportableIncome(equalisation, TaxEventLists.CorporateActions) is not null
+        || ReportingFundIncomeResolver.FindDistribution(equalisation, TaxEventLists.Dividends, TaxEventLists.InterestIncomes) is not null;
+
     private void EditEntry(CorporateAction entry)
     {
         switch (entry)
         {
             case ExcessReportableIncome eri:
-                int linkedCount = EriEqualisationService.GetEqualisationsLinkedToEri(eri).Count;
-                if (linkedCount > 0)
-                {
-                    ToastService.ShowError($"This ERI entry is reduced by {linkedCount} fund equalisation entr{(linkedCount == 1 ? "y" : "ies")}. Delete the equalisation entries first.");
-                    return;
-                }
                 _eriControl?.BeginEdit(eri);
                 break;
             case FundEqualisation equalisation:
@@ -206,30 +207,24 @@
 
     private void DeleteEntry(CorporateAction entry)
     {
-        try
+        // Entries are self-contained: their income and Section 104 effects are derived at calculation time, so
+        // deleting the entry is all that is needed.
+        if (!TaxEventLists.CorporateActions.Remove(entry)) return;
+        switch (entry)
         {
-            switch (entry)
-            {
-                case ExcessReportableIncome eri:
-                    EriEqualisationService.RemoveEri(eri);
-                    _eriControl?.CancelEdit();
-                    ToastService.ShowInformation($"Removed ERI entry for {eri.AssetName} and its income event.");
-                    break;
-                case FundEqualisation equalisation:
-                    TaxEvent? restored = EriEqualisationService.RemoveEqualisation(equalisation);
-                    _equalisationControl?.CancelEdit();
-                    ToastService.ShowInformation(restored is null
-                        ? $"Removed equalisation entry for {equalisation.AssetName}. The income event it reduced could not be found, so no income amount was restored."
-                        : $"Removed equalisation entry for {equalisation.AssetName} and restored the income amount.");
-                    break;
-                default:
-                    return;
-            }
-        }
-        catch (InvalidOperationException ex)
-        {
-            ToastService.ShowError(ex.Message);
-            return;
+            case ExcessReportableIncome eri:
+                _eriControl?.CancelEdit();
+                int orphaned = TaxEventLists.CorporateActions.OfType<FundEqualisation>()
+                    .Count(fe => fe.IncomeSource == EqualisationIncomeSource.ExcessReportableIncome && fe.IsSameAsset(eri.AssetName) && fe.Date == eri.Date
+                        && !HasIncome(fe));
+                ToastService.ShowInformation($"Removed ERI entry for {eri.AssetName}." + (orphaned > 0
+                    ? $" {orphaned} equalisation entr{(orphaned == 1 ? "y" : "ies")} for it now reduce no income; edit or delete them."
+                    : ""));
+                break;
+            case FundEqualisation equalisation:
+                _equalisationControl?.CancelEdit();
+                ToastService.ShowInformation($"Removed equalisation entry for {equalisation.AssetName}.");
+                break;
         }
         RefreshAll();
     }

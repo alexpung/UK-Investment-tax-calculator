@@ -24,6 +24,8 @@ public class UkTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorpo
     public List<ITradeTaxCalculation> CalculateTax()
     {
         List<ITradeTaxCalculation> tradeTaxCalculations = [.. tradeTaxCalculationFactory.GroupTrade(tradeList.Trades)];
+        // ERI equalisation entries take their reporting period from their ERI entry, which may have been edited.
+        ReportingFundIncomeResolver.LinkEqualisations(tradeList.CorporateActions);
         
         // Clear previously generated disposals to ensure a fresh calculation
         foreach (var ca in StockRelevantCorporateActions)

@@ -51,6 +51,35 @@ public record ExcessReportableIncome : CorporateAction, IChangeSection104
         return assumed;
     }
 
+    /// <summary>
+    /// Builds the dividend or interest income this ERI is taxed as. The income is derived afresh at calculation time
+    /// rather than stored, so editing or deleting the ERI entry is all that is needed to change the income.
+    /// </summary>
+    public TaxEvent CreateIncomeEvent()
+    {
+        TaxEvent income = IncomeType == ExcessReportableIncomeType.DIVIDEND
+            ? new Dividend
+            {
+                AssetName = AssetName,
+                Date = Date,
+                DividendType = DividendType.EXCESS_REPORTABLE_INCOME,
+                Proceed = Amount with { Description = $"Excess Reportable Income (Dividend) from {AssetName}" },
+                Isin = Isin,
+                CompanyLocation = IncomeLocation
+            }
+            : new InterestIncome
+            {
+                AssetName = AssetName,
+                Date = Date,
+                InterestType = InterestType.EXCESSREPORTABLEINCOME,
+                Amount = Amount with { Description = $"Excess Reportable Income (Interest) from {AssetName}" },
+                Isin = Isin,
+                IncomeLocation = IncomeLocation
+            };
+        income.ShareIdentity = ShareIdentity;
+        return income;
+    }
+
     public override string Reason => $"{AssetName} excess reportable income ({IncomeType.GetDescription()}) of {Amount.BaseCurrencyAmount} on {Date:d}";
     public override AssetCategoryType AppliesToAssetCategoryType { get; } = AssetCategoryType.STOCK;
 
