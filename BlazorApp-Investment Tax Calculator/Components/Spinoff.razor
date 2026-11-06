@@ -63,7 +63,7 @@
                     <div class="row mb-3">
                         <div class="col-md-4">
                             <label class="form-label">Parent Market Value (Total Holding)</label>
-                            <RadzenNumeric TValue="decimal" @bind-Value="@_parentMv" Min="0" Placeholder="Amount" Change="@OnCostInputChanged" class="w-100" />
+                            <RadzenNumeric TValue="decimal" @bind-Value="@_parentMv" Min="0" Placeholder="Amount" Format="@InputFormats.Money" Change="@OnCostInputChanged" class="w-100" />
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Currency</label>
@@ -78,7 +78,7 @@
                     <div class="row mb-3">
                         <div class="col-md-4">
                             <label class="form-label">Spinoff Market Value (Total Holding)</label>
-                            <RadzenNumeric TValue="decimal" @bind-Value="@_spinoffMv" Min="0" Placeholder="Amount" Change="@OnCostInputChanged" class="w-100" />
+                            <RadzenNumeric TValue="decimal" @bind-Value="@_spinoffMv" Min="0" Placeholder="Amount" Format="@InputFormats.Money" Change="@OnCostInputChanged" class="w-100" />
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Currency</label>

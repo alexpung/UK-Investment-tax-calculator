@@ -60,7 +60,7 @@
                 <div class="row mb-3">
                     <div class="col-md-4">
                         <label class="form-label">Transferred Cost Amount</label>
-                        <RadzenNumeric TValue="decimal" @bind-Value="@_transferredCostAmount" Min="0" Format="n4" class="w-100" />
+                        <RadzenNumeric TValue="decimal" @bind-Value="@_transferredCostAmount" Min="0" Format="@InputFormats.Money" class="w-100" />
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Currency</label>
