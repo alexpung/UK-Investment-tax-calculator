@@ -92,6 +92,35 @@ public class UkTradeCalculatorEriGapPeriodTest
     }
 
     [Fact]
+    public void TestSaleBeforePeriodEndBoughtBackWithin30DaysAfterIsTreatedAsHeldAtPeriodEnd()
+    {
+        // SI 2009/3001 reg. 94(3A): a disposal in one reporting period that s.106A TCGA 1992 identifies with an
+        // interest acquired in the next period is ignored, and the participant is treated as holding the interest at
+        // the end of the earlier period. The 30-day match leaves the period end units in the section 104 pool, so the
+        // pool quantity at the period end (which the ERI page uses) still includes them.
+        Trade buy = CreateTrade(TradeType.ACQUISITION, "01-Jan-23 10:00:00", 1000, 10000m);
+        Trade sellBeforePeriodEnd = CreateTrade(TradeType.DISPOSAL, "20-Dec-23 10:00:00", 400, 4800m);
+        Trade rebuyAfterPeriodEnd = CreateTrade(TradeType.ACQUISITION, "10-Jan-24 10:00:00", 400, 4400m);
+        ExcessReportableIncome eri = CreateEri(500m); // 0.5 per unit for the 1000 units treated as held at period end
+
+        UkSection104Pools section104Pools = new(new UKTaxYear(), new ResidencyStatusRecord());
+        TaxEventLists taxEventLists = new();
+        taxEventLists.AddData([buy, sellBeforePeriodEnd, rebuyAfterPeriodEnd, eri]);
+
+        UkTradeCalculator calculator = TradeCalculationHelper.CreateUkTradeCalculator(section104Pools, taxEventLists);
+        List<ITradeTaxCalculation> result = calculator.CalculateTax();
+
+        ITradeTaxCalculation disposal = result.First(x => x.AcquisitionDisposal == TradeType.DISPOSAL);
+        disposal.MatchHistory.ShouldHaveSingleItem().TradeMatchType.ShouldBe(TaxMatchType.BED_AND_BREAKFAST);
+        disposal.Gain.Amount.ShouldBe(400m, 0.01m); // 4800 - 4400
+
+        UkSection104 pool = section104Pools.GetExistingOrInitialise("REPORT_FUND");
+        pool.GetLastSection104History(new DateOnly(2023, 12, 31))!.NewQuantity.ShouldBe(1000m);
+        pool.Quantity.ShouldBe(1000m);
+        pool.AcquisitionCostInBaseCurrency.Amount.ShouldBe(10500m, 0.01m); // 10000 + 1000 * 0.5
+    }
+
+    [Fact]
     public void TestFullDisposalInGapPeriodDoesNotPoisonLaterAcquisition()
     {
         // The whole holding is sold in the gap period and a fresh position is opened after the fund distribution

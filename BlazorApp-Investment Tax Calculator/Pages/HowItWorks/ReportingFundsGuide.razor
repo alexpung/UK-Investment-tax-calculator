@@ -52,10 +52,36 @@
                     Equalisation on ERI is split between the pool and sales after the period end in the same way as the ERI.
                 </li>
             </ul>
-            <div class="alert alert-info alert-custom" role="note">
-                There is a special rule for reporting funds that are sold before the end of a reporting period and bought
-                back within 30 days after it: you are treated as holding the units at the period end. The app does not
-                apply this rule, so you need to make the adjustment yourself.
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Selling before the period end and buying back within 30 days</h2>
+            <p>
+                If you sell units before the end of a reporting period and buy them back within 30 days, after the period
+                end, the 30-day rule matches the sale with the repurchase. In that case the sale is ignored when deciding who
+                held the units at the period end, so you are treated as still holding them and the ERI for that period is
+                yours (SI 2009/3001 reg. 94(3A)).
+            </p>
+            <p>
+                The app follows this without any extra step. A sale matched under the
+                <a href="HowItWorks/30-day-rule" class="link-styled">30-day rule</a> is matched with the repurchase, so the
+                original units never leave the Section 104 pool. The pool still holds them at the period end, which is the
+                holding the ERI page uses, and the ERI is added to the pool's cost.
+            </p>
+        </div>
+        <div class="card mb-4">
+            <div class="card-body">
+                <h2 class="h5 card-title">Worked example</h2>
+                <p>
+                    You hold 1,000 units costing £10,000. The fund's reporting period ends on 31 December 2023 and its ERI is
+                    £0.50 a unit. On 20 December 2023 you sell 400 units for £4,800, and on 10 January 2024 you buy 400 back
+                    for £4,400.
+                </p>
+                <p class="mb-0">
+                    The sale is matched with the January purchase, a gain of £400. The pool still shows 1,000 units at
+                    31 December, so the ERI is 1,000 × £0.50 = <strong>£500</strong>, taxed as income, and the pool's cost
+                    becomes £10,500.
+                </p>
             </div>
         </div>
     </ChildContent>
