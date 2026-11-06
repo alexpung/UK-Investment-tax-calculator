@@ -1,0 +1,49 @@
+/* GitHub Sponsor/Star Button Styles */
+.btn-github-custom {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    border: 1.5px solid var(--wf-border, #D3DED7);
+    background-color: var(--wf-surface, #FFFFFF);
+    color: var(--wf-ink, #12261D);
+    text-decoration: none;
+    transition: background-color 0.2s cubic-bezier(0.3, 0, 0.5, 1);
+    height: 32px;
+}
+
+.btn-github-custom:hover {
+    background-color: var(--wf-surface-2, #F4F8F5);
+    border-color: var(--wf-forest, #0E3326);
+    text-decoration: none;
+    color: var(--wf-ink, #12261D);
+}
+
+.btn-github-custom .icon {
+    margin-right: 8px;
+    display: inline-block;
+    vertical-align: text-bottom;
+}
+
+.btn-github-sponsor {
+    color: var(--wf-ink, #12261D);
+}
+
+.btn-github-sponsor .icon {
+    color: #db61a2;
+    /* Pink heart color */
+}
+
+.btn-github-star {
+    color: var(--wf-ink, #12261D);
+}
+
+.btn-github-star .icon {
+    color: #e3b341;
+    /* Gold star color */
+}
