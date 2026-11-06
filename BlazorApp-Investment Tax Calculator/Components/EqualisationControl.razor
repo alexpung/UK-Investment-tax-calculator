@@ -9,12 +9,19 @@
 @inject TaxEventLists TaxEventLists
 @inject ToastService ToastService
 @inject CurrencyService CurrencyService
+@inject EriEqualisationService EriEqualisationService
 
 <div class="card">
     <div class="card-header">
-        <h5 class="mb-0">Add Fund Equalisation</h5>
+        <h5 class="mb-0">@(_editingEqualisation is null ? "Add Fund Equalisation" : "Edit Fund Equalisation")</h5>
     </div>
     <div class="card-body">
+        @if (_editingEqualisation is not null)
+        {
+            <div class="alert alert-warning py-2 mb-3" role="alert">
+                Editing the equalisation of <strong>@_editingEqualisation.Amount.BaseCurrencyAmount</strong> for <strong>@_editingEqualisation.AssetName</strong>. The income amounts below include it. Saving replaces it.
+            </div>
+        }
         <div class="form-grid">
             <div class="form-field form-field-wide">
                 <label class="form-label">Ticker</label>
@@ -62,9 +69,19 @@
                 </div>
 
                 <div class="form-actions">
-                    <RadzenButton ButtonStyle="ButtonStyle.Primary" Click="() => OnSubmit(selectedEvent)" Text="Add Equalisation" />
+                    <RadzenButton ButtonStyle="ButtonStyle.Primary" Click="() => OnSubmit(selectedEvent)" Text="@(_editingEqualisation is null ? "Add Equalisation" : "Update Equalisation")" />
+                    @if (_editingEqualisation is not null)
+                    {
+                        <RadzenButton ButtonStyle="ButtonStyle.Light" Click="CancelEdit" Text="Cancel" class="ms-2" />
+                    }
                 </div>
             }
+        }
+        else if (_editingEqualisation is not null)
+        {
+            <div class="form-actions">
+                <RadzenButton ButtonStyle="ButtonStyle.Light" Click="CancelEdit" Text="Cancel edit" />
+            </div>
         }
     </div>
 </div>
@@ -83,6 +100,9 @@
     private string Currency { get; set; } = "GBP";
     private List<CurrencyViewModel> Currencies { get; set; } = new();
     private decimal FxRate { get; set; } = 1.0m;
+    private FundEqualisation? _editingEqualisation;
+    // The income event reduced by the equalisation being edited; its amounts are shown with that reduction undone.
+    private TaxEvent? _editingIncomeEvent;
 
     public class IncomeEventVM
     {
@@ -112,6 +132,47 @@
             .Distinct()
             .OrderBy(a => a)
             .ToList();
+    }
+
+    /// <summary>
+    /// Loads an existing equalisation entry into the form. Submitting then replaces it instead of adding a new one.
+    /// </summary>
+    public void BeginEdit(FundEqualisation equalisation)
+    {
+        _editingEqualisation = equalisation;
+        _editingIncomeEvent = EriEqualisationService.FindIncomeForEqualisation(equalisation);
+        SelectedTicker = equalisation.AssetName;
+        RefreshAvailableEvents();
+        SelectedEventId = _editingIncomeEvent?.Id;
+        OnEventSelected(SelectedEventId!);
+        EqualisationAmount = equalisation.Amount.Amount.Amount;
+        StateHasChanged();
+    }
+
+    public void CancelEdit()
+    {
+        ResetForm();
+        StateHasChanged();
+    }
+
+    private void ResetForm()
+    {
+        _editingEqualisation = null;
+        _editingIncomeEvent = null;
+        SelectedTicker = string.Empty;
+        SelectedEventId = null;
+        EqualisationAmount = 0;
+        Currency = "GBP";
+        FxRate = 1.0m;
+        AvailableIncomeEvents.Clear();
+    }
+
+    private DescribedMoney DisplayedIncomeMoney(TaxEvent incomeEvent)
+    {
+        DescribedMoney money = EriEqualisationService.GetIncomeMoney(incomeEvent);
+        if (_editingEqualisation is null || !ReferenceEquals(incomeEvent, _editingIncomeEvent)) return money;
+        WrappedMoney reductionLocal = new(_editingEqualisation.Amount.BaseCurrencyAmount.Amount / money.FxRate, money.Amount.Currency);
+        return money with { Amount = money.Amount + reductionLocal };
     }
 
     private Task OnTickerChanged(string ticker)
@@ -160,14 +221,14 @@
         {
             AvailableIncomeEvents.Add(new IncomeEventVM { 
                 Event = d, 
-                DisplayText = $"{d.Date:d} - {d.Proceed.Display()} ({d.DividendType.GetDescription()})" 
+                DisplayText = $"{d.Date:d} - {DisplayedIncomeMoney(d).Display()} ({d.DividendType.GetDescription()})" 
             });
         }
         foreach(var i in interest) 
         {
             AvailableIncomeEvents.Add(new IncomeEventVM { 
                 Event = i, 
-                DisplayText = $"{i.Date:d} - {i.Amount.Display()} ({i.InterestType.GetDescription()})" 
+                DisplayText = $"{i.Date:d} - {DisplayedIncomeMoney(i).Display()} ({i.InterestType.GetDescription()})" 
             });
         }
         
@@ -182,88 +243,21 @@
             return;
         }
 
-        decimal availableBaseAmount = selectedEvent is Dividend d_guard ? d_guard.Proceed.BaseCurrencyAmount.Amount 
-                                   : (selectedEvent is InterestIncome i_guard ? i_guard.Amount.BaseCurrencyAmount.Amount : 0m);
-
-        decimal inputBaseAmount = EqualisationAmount * FxRate;
-
-        if (inputBaseAmount > availableBaseAmount)
+        try
         {
-            ToastService.ShowError($"Equalisation amount ({inputBaseAmount:N2} GBP) cannot exceed the income amount ({availableBaseAmount:N2} GBP).");
+            bool isEdit = _editingEqualisation is not null;
+            FundEqualisation equalisation = isEdit
+                ? EriEqualisationService.UpdateEqualisation(_editingEqualisation!, SelectedTicker, selectedEvent, EqualisationAmount)
+                : EriEqualisationService.AddEqualisation(SelectedTicker, selectedEvent, EqualisationAmount);
+            ToastService.ShowInformation($"Successfully {(isEdit ? "updated" : "added")} equalisation of {equalisation.Amount.BaseCurrencyAmount} and reduced income.");
+        }
+        catch (InvalidOperationException ex)
+        {
+            ToastService.ShowError(ex.Message);
             return;
         }
 
-        string eventTypeDesc = selectedEvent is Dividend d_ev ? d_ev.DividendType.GetDescription() : (selectedEvent is InterestIncome i_ev ? i_ev.InterestType.GetDescription() : "Income event");
-
-        var desMoney = new DescribedMoney(EqualisationAmount, Currency, FxRate, $"{eventTypeDesc} on {selectedEvent.Date:d}");
-
-        // 1. Create FundEqualisation Corporate Action
-        // For ERI-related equalisation, record the reporting period end so units disposed of between the period end
-        // and the distribution date take their share of the cost reduction at the disposal instead of the pool.
-        DateTime? reportingPeriodEnd = null;
-        bool isEriEvent = selectedEvent is Dividend { DividendType: DividendType.EXCESS_REPORTABLE_INCOME }
-            or InterestIncome { InterestType: InterestType.EXCESSREPORTABLEINCOME };
-        if (isEriEvent)
-        {
-            var relatedEri = TaxEventLists.CorporateActions.OfType<ExcessReportableIncome>()
-                .FirstOrDefault(e => e.IsSameAsset(SelectedTicker) && e.Date == selectedEvent.Date);
-            reportingPeriodEnd = relatedEri is not null
-                ? relatedEri.EffectiveReportingPeriodEndDate.ToDateTime(TimeOnly.MinValue)
-                : selectedEvent.Date.AddMonths(-6);
-        }
-
-        var equalisation = new FundEqualisation
-        {
-            AssetName = SelectedTicker,
-            Date = selectedEvent.Date,
-            Amount = desMoney,
-            RelatedEventDescription = desMoney.Description,
-            ReportingPeriodEndDate = reportingPeriodEnd
-        };
-
-        TaxEventLists.CorporateActions.Add(equalisation);
-
-        // 2. Reduce the income event
-        if (selectedEvent is Dividend d)
-        {
-            var oldProceed = d.Proceed;
-            var reductionBase = desMoney.BaseCurrencyAmount;
-            
-            // Create reduction in local currency
-            var reductionLocal = new WrappedMoney(reductionBase.Amount / oldProceed.FxRate, oldProceed.Amount.Currency);
-            
-            // We need to create a new DescribedMoney because properties are init
-            d.Proceed = new DescribedMoney
-            {
-                Amount = oldProceed.Amount - reductionLocal,
-                FxRate = oldProceed.FxRate,
-                Description = oldProceed.Description + $" (Reduced by equalisation of {reductionBase})"
-            };
-        }
-        else if (selectedEvent is InterestIncome i)
-        {
-            var oldAmount = i.Amount;
-            var reductionBase = desMoney.BaseCurrencyAmount;
-            
-            // Create reduction in local currency
-            var reductionLocal = new WrappedMoney(reductionBase.Amount / oldAmount.FxRate, oldAmount.Amount.Currency);
-
-            int index = TaxEventLists.InterestIncomes.IndexOf(i);
-            TaxEventLists.InterestIncomes[index] = i with {
-                Amount = new DescribedMoney {
-                    Amount = oldAmount.Amount - reductionLocal,
-                    FxRate = oldAmount.FxRate,
-                    Description = oldAmount.Description + $" (Reduced by equalisation of {reductionBase})"
-                }
-            };
-        }
-
-        ToastService.ShowInformation($"Successfully added equalisation of {desMoney.BaseCurrencyAmount} and reduced income.");
-
-        SelectedEventId = null;
-        EqualisationAmount = 0;
-        RefreshAvailableEvents();
-
+        ResetForm();
         await OnDataChanged.InvokeAsync();
     }
 }

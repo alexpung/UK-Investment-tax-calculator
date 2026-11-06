@@ -16,6 +16,7 @@
 @inject IJSRuntime JSRuntime
 @inject TaxCalculationService TaxCalculationService
 @inject ShareIdentityRegistry ShareIdentityRegistry
+@inject EriEqualisationService EriEqualisationService
 
 <div class="container-fluid py-4">
     <div class="row">
@@ -35,6 +36,7 @@
                     <ol class="mb-2">
                         <li><strong>Add ERI:</strong> Enter the fund's accounting period end date, ticker, and income per share. This calculates the total ERI based on your holdings at that date.</li>
                         <li><strong>Add Equalisation:</strong> Select the fund ticker and the specific income event (Dividend or ERI) to be reduced by the equalisation amount.</li>
+                        <li><strong>Edit or Delete:</strong> Use the buttons in the history table below to correct a mistake. Deleting an ERI entry also removes the income it created; deleting an equalisation entry adds the amount back to the income it reduced. An ERI entry reduced by equalisation can only be changed after deleting that equalisation.</li>
                     </ol>
                 </div>
 
@@ -60,13 +62,15 @@
             <!-- ERI and Equalisation Controls -->
             <div class="row g-4 mb-5">
                 <div class="col-xl-6">
-                    <EriControl IsCalculationMissing="@_isCalculationMissing"
+                    <EriControl @ref="_eriControl"
+                                IsCalculationMissing="@_isCalculationMissing"
                                 OnDataChanged="RefreshAll"
                                 AllowManualAssetNameInput="false"
                                 AssetCategoryFilter="@_stockAssetCategoryFilter" />
                 </div>
                 <div class="col-xl-6">
-                    <EqualisationControl IsCalculationMissing="@_isCalculationMissing"
+                    <EqualisationControl @ref="_equalisationControl"
+                                         IsCalculationMissing="@_isCalculationMissing"
                                          OnDataChanged="RefreshAll"
                                          AllowManualAssetNameInput="false"
                                          AssetCategoryFilter="@_stockAssetCategoryFilter" />
@@ -122,6 +126,14 @@
                             </Template>
                         </RadzenDataGridColumn>
                         <RadzenDataGridColumn TItem="CorporateAction" Property="@nameof(CorporateAction.Reason)" Title="Details" />
+                        <RadzenDataGridColumn TItem="CorporateAction" Title="Actions" Width="200px" TextAlign="TextAlign.Center" Sortable="false" Filterable="false">
+                            <Template Context="ca">
+                                <div class="d-flex gap-2 justify-content-center">
+                                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" Click="@(() => EditEntry(ca))" Text="Edit" class="flex-shrink-0" />
+                                    <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small" Click="@(() => DeleteEntry(ca))" Text="Delete" class="flex-shrink-0" />
+                                </div>
+                            </Template>
+                        </RadzenDataGridColumn>
                     </Columns>
                 </RadzenDataGrid>
             </div>
@@ -138,6 +150,8 @@
 
 @code {
     private List<CorporateAction> History { get; set; } = new();
+    private EriControl? _eriControl;
+    private EqualisationControl? _equalisationControl;
     
     private bool _isCalculationMissing = false;
     private bool _dataChanged = false;
@@ -169,6 +183,55 @@
         // calculation or file import.
         ShareIdentityRegistry.RegisterEvents(TaxEventLists.AllEvents);
         RefreshHistory();
+    }
+
+    private void EditEntry(CorporateAction entry)
+    {
+        switch (entry)
+        {
+            case ExcessReportableIncome eri:
+                int linkedCount = EriEqualisationService.GetEqualisationsLinkedToEri(eri).Count;
+                if (linkedCount > 0)
+                {
+                    ToastService.ShowError($"This ERI entry is reduced by {linkedCount} fund equalisation entr{(linkedCount == 1 ? "y" : "ies")}. Delete the equalisation entries first.");
+                    return;
+                }
+                _eriControl?.BeginEdit(eri);
+                break;
+            case FundEqualisation equalisation:
+                _equalisationControl?.BeginEdit(equalisation);
+                break;
+        }
+    }
+
+    private void DeleteEntry(CorporateAction entry)
+    {
+        try
+        {
+            switch (entry)
+            {
+                case ExcessReportableIncome eri:
+                    EriEqualisationService.RemoveEri(eri);
+                    _eriControl?.CancelEdit();
+                    ToastService.ShowInformation($"Removed ERI entry for {eri.AssetName} and its income event.");
+                    break;
+                case FundEqualisation equalisation:
+                    TaxEvent? restored = EriEqualisationService.RemoveEqualisation(equalisation);
+                    _equalisationControl?.CancelEdit();
+                    ToastService.ShowInformation(restored is null
+                        ? $"Removed equalisation entry for {equalisation.AssetName}. The income event it reduced could not be found, so no income amount was restored."
+                        : $"Removed equalisation entry for {equalisation.AssetName} and restored the income amount.");
+                    break;
+                default:
+                    return;
+            }
+        }
+        catch (InvalidOperationException ex)
+        {
+            ToastService.ShowError(ex.Message);
+            return;
+        }
+        RefreshAll();
     }
 
     private async ValueTask OnLocationChanging(LocationChangingContext context)

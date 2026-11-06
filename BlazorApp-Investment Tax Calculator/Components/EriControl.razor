@@ -9,12 +9,19 @@
 @inject TaxEventLists TaxEventLists
 @inject ToastService ToastService
 @inject CurrencyService CurrencyService
+@inject EriEqualisationService EriEqualisationService
 
 <div class="card">
     <div class="card-header">
-        <h5 class="mb-0">Add Excess Reportable Income (ERI)</h5>
+        <h5 class="mb-0">@(_editingEri is null ? "Add Excess Reportable Income (ERI)" : "Edit Excess Reportable Income (ERI)")</h5>
     </div>
     <div class="card-body">
+        @if (_editingEri is not null)
+        {
+            <div class="alert alert-warning py-2 mb-3" role="alert">
+                Editing the ERI entry for <strong>@_editingEri.AssetName</strong> (period end @_editingEri.EffectiveReportingPeriodEndDate.ToString("d")). Saving replaces it and its income event.
+            </div>
+        }
         <div class="form-section-title">Holding</div>
         <div class="form-grid">
             <div class="form-field">
@@ -86,7 +93,17 @@
             </div>
 
             <div class="form-actions">
-                <RadzenButton ButtonStyle="ButtonStyle.Primary" Click="OnSubmit" Text="Add ERI Entry" />
+                <RadzenButton ButtonStyle="ButtonStyle.Primary" Click="OnSubmit" Text="@(_editingEri is null ? "Add ERI Entry" : "Update ERI Entry")" />
+                @if (_editingEri is not null)
+                {
+                    <RadzenButton ButtonStyle="ButtonStyle.Light" Click="CancelEdit" Text="Cancel" class="ms-2" />
+                }
+            </div>
+        }
+        else if (_editingEri is not null)
+        {
+            <div class="form-actions">
+                <RadzenButton ButtonStyle="ButtonStyle.Light" Click="CancelEdit" Text="Cancel edit" />
             </div>
         }
     </div>
@@ -107,6 +124,36 @@
     private decimal FxRate { get; set; } = 1.0m;
     private ExcessReportableIncomeType SelectedIncomeType { get; set; } = ExcessReportableIncomeType.DIVIDEND;
     private List<EnumDescriptionPair<ExcessReportableIncomeType>> IncomeTypes { get; set; } = new();
+    private ExcessReportableIncome? _editingEri;
+
+    /// <summary>
+    /// Loads an existing ERI entry into the form. Submitting then replaces it instead of adding a new one.
+    /// </summary>
+    public void BeginEdit(ExcessReportableIncome eri)
+    {
+        _editingEri = eri;
+        PeriodEndDate = eri.EffectiveReportingPeriodEndDate.ToDateTime(TimeOnly.MinValue);
+        OnTickerChanged(eri.AssetName);
+        SelectedIncomeType = eri.IncomeType;
+        Currency = eri.Amount.Amount.Currency.ToUpperInvariant();
+        FxRate = eri.Amount.FxRate;
+        IncomePerShare = Quantity > 0 ? eri.Amount.Amount.Amount / Quantity : 0m;
+        StateHasChanged();
+    }
+
+    public void CancelEdit()
+    {
+        ResetForm();
+        StateHasChanged();
+    }
+
+    private void ResetForm()
+    {
+        _editingEri = null;
+        SelectedTicker = string.Empty;
+        Quantity = 0m;
+        IncomePerShare = 0;
+    }
 
     protected override void OnInitialized()
     {
@@ -169,55 +216,24 @@
 
         string isin = GetIsinForTicker(SelectedTicker, PeriodEndDate.Value);
         CountryCode region = string.IsNullOrEmpty(isin) || isin.Length < 2
-            ? CountryCode.UnknownRegion 
+            ? CountryCode.UnknownRegion
             : CountryCode.GetRegionByTwoDigitCode(isin[..2]);
 
-        DateTime distributionDate = PeriodEndDate.Value.AddMonths(6);
-        decimal totalAmountLocal = Quantity * IncomePerShare;
-
-        var eri = new ExcessReportableIncome
+        try
         {
-            AssetName = SelectedTicker,
-            Date = distributionDate,
-            ReportingPeriodEndDate = PeriodEndDate.Value,
-            IncomeType = SelectedIncomeType,
-            Amount = new DescribedMoney(totalAmountLocal, Currency, FxRate, $"ERI for {Quantity:N4} shares (Period End: {PeriodEndDate.Value:d})"),
-            Isin = isin,
-            IncomeLocation = region
-        };
-
-        TaxEventLists.CorporateActions.Add(eri);
-
-        if (SelectedIncomeType == ExcessReportableIncomeType.DIVIDEND)
-        {
-            TaxEventLists.Dividends.Add(new Dividend
-            {
-                AssetName = SelectedTicker,
-                Date = distributionDate,
-                DividendType = DividendType.EXCESS_REPORTABLE_INCOME,
-                Proceed = new DescribedMoney(totalAmountLocal, Currency, FxRate, $"Excess Reportable Income (Dividend) from {SelectedTicker}"),
-                Isin = isin,
-                CompanyLocation = region
-            });
+            bool isEdit = _editingEri is not null;
+            ExcessReportableIncome eri = isEdit
+                ? EriEqualisationService.UpdateEri(_editingEri!, SelectedTicker, PeriodEndDate.Value, Quantity, IncomePerShare, Currency, FxRate, SelectedIncomeType, isin, region)
+                : EriEqualisationService.AddEri(SelectedTicker, PeriodEndDate.Value, Quantity, IncomePerShare, Currency, FxRate, SelectedIncomeType, isin, region);
+            ToastService.ShowInformation($"Successfully {(isEdit ? "updated" : "added")} ERI of {eri.Amount.BaseCurrencyAmount} for {SelectedTicker}.");
         }
-        else
+        catch (InvalidOperationException ex)
         {
-            TaxEventLists.InterestIncomes.Add(new InterestIncome
-            {
-                AssetName = SelectedTicker,
-                Date = distributionDate,
-                InterestType = InterestType.EXCESSREPORTABLEINCOME,
-                Amount = new DescribedMoney(totalAmountLocal, Currency, FxRate, $"Excess Reportable Income (Interest) from {SelectedTicker}"),
-                Isin = isin,
-                IncomeLocation = region
-            });
+            ToastService.ShowError(ex.Message);
+            return;
         }
 
-        ToastService.ShowInformation($"Successfully added ERI of {eri.Amount.BaseCurrencyAmount} for {SelectedTicker}.");
-        
-        SelectedTicker = string.Empty;
-        IncomePerShare = 0;
-
+        ResetForm();
         await OnDataChanged.InvokeAsync();
     }
 }
