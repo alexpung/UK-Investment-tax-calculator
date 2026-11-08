@@ -41,7 +41,7 @@ public static class ReportingFundIncomeResolver
     {
         if (equalisation.IncomeSource != EqualisationIncomeSource.ExcessReportableIncome) return null;
         return corporateActions.OfType<ExcessReportableIncome>()
-            .FirstOrDefault(eri => eri.IsSameAsset(equalisation.AssetName) && eri.Date == equalisation.Date);
+            .FirstOrDefault(eri => IsSameAsset(eri, equalisation) && eri.Date == equalisation.Date);
     }
 
     /// <summary>
@@ -53,11 +53,16 @@ public static class ReportingFundIncomeResolver
         if (equalisation.IncomeSource == EqualisationIncomeSource.ExcessReportableIncome) return null;
         return dividends.Where(IsDistribution).Select(d => (Event: (TaxEvent)d, Money: d.Proceed))
             .Concat(interestIncomes.Where(IsDistribution).Select(i => (Event: (TaxEvent)i, Money: i.Amount)))
-            .Where(c => c.Event.IsSameAsset(equalisation.AssetName) && c.Event.Date == equalisation.Date)
+            .Where(c => IsSameAsset(c.Event, equalisation) && c.Event.Date == equalisation.Date)
             .OrderByDescending(c => c.Money.BaseCurrencyAmount.Amount)
             .Select(c => c.Event)
             .FirstOrDefault();
     }
+
+    // Checked both ways: an event added or edited since share identities were last registered has no identity yet,
+    // and would otherwise only match the exact ticker spelling.
+    private static bool IsSameAsset(TaxEvent income, FundEqualisation equalisation) =>
+        income.IsSameAsset(equalisation.AssetName) || equalisation.IsSameAsset(income.AssetName);
 
     /// <summary>
     /// Points each ERI equalisation entry at its ERI entry, so the cost reduction follows the ERI's reporting period.
@@ -71,6 +76,38 @@ public static class ReportingFundIncomeResolver
             equalisation.LinkedExcessReportableIncome = FindExcessReportableIncome(equalisation, actions);
         }
     }
+
+    /// <summary>
+    /// Whether the equalisation entry still has income to reduce: its ERI entry or its fund distribution.
+    /// </summary>
+    public static bool HasIncome(FundEqualisation equalisation, TaxEventLists taxEventLists) =>
+        FindExcessReportableIncome(equalisation, taxEventLists.CorporateActions) is not null
+        || FindDistribution(equalisation, taxEventLists.Dividends, taxEventLists.InterestIncomes) is not null;
+
+    /// <summary>
+    /// Applies <paramref name="change"/> (typically deleting an ERI entry or an income event) and then removes the
+    /// equalisation entries that had income before the change but not after, so no equalisation is left stranded
+    /// without the income it belongs to. Entries that already had no income are left alone.
+    /// Returns the equalisation entries removed, for the caller to warn about.
+    /// </summary>
+    public static List<FundEqualisation> ApplyAndRemoveStrandedEqualisations(TaxEventLists taxEventLists, Action change)
+    {
+        List<FundEqualisation> matchedBefore = [.. taxEventLists.CorporateActions.OfType<FundEqualisation>().Where(e => HasIncome(e, taxEventLists))];
+        change();
+        List<FundEqualisation> stranded = [.. matchedBefore.Where(e => !HasIncome(e, taxEventLists))];
+        foreach (FundEqualisation equalisation in stranded)
+        {
+            taxEventLists.CorporateActions.Remove(equalisation);
+        }
+        return stranded;
+    }
+
+    /// <summary>
+    /// The warning to show when <see cref="ApplyAndRemoveStrandedEqualisations"/> removed entries.
+    /// </summary>
+    public static string DescribeRemovedEqualisations(List<FundEqualisation> removed) =>
+        $"Also deleted {removed.Count} fund equalisation entr{(removed.Count == 1 ? "y" : "ies")} that reduced the deleted income: " +
+        string.Join("; ", removed.Select(e => e.Reason)) + ".";
 
     public static ResolvedIncome Resolve(IDividendLists storedIncome, IEnumerable<CorporateAction> corporateActions)
     {

@@ -61,7 +61,7 @@ public record FundEqualisation : CorporateAction, IChangeSection104
         {
             if (LinkedExcessReportableIncome is not null) return LinkedExcessReportableIncome.EffectiveReportingPeriodEndDate;
             if (ReportingPeriodEndDate is not null) return DateOnly.FromDateTime(ReportingPeriodEndDate.Value);
-            if (IncomeSource == EqualisationIncomeSource.ExcessReportableIncome) return DateOnly.FromDateTime(Date.AddMonths(-6));
+            if (IncomeSource == EqualisationIncomeSource.ExcessReportableIncome) return DateOnly.FromDateTime(ExcessReportableIncome.AssumedReportingPeriodEnd(Date));
             return null;
         }
     }

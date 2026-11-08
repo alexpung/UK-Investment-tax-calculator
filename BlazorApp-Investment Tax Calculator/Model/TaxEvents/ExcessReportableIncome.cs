@@ -37,14 +37,17 @@ public record ExcessReportableIncome : CorporateAction, IChangeSection104
     public DateTime? ReportingPeriodEndDate { get; init; }
 
     [JsonIgnore]
-    public DateOnly EffectiveReportingPeriodEndDate => DateOnly.FromDateTime(ReportingPeriodEndDate ?? AssumedReportingPeriodEnd());
+    public DateOnly EffectiveReportingPeriodEndDate => DateOnly.FromDateTime(ReportingPeriodEndDate ?? AssumedReportingPeriodEnd(Date));
 
-    private DateTime AssumedReportingPeriodEnd()
+    /// <summary>
+    /// The reporting period end assumed for a fund distribution date when none is recorded: 6 months earlier.
+    /// </summary>
+    public static DateTime AssumedReportingPeriodEnd(DateTime distributionDate)
     {
-        DateTime assumed = Date.AddMonths(-6);
+        DateTime assumed = distributionDate.AddMonths(-6);
         // Reg. 94(4) maps a month end period end to a month end distribution date (e.g. 31 Dec -> 30 Jun), so a
         // month end distribution date is mapped back to the month end rather than AddMonths' clamped day.
-        if (Date.Day == DateTime.DaysInMonth(Date.Year, Date.Month))
+        if (distributionDate.Day == DateTime.DaysInMonth(distributionDate.Year, distributionDate.Month))
         {
             assumed = new DateTime(assumed.Year, assumed.Month, DateTime.DaysInMonth(assumed.Year, assumed.Month));
         }

@@ -2,6 +2,7 @@
 @using InvestmentTaxCalculator.Model
 @using InvestmentTaxCalculator.Model.TaxEvents
 @using InvestmentTaxCalculator.Services
+@using InvestmentTaxCalculator.Model.UkTaxModel
 
 @inject TaxEventLists TaxEventLists
 @inject CurrencyService CurrencyService
@@ -139,8 +140,6 @@
                 return;
             }
 
-            int index = TaxEventLists.InterestIncomes.FindIndex(i => i.Id == EditingTaxEventId.Value);
-            TaxEventLists.InterestIncomes.RemoveAt(index);
         }
 
         var interestIncome = new InterestIncome
@@ -154,7 +153,25 @@
             Amount = new DescribedMoney(_amount, _currency, _fxRate, _description.Trim())
         };
 
-        TaxEventLists.InterestIncomes.Add(interestIncome);
+        if (IsEditing)
+        {
+            // An edit that moves the interest income to another asset or date leaves its fund equalisation entries without
+            // income; delete them rather than leave them stranded.
+            int editingId = EditingTaxEventId!.Value;
+            List<FundEqualisation> stranded = ReportingFundIncomeResolver.ApplyAndRemoveStrandedEqualisations(TaxEventLists, () =>
+            {
+                TaxEventLists.InterestIncomes.RemoveAll(i => i.Id == editingId);
+                TaxEventLists.InterestIncomes.Add(interestIncome);
+            });
+            if (stranded.Count > 0)
+            {
+                ToastService.ShowWarning(ReportingFundIncomeResolver.DescribeRemovedEqualisations(stranded));
+            }
+        }
+        else
+        {
+            TaxEventLists.InterestIncomes.Add(interestIncome);
+        }
         ResetForm();
 
         string verb = IsEditing ? "updated" : "added";

@@ -2,10 +2,10 @@
 @using InvestmentTaxCalculator.Model.TaxEvents
 @using InvestmentTaxCalculator.Model.Interfaces
 @using InvestmentTaxCalculator.Services
+@using InvestmentTaxCalculator.Model.UkTaxModel
 
-@inject ITradeAndCorporateActionList _taxEventLists
+@inject TaxEventLists _taxEventLists
 @inject ToastService _toastService
-@inject NavigationManager _navigationManager
 
 <div class="card mt-4">
     <div class="card-header">
@@ -22,11 +22,8 @@
                 <RadzenDataGridColumn TItem="CorporateAction" Title="Actions" Width="220px" TextAlign="TextAlign.Center" Sortable="false" Filterable="false">
                     <Template Context="action">
                         <div class="d-flex gap-2 justify-content-center">
-                            @if (action is ExcessReportableIncome or FundEqualisation)
-                            {
-                                <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" Click="@(() => _navigationManager.NavigateTo("AddExcessReportableIncome"))" Text="Edit" class="flex-shrink-0" title="Edit on the ERI and Fund Equalisation page" />
-                            }
-                            else
+                            @* ERI and equalisation entries are not editable: delete and re-add them on the ERI page *@
+                            @if (action is not (ExcessReportableIncome or FundEqualisation))
                             {
                                 <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" Click="@(() => EditAction(action))" Text="Edit" class="flex-shrink-0" />
                             }
@@ -60,9 +57,17 @@
 
     private async Task DeleteAction(CorporateAction action)
     {
-        if (_taxEventLists.CorporateActions.Remove(action))
+        bool removed = false;
+        // Deleting an ERI entry also deletes the equalisation entries that reduce it.
+        List<FundEqualisation> stranded = ReportingFundIncomeResolver.ApplyAndRemoveStrandedEqualisations(_taxEventLists,
+            () => removed = _taxEventLists.CorporateActions.Remove(action));
+        if (removed)
         {
             _toastService.ShowInformation("Event removed.");
+            if (stranded.Count > 0)
+            {
+                _toastService.ShowWarning(ReportingFundIncomeResolver.DescribeRemovedEqualisations(stranded));
+            }
             await Refresh();
             await OnActionDeleted.InvokeAsync();
         }

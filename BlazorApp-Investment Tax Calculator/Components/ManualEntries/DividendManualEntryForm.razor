@@ -2,6 +2,7 @@
 @using InvestmentTaxCalculator.Model
 @using InvestmentTaxCalculator.Model.TaxEvents
 @using InvestmentTaxCalculator.Services
+@using InvestmentTaxCalculator.Model.UkTaxModel
 
 @inject TaxEventLists TaxEventLists
 @inject CurrencyService CurrencyService
@@ -118,8 +119,7 @@
 
         if (EditingTaxEventId.HasValue)
         {
-            int removed = TaxEventLists.Dividends.RemoveAll(d => d.Id == EditingTaxEventId.Value);
-            if (removed != 1)
+            if (TaxEventLists.Dividends.Count(d => d.Id == EditingTaxEventId.Value) != 1)
             {
                 ToastService.ShowError("Unable to update dividend because the original entry could not be found.");
                 return;
@@ -136,7 +136,25 @@
             Proceed = new DescribedMoney(_amount, _currency, _fxRate, _description.Trim())
         };
 
-        TaxEventLists.Dividends.Add(dividend);
+        if (IsEditing)
+        {
+            // An edit that moves the dividend to another asset or date leaves its fund equalisation entries without
+            // income; delete them rather than leave them stranded.
+            int editingId = EditingTaxEventId!.Value;
+            List<FundEqualisation> stranded = ReportingFundIncomeResolver.ApplyAndRemoveStrandedEqualisations(TaxEventLists, () =>
+            {
+                TaxEventLists.Dividends.RemoveAll(d => d.Id == editingId);
+                TaxEventLists.Dividends.Add(dividend);
+            });
+            if (stranded.Count > 0)
+            {
+                ToastService.ShowWarning(ReportingFundIncomeResolver.DescribeRemovedEqualisations(stranded));
+            }
+        }
+        else
+        {
+            TaxEventLists.Dividends.Add(dividend);
+        }
         ResetForm();
 
         string verb = IsEditing ? "updated" : "added";

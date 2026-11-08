@@ -12,15 +12,9 @@
 
 <div class="card">
     <div class="card-header">
-        <h5 class="mb-0">@(_editingEqualisation is null ? "Add Fund Equalisation" : "Edit Fund Equalisation")</h5>
+        <h5 class="mb-0">Add Fund Equalisation</h5>
     </div>
     <div class="card-body">
-        @if (_editingEqualisation is not null)
-        {
-            <div class="alert alert-warning py-2 mb-3" role="alert">
-                Editing the equalisation of <strong>@_editingEqualisation.Amount.BaseCurrencyAmount</strong> for <strong>@_editingEqualisation.AssetName</strong>. Saving replaces it; the income it reduces is recalculated.
-            </div>
-        }
         <div class="form-grid">
             <div class="form-field form-field-wide">
                 <label class="form-label">Ticker</label>
@@ -68,19 +62,9 @@
                 </div>
 
                 <div class="form-actions">
-                    <RadzenButton ButtonStyle="ButtonStyle.Primary" Click="() => OnSubmit(selectedEvent)" Text="@(_editingEqualisation is null ? "Add Equalisation" : "Update Equalisation")" />
-                    @if (_editingEqualisation is not null)
-                    {
-                        <RadzenButton ButtonStyle="ButtonStyle.Light" Click="CancelEdit" Text="Cancel" class="ms-2" />
-                    }
+                    <RadzenButton ButtonStyle="ButtonStyle.Primary" Click="() => OnSubmit(selectedEvent)" Text="Add Equalisation" />
                 </div>
             }
-        }
-        else if (_editingEqualisation is not null)
-        {
-            <div class="form-actions">
-                <RadzenButton ButtonStyle="ButtonStyle.Light" Click="CancelEdit" Text="Cancel edit" />
-            </div>
         }
     </div>
 </div>
@@ -98,7 +82,6 @@
     private decimal EqualisationAmount { get; set; }
     private string Currency { get; set; } = "GBP";
     private decimal FxRate { get; set; } = 1.0m;
-    private FundEqualisation? _editingEqualisation;
 
     /// <summary>
     /// An income an equalisation entry can reduce: a stored fund distribution (dividend or interest) or an ERI entry.
@@ -133,22 +116,9 @@
     }
 
     /// <summary>
-    /// Loads an existing equalisation entry into the form. Submitting then replaces it instead of adding a new one.
+    /// Clears the form, e.g. after an entry is deleted so a stale income selection cannot be submitted.
     /// </summary>
-    public void BeginEdit(FundEqualisation equalisation)
-    {
-        _editingEqualisation = equalisation;
-        SelectedTicker = equalisation.AssetName;
-        RefreshAvailableEvents();
-        TaxEvent? target = (TaxEvent?)ReportingFundIncomeResolver.FindExcessReportableIncome(equalisation, TaxEventLists.CorporateActions)
-            ?? ReportingFundIncomeResolver.FindDistribution(equalisation, TaxEventLists.Dividends, TaxEventLists.InterestIncomes);
-        SelectedEventId = target?.Id;
-        OnEventSelected(SelectedEventId!);
-        EqualisationAmount = equalisation.Amount.Amount.Amount;
-        StateHasChanged();
-    }
-
-    public void CancelEdit()
+    public void Reset()
     {
         ResetForm();
         StateHasChanged();
@@ -156,7 +126,6 @@
 
     private void ResetForm()
     {
-        _editingEqualisation = null;
         SelectedTicker = string.Empty;
         SelectedEventId = null;
         EqualisationAmount = 0;
@@ -204,7 +173,6 @@
     // Other equalisation entries already reducing the same income, so the total cannot exceed it.
     private WrappedMoney OtherEqualisationsOn(IncomeEventVM income) =>
         TaxEventLists.CorporateActions.OfType<FundEqualisation>()
-            .Where(fe => !ReferenceEquals(fe, _editingEqualisation))
             .Where(fe => ReferenceEquals(income.Source == EqualisationIncomeSource.ExcessReportableIncome
                 ? ReportingFundIncomeResolver.FindExcessReportableIncome(fe, TaxEventLists.CorporateActions)
                 : ReportingFundIncomeResolver.FindDistribution(fe, TaxEventLists.Dividends, TaxEventLists.InterestIncomes), income.Event))
@@ -239,17 +207,8 @@
             IncomeSource = income.Source
         };
 
-        int editIndex = _editingEqualisation is null ? -1 : TaxEventLists.CorporateActions.IndexOf(_editingEqualisation);
-        if (editIndex >= 0)
-        {
-            TaxEventLists.CorporateActions[editIndex] = equalisation;
-            ToastService.ShowInformation($"Successfully updated equalisation to {equalisation.Amount.BaseCurrencyAmount}.");
-        }
-        else
-        {
-            TaxEventLists.CorporateActions.Add(equalisation);
-            ToastService.ShowInformation($"Successfully added equalisation of {equalisation.Amount.BaseCurrencyAmount}.");
-        }
+        TaxEventLists.CorporateActions.Add(equalisation);
+        ToastService.ShowInformation($"Successfully added equalisation of {equalisation.Amount.BaseCurrencyAmount}.");
 
         ResetForm();
         await OnDataChanged.InvokeAsync();

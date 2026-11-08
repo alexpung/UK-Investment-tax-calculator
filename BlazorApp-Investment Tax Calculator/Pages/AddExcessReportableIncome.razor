@@ -35,7 +35,7 @@
                     <ol class="mb-2">
                         <li><strong>Add ERI:</strong> Enter the fund's accounting period end date, ticker, and income per share. This calculates the total ERI based on your holdings at that date.</li>
                         <li><strong>Add Equalisation:</strong> Select the fund ticker and the specific income event (Dividend or ERI) to be reduced by the equalisation amount.</li>
-                        <li><strong>Edit or Delete:</strong> Use the buttons in the history table below to correct a mistake. Only the entry itself is stored: the ERI income, the equalisation reduction and the Section 104 adjustments are worked out from the entries every time the calculation runs, so editing or deleting an entry is all that is needed.</li>
+                        <li><strong>Correcting a mistake:</strong> Delete the entry in the history table below and add it again. The ERI income, the equalisation reduction and the Section 104 adjustments are worked out from the entries every time the calculation runs, so nothing else needs undoing. Deleting an ERI entry also deletes the equalisation entries that reduce it.</li>
                     </ol>
                 </div>
 
@@ -61,8 +61,7 @@
             <!-- ERI and Equalisation Controls -->
             <div class="row g-4 mb-5">
                 <div class="col-xl-6">
-                    <EriControl @ref="_eriControl"
-                                IsCalculationMissing="@_isCalculationMissing"
+                    <EriControl IsCalculationMissing="@_isCalculationMissing"
                                 OnDataChanged="RefreshAll"
                                 AllowManualAssetNameInput="false"
                                 AssetCategoryFilter="@_stockAssetCategoryFilter" />
@@ -129,10 +128,9 @@
                             </Template>
                         </RadzenDataGridColumn>
                         <RadzenDataGridColumn TItem="CorporateAction" Property="@nameof(CorporateAction.Reason)" Title="Details" />
-                        <RadzenDataGridColumn TItem="CorporateAction" Title="Actions" Width="200px" TextAlign="TextAlign.Center" Sortable="false" Filterable="false">
+                        <RadzenDataGridColumn TItem="CorporateAction" Title="Actions" Width="120px" TextAlign="TextAlign.Center" Sortable="false" Filterable="false">
                             <Template Context="ca">
                                 <div class="d-flex gap-2 justify-content-center">
-                                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" Click="@(() => EditEntry(ca))" Text="Edit" class="flex-shrink-0" />
                                     <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small" Click="@(() => DeleteEntry(ca))" Text="Delete" class="flex-shrink-0" />
                                 </div>
                             </Template>
@@ -153,7 +151,6 @@
 
 @code {
     private List<CorporateAction> History { get; set; } = new();
-    private EriControl? _eriControl;
     private EqualisationControl? _equalisationControl;
     
     private bool _isCalculationMissing = false;
@@ -188,44 +185,26 @@
         RefreshHistory();
     }
 
-    private bool HasIncome(FundEqualisation equalisation) =>
-        ReportingFundIncomeResolver.FindExcessReportableIncome(equalisation, TaxEventLists.CorporateActions) is not null
-        || ReportingFundIncomeResolver.FindDistribution(equalisation, TaxEventLists.Dividends, TaxEventLists.InterestIncomes) is not null;
-
-    private void EditEntry(CorporateAction entry)
-    {
-        switch (entry)
-        {
-            case ExcessReportableIncome eri:
-                _eriControl?.BeginEdit(eri);
-                break;
-            case FundEqualisation equalisation:
-                _equalisationControl?.BeginEdit(equalisation);
-                break;
-        }
-    }
+    private bool HasIncome(FundEqualisation equalisation) => ReportingFundIncomeResolver.HasIncome(equalisation, TaxEventLists);
 
     private void DeleteEntry(CorporateAction entry)
     {
         // Entries are self-contained: their income and Section 104 effects are derived at calculation time, so
-        // deleting the entry is all that is needed.
-        if (!TaxEventLists.CorporateActions.Remove(entry)) return;
-        switch (entry)
+        // removing the entry is all that is needed. Equalisation entries left without income are removed with it.
+        bool removed = false;
+        List<FundEqualisation> stranded = ReportingFundIncomeResolver.ApplyAndRemoveStrandedEqualisations(TaxEventLists,
+            () => removed = TaxEventLists.CorporateActions.Remove(entry));
+        if (!removed) return;
+
+        ToastService.ShowInformation(entry is ExcessReportableIncome
+            ? $"Removed ERI entry for {entry.AssetName}."
+            : $"Removed equalisation entry for {entry.AssetName}.");
+        if (stranded.Count > 0)
         {
-            case ExcessReportableIncome eri:
-                _eriControl?.CancelEdit();
-                int orphaned = TaxEventLists.CorporateActions.OfType<FundEqualisation>()
-                    .Count(fe => fe.IncomeSource == EqualisationIncomeSource.ExcessReportableIncome && fe.IsSameAsset(eri.AssetName) && fe.Date == eri.Date
-                        && !HasIncome(fe));
-                ToastService.ShowInformation($"Removed ERI entry for {eri.AssetName}." + (orphaned > 0
-                    ? $" {orphaned} equalisation entr{(orphaned == 1 ? "y" : "ies")} for it now reduce no income; edit or delete them."
-                    : ""));
-                break;
-            case FundEqualisation equalisation:
-                _equalisationControl?.CancelEdit();
-                ToastService.ShowInformation($"Removed equalisation entry for {equalisation.AssetName}.");
-                break;
+            ToastService.ShowWarning(ReportingFundIncomeResolver.DescribeRemovedEqualisations(stranded));
         }
+        // The equalisation form may have the deleted ERI selected as its income.
+        _equalisationControl?.Reset();
         RefreshAll();
     }
 

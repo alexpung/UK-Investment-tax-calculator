@@ -126,7 +126,7 @@ public class ReportingFundIncomeResolverTest
     }
 
     [Fact]
-    public void EffectiveReportingPeriodEnd_FollowsEditedEri()
+    public void EffectiveReportingPeriodEnd_FollowsLinkedEri()
     {
         TaxEventLists lists = new();
         FundEqualisation equalisation = Equalisation(EqualisationIncomeSource.ExcessReportableIncome, 10m, DistributionDate);
@@ -134,7 +134,7 @@ public class ReportingFundIncomeResolverTest
         ReportingFundIncomeResolver.LinkEqualisations(lists.CorporateActions);
         equalisation.EffectiveReportingPeriodEndDate.ShouldBe(DateOnly.FromDateTime(PeriodEnd));
 
-        // Editing the ERI replaces it; the next calculation links the equalisation to the new entry.
+        // A replacement ERI entry (deleted and re-added) is picked up by the next calculation.
         lists.CorporateActions[0] = Eri() with { ReportingPeriodEndDate = new DateTime(2023, 12, 15) };
         ReportingFundIncomeResolver.LinkEqualisations(lists.CorporateActions);
 
@@ -152,6 +152,83 @@ public class ReportingFundIncomeResolverTest
 
         equalisation.GetHashCode().ShouldBe(hashBefore);
         actions.Remove(equalisation).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void DeletingEri_AlsoDeletesItsEqualisations()
+    {
+        TaxEventLists lists = new();
+        ExcessReportableIncome eri = Eri();
+        FundEqualisation eriEqualisation = Equalisation(EqualisationIncomeSource.ExcessReportableIncome, 10m, DistributionDate);
+        Dividend distribution = Distribution(100m, DistributionDate);
+        FundEqualisation distributionEqualisation = Equalisation(EqualisationIncomeSource.Distribution, 5m, DistributionDate);
+        lists.Dividends.Add(distribution);
+        lists.CorporateActions.AddRange([eri, eriEqualisation, distributionEqualisation]);
+
+        List<FundEqualisation> removed = ReportingFundIncomeResolver.ApplyAndRemoveStrandedEqualisations(lists, () => lists.CorporateActions.Remove(eri));
+
+        removed.ShouldHaveSingleItem().ShouldBe(eriEqualisation);
+        // The distribution equalisation on the same date belongs to the dividend, not the ERI, so it stays.
+        lists.CorporateActions.ShouldHaveSingleItem().ShouldBe(distributionEqualisation);
+        ReportingFundIncomeResolver.DescribeRemovedEqualisations(removed).ShouldContain("1 fund equalisation entry");
+    }
+
+    [Fact]
+    public void DeletingDividend_AlsoDeletesItsEqualisations()
+    {
+        TaxEventLists lists = new();
+        Dividend distribution = Distribution(100m, new DateTime(2024, 3, 1));
+        FundEqualisation equalisation = Equalisation(EqualisationIncomeSource.Distribution, 5m, distribution.Date);
+        lists.Dividends.Add(distribution);
+        lists.CorporateActions.Add(equalisation);
+
+        List<FundEqualisation> removed = ReportingFundIncomeResolver.ApplyAndRemoveStrandedEqualisations(lists, () => lists.Dividends.Remove(distribution));
+
+        removed.ShouldHaveSingleItem().ShouldBe(equalisation);
+        lists.CorporateActions.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void EditingDividend_KeepsEqualisationWhileStillMatched_DeletesItWhenMovedToAnotherDate()
+    {
+        TaxEventLists lists = new();
+        Dividend original = Distribution(100m, new DateTime(2024, 3, 1));
+        FundEqualisation equalisation = Equalisation(EqualisationIncomeSource.Distribution, 5m, original.Date);
+        lists.Dividends.Add(original);
+        lists.CorporateActions.Add(equalisation);
+
+        // Changing only the amount (remove and re-add, as the manual entry form does) keeps the equalisation.
+        Dividend newAmount = Distribution(120m, original.Date);
+        ReportingFundIncomeResolver.ApplyAndRemoveStrandedEqualisations(lists, () => { lists.Dividends.Remove(original); lists.Dividends.Add(newAmount); })
+            .ShouldBeEmpty();
+        lists.CorporateActions.ShouldHaveSingleItem();
+
+        Dividend newDate = Distribution(120m, new DateTime(2024, 4, 1));
+        ReportingFundIncomeResolver.ApplyAndRemoveStrandedEqualisations(lists, () => { lists.Dividends.Remove(newAmount); lists.Dividends.Add(newDate); })
+            .ShouldHaveSingleItem().ShouldBe(equalisation);
+        lists.CorporateActions.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Deleting_LeavesEqualisationsThatAlreadyHadNoIncome()
+    {
+        // e.g. imported with "Load Dividends" unchecked: unrelated deletes must not remove it.
+        TaxEventLists lists = new();
+        FundEqualisation alreadyUnmatched = Equalisation(EqualisationIncomeSource.Distribution, 5m, new DateTime(2024, 3, 1));
+        ExcessReportableIncome eri = Eri();
+        lists.CorporateActions.AddRange([alreadyUnmatched, eri]);
+
+        ReportingFundIncomeResolver.ApplyAndRemoveStrandedEqualisations(lists, () => lists.CorporateActions.Remove(eri)).ShouldBeEmpty();
+
+        lists.CorporateActions.ShouldHaveSingleItem().ShouldBe(alreadyUnmatched);
+    }
+
+    [Fact]
+    public void EffectiveReportingPeriodEnd_WithoutEri_UsesMonthEndFallback()
+    {
+        FundEqualisation equalisation = Equalisation(EqualisationIncomeSource.ExcessReportableIncome, 10m, new DateTime(2024, 6, 30));
+
+        equalisation.EffectiveReportingPeriodEndDate.ShouldBe(new DateOnly(2023, 12, 31));
     }
 
     [Fact]
