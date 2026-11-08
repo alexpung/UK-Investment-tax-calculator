@@ -5,14 +5,16 @@
 @using InvestmentTaxCalculator.Enumerations
 @using System.Globalization
 @using InvestmentTaxCalculator.Services
+@using InvestmentTaxCalculator.Model.UkTaxModel
 @inherits TaxCalculationRefreshComponentBase
 
-@inject IDividendLists _dividendList
+@inject TaxEventLists _taxEventLists
 
 <div class="data-panel">
     <div class="row my-4">
         <div class="col">
-            <h3>Imported Dividends and Withholding Taxes</h3>
+            <h3>Dividends and Withholding Taxes</h3>
+            <p class="text-muted mb-0">Includes Excess Reportable Income from the ERI page, and fund distributions after fund equalisation, as used in the tax calculation.</p>
         </div>
     </div>
 
@@ -46,7 +48,10 @@
 
     protected override void RefreshData()
     {
-        _dividendViewModels = _dividendList.Dividends.Select(dividend => new DividendViewModel(dividend)).ToList();
+        // Show the income as calculated (ERI added, equalisation deducted) so this page reconciles with the summary.
+        // The stored records are not changed.
+        ResolvedIncome income = ReportingFundIncomeResolver.Resolve(_taxEventLists, _taxEventLists.CorporateActions);
+        _dividendViewModels = income.Dividends.Select(dividend => new DividendViewModel(dividend)).ToList();
     }
 
     protected override Task RefreshRenderedGridsAsync() => RefreshGridAsync(importedDividendGrid);

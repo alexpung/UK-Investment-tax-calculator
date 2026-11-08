@@ -110,6 +110,11 @@
         }
     }
 
+    /// <summary>
+    /// Adds the dividend entered, or replaces the one being edited. An edit that leaves the income smaller than the
+    /// fund equalisation entered against it is rejected; one that moves it to another asset or date deletes that
+    /// equalisation, with a warning.
+    /// </summary>
     private async Task AddEntry()
     {
         if (!ValidateInputs(out CountryCode countryCode))
@@ -139,16 +144,22 @@
         if (IsEditing)
         {
             // An edit that moves the dividend to another asset or date leaves its fund equalisation entries without
-            // income; delete them rather than leave them stranded.
+            // income; delete them rather than leave them stranded. An edit that makes it smaller than the equalisation
+            // entered against it is rejected, since the taxable income would turn negative.
             int editingId = EditingTaxEventId!.Value;
-            List<FundEqualisation> stranded = ReportingFundIncomeResolver.ApplyAndRemoveStrandedEqualisations(TaxEventLists, () =>
+            IncomeChangeResult change = EqualisationIntegrity.ApplyIncomeChange(TaxEventLists, () =>
             {
                 TaxEventLists.Dividends.RemoveAll(d => d.Id == editingId);
                 TaxEventLists.Dividends.Add(dividend);
-            });
-            if (stranded.Count > 0)
+            }, rejectOverEqualisation: true);
+            if (!change.Applied)
             {
-                ToastService.ShowWarning(ReportingFundIncomeResolver.DescribeRemovedEqualisations(stranded));
+                ToastService.ShowError(change.Error!);
+                return;
+            }
+            if (change.RemovedEqualisationsWarning is { } warning)
+            {
+                ToastService.ShowWarning(warning);
             }
         }
         else

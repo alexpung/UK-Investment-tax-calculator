@@ -165,12 +165,13 @@ public class ReportingFundIncomeResolverTest
         lists.Dividends.Add(distribution);
         lists.CorporateActions.AddRange([eri, eriEqualisation, distributionEqualisation]);
 
-        List<FundEqualisation> removed = ReportingFundIncomeResolver.ApplyAndRemoveStrandedEqualisations(lists, () => lists.CorporateActions.Remove(eri));
+        IncomeChangeResult result = EqualisationIntegrity.ApplyIncomeChange(lists, () => lists.CorporateActions.Remove(eri));
+        List<FundEqualisation> removed = result.RemovedEqualisations;
 
         removed.ShouldHaveSingleItem().ShouldBe(eriEqualisation);
         // The distribution equalisation on the same date belongs to the dividend, not the ERI, so it stays.
         lists.CorporateActions.ShouldHaveSingleItem().ShouldBe(distributionEqualisation);
-        ReportingFundIncomeResolver.DescribeRemovedEqualisations(removed).ShouldContain("1 fund equalisation entry");
+        result.RemovedEqualisationsWarning.ShouldNotBeNull().ShouldContain("1 fund equalisation entry");
     }
 
     [Fact]
@@ -182,7 +183,7 @@ public class ReportingFundIncomeResolverTest
         lists.Dividends.Add(distribution);
         lists.CorporateActions.Add(equalisation);
 
-        List<FundEqualisation> removed = ReportingFundIncomeResolver.ApplyAndRemoveStrandedEqualisations(lists, () => lists.Dividends.Remove(distribution));
+        List<FundEqualisation> removed = EqualisationIntegrity.ApplyIncomeChange(lists, () => lists.Dividends.Remove(distribution)).RemovedEqualisations;
 
         removed.ShouldHaveSingleItem().ShouldBe(equalisation);
         lists.CorporateActions.ShouldBeEmpty();
@@ -199,12 +200,12 @@ public class ReportingFundIncomeResolverTest
 
         // Changing only the amount (remove and re-add, as the manual entry form does) keeps the equalisation.
         Dividend newAmount = Distribution(120m, original.Date);
-        ReportingFundIncomeResolver.ApplyAndRemoveStrandedEqualisations(lists, () => { lists.Dividends.Remove(original); lists.Dividends.Add(newAmount); })
+        EqualisationIntegrity.ApplyIncomeChange(lists, () => { lists.Dividends.Remove(original); lists.Dividends.Add(newAmount); }).RemovedEqualisations
             .ShouldBeEmpty();
         lists.CorporateActions.ShouldHaveSingleItem();
 
         Dividend newDate = Distribution(120m, new DateTime(2024, 4, 1));
-        ReportingFundIncomeResolver.ApplyAndRemoveStrandedEqualisations(lists, () => { lists.Dividends.Remove(newAmount); lists.Dividends.Add(newDate); })
+        EqualisationIntegrity.ApplyIncomeChange(lists, () => { lists.Dividends.Remove(newAmount); lists.Dividends.Add(newDate); }).RemovedEqualisations
             .ShouldHaveSingleItem().ShouldBe(equalisation);
         lists.CorporateActions.ShouldBeEmpty();
     }
@@ -218,7 +219,7 @@ public class ReportingFundIncomeResolverTest
         ExcessReportableIncome eri = Eri();
         lists.CorporateActions.AddRange([alreadyUnmatched, eri]);
 
-        ReportingFundIncomeResolver.ApplyAndRemoveStrandedEqualisations(lists, () => lists.CorporateActions.Remove(eri)).ShouldBeEmpty();
+        EqualisationIntegrity.ApplyIncomeChange(lists, () => lists.CorporateActions.Remove(eri)).RemovedEqualisations.ShouldBeEmpty();
 
         lists.CorporateActions.ShouldHaveSingleItem().ShouldBe(alreadyUnmatched);
     }
@@ -302,5 +303,146 @@ public class ReportingFundIncomeResolverTest
         // Migrating again changes nothing.
         ReportingFundLegacyMigration.Migrate(lists);
         lists.Dividends.ShouldHaveSingleItem().Proceed.Amount.Amount.ShouldBe(100m);
+    }
+
+    [Fact]
+    public void FindDistribution_PrefersRecordedIncomeType_OverLargerDistributionSameDay()
+    {
+        TaxEventLists lists = new();
+        DateTime date = new(2024, 3, 1);
+        Dividend dividend = Distribution(500m, date);
+        InterestIncome interest = new()
+        {
+            AssetName = "VUSA",
+            Date = date,
+            InterestType = InterestType.ETFDIVIDEND,
+            Amount = new DescribedMoney(100m, "USD", 0.8m, "Bond fund distribution")
+        };
+        lists.Dividends.Add(dividend);
+        lists.InterestIncomes.Add(interest);
+        FundEqualisation equalisation = Equalisation(EqualisationIncomeSource.Distribution, 10m, date) with { IncomeEventType = nameof(InterestType.ETFDIVIDEND) };
+        lists.CorporateActions.Add(equalisation);
+
+        ReportingFundIncomeResolver.FindIncome(equalisation, lists).ShouldBeSameAs(interest);
+        ResolvedIncome resolved = ReportingFundIncomeResolver.Resolve(lists, lists.CorporateActions);
+        resolved.InterestIncomes.ShouldHaveSingleItem().Amount.Amount.Amount.ShouldBe(90m);
+        resolved.Dividends.ShouldHaveSingleItem().Proceed.Amount.Amount.ShouldBe(500m);
+    }
+
+    [Fact]
+    public void FindExcessReportableIncome_PrefersRecordedIncomeType()
+    {
+        TaxEventLists lists = new();
+        ExcessReportableIncome dividendEri = Eri(ExcessReportableIncomeType.DIVIDEND);
+        ExcessReportableIncome interestEri = Eri(ExcessReportableIncomeType.INTEREST, 20m);
+        lists.CorporateActions.AddRange([dividendEri, interestEri]);
+        FundEqualisation equalisation = Equalisation(EqualisationIncomeSource.ExcessReportableIncome, 5m, DistributionDate) with { IncomeEventType = nameof(ExcessReportableIncomeType.INTEREST) };
+
+        ReportingFundIncomeResolver.FindExcessReportableIncome(equalisation, lists.CorporateActions).ShouldBeSameAs(interestEri);
+    }
+
+    [Fact]
+    public void AccruedInterest_IsNotAFundDistribution()
+    {
+        InterestIncome accrued = new()
+        {
+            AssetName = "VUSA",
+            Date = new DateTime(2024, 3, 1),
+            InterestType = InterestType.ACCURREDINCOMEPROFIT,
+            Amount = new DescribedMoney(10m, "GBP", 1m)
+        };
+
+        ReportingFundIncomeResolver.IsDistribution(accrued).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void ApplyIncomeChange_EditBelowEqualisation_IsRejectedAndUndone()
+    {
+        TaxEventLists lists = new();
+        Dividend original = Distribution(100m, new DateTime(2024, 3, 1));
+        FundEqualisation equalisation = Equalisation(EqualisationIncomeSource.Distribution, 50m, original.Date);
+        lists.Dividends.Add(original);
+        lists.CorporateActions.Add(equalisation);
+        Dividend smaller = Distribution(40m, original.Date);
+
+        IncomeChangeResult result = EqualisationIntegrity.ApplyIncomeChange(lists,
+            () => { lists.Dividends.Remove(original); lists.Dividends.Add(smaller); }, rejectOverEqualisation: true);
+
+        result.Applied.ShouldBeFalse();
+        result.Error.ShouldNotBeNull().ShouldContain("smaller than the fund equalisation");
+        lists.Dividends.ShouldHaveSingleItem().ShouldBeSameAs(original);
+        lists.CorporateActions.ShouldHaveSingleItem().ShouldBe(equalisation);
+    }
+
+    [Fact]
+    public void ApplyIncomeChange_EditStillCoveringEqualisation_IsApplied()
+    {
+        TaxEventLists lists = new();
+        Dividend original = Distribution(100m, new DateTime(2024, 3, 1));
+        lists.Dividends.Add(original);
+        lists.CorporateActions.Add(Equalisation(EqualisationIncomeSource.Distribution, 50m, original.Date));
+        Dividend smaller = Distribution(60m, original.Date);
+
+        IncomeChangeResult result = EqualisationIntegrity.ApplyIncomeChange(lists,
+            () => { lists.Dividends.Remove(original); lists.Dividends.Add(smaller); }, rejectOverEqualisation: true);
+
+        result.Applied.ShouldBeTrue();
+        lists.Dividends.ShouldHaveSingleItem().ShouldBeSameAs(smaller);
+        lists.CorporateActions.ShouldHaveSingleItem();
+    }
+
+    [Fact]
+    public void ImportFilter_DividendsNotLoaded_KeepsEriForSection104ButExcludesItsIncome()
+    {
+        TaxEventLists imported = new();
+        imported.CorporateActions.Add(Eri(ExcessReportableIncomeType.DIVIDEND));
+        imported.CorporateActions.Add(Eri(ExcessReportableIncomeType.INTEREST, 20m));
+        imported.CorporateActions.Add(Equalisation(EqualisationIncomeSource.ExcessReportableIncome, 10m, DistributionDate) with { IncomeEventType = "DIVIDEND" });
+        AssetTypeToLoadSetting setting = new() { LoadDividends = false };
+
+        TaxEventLists filtered = setting.FilterTaxEvent(imported);
+
+        List<ExcessReportableIncome> eris = [.. filtered.CorporateActions.OfType<ExcessReportableIncome>()];
+        eris.Single(e => e.IncomeType == ExcessReportableIncomeType.DIVIDEND).IsIncomeExcluded.ShouldBeTrue();
+        eris.Single(e => e.IncomeType == ExcessReportableIncomeType.INTEREST).IsIncomeExcluded.ShouldBeFalse();
+        ResolvedIncome resolved = ReportingFundIncomeResolver.Resolve(filtered, filtered.CorporateActions);
+        resolved.Dividends.ShouldBeEmpty();
+        resolved.InterestIncomes.ShouldHaveSingleItem().Amount.Amount.Amount.ShouldBe(20m);
+        // The equalisation still has its ERI (its cost reduction applies) but has no income to reduce.
+        resolved.UnmatchedEqualisations.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void LegacyMigration_MatchesIncomeRecordedUnderAnotherTickerOfTheSameShare()
+    {
+        // The ERI and its equalisation use one ticker, the stored income another; the shared ISIN links them.
+        const string isin = "IE00B3XXRP09";
+        ExcessReportableIncome eri = Eri() with { Isin = isin };
+        Dividend generatedEri = new()
+        {
+            AssetName = "VUSA.L",
+            Isin = isin,
+            Date = DistributionDate,
+            DividendType = DividendType.EXCESS_REPORTABLE_INCOME,
+            Proceed = new DescribedMoney(50m, "USD", 0.8m, "Excess Reportable Income (Dividend) from VUSA")
+        };
+        FundEqualisation distributionEqualisation = Equalisation(null, 10m, new DateTime(2024, 3, 1)) with { RelatedEventDescription = "Dividend on 01/03/2024", Isin = isin };
+        Dividend reduced = new()
+        {
+            AssetName = "VUSA.L",
+            Isin = isin,
+            Date = new DateTime(2024, 3, 1),
+            DividendType = DividendType.DIVIDEND,
+            Proceed = new DescribedMoney(90m, "USD", 0.8m, "Dividend VUSA" + $" (Reduced by equalisation of {distributionEqualisation.Amount.BaseCurrencyAmount})")
+        };
+        TaxEventLists lists = new();
+        lists.CorporateActions.AddRange([eri, distributionEqualisation]);
+        lists.Dividends.AddRange([generatedEri, reduced]);
+
+        ReportingFundLegacyMigration.Migrate(lists);
+
+        Dividend restored = lists.Dividends.ShouldHaveSingleItem();
+        restored.Proceed.Amount.Amount.ShouldBe(100m);
+        lists.CorporateActions.OfType<FundEqualisation>().Single().IncomeEventType.ShouldBe(nameof(DividendType.DIVIDEND));
     }
 }

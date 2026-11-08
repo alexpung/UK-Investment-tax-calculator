@@ -9,6 +9,11 @@ namespace InvestmentTaxCalculator.Model.UkTaxModel;
 public class UkDividendCalculator(IDividendLists storedIncome, ITaxYear taxYear, ToastService toastService, ResidencyStatusRecord residencyStatusRecord,
     ITradeAndCorporateActionList? corporateActionList = null) : IDividendCalculator
 {
+    /// <summary>
+    /// Groups the taxable dividend and interest income received while resident by tax year and country. ERI income
+    /// and fund equalisation reductions are included, derived from the stored entries by
+    /// <see cref="ReportingFundIncomeResolver"/>.
+    /// </summary>
     public List<DividendSummary> CalculateTax()
     {
         _ = toastService;

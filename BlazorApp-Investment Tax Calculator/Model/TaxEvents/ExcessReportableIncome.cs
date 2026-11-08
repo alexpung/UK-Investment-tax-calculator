@@ -36,6 +36,12 @@ public record ExcessReportableIncome : CorporateAction, IChangeSection104
     /// </summary>
     public DateTime? ReportingPeriodEndDate { get; init; }
 
+    /// <summary>
+    /// Set when the entry was imported with its income type not loaded ("Load Dividends" or "Load Interest Income"
+    /// unchecked). The ERI still adjusts the Section 104 pool, but its income is not taxed.
+    /// </summary>
+    public bool IsIncomeExcluded { get; init; }
+
     [JsonIgnore]
     public DateOnly EffectiveReportingPeriodEndDate => DateOnly.FromDateTime(ReportingPeriodEndDate ?? AssumedReportingPeriodEnd(Date));
 
@@ -92,6 +98,10 @@ public record ExcessReportableIncome : CorporateAction, IChangeSection104
         return matchAdjustment;
     }
 
+    /// <summary>
+    /// Adds the ERI to the cost of the holding, apportioned between gap period disposals and the pool. Applies even
+    /// when the ERI income is excluded (<see cref="IsIncomeExcluded"/>).
+    /// </summary>
     public override void ChangeSection104(UkSection104 section104)
     {
         if (!section104.MatchesAsset(AssetName)) return;

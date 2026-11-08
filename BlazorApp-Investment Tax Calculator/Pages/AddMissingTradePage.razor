@@ -172,16 +172,20 @@
         _editingTaxEventId = null;
     }
 
+    /// <summary>
+    /// Deletes a manual entry. Deleting a dividend or interest income also deletes the equalisation entries that
+    /// reduce it, with a warning.
+    /// </summary>
     private void DeleteEntry(AddedManualEntryRow row)
     {
         bool removed = false;
         // Deleting a dividend or interest income also deletes the fund equalisation entries that reduce it.
-        List<FundEqualisation> stranded = ReportingFundIncomeResolver.ApplyAndRemoveStrandedEqualisations(TaxEventLists,
+        IncomeChangeResult change = EqualisationIntegrity.ApplyIncomeChange(TaxEventLists,
             () => removed = RemoveTaxEventById(row.TaxEventId));
-        if (stranded.Count > 0)
-        {
-            ToastService.ShowWarning(ReportingFundIncomeResolver.DescribeRemovedEqualisations(stranded));
-        }
+        if (change.RemovedEqualisationsWarning is { } warning)
+            {
+                ToastService.ShowWarning(warning);
+            }
         if (removed)
         {
             _hasChanges = true;

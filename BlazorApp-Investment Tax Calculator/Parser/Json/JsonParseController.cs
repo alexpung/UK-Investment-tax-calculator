@@ -11,6 +11,10 @@ namespace InvestmentTaxCalculator.Parser.Json;
 public class JsonParseController(AssetTypeToLoadSetting assetTypeToLoadSetting, ResidencyStatusRecord residencyStatusRecord,
     ShareIdentityRegistry shareIdentityRegistry) : ITaxEventFileParser
 {
+    /// <summary>
+    /// Reads a saved session file: restores its residency and share link settings, converts ERI and equalisation
+    /// data saved by older versions, then applies the asset types chosen for loading.
+    /// </summary>
     public TaxEventLists ParseFile(string data)
     {
         TaxEventLists resultFiltered = new();
@@ -27,7 +31,7 @@ public class JsonParseController(AssetTypeToLoadSetting assetTypeToLoadSetting, 
         }
         // Sessions saved by older versions hold ERI income and equalisation reductions already applied to the
         // income events; convert them so the calculation does not apply them a second time.
-        ReportingFundLegacyMigration.Migrate(result);
+        ReportingFundLegacyMigration.Migrate(result, result.ShareIdentityLinks);
         resultFiltered = assetTypeToLoadSetting.FilterTaxEvent(result);
         return resultFiltered;
     }

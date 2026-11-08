@@ -21,6 +21,10 @@ public class UkTradeCalculator(UkSection104Pools section104Pools, ITradeAndCorpo
     /// </summary>
     private List<CorporateAction> StockRelevantCorporateActions => [.. tradeList.CorporateActions.Where(ca => ca.AppliesToAssetCategoryType is AssetCategoryType.STOCK)];
 
+    /// <summary>
+    /// Matches stock, fund and FX trades under the UK rules, applying corporate actions (including ERI and fund
+    /// equalisation cost adjustments) to the Section 104 pools in date order.
+    /// </summary>
     public List<ITradeTaxCalculation> CalculateTax()
     {
         List<ITradeTaxCalculation> tradeTaxCalculations = [.. tradeTaxCalculationFactory.GroupTrade(tradeList.Trades)];

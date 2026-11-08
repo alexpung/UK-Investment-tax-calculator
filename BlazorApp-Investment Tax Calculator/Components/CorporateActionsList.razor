@@ -55,18 +55,21 @@
         await OnActionEdit.InvokeAsync(action);
     }
 
+    /// <summary>
+    /// Deletes a corporate action. Deleting an ERI entry also deletes the equalisation entries that reduce it.
+    /// </summary>
     private async Task DeleteAction(CorporateAction action)
     {
         bool removed = false;
         // Deleting an ERI entry also deletes the equalisation entries that reduce it.
-        List<FundEqualisation> stranded = ReportingFundIncomeResolver.ApplyAndRemoveStrandedEqualisations(_taxEventLists,
+        IncomeChangeResult change = EqualisationIntegrity.ApplyIncomeChange(_taxEventLists,
             () => removed = _taxEventLists.CorporateActions.Remove(action));
         if (removed)
         {
             _toastService.ShowInformation("Event removed.");
-            if (stranded.Count > 0)
+            if (change.RemovedEqualisationsWarning is { } warning)
             {
-                _toastService.ShowWarning(ReportingFundIncomeResolver.DescribeRemovedEqualisations(stranded));
+                _toastService.ShowWarning(warning);
             }
             await Refresh();
             await OnActionDeleted.InvokeAsync();

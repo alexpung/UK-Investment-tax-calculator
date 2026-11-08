@@ -4,7 +4,6 @@
 @using InvestmentTaxCalculator.Model.Interfaces
 @using InvestmentTaxCalculator.Services
 @using InvestmentTaxCalculator.Enumerations
-@using InvestmentTaxCalculator.Model.UkTaxModel
 
 @inject UkSection104Pools Section104Pools
 @inject TaxEventLists TaxEventLists
@@ -96,9 +95,12 @@
         public string DisplayText => $"{Event.Date:d} - {Money.Display()} ({TypeDescription})";
     }
 
-    // Recomputed whenever the parent re-renders rather than once on initialisation: the available tickers derive
-    // from the Section 104 pools and from CanonicalAssetName, both of which change when a calculation is run or
-    // shares are linked, while this component instance outlives those changes.
+    /// <summary>
+    /// Lists the fund tickers with income an equalisation can reduce. Recomputed whenever the parent re-renders
+    /// rather than once on initialisation: the available tickers derive from the Section 104 pools and from
+    /// CanonicalAssetName, both of which change when a calculation is run or shares are linked, while this
+    /// component instance outlives those changes.
+    /// </summary>
     protected override void OnParametersSet()
     {
         var tickersWithIncome = TaxEventLists.Dividends.Where(ReportingFundIncomeResolver.IsDistribution).Select(d => d.CanonicalAssetName)
@@ -144,6 +146,9 @@
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Takes the currency and FX rate from the selected income, which the equalisation amount is entered in.
+    /// </summary>
     private void OnEventSelected(object value)
     {
         SelectedEventId = value as int?;
@@ -152,6 +157,9 @@
         FxRate = selected?.Money.FxRate ?? 1.0m;
     }
 
+    /// <summary>
+    /// Lists the incomes of the selected ticker an equalisation can reduce: fund distributions and ERI entries.
+    /// </summary>
     private void RefreshAvailableEvents()
     {
         List<IncomeEventVM> events = [];
@@ -168,16 +176,17 @@
                 .Select(e => new IncomeEventVM { Event = e, Money = e.Amount, TypeDescription = $"Excess Reportable Income ({e.IncomeType.GetDescription()})", Source = EqualisationIncomeSource.ExcessReportableIncome }));
         }
         AvailableIncomeEvents = [.. events.OrderByDescending(e => e.Event.Date)];
+        // Drop a selection whose income has gone (e.g. its ERI entry was deleted).
+        if (SelectedEventId is not null && !AvailableIncomeEvents.Any(e => e.EventId == SelectedEventId))
+        {
+            SelectedEventId = null;
+        }
     }
 
-    // Other equalisation entries already reducing the same income, so the total cannot exceed it.
-    private WrappedMoney OtherEqualisationsOn(IncomeEventVM income) =>
-        TaxEventLists.CorporateActions.OfType<FundEqualisation>()
-            .Where(fe => ReferenceEquals(income.Source == EqualisationIncomeSource.ExcessReportableIncome
-                ? ReportingFundIncomeResolver.FindExcessReportableIncome(fe, TaxEventLists.CorporateActions)
-                : ReportingFundIncomeResolver.FindDistribution(fe, TaxEventLists.Dividends, TaxEventLists.InterestIncomes), income.Event))
-            .Sum(fe => fe.Amount.BaseCurrencyAmount);
-
+    /// <summary>
+    /// Adds an equalisation entry against the selected income, after checking against the current data that it
+    /// matches that income and does not exceed what is left of it.
+    /// </summary>
     private async Task OnSubmit(TaxEvent selectedEvent)
     {
         IncomeEventVM? income = AvailableIncomeEvents.FirstOrDefault(e => ReferenceEquals(e.Event, selectedEvent));
@@ -187,29 +196,49 @@
             return;
         }
 
-        decimal availableBaseAmount = income.Money.BaseCurrencyAmount.Amount - OtherEqualisationsOn(income).Amount;
-        decimal inputBaseAmount = EqualisationAmount * FxRate;
-        if (inputBaseAmount > availableBaseAmount)
-        {
-            ToastService.ShowError($"Equalisation amount ({inputBaseAmount:N2} GBP) cannot exceed the income amount not already equalised ({availableBaseAmount:N2} GBP).");
-            return;
-        }
-
         string relatedDescription = $"{income.TypeDescription} on {selectedEvent.Date:d}";
         // Only the equalisation entry is stored. The income reduction and section 104 cost reduction are derived
-        // from it at calculation time, matched to the income by asset, date and income source.
+        // from it at calculation time, matched to the income by asset, date, income source and income type.
         FundEqualisation equalisation = new()
         {
             AssetName = SelectedTicker,
             Date = selectedEvent.Date,
             Amount = new DescribedMoney(EqualisationAmount, Currency, FxRate, relatedDescription),
             RelatedEventDescription = relatedDescription,
-            IncomeSource = income.Source
+            IncomeSource = income.Source,
+            IncomeEventType = ReportingFundIncomeResolver.IncomeEventTypeOf(selectedEvent)
         };
 
+        // Check the entry against the current data with the same matching rule the calculation uses, so a stale
+        // selection (income deleted since it was listed) or an income that cannot be told apart from another one on
+        // the same date is caught, as is a total exceeding the income.
         TaxEventLists.CorporateActions.Add(equalisation);
-        ToastService.ShowInformation($"Successfully added equalisation of {equalisation.Amount.BaseCurrencyAmount}.");
+        string? error = null;
+        TaxEvent? matchedIncome = ReportingFundIncomeResolver.FindIncome(equalisation, TaxEventLists);
+        if (matchedIncome is null)
+        {
+            error = "The selected income no longer exists. Please select the income again.";
+        }
+        else if (!ReferenceEquals(matchedIncome, selectedEvent))
+        {
+            error = "Another income of this ticker, date and type exists, so this equalisation cannot be matched to the selected one.";
+        }
+        else if (ReportingFundIncomeResolver.FindOverEqualised(TaxEventLists).Contains(equalisation))
+        {
+            WrappedMoney incomeAmount = ReportingFundIncomeResolver.IncomeMoneyOf(selectedEvent).BaseCurrencyAmount;
+            WrappedMoney alreadyEqualised = ReportingFundIncomeResolver.GroupEqualisationsByIncome(TaxEventLists)[selectedEvent]
+                .Where(e => !ReferenceEquals(e, equalisation)).Sum(e => e.Amount.BaseCurrencyAmount);
+            error = $"Equalisation amount ({equalisation.Amount.BaseCurrencyAmount}) cannot exceed the income amount not already equalised ({incomeAmount - alreadyEqualised}).";
+        }
+        if (error is not null)
+        {
+            TaxEventLists.CorporateActions.Remove(equalisation);
+            RefreshAvailableEvents();
+            ToastService.ShowError(error);
+            return;
+        }
 
+        ToastService.ShowInformation($"Successfully added equalisation of {equalisation.Amount.BaseCurrencyAmount}.");
         ResetForm();
         await OnDataChanged.InvokeAsync();
     }

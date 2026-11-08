@@ -36,6 +36,13 @@ public record FundEqualisation : CorporateAction, IChangeSection104
     public EqualisationIncomeSource? IncomeSource { get; init; }
 
     /// <summary>
+    /// The type of the income event chosen when the entry was added: its <see cref="Enumerations.DividendType"/> or
+    /// <see cref="InterestType"/> name for a distribution, or its <see cref="ExcessReportableIncomeType"/> name for an
+    /// ERI. Picks the right income when the asset has more than one on the same date. Null for older entries.
+    /// </summary>
+    public string? IncomeEventType { get; init; }
+
+    /// <summary>
     /// The ERI entry this equalisation reduces, resolved at the start of each calculation. Not saved.
     /// </summary>
     [JsonIgnore]
@@ -76,6 +83,10 @@ public record FundEqualisation : CorporateAction, IChangeSection104
         return matchAdjustment;
     }
 
+    /// <summary>
+    /// Reduces the cost of the holding by the equalisation amount: apportioned between gap period disposals and the
+    /// pool when a reporting period end is known (ERI equalisation), otherwise taken off the pool on the date.
+    /// </summary>
     public override void ChangeSection104(UkSection104 section104)
     {
         if (!section104.MatchesAsset(AssetName)) return;
@@ -104,9 +115,10 @@ public record FundEqualisation : CorporateAction, IChangeSection104
         Amount == other.Amount &&
         RelatedEventDescription == other.RelatedEventDescription &&
         IncomeSource == other.IncomeSource &&
+        IncomeEventType == other.IncomeEventType &&
         ReportingPeriodEndDate == other.ReportingPeriodEndDate;
 
-    public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), Amount, RelatedEventDescription, IncomeSource, ReportingPeriodEndDate);
+    public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), Amount, RelatedEventDescription, IncomeSource, IncomeEventType, ReportingPeriodEndDate);
 
     public override string GetDuplicateSignature()
     {

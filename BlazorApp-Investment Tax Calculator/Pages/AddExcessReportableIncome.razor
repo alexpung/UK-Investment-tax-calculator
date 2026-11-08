@@ -88,6 +88,10 @@
                                 @if (ca is ExcessReportableIncome eri)
                                 {
                                     <span>ERI (@eri.IncomeType.GetDescription())</span>
+                                    @if (eri.IsIncomeExcluded)
+                                    {
+                                        <div class="text-muted small" title="Imported with this income type not loaded: the Section 104 cost uplift applies but the income is not taxed.">Income not loaded</div>
+                                    }
                                 }
                                 else if (ca is FundEqualisation fe)
                                 {
@@ -185,24 +189,31 @@
         RefreshHistory();
     }
 
+    /// <summary>
+    /// Whether the equalisation entry has income to reduce, for the "Income not found" marker.
+    /// </summary>
     private bool HasIncome(FundEqualisation equalisation) => ReportingFundIncomeResolver.HasIncome(equalisation, TaxEventLists);
 
+    /// <summary>
+    /// Deletes an ERI or equalisation entry, together with any equalisation entries left without income, and warns
+    /// about the latter.
+    /// </summary>
     private void DeleteEntry(CorporateAction entry)
     {
         // Entries are self-contained: their income and Section 104 effects are derived at calculation time, so
         // removing the entry is all that is needed. Equalisation entries left without income are removed with it.
         bool removed = false;
-        List<FundEqualisation> stranded = ReportingFundIncomeResolver.ApplyAndRemoveStrandedEqualisations(TaxEventLists,
+        IncomeChangeResult change = EqualisationIntegrity.ApplyIncomeChange(TaxEventLists,
             () => removed = TaxEventLists.CorporateActions.Remove(entry));
         if (!removed) return;
 
         ToastService.ShowInformation(entry is ExcessReportableIncome
             ? $"Removed ERI entry for {entry.AssetName}."
             : $"Removed equalisation entry for {entry.AssetName}.");
-        if (stranded.Count > 0)
-        {
-            ToastService.ShowWarning(ReportingFundIncomeResolver.DescribeRemovedEqualisations(stranded));
-        }
+        if (change.RemovedEqualisationsWarning is { } warning)
+            {
+                ToastService.ShowWarning(warning);
+            }
         // The equalisation form may have the deleted ERI selected as its income.
         _equalisationControl?.Reset();
         RefreshAll();
