@@ -1,6 +1,5 @@
 using InvestmentTaxCalculator.Model;
 using InvestmentTaxCalculator.Model.TaxEvents;
-using InvestmentTaxCalculator.Model.UkTaxModel;
 using InvestmentTaxCalculator.Services;
 
 using System.Text.Json;
@@ -11,10 +10,6 @@ namespace InvestmentTaxCalculator.Parser.Json;
 public class JsonParseController(AssetTypeToLoadSetting assetTypeToLoadSetting, ResidencyStatusRecord residencyStatusRecord,
     ShareIdentityRegistry shareIdentityRegistry) : ITaxEventFileParser
 {
-    /// <summary>
-    /// Reads a saved session file: restores its residency and share link settings, converts ERI and equalisation
-    /// data saved by older versions, then applies the asset types chosen for loading.
-    /// </summary>
     public TaxEventLists ParseFile(string data)
     {
         TaxEventLists resultFiltered = new();
@@ -29,14 +24,9 @@ public class JsonParseController(AssetTypeToLoadSetting assetTypeToLoadSetting, 
             // Restore user declared share links so they apply when the imported events are registered.
             shareIdentityRegistry.ImportManualLinks(result.ShareIdentityLinks);
         }
-        // Sessions saved before format versioning hold ERI income and equalisation reductions already applied to the
-        // income events; convert them so the calculation does not apply them a second time. Current files are
-        // left alone, so a manually entered ERI dividend is not mistaken for generated income.
-        if (result.FormatVersion is null)
-        {
-            ReportingFundLegacyMigration.Migrate(result, result.ShareIdentityLinks);
-        }
         resultFiltered = assetTypeToLoadSetting.FilterTaxEvent(result);
+        // Restore each fund equalisation's link to its income. One whose income was not loaded is dropped.
+        resultFiltered.LinkEqualisations();
         return resultFiltered;
     }
 

@@ -2,12 +2,10 @@
 @using InvestmentTaxCalculator.Model
 @using InvestmentTaxCalculator.Model.TaxEvents
 @using InvestmentTaxCalculator.Services
-@using InvestmentTaxCalculator.Model.UkTaxModel
 
 @inject TaxEventLists TaxEventLists
 @inject CurrencyService CurrencyService
 @inject ToastService ToastService
-@inject ShareIdentityRegistry ShareIdentityRegistry
 
 <div class="card manual-entry-form">
     <div class="card-header">
@@ -123,48 +121,48 @@
             return;
         }
 
+        DescribedMoney proceed = new(_amount, _currency, _fxRate, _description.Trim());
+        Dividend dividend;
         if (EditingTaxEventId.HasValue)
         {
-            if (TaxEventLists.Dividends.Count(d => d.Id == EditingTaxEventId.Value) != 1)
+            Dividend? existing = TaxEventLists.Dividends.FirstOrDefault(d => d.Id == EditingTaxEventId.Value);
+            if (existing is null)
             {
                 ToastService.ShowError("Unable to update dividend because the original entry could not be found.");
                 return;
             }
-        }
-
-        var dividend = new Dividend
-        {
-            AssetName = _assetName.Trim(),
-            Date = _date,
-            DividendType = _dividendType,
-            CompanyLocation = countryCode,
-            Isin = _isin.Trim(),
-            Proceed = new DescribedMoney(_amount, _currency, _fxRate, _description.Trim())
-        };
-
-        if (IsEditing)
-        {
-            // An edit that moves the dividend to another asset or date leaves its fund equalisation entries without
-            // income; delete them rather than leave them stranded. An edit that makes it smaller than the equalisation
-            // entered against it is rejected, since the taxable income would turn negative.
-            int editingId = EditingTaxEventId!.Value;
-            IncomeChangeResult change = EqualisationIntegrity.ApplyIncomeChange(TaxEventLists, () =>
+            // Edited in place so any fund equalisation stays linked; the dividend refuses an amount below it, or a
+            // change to withholding tax. Both checked values are put back if either is refused.
+            (DividendType oldType, DescribedMoney oldProceed) = (existing.DividendType, existing.Proceed);
+            try
             {
-                TaxEventLists.Dividends.RemoveAll(d => d.Id == editingId);
-                TaxEventLists.Dividends.Add(dividend);
-            }, rejectOverEqualisation: true, shareIdentityRegistry: ShareIdentityRegistry);
-            if (!change.Applied)
+                existing.DividendType = _dividendType;
+                existing.Proceed = proceed;
+            }
+            catch (InvalidOperationException ex)
             {
-                ToastService.ShowError(change.Error!);
+                existing.DividendType = oldType;
+                existing.Proceed = oldProceed;
+                ToastService.ShowError(ex.Message);
                 return;
             }
-            if (change.RemovedEqualisationsWarning is { } warning)
-            {
-                ToastService.ShowWarning(warning);
-            }
+            existing.AssetName = _assetName.Trim();
+            existing.Date = _date;
+            existing.CompanyLocation = countryCode;
+            existing.Isin = _isin.Trim();
+            dividend = existing;
         }
         else
         {
+            dividend = new Dividend
+            {
+                AssetName = _assetName.Trim(),
+                Date = _date,
+                DividendType = _dividendType,
+                CompanyLocation = countryCode,
+                Isin = _isin.Trim(),
+                Proceed = proceed
+            };
             TaxEventLists.Dividends.Add(dividend);
         }
         ResetForm();

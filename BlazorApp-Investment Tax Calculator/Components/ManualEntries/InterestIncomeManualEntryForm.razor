@@ -2,12 +2,10 @@
 @using InvestmentTaxCalculator.Model
 @using InvestmentTaxCalculator.Model.TaxEvents
 @using InvestmentTaxCalculator.Services
-@using InvestmentTaxCalculator.Model.UkTaxModel
 
 @inject TaxEventLists TaxEventLists
 @inject CurrencyService CurrencyService
 @inject ToastService ToastService
-@inject ShareIdentityRegistry ShareIdentityRegistry
 
 <div class="card manual-entry-form">
     <div class="card-header">
@@ -137,51 +135,46 @@
             return;
         }
 
+        DescribedMoney amount = new(_amount, _currency, _fxRate, _description.Trim());
+        InterestIncome interestIncome;
         if (EditingTaxEventId.HasValue)
         {
-            int matches = TaxEventLists.InterestIncomes.Count(i => i.Id == EditingTaxEventId.Value);
-            if (matches != 1)
+            InterestIncome? existing = TaxEventLists.InterestIncomes.FirstOrDefault(i => i.Id == EditingTaxEventId.Value);
+            if (existing is null)
             {
                 ToastService.ShowError("Unable to update interest income because the original entry could not be found.");
                 return;
             }
-
-        }
-
-        var interestIncome = new InterestIncome
-        {
-            AssetName = _assetName.Trim(),
-            Date = _date,
-            InterestType = _interestType,
-            IncomeLocation = countryCode,
-            Isin = _isin.Trim(),
-            IsNextPaymentInSameTaxYear = _isNextPaymentInSameTaxYear,
-            Amount = new DescribedMoney(_amount, _currency, _fxRate, _description.Trim())
-        };
-
-        if (IsEditing)
-        {
-            // An edit that moves the interest income to another asset or date leaves its fund equalisation entries without
-            // income; delete them rather than leave them stranded. An edit that makes it smaller than the equalisation
-            // entered against it is rejected, since the taxable income would turn negative.
-            int editingId = EditingTaxEventId!.Value;
-            IncomeChangeResult change = EqualisationIntegrity.ApplyIncomeChange(TaxEventLists, () =>
+            // Edited in place so any fund equalisation stays linked; the income refuses an amount below it.
+            try
             {
-                TaxEventLists.InterestIncomes.RemoveAll(i => i.Id == editingId);
-                TaxEventLists.InterestIncomes.Add(interestIncome);
-            }, rejectOverEqualisation: true, shareIdentityRegistry: ShareIdentityRegistry);
-            if (!change.Applied)
+                existing.Amount = amount;
+            }
+            catch (InvalidOperationException ex)
             {
-                ToastService.ShowError(change.Error!);
+                ToastService.ShowError(ex.Message);
                 return;
             }
-            if (change.RemovedEqualisationsWarning is { } warning)
-            {
-                ToastService.ShowWarning(warning);
-            }
+            existing.AssetName = _assetName.Trim();
+            existing.Date = _date;
+            existing.InterestType = _interestType;
+            existing.IncomeLocation = countryCode;
+            existing.Isin = _isin.Trim();
+            existing.IsNextPaymentInSameTaxYear = _isNextPaymentInSameTaxYear;
+            interestIncome = existing;
         }
         else
         {
+            interestIncome = new InterestIncome
+            {
+                AssetName = _assetName.Trim(),
+                Date = _date,
+                InterestType = _interestType,
+                IncomeLocation = countryCode,
+                Isin = _isin.Trim(),
+                IsNextPaymentInSameTaxYear = _isNextPaymentInSameTaxYear,
+                Amount = amount
+            };
             TaxEventLists.InterestIncomes.Add(interestIncome);
         }
         ResetForm();

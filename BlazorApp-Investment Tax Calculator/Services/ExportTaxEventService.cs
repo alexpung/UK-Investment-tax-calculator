@@ -11,7 +11,6 @@ public class ExportTaxEventService(TaxEventLists taxEventLists, ResidencyStatusR
     {
         ExportImportData exportData = new()
         {
-            FormatVersion = ExportImportData.CurrentFormatVersion,
             Trades = taxEventLists.Trades,
             CorporateActions = taxEventLists.CorporateActions,
             Dividends = taxEventLists.Dividends,

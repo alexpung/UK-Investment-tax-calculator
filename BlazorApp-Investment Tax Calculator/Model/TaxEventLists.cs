@@ -28,7 +28,130 @@ public record TaxEventLists : IDividendLists, ITradeAndCorporateActionList
         AddData(taxEventLists, false);
     }
 
+    /// <summary>
+    /// Every income a fund equalisation entry can be linked to.
+    /// </summary>
+    [JsonIgnore]
+    public IEnumerable<IEqualisableIncome> EqualisableIncomes => Dividends.Cast<IEqualisableIncome>()
+        .Concat(InterestIncomes)
+        .Concat(CorporateActions.OfType<ExcessReportableIncome>());
+
+    /// <summary>
+    /// Links <paramref name="equalisation"/> to <paramref name="income"/> and stores it. Throws
+    /// <see cref="InvalidOperationException"/>, storing nothing, if the income's equalisation would exceed it.
+    /// </summary>
+    public void AddEqualisation(FundEqualisation equalisation, IEqualisableIncome income)
+    {
+        equalisation.LinkTo(income);
+        CorporateActions.Add(equalisation);
+    }
+
+    /// <summary>
+    /// Removes the equalisation entry and detaches it from its income.
+    /// </summary>
+    public void RemoveEqualisation(FundEqualisation equalisation)
+    {
+        CorporateActions.RemoveAll(c => ReferenceEquals(c, equalisation));
+        equalisation.Unlink();
+    }
+
+    /// <summary>
+    /// Removes a dividend, interest income or ERI entry together with the fund equalisation entries linked to it,
+    /// which cannot exist without their income. Returns those equalisation entries, for the caller to warn about.
+    /// </summary>
+    public List<FundEqualisation> RemoveIncome(IEqualisableIncome income)
+    {
+        int removed = income switch
+        {
+            Dividend dividend => Dividends.RemoveAll(d => ReferenceEquals(d, dividend)),
+            InterestIncome interest => InterestIncomes.RemoveAll(i => ReferenceEquals(i, interest)),
+            ExcessReportableIncome eri => CorporateActions.RemoveAll(c => ReferenceEquals(c, eri)),
+            _ => 0
+        };
+        if (removed == 0) return [];
+        List<FundEqualisation> equalisations = [.. income.EqualisationLinks.Equalisations];
+        equalisations.ForEach(RemoveEqualisation);
+        return equalisations;
+    }
+
+    /// <summary>
+    /// Removes a corporate action. An ERI entry takes its equalisation entries with it (see <see cref="RemoveIncome"/>),
+    /// and an equalisation entry is detached from its income. Returns the equalisation entries removed with an ERI.
+    /// </summary>
+    public List<FundEqualisation> RemoveCorporateAction(CorporateAction action)
+    {
+        switch (action)
+        {
+            case ExcessReportableIncome eri:
+                return RemoveIncome(eri);
+            case FundEqualisation equalisation:
+                RemoveEqualisation(equalisation);
+                return [];
+            default:
+                CorporateActions.RemoveAll(c => ReferenceEquals(c, action));
+                return [];
+        }
+    }
+
+    /// <summary>
+    /// Restores the link of every equalisation entry not linked to an income in these lists, by
+    /// <see cref="FundEqualisation.IncomeId"/>. Entries whose income is missing (e.g. not loaded on import) or would
+    /// be exceeded are removed, so no equalisation is left without its income. Returns the entries removed.
+    /// </summary>
+    public List<FundEqualisation> LinkEqualisations()
+    {
+        HashSet<IEqualisableIncome> present = new(EqualisableIncomes, ReferenceEqualityComparer.Instance);
+        Dictionary<string, IEqualisableIncome> byId = [];
+        foreach (IEqualisableIncome income in present) byId.TryAdd(income.IncomeId, income);
+
+        List<FundEqualisation> dropped = [];
+        foreach (FundEqualisation equalisation in CorporateActions.OfType<FundEqualisation>().ToList())
+        {
+            if (equalisation.LinkedIncome is { } linked && present.Contains(linked)) continue;
+            try
+            {
+                if (equalisation.IncomeId is not { } id || !byId.TryGetValue(id, out IEqualisableIncome? income))
+                {
+                    throw new InvalidOperationException("Income not found.");
+                }
+                equalisation.LinkTo(income);
+            }
+            catch (InvalidOperationException)
+            {
+                RemoveEqualisation(equalisation);
+                dropped.Add(equalisation);
+            }
+        }
+        return dropped;
+    }
+
+    /// <summary>
+    /// Gives a new <see cref="IEqualisableIncome.IncomeId"/> to any income sharing one with an income before it
+    /// (e.g. the same file imported twice without skipping duplicates), so a saved link identifies one income.
+    /// Links are object references, so linked equalisations are unaffected.
+    /// </summary>
+    private void EnsureUniqueIncomeIds()
+    {
+        HashSet<string> seen = [];
+        foreach (IEqualisableIncome income in EqualisableIncomes)
+        {
+            if (!seen.Add(income.IncomeId))
+            {
+                income.IncomeId = Guid.NewGuid().ToString("N");
+                seen.Add(income.IncomeId);
+            }
+        }
+    }
+
     public void AddData(TaxEventLists taxEventLists, bool skipDuplicates)
+    {
+        AddEvents(taxEventLists, skipDuplicates);
+        EnsureUniqueIncomeIds();
+        // An imported equalisation whose income was skipped as a duplicate is moved onto the existing copy of it.
+        LinkEqualisations();
+    }
+
+    private void AddEvents(TaxEventLists taxEventLists, bool skipDuplicates)
     {
         if (skipDuplicates)
         {
@@ -44,7 +167,6 @@ public record TaxEventLists : IDividendLists, ITradeAndCorporateActionList
             Dividends.AddRange(taxEventLists.Dividends.Where(d => !existingDivSigs.Contains(d.GetDuplicateSignature())));
             InterestIncomes.AddRange(taxEventLists.InterestIncomes.Where(i => !existingIntSigs.Contains(i.GetDuplicateSignature())));
             CorporateActions.AddRange(taxEventLists.CorporateActions.Where(c => !existingCorpActionSigs.Contains(c.GetDuplicateSignature())));
-            IncludeIncomeOfDuplicateEris(taxEventLists.CorporateActions);
             OptionTrades.AddRange(taxEventLists.OptionTrades.Where(o => !existingOptionSigs.Contains(o.GetDuplicateSignature())));
             FutureContractTrades.AddRange(taxEventLists.FutureContractTrades.Where(f => !existingFutureSigs.Contains(f.GetDuplicateSignature())));
             CashSettlements.AddRange(taxEventLists.CashSettlements.Where(c => !existingCashSigs.Contains(c.GetDuplicateSignature())));
@@ -58,24 +180,6 @@ public record TaxEventLists : IDividendLists, ITradeAndCorporateActionList
             FutureContractTrades.AddRange(taxEventLists.FutureContractTrades);
             CashSettlements.AddRange(taxEventLists.CashSettlements);
             InterestIncomes.AddRange(taxEventLists.InterestIncomes);
-        }
-    }
-
-    /// <summary>
-    /// A skipped duplicate ERI entry that was imported with its income loaded means the user now wants that income:
-    /// clear the exclusion on the existing entry. The entry itself is kept, so its Section 104 uplift applies once.
-    /// </summary>
-    private void IncludeIncomeOfDuplicateEris(IEnumerable<CorporateAction> imported)
-    {
-        HashSet<string> includedSignatures = [.. imported.OfType<ExcessReportableIncome>()
-            .Where(eri => !eri.IsIncomeExcluded).Select(eri => eri.GetDuplicateSignature())];
-        for (int i = 0; i < CorporateActions.Count; i++)
-        {
-            if (CorporateActions[i] is ExcessReportableIncome { IsIncomeExcluded: true } existing
-                && includedSignatures.Contains(existing.GetDuplicateSignature()))
-            {
-                CorporateActions[i] = existing with { IsIncomeExcluded = false };
-            }
         }
     }
 

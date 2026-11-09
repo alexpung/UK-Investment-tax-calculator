@@ -2,16 +2,38 @@
 using InvestmentTaxCalculator.Model.Interfaces;
 
 using System.ComponentModel;
+using System.Text.Json.Serialization;
 
 namespace InvestmentTaxCalculator.Model.TaxEvents;
 
-public record InterestIncome : TaxEvent, ITextFilePrintable
+public record InterestIncome : TaxEvent, ITextFilePrintable, IEqualisableIncome
 {
+    private DescribedMoney _amount = null!;
+    private EqualisationLinks? _equalisationLinks;
+
     /// <summary>
-    /// Negative for accurred income loss and interest expense
+    /// Negative for accurred income loss and interest expense. Cannot be set below the fund equalisation entered
+    /// against the income.
     /// </summary>
-    public required DescribedMoney Amount { get; init; }
-    public required InterestType InterestType { get; init; }
+    public required DescribedMoney Amount
+    {
+        get => _amount;
+        set
+        {
+            EqualisationLinks.EnsureCovered(value);
+            _amount = value;
+        }
+    }
+
+    public required InterestType InterestType { get; set; }
+
+    public string IncomeId { get; set; } = Guid.NewGuid().ToString("N");
+
+    [JsonIgnore]
+    public DescribedMoney EqualisableAmount => Amount;
+
+    [JsonIgnore]
+    public EqualisationLinks EqualisationLinks => EqualisationLinks.For(this, ref _equalisationLinks);
     public CountryCode IncomeLocation { get; set; } = CountryCode.UnknownRegion;
     // In case of accrued income profit/loss, tax is deferred if next payment is in different tax year
     public bool IsNextPaymentInSameTaxYear { get; set; } = true;

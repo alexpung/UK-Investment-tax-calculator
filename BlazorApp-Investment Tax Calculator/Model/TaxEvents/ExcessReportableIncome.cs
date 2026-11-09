@@ -12,8 +12,10 @@ namespace InvestmentTaxCalculator.Model.TaxEvents;
 /// This is treated as either dividend or interest income depending on the nature of the distribution,
 /// and increases the cost base of the holding to avoid double taxation on disposal.
 /// </summary>
-public record ExcessReportableIncome : CorporateAction, IChangeSection104
+public record ExcessReportableIncome : CorporateAction, IChangeSection104, IEqualisableIncome
 {
+    private EqualisationLinks? _equalisationLinks;
+
     /// <summary>
     /// The amount of excess reportable income received
     /// </summary>
@@ -31,16 +33,18 @@ public record ExcessReportableIncome : CorporateAction, IChangeSection104
 
     /// <summary>
     /// The last day of the fund reporting period this ERI relates to. Liability is fixed by the holding at the end
-    /// of this day (SI 2009/3001 reg. 94(3)). When absent (older saved files) it is assumed to be 6 months before
-    /// the fund distribution date, mirroring reg. 94(4).
+    /// of this day (SI 2009/3001 reg. 94(3)). When absent it is assumed to be 6 months before the fund distribution
+    /// date, mirroring reg. 94(4).
     /// </summary>
     public DateTime? ReportingPeriodEndDate { get; init; }
 
-    /// <summary>
-    /// Set when the entry was imported with its income type not loaded ("Load Dividends" or "Load Interest Income"
-    /// unchecked). The ERI still adjusts the Section 104 pool, but its income is not taxed.
-    /// </summary>
-    public bool IsIncomeExcluded { get; init; }
+    public string IncomeId { get; set; } = Guid.NewGuid().ToString("N");
+
+    [JsonIgnore]
+    public DescribedMoney EqualisableAmount => Amount;
+
+    [JsonIgnore]
+    public EqualisationLinks EqualisationLinks => EqualisationLinks.For(this, ref _equalisationLinks);
 
     [JsonIgnore]
     public DateOnly EffectiveReportingPeriodEndDate => DateOnly.FromDateTime(ReportingPeriodEndDate ?? AssumedReportingPeriodEnd(Date));
@@ -48,7 +52,7 @@ public record ExcessReportableIncome : CorporateAction, IChangeSection104
     /// <summary>
     /// The reporting period end assumed for a fund distribution date when none is recorded: 6 months earlier.
     /// </summary>
-    public static DateTime AssumedReportingPeriodEnd(DateTime distributionDate)
+    private static DateTime AssumedReportingPeriodEnd(DateTime distributionDate)
     {
         DateTime assumed = distributionDate.AddMonths(-6);
         // Reg. 94(4) maps a month end period end to a month end distribution date (e.g. 31 Dec -> 30 Jun), so a
@@ -99,8 +103,7 @@ public record ExcessReportableIncome : CorporateAction, IChangeSection104
     }
 
     /// <summary>
-    /// Adds the ERI to the cost of the holding, apportioned between gap period disposals and the pool. Applies even
-    /// when the ERI income is excluded (<see cref="IsIncomeExcluded"/>).
+    /// Adds the ERI to the cost of the holding, apportioned between gap period disposals and the pool.
     /// </summary>
     public override void ChangeSection104(UkSection104 section104)
     {

@@ -6,7 +6,6 @@
 @using InvestmentTaxCalculator.Model
 @using InvestmentTaxCalculator.Model.TaxEvents
 @using InvestmentTaxCalculator.Services
-@using InvestmentTaxCalculator.Model.UkTaxModel
 @implements IDisposable
 @inject TaxEventLists TaxEventLists
 @inject TaxCalculationService TaxCalculationService
@@ -178,14 +177,11 @@
     /// </summary>
     private void DeleteEntry(AddedManualEntryRow row)
     {
-        bool removed = false;
-        // Deleting a dividend or interest income also deletes the fund equalisation entries that reduce it.
-        IncomeChangeResult change = EqualisationIntegrity.ApplyIncomeChange(TaxEventLists,
-            () => removed = RemoveTaxEventById(row.TaxEventId), shareIdentityRegistry: ShareIdentityRegistry);
-        if (change.RemovedEqualisationsWarning is { } warning)
-            {
-                ToastService.ShowWarning(warning);
-            }
+        bool removed = RemoveTaxEventById(row.TaxEventId, out List<FundEqualisation> removedWithIt);
+        if (FundEqualisation.DescribeRemovedWithIncome(removedWithIt) is { } warning)
+        {
+            ToastService.ShowWarning(warning);
+        }
         if (removed)
         {
             _hasChanges = true;
@@ -251,19 +247,26 @@
         };
     }
 
-    private bool RemoveTaxEventById(int taxEventId)
+    /// <summary>
+    /// Removes the manual entry with the given id. A dividend or interest income takes the fund equalisation entries
+    /// linked to it with it; those are returned in <paramref name="removedWithIt"/>.
+    /// </summary>
+    private bool RemoveTaxEventById(int taxEventId, out List<FundEqualisation> removedWithIt)
     {
+        removedWithIt = [];
         int optionRemoved = TaxEventLists.OptionTrades.RemoveAll(i => i.Id == taxEventId);
         if (optionRemoved > 0) return true;
 
         int futureRemoved = TaxEventLists.FutureContractTrades.RemoveAll(i => i.Id == taxEventId);
         if (futureRemoved > 0) return true;
 
-        int dividendRemoved = TaxEventLists.Dividends.RemoveAll(i => i.Id == taxEventId);
-        if (dividendRemoved > 0) return true;
-
-        int interestRemoved = TaxEventLists.InterestIncomes.RemoveAll(i => i.Id == taxEventId);
-        if (interestRemoved > 0) return true;
+        IEqualisableIncome? income = (IEqualisableIncome?)TaxEventLists.Dividends.FirstOrDefault(i => i.Id == taxEventId)
+            ?? TaxEventLists.InterestIncomes.FirstOrDefault(i => i.Id == taxEventId);
+        if (income is not null)
+        {
+            removedWithIt = TaxEventLists.RemoveIncome(income);
+            return true;
+        }
 
         int tradeRemoved = TaxEventLists.Trades.RemoveAll(i => i.Id == taxEventId);
         return tradeRemoved > 0;
