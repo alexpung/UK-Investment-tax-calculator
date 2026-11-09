@@ -204,7 +204,7 @@
         // removing the entry is all that is needed. Equalisation entries left without income are removed with it.
         bool removed = false;
         IncomeChangeResult change = EqualisationIntegrity.ApplyIncomeChange(TaxEventLists,
-            () => removed = TaxEventLists.CorporateActions.Remove(entry));
+            () => removed = TaxEventLists.CorporateActions.Remove(entry), shareIdentityRegistry: ShareIdentityRegistry);
         if (!removed) return;
 
         ToastService.ShowInformation(entry is ExcessReportableIncome

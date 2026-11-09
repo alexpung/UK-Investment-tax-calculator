@@ -26,10 +26,10 @@ public record ResolvedIncome(List<Dividend> Dividends, List<InterestIncome> Inte
 public static class ReportingFundIncomeResolver
 {
     /// <summary>
-    /// Whether the dividend is a fund distribution an equalisation entry can reduce.
+    /// Whether the stored dividend is income an equalisation entry can reduce: anything but withholding tax. A stored
+    /// dividend of the ERI type is a manual entry (income derived from ERI entries is never stored), so it counts.
     /// </summary>
-    public static bool IsDistribution(Dividend dividend) =>
-        dividend.DividendType is not (DividendType.WITHHOLDING or DividendType.EXCESS_REPORTABLE_INCOME);
+    public static bool IsDistribution(Dividend dividend) => dividend.DividendType is not DividendType.WITHHOLDING;
 
     /// <summary>
     /// Whether the interest income is a fund distribution an equalisation entry can reduce. ERI interest is reduced

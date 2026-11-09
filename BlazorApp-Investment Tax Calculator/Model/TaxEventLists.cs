@@ -44,6 +44,7 @@ public record TaxEventLists : IDividendLists, ITradeAndCorporateActionList
             Dividends.AddRange(taxEventLists.Dividends.Where(d => !existingDivSigs.Contains(d.GetDuplicateSignature())));
             InterestIncomes.AddRange(taxEventLists.InterestIncomes.Where(i => !existingIntSigs.Contains(i.GetDuplicateSignature())));
             CorporateActions.AddRange(taxEventLists.CorporateActions.Where(c => !existingCorpActionSigs.Contains(c.GetDuplicateSignature())));
+            IncludeIncomeOfDuplicateEris(taxEventLists.CorporateActions);
             OptionTrades.AddRange(taxEventLists.OptionTrades.Where(o => !existingOptionSigs.Contains(o.GetDuplicateSignature())));
             FutureContractTrades.AddRange(taxEventLists.FutureContractTrades.Where(f => !existingFutureSigs.Contains(f.GetDuplicateSignature())));
             CashSettlements.AddRange(taxEventLists.CashSettlements.Where(c => !existingCashSigs.Contains(c.GetDuplicateSignature())));
@@ -57,6 +58,24 @@ public record TaxEventLists : IDividendLists, ITradeAndCorporateActionList
             FutureContractTrades.AddRange(taxEventLists.FutureContractTrades);
             CashSettlements.AddRange(taxEventLists.CashSettlements);
             InterestIncomes.AddRange(taxEventLists.InterestIncomes);
+        }
+    }
+
+    /// <summary>
+    /// A skipped duplicate ERI entry that was imported with its income loaded means the user now wants that income:
+    /// clear the exclusion on the existing entry. The entry itself is kept, so its Section 104 uplift applies once.
+    /// </summary>
+    private void IncludeIncomeOfDuplicateEris(IEnumerable<CorporateAction> imported)
+    {
+        HashSet<string> includedSignatures = [.. imported.OfType<ExcessReportableIncome>()
+            .Where(eri => !eri.IsIncomeExcluded).Select(eri => eri.GetDuplicateSignature())];
+        for (int i = 0; i < CorporateActions.Count; i++)
+        {
+            if (CorporateActions[i] is ExcessReportableIncome { IsIncomeExcluded: true } existing
+                && includedSignatures.Contains(existing.GetDuplicateSignature()))
+            {
+                CorporateActions[i] = existing with { IsIncomeExcluded = false };
+            }
         }
     }
 

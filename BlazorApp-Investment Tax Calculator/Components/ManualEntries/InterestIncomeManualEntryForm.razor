@@ -7,6 +7,7 @@
 @inject TaxEventLists TaxEventLists
 @inject CurrencyService CurrencyService
 @inject ToastService ToastService
+@inject ShareIdentityRegistry ShareIdentityRegistry
 
 <div class="card manual-entry-form">
     <div class="card-header">
@@ -168,7 +169,7 @@
             {
                 TaxEventLists.InterestIncomes.RemoveAll(i => i.Id == editingId);
                 TaxEventLists.InterestIncomes.Add(interestIncome);
-            }, rejectOverEqualisation: true);
+            }, rejectOverEqualisation: true, shareIdentityRegistry: ShareIdentityRegistry);
             if (!change.Applied)
             {
                 ToastService.ShowError(change.Error!);

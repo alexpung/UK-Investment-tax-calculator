@@ -13,8 +13,10 @@ namespace InvestmentTaxCalculator.Model.UkTaxModel;
 /// <item>income events whose amount had already been reduced by an equalisation entry.</item>
 /// </list>
 /// Left as they are, both would be counted again by the calculation, so the generated ERI income is dropped and
-/// the reduced distributions are restored. Run on every imported session file; files saved by the current version contain neither, so it changes
-/// nothing for them. Equalisation entries without an <see cref="FundEqualisation.IncomeSource"/> are old entries.
+/// the reduced distributions are restored. An ERI entry with no generated income (imported with its income type not
+/// loaded, or its income deleted) had no taxable income, so it is marked <see cref="ExcessReportableIncome.IsIncomeExcluded"/>.
+/// Only run on files without <see cref="ExportImportData.FormatVersion"/>: in a current file an ERI-type dividend
+/// is a manual entry, not generated income, and must be kept.
 /// </summary>
 public static class ReportingFundLegacyMigration
 {
@@ -32,7 +34,32 @@ public static class ReportingFundLegacyMigration
         registry.ImportManualLinks(manualLinks ?? []);
         registry.RegisterEvents(taxEventLists.AllEvents);
 
-        List<ExcessReportableIncome> eris = [.. taxEventLists.CorporateActions.OfType<ExcessReportableIncome>()];
+        // The ERI income is now derived from the ERI entry at calculation time, so drop the income older versions
+        // generated for it. Done first, so a legacy distribution equalisation below cannot match that income.
+        List<ExcessReportableIncome> eris = [];
+        foreach (ExcessReportableIncome eri in taxEventLists.CorporateActions.OfType<ExcessReportableIncome>().ToList())
+        {
+            TaxEvent? generated = taxEventLists.Dividends.Where(d => d.DividendType == DividendType.EXCESS_REPORTABLE_INCOME).Cast<TaxEvent>()
+                .Concat(taxEventLists.InterestIncomes.Where(i => i.InterestType == InterestType.EXCESSREPORTABLEINCOME))
+                .FirstOrDefault(income => IsGeneratedBy(income, eri));
+            ExcessReportableIncome migratedEri = eri;
+            switch (generated)
+            {
+                case Dividend dividend:
+                    taxEventLists.Dividends.Remove(dividend);
+                    break;
+                case InterestIncome interest:
+                    taxEventLists.InterestIncomes.Remove(interest);
+                    break;
+                default:
+                    // No generated income in the file, so it was not taxed in the session: keep it that way.
+                    migratedEri = eri with { IsIncomeExcluded = true };
+                    taxEventLists.CorporateActions[taxEventLists.CorporateActions.IndexOf(eri)] = migratedEri;
+                    break;
+            }
+            eris.Add(migratedEri);
+        }
+
         List<FundEqualisation> legacyEqualisations = [.. taxEventLists.CorporateActions.OfType<FundEqualisation>().Where(e => e.IncomeSource is null)];
 
         foreach (FundEqualisation legacy in legacyEqualisations)
@@ -50,10 +77,6 @@ public static class ReportingFundLegacyMigration
             int index = taxEventLists.CorporateActions.IndexOf(legacy);
             taxEventLists.CorporateActions[index] = migrated;
         }
-
-        // The ERI income is now derived from the ERI entry at calculation time.
-        taxEventLists.Dividends.RemoveAll(d => d.DividendType == DividendType.EXCESS_REPORTABLE_INCOME && eris.Any(eri => IsGeneratedBy(d, eri)));
-        taxEventLists.InterestIncomes.RemoveAll(i => i.InterestType == InterestType.EXCESSREPORTABLEINCOME && eris.Any(eri => IsGeneratedBy(i, eri)));
     }
 
     /// <summary>

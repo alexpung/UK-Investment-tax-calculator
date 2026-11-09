@@ -29,9 +29,13 @@ public class JsonParseController(AssetTypeToLoadSetting assetTypeToLoadSetting, 
             // Restore user declared share links so they apply when the imported events are registered.
             shareIdentityRegistry.ImportManualLinks(result.ShareIdentityLinks);
         }
-        // Sessions saved by older versions hold ERI income and equalisation reductions already applied to the
-        // income events; convert them so the calculation does not apply them a second time.
-        ReportingFundLegacyMigration.Migrate(result, result.ShareIdentityLinks);
+        // Sessions saved before format versioning hold ERI income and equalisation reductions already applied to the
+        // income events; convert them so the calculation does not apply them a second time. Current files are
+        // left alone, so a manually entered ERI dividend is not mistaken for generated income.
+        if (result.FormatVersion is null)
+        {
+            ReportingFundLegacyMigration.Migrate(result, result.ShareIdentityLinks);
+        }
         resultFiltered = assetTypeToLoadSetting.FilterTaxEvent(result);
         return resultFiltered;
     }

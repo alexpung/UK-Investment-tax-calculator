@@ -206,7 +206,10 @@
             Amount = new DescribedMoney(EqualisationAmount, Currency, FxRate, relatedDescription),
             RelatedEventDescription = relatedDescription,
             IncomeSource = income.Source,
-            IncomeEventType = ReportingFundIncomeResolver.IncomeEventTypeOf(selectedEvent)
+            IncomeEventType = ReportingFundIncomeResolver.IncomeEventTypeOf(selectedEvent),
+            // Carrying the share's ISIN lets the share identity registry match the entry to its income even when
+            // that income is later recorded under another ticker of the same share.
+            Isin = selectedEvent.Isin
         };
 
         // Check the entry against the current data with the same matching rule the calculation uses, so a stale

@@ -181,7 +181,7 @@
         bool removed = false;
         // Deleting a dividend or interest income also deletes the fund equalisation entries that reduce it.
         IncomeChangeResult change = EqualisationIntegrity.ApplyIncomeChange(TaxEventLists,
-            () => removed = RemoveTaxEventById(row.TaxEventId));
+            () => removed = RemoveTaxEventById(row.TaxEventId), shareIdentityRegistry: ShareIdentityRegistry);
         if (change.RemovedEqualisationsWarning is { } warning)
             {
                 ToastService.ShowWarning(warning);

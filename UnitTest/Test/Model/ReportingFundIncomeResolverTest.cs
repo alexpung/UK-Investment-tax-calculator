@@ -445,4 +445,181 @@ public class ReportingFundIncomeResolverTest
         restored.Proceed.Amount.Amount.ShouldBe(100m);
         lists.CorporateActions.OfType<FundEqualisation>().Single().IncomeEventType.ShouldBe(nameof(DividendType.DIVIDEND));
     }
+
+    [Fact]
+    public void SkipDuplicates_ReimportWithIncomeLoaded_ClearsExclusionWithoutAddingSecondEri()
+    {
+        TaxEventLists lists = new();
+        lists.CorporateActions.Add(Eri() with { IsIncomeExcluded = true });
+        TaxEventLists reimport = new();
+        reimport.CorporateActions.Add(Eri());
+
+        lists.AddData(reimport, skipDuplicates: true);
+
+        lists.CorporateActions.ShouldHaveSingleItem().ShouldBeOfType<ExcessReportableIncome>().IsIncomeExcluded.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void ApplyIncomeChange_RejectedChange_RestoresInPlaceAmountEdit()
+    {
+        TaxEventLists lists = new();
+        Dividend dividend = Distribution(100m, new DateTime(2024, 3, 1));
+        lists.Dividends.Add(dividend);
+        lists.CorporateActions.Add(Equalisation(EqualisationIncomeSource.Distribution, 50m, dividend.Date));
+
+        IncomeChangeResult result = EqualisationIntegrity.ApplyIncomeChange(lists,
+            () => dividend.Proceed = new DescribedMoney(40m, "USD", 0.8m, "Edited in place"), rejectOverEqualisation: true);
+
+        result.Applied.ShouldBeFalse();
+        dividend.Proceed.Amount.Amount.ShouldBe(100m);
+    }
+
+    [Fact]
+    public void ApplyIncomeChange_RejectsEditWorseningExistingShortfall_AllowsOneThatDoesNot()
+    {
+        // £150 of equalisation (USD 150 at 0.8 = £120) already exceeds the £80 income (USD 100).
+        TaxEventLists lists = new();
+        Dividend dividend = Distribution(100m, new DateTime(2024, 3, 1));
+        lists.Dividends.Add(dividend);
+        lists.CorporateActions.Add(Equalisation(EqualisationIncomeSource.Distribution, 150m, dividend.Date));
+
+        Dividend smaller = Distribution(80m, dividend.Date);
+        IncomeChangeResult worse = EqualisationIntegrity.ApplyIncomeChange(lists,
+            () => { lists.Dividends.Remove(dividend); lists.Dividends.Add(smaller); }, rejectOverEqualisation: true);
+        worse.Applied.ShouldBeFalse();
+        lists.Dividends.ShouldHaveSingleItem().ShouldBeSameAs(dividend);
+
+        Dividend larger = Distribution(120m, dividend.Date);
+        IncomeChangeResult better = EqualisationIntegrity.ApplyIncomeChange(lists,
+            () => { lists.Dividends.Remove(dividend); lists.Dividends.Add(larger); }, rejectOverEqualisation: true);
+        better.Applied.ShouldBeTrue();
+        lists.Dividends.ShouldHaveSingleItem().ShouldBeSameAs(larger);
+    }
+
+    [Fact]
+    public void ManuallyEnteredEriDividend_CanBeEqualised()
+    {
+        TaxEventLists lists = new();
+        Dividend manualEri = new()
+        {
+            AssetName = "VUSA",
+            Date = DistributionDate,
+            DividendType = DividendType.EXCESS_REPORTABLE_INCOME,
+            Proceed = new DescribedMoney(50m, "USD", 0.8m, "Manual ERI")
+        };
+        lists.Dividends.Add(manualEri);
+        lists.CorporateActions.Add(Equalisation(EqualisationIncomeSource.Distribution, 10m, DistributionDate) with { IncomeEventType = nameof(DividendType.EXCESS_REPORTABLE_INCOME) });
+
+        ResolvedIncome resolved = ReportingFundIncomeResolver.Resolve(lists, lists.CorporateActions);
+
+        resolved.Dividends.ShouldHaveSingleItem().Proceed.Amount.Amount.ShouldBe(40m);
+    }
+
+    [Fact]
+    public void DeletingDistribution_DoesNotMoveItsEqualisationOntoAnotherOnTheSameDay()
+    {
+        TaxEventLists lists = new();
+        DateTime date = new(2024, 3, 1);
+        Dividend selected = Distribution(300m, date);
+        Dividend other = Distribution(100m, date) with { DividendType = DividendType.DIVIDEND_IN_LIEU };
+        lists.Dividends.AddRange([selected, other]);
+        FundEqualisation equalisation = Equalisation(EqualisationIncomeSource.Distribution, 200m, date) with { IncomeEventType = nameof(DividendType.DIVIDEND) };
+        lists.CorporateActions.Add(equalisation);
+
+        IncomeChangeResult result = EqualisationIntegrity.ApplyIncomeChange(lists, () => lists.Dividends.Remove(selected));
+
+        result.RemovedEqualisations.ShouldHaveSingleItem().ShouldBe(equalisation);
+        lists.CorporateActions.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void ConvertingDividendToInterest_KeepsItsEqualisation()
+    {
+        TaxEventLists lists = new();
+        Dividend dividend = Distribution(100m, new DateTime(2024, 3, 1));
+        lists.Dividends.Add(dividend);
+        lists.CorporateActions.Add(Equalisation(EqualisationIncomeSource.Distribution, 10m, dividend.Date) with { IncomeEventType = nameof(DividendType.DIVIDEND) });
+        InterestIncome converted = new()
+        {
+            AssetName = "VUSA",
+            Date = dividend.Date,
+            InterestType = InterestType.ETFDIVIDEND,
+            Amount = dividend.Proceed
+        };
+
+        IncomeChangeResult result = EqualisationIntegrity.ApplyIncomeChange(lists,
+            () => { lists.Dividends.Remove(dividend); lists.InterestIncomes.Add(converted); });
+
+        result.RemovedEqualisations.ShouldBeEmpty();
+        lists.CorporateActions.ShouldHaveSingleItem();
+    }
+
+    [Fact]
+    public void ApplyIncomeChange_WithRegistry_KeepsEqualisationWhenEditedToAnotherTickerOfTheSameShare()
+    {
+        const string isin = "IE00B3XXRP09";
+        TaxEventLists lists = new();
+        Dividend dividend = Distribution(100m, new DateTime(2024, 3, 1)) with { Isin = isin };
+        lists.Dividends.Add(dividend);
+        // The equalisation form records the share's ISIN from the selected income.
+        lists.CorporateActions.Add(Equalisation(EqualisationIncomeSource.Distribution, 10m, dividend.Date) with { IncomeEventType = nameof(DividendType.DIVIDEND), Isin = isin });
+        ShareIdentityRegistry registry = new();
+        registry.RegisterEvents(lists.AllEvents);
+        Dividend renamed = dividend with { AssetName = "VUSA.L" };
+
+        IncomeChangeResult result = EqualisationIntegrity.ApplyIncomeChange(lists,
+            () => { lists.Dividends.Remove(dividend); lists.Dividends.Add(renamed); }, shareIdentityRegistry: registry);
+
+        result.RemovedEqualisations.ShouldBeEmpty();
+        lists.CorporateActions.ShouldHaveSingleItem();
+    }
+
+    [Fact]
+    public void LegacyMigration_EriWithoutGeneratedIncome_IsMarkedExcluded()
+    {
+        // An older session exported after importing with "Load Dividends" unchecked: the ERI is there, its dividend not.
+        TaxEventLists lists = new();
+        lists.CorporateActions.Add(Eri());
+
+        ReportingFundLegacyMigration.Migrate(lists);
+
+        lists.CorporateActions.ShouldHaveSingleItem().ShouldBeOfType<ExcessReportableIncome>().IsIncomeExcluded.ShouldBeTrue();
+        ReportingFundIncomeResolver.Resolve(lists, lists.CorporateActions).Dividends.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void JsonImport_CurrentFormat_KeepsManualEriDividendAlongsideEriEntry()
+    {
+        TaxEventLists session = new();
+        session.CorporateActions.Add(Eri());
+        session.Dividends.Add(new Dividend
+        {
+            AssetName = "VUSA",
+            Date = DistributionDate,
+            DividendType = DividendType.EXCESS_REPORTABLE_INCOME,
+            Proceed = new DescribedMoney(5m, "USD", 0.8m, "Manual ERI top-up")
+        });
+        string json = new ExportTaxEventService(session, new ResidencyStatusRecord(), new ShareIdentityRegistry()).SerialiseTaxEvents();
+        InvestmentTaxCalculator.Parser.Json.JsonParseController parser = new(new AssetTypeToLoadSetting(), new ResidencyStatusRecord(), new ShareIdentityRegistry());
+
+        TaxEventLists imported = parser.ParseFile(json);
+
+        imported.Dividends.ShouldHaveSingleItem().Proceed.Amount.Amount.ShouldBe(5m);
+        imported.CorporateActions.ShouldHaveSingleItem().ShouldBeOfType<ExcessReportableIncome>().IsIncomeExcluded.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void JsonImport_FileWithoutFormatVersion_IsConverted()
+    {
+        TaxEventLists session = new();
+        session.CorporateActions.Add(Eri());
+        session.Dividends.Add(Eri().CreateIncomeEvent() as Dividend ?? throw new InvalidOperationException());
+        string json = new ExportTaxEventService(session, new ResidencyStatusRecord(), new ShareIdentityRegistry()).SerialiseTaxEvents()
+            .Replace($"\"FormatVersion\": {ExportImportData.CurrentFormatVersion},", "");
+        InvestmentTaxCalculator.Parser.Json.JsonParseController parser = new(new AssetTypeToLoadSetting(), new ResidencyStatusRecord(), new ShareIdentityRegistry());
+
+        TaxEventLists imported = parser.ParseFile(json);
+
+        imported.Dividends.ShouldBeEmpty();
+    }
 }
