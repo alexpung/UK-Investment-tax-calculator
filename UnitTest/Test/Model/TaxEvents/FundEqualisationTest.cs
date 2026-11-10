@@ -57,7 +57,7 @@ public class FundEqualisationTest
     [Fact]
     public void ChangeSection104_WithoutReportingPeriodEnd_ReducesPoolOnly()
     {
-        // Legacy behaviour: no reporting period end recorded, the whole amount reduces the pool at the event date.
+        // Not linked to an ERI entry (a distribution's equalisation): the whole amount reduces the pool at the event date.
         TradeTaxCalculation buyTrade = MockTrade.CreateTradeTaxCalculation("ETF1", new DateTime(2023, 1, 1), 1000, 10000m, TradeType.ACQUISITION);
         TradeTaxCalculation sellTrade = MockTrade.CreateTradeTaxCalculation("ETF1", new DateTime(2024, 4, 30), 400, 5000m, TradeType.DISPOSAL);
         UkSection104 ukSection104 = new("ETF1");
@@ -91,9 +91,9 @@ public class FundEqualisationTest
         {
             AssetName = "ETF1",
             Date = new DateTime(2024, 6, 30),
-            ReportingPeriodEndDate = new DateTime(2023, 12, 31),
             Amount = new DescribedMoney(100m, "GBP", 1m, "Equalisation") // 0.1 per unit for 1000 units
         };
+        equalisation.LinkTo(EriForPeriodEnding31Dec2023());
         equalisation.ChangeSection104(ukSection104);
 
         sellTrade.TotalAllowableCost.ShouldBe(new WrappedMoney(3960m)); // 4000 - 400 * 0.1
@@ -117,13 +117,25 @@ public class FundEqualisationTest
         {
             AssetName = "ETF1",
             Date = new DateTime(2024, 6, 30),
-            ReportingPeriodEndDate = new DateTime(2023, 12, 31),
             Amount = new DescribedMoney(100m, "GBP", 1m, "Equalisation")
         };
+        equalisation.LinkTo(EriForPeriodEnding31Dec2023());
         equalisation.ChangeSection104(ukSection104);
 
         sellTrade.TotalAllowableCost.ShouldBe(new WrappedMoney(9900m)); // 10000 - 100
         ukSection104.Quantity.ShouldBe(0m);
         ukSection104.AcquisitionCostInBaseCurrency.ShouldBe(WrappedMoney.GetBaseCurrencyZero());
     }
+
+    /// <summary>
+    /// An ERI entry the gap period tests link their equalisation to; its reporting period end drives the apportioning.
+    /// </summary>
+    private static ExcessReportableIncome EriForPeriodEnding31Dec2023() => new()
+    {
+        AssetName = "ETF1",
+        Date = new DateTime(2024, 6, 30),
+        ReportingPeriodEndDate = new DateTime(2023, 12, 31),
+        IncomeType = ExcessReportableIncomeType.DIVIDEND,
+        Amount = new DescribedMoney(1000m, "GBP", 1m, "ERI")
+    };
 }

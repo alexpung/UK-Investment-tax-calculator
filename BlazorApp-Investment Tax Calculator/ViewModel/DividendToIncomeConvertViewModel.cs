@@ -75,6 +75,11 @@ public class DividendToIncomeConvertViewModel(TaxEventLists taxEventLists)
                 ShareIdentity = dividend.ShareIdentity,
             };
             taxEventLists.InterestIncomes.Add(interestIncome);
+            // The equalisation paid with the dividend now belongs to the income that replaces it.
+            foreach (FundEqualisation equalisation in dividend.EqualisationLinks.Equalisations.ToList())
+            {
+                equalisation.LinkTo(interestIncome);
+            }
             taxEventLists.Dividends.Remove(dividend);
         }
     }
