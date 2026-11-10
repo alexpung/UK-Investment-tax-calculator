@@ -109,6 +109,11 @@
         }
     }
 
+    /// <summary>
+    /// Adds the dividend entered, or updates the one being edited in place, so fund equalisation linked to it stays
+    /// linked. An edit the income refuses (smaller than its equalisation, or to a type that cannot be equalised) is
+    /// reported and changes nothing.
+    /// </summary>
     private async Task AddEntry()
     {
         if (!ValidateInputs(out CountryCode countryCode))
@@ -116,27 +121,50 @@
             return;
         }
 
+        DescribedMoney proceed = new(_amount, _currency, _fxRate, _description.Trim());
+        Dividend dividend;
         if (EditingTaxEventId.HasValue)
         {
-            int removed = TaxEventLists.Dividends.RemoveAll(d => d.Id == EditingTaxEventId.Value);
-            if (removed != 1)
+            Dividend? existing = TaxEventLists.Dividends.FirstOrDefault(d => d.Id == EditingTaxEventId.Value);
+            if (existing is null)
             {
                 ToastService.ShowError("Unable to update dividend because the original entry could not be found.");
                 return;
             }
+            // Edited in place so any fund equalisation stays linked; the dividend refuses an amount below it, or a
+            // change to a type that cannot be equalised. Both checked values are put back if either is refused.
+            (DividendType oldType, DescribedMoney oldProceed) = (existing.DividendType, existing.Proceed);
+            try
+            {
+                existing.DividendType = _dividendType;
+                existing.Proceed = proceed;
+            }
+            catch (InvalidOperationException ex)
+            {
+                existing.DividendType = oldType;
+                existing.Proceed = oldProceed;
+                ToastService.ShowError(ex.Message);
+                return;
+            }
+            existing.AssetName = _assetName.Trim();
+            existing.Date = _date;
+            existing.CompanyLocation = countryCode;
+            existing.Isin = _isin.Trim();
+            dividend = existing;
         }
-
-        var dividend = new Dividend
+        else
         {
-            AssetName = _assetName.Trim(),
-            Date = _date,
-            DividendType = _dividendType,
-            CompanyLocation = countryCode,
-            Isin = _isin.Trim(),
-            Proceed = new DescribedMoney(_amount, _currency, _fxRate, _description.Trim())
-        };
-
-        TaxEventLists.Dividends.Add(dividend);
+            dividend = new Dividend
+            {
+                AssetName = _assetName.Trim(),
+                Date = _date,
+                DividendType = _dividendType,
+                CompanyLocation = countryCode,
+                Isin = _isin.Trim(),
+                Proceed = proceed
+            };
+            TaxEventLists.Dividends.Add(dividend);
+        }
         ResetForm();
 
         string verb = IsEditing ? "updated" : "added";

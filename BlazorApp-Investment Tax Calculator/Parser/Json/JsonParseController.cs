@@ -25,6 +25,8 @@ public class JsonParseController(AssetTypeToLoadSetting assetTypeToLoadSetting, 
             shareIdentityRegistry.ImportManualLinks(result.ShareIdentityLinks);
         }
         resultFiltered = assetTypeToLoadSetting.FilterTaxEvent(result);
+        // Restore each fund equalisation's link to its income, by the ids saved in the file.
+        resultFiltered.LinkEqualisations();
         return resultFiltered;
     }
 
