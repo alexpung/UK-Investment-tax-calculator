@@ -103,7 +103,7 @@ public class FundEqualisationLinkTest
     public void DividendAmount_CannotBeSetBelowItsEqualisation()
     {
         Dividend dividend = Dividend(100m);
-        new TaxEventLists().AddEqualisation(Equalisation(50m), dividend);
+        Equalisation(50m).LinkTo(dividend);
         DescribedMoney original = dividend.Proceed;
 
         Should.Throw<InvalidOperationException>(() => dividend.Proceed = new DescribedMoney(40m, "USD", 0.8m, "Edited"));
@@ -117,7 +117,7 @@ public class FundEqualisationLinkTest
     public void InterestAmount_CannotBeSetBelowItsEqualisation()
     {
         InterestIncome interest = Interest(100m);
-        new TaxEventLists().AddEqualisation(Equalisation(50m), interest);
+        Equalisation(50m).LinkTo(interest);
 
         Should.Throw<InvalidOperationException>(() => interest.Amount = new DescribedMoney(40m, "USD", 0.8m, "Edited"));
         interest.Amount.Amount.Amount.ShouldBe(100m);
@@ -127,7 +127,7 @@ public class FundEqualisationLinkTest
     public void EqualisedDividend_CannotBecomeWithholdingTax()
     {
         Dividend dividend = Dividend(100m);
-        new TaxEventLists().AddEqualisation(Equalisation(10m), dividend);
+        Equalisation(10m).LinkTo(dividend);
 
         Should.Throw<InvalidOperationException>(() => dividend.DividendType = DividendType.WITHHOLDING);
         dividend.DividendType.ShouldBe(DividendType.DIVIDEND);
@@ -179,7 +179,7 @@ public class FundEqualisationLinkTest
         Dividend dividend = Dividend(100m);
         InterestIncome interest = Interest(100m);
         FundEqualisation equalisation = Equalisation(10m);
-        new TaxEventLists().AddEqualisation(equalisation, dividend);
+        equalisation.LinkTo(dividend);
 
         equalisation.LinkTo(interest);
 
@@ -201,7 +201,7 @@ public class FundEqualisationLinkTest
 
         InterestIncome converted = lists.InterestIncomes.ShouldHaveSingleItem();
         equalisation.LinkedIncome.ShouldBeSameAs(converted);
-        ReportingFundIncomeResolver.Resolve(lists, lists.CorporateActions).InterestIncomes.Single().Amount.Amount.Amount.ShouldBe(90m);
+        ReportingFundIncomeResolver.Resolve(lists).InterestIncomes.Single().Amount.Amount.Amount.ShouldBe(90m);
     }
 
     [Fact]
@@ -216,8 +216,8 @@ public class FundEqualisationLinkTest
         lists.AddEqualisation(Equalisation(10m), eri);
 
         // Run twice: nothing accumulates.
-        ReportingFundIncomeResolver.Resolve(lists, lists.CorporateActions);
-        ResolvedIncome resolved = ReportingFundIncomeResolver.Resolve(lists, lists.CorporateActions);
+        ReportingFundIncomeResolver.Resolve(lists);
+        ResolvedIncome resolved = ReportingFundIncomeResolver.Resolve(lists);
 
         resolved.Dividends.Count.ShouldBe(2);
         Dividend reduced = resolved.Dividends.Single(d => d.DividendType == DividendType.DIVIDEND);
@@ -244,7 +244,7 @@ public class FundEqualisationLinkTest
         lists.AddEqualisation(Equalisation(10m), dividend);
         lists.AddEqualisation(Equalisation(10m), eri);
         ToastService toastService = Substitute.For<ToastService>(Substitute.For<ILogger<ToastService>>());
-        UkDividendCalculator calculator = new(lists, new UKTaxYear(), toastService, new ResidencyStatusRecord(), lists);
+        UkDividendCalculator calculator = new(lists, new UKTaxYear(), toastService, new ResidencyStatusRecord());
 
         List<List<DividendSummary>> runs = [calculator.CalculateTax(), calculator.CalculateTax(), calculator.CalculateTax()];
 
@@ -262,7 +262,7 @@ public class FundEqualisationLinkTest
     {
         ExcessReportableIncome eri = Eri();
         FundEqualisation equalisation = Equalisation(10m);
-        new TaxEventLists().AddEqualisation(equalisation, eri);
+        equalisation.LinkTo(eri);
 
         equalisation.ReportingPeriodEndDate.ShouldBe(DateOnly.FromDateTime(PeriodEnd));
         equalisation.Date.ShouldBe(DistributionDate);
@@ -273,11 +273,17 @@ public class FundEqualisationLinkTest
     {
         Dividend dividend = Dividend(100m);
         int hashBefore = dividend.GetHashCode();
-        new TaxEventLists().AddEqualisation(Equalisation(10m), dividend);
+        Equalisation(10m).LinkTo(dividend);
 
         dividend.GetHashCode().ShouldBe(hashBefore);
         Dividend copy = dividend with { };
         copy.EqualisationLinks.Equalisations.ShouldBeEmpty();
+        copy.ShouldBe(dividend);
+        ExcessReportableIncome eri = Eri();
+        ExcessReportableIncome eriCopy = eri with { };
+        Equalisation(10m).LinkTo(eri);
+        eriCopy.EqualisationLinks.Equalisations.ShouldBeEmpty();
+        eriCopy.ShouldBe(eri);
         // An unlinked copy may be set below the original's equalisation.
         Should.NotThrow(() => copy.Proceed = new DescribedMoney(1m, "USD", 0.8m, "Copy"));
         dividend.EqualisationLinks.Equalisations.ShouldHaveSingleItem();
@@ -321,21 +327,30 @@ public class FundEqualisationLinkTest
         lists.AddEqualisation(Equalisation(10m), dividend);
 
         TaxEventLists imported = Import(Export(lists), new AssetTypeToLoadSetting { LoadDividends = false });
+        TaxEventLists session = new();
+        session.AddData(imported, skipDuplicates: false);
 
-        imported.Dividends.ShouldBeEmpty();
-        imported.CorporateActions.ShouldBeEmpty();
+        List<FundEqualisation> dropped = session.RemoveUnlinkedEqualisations();
+
+        dropped.ShouldHaveSingleItem().Amount.Amount.Amount.ShouldBe(10m);
+        session.Dividends.ShouldBeEmpty();
+        session.CorporateActions.ShouldBeEmpty();
     }
 
     [Fact]
-    public void AddData_SkippingDuplicates_LinksReimportedEqualisationToTheExistingIncome()
+    public void AddData_SkippingDuplicates_LinksNewEqualisationToTheExistingIncome()
     {
+        // The session is exported, an equalisation is added to the export's copy, and that file is imported back:
+        // the dividend is skipped as a duplicate, and the new equalisation attaches to the dividend already here.
         TaxEventLists lists = new();
         Dividend dividend = Dividend(100m);
         lists.Dividends.Add(dividend);
-        lists.AddEqualisation(Equalisation(10m), dividend);
-        string json = Export(lists);
+        TaxEventLists later = Import(Export(lists));
+        later.AddEqualisation(Equalisation(10m), later.Dividends.Single());
+        string json = Export(later);
 
         lists.AddData(Import(json), skipDuplicates: true);
+        lists.RemoveUnlinkedEqualisations().ShouldBeEmpty();
 
         lists.Dividends.ShouldHaveSingleItem().ShouldBeSameAs(dividend);
         lists.CorporateActions.ShouldHaveSingleItem();
@@ -352,6 +367,7 @@ public class FundEqualisationLinkTest
         string json = Export(lists);
 
         lists.AddData(Import(json), skipDuplicates: false);
+        lists.RemoveUnlinkedEqualisations().ShouldBeEmpty();
 
         lists.Dividends.Count.ShouldBe(2);
         lists.Dividends.Select(d => d.IncomeId).Distinct().Count().ShouldBe(2);
@@ -359,5 +375,58 @@ public class FundEqualisationLinkTest
         // A further round trip keeps them apart.
         TaxEventLists again = Import(Export(lists));
         again.Dividends.ShouldAllBe(d => d.EqualisationLinks.Equalisations.Count == 1);
+    }
+
+    [Fact]
+    public void AddEqualisation_ToIncomeNotInTheLists_IsRefused()
+    {
+        TaxEventLists lists = new();
+
+        Should.Throw<InvalidOperationException>(() => lists.AddEqualisation(Equalisation(10m), Dividend(100m)));
+
+        lists.CorporateActions.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void IncomeTypesThatCannotBeEqualised_AreRefusedByTheModel()
+    {
+        Dividend withholding = Dividend(100m);
+        withholding.DividendType = DividendType.WITHHOLDING;
+        Should.Throw<InvalidOperationException>(() => Equalisation(10m).LinkTo(withholding));
+
+        InterestIncome interest = Interest(100m);
+        Equalisation(10m).LinkTo(interest);
+        Should.Throw<InvalidOperationException>(() => interest.InterestType = InterestType.INTERESTEXPENSE);
+        interest.InterestType.ShouldBe(InterestType.ETFDIVIDEND);
+    }
+
+    [Fact]
+    public void RemovedEqualisation_KeepsTheAssetAndDateItsIncomeHadWhenRemoved()
+    {
+        TaxEventLists lists = new();
+        Dividend dividend = Dividend(100m);
+        lists.Dividends.Add(dividend);
+        lists.AddEqualisation(Equalisation(10m), dividend);
+        dividend.AssetName = "VUSA.L";
+        dividend.Date = new DateTime(2025, 1, 2);
+
+        FundEqualisation removed = lists.RemoveIncome(dividend).ShouldHaveSingleItem();
+
+        removed.AssetName.ShouldBe("VUSA.L");
+        removed.Date.ShouldBe(new DateTime(2025, 1, 2));
+    }
+
+    [Fact]
+    public void RemoveUnlinkedEqualisations_RemovesAndReturnsEntriesWithoutIncome()
+    {
+        // As in a session saved by a version that did not link equalisation to its income.
+        TaxEventLists lists = new();
+        lists.Dividends.Add(Dividend(100m));
+        FundEqualisation noIncomeId = Equalisation(10m);
+        lists.CorporateActions.Add(noIncomeId);
+
+        lists.RemoveUnlinkedEqualisations().ShouldHaveSingleItem().ShouldBeSameAs(noIncomeId);
+
+        lists.CorporateActions.ShouldBeEmpty();
     }
 }

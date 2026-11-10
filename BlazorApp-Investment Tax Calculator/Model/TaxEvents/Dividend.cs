@@ -9,20 +9,16 @@ public record Dividend : TaxEvent, ITextFilePrintable, IEqualisableIncome
 {
     private DividendType _dividendType;
     private DescribedMoney _proceed = null!;
-    private EqualisationLinks? _equalisationLinks;
 
     /// <summary>
-    /// Withholding tax cannot be equalised, so a dividend with equalisation attached cannot be changed to it.
+    /// A dividend with fund equalisation attached cannot be changed to a type that cannot be equalised.
     /// </summary>
     public required DividendType DividendType
     {
         get => _dividendType;
         set
         {
-            if (value is DividendType.WITHHOLDING && EqualisationLinks.Equalisations.Count > 0)
-            {
-                throw new InvalidOperationException("A dividend with fund equalisation entered against it cannot be changed to withholding tax. Delete the equalisation first.");
-            }
+            if (!IsEqualisable(value)) EqualisationLinks.EnsureNone();
             _dividendType = value;
         }
     }
@@ -48,7 +44,14 @@ public record Dividend : TaxEvent, ITextFilePrintable, IEqualisableIncome
     public DescribedMoney EqualisableAmount => Proceed;
 
     [JsonIgnore]
-    public EqualisationLinks EqualisationLinks => EqualisationLinks.For(this, ref _equalisationLinks);
+    public bool CanBeEqualised => IsEqualisable(DividendType);
+
+    [JsonIgnore]
+    public EqualisationLinks EqualisationLinks => EqualisationLinks.Of(this);
+
+    // Withholding tax is not income, so it has no equalisation.
+    private static bool IsEqualisable(DividendType type) => type is not DividendType.WITHHOLDING;
+
     public WrappedMoney WithholdingTaxPaid => DividendType is DividendType.WITHHOLDING ? Proceed.BaseCurrencyAmount : WrappedMoney.GetBaseCurrencyZero();
     public WrappedMoney DividendReceived => DividendType is DividendType.DIVIDEND_IN_LIEU or DividendType.DIVIDEND or DividendType.EXCESS_REPORTABLE_INCOME or DividendType.RETURN_OF_CAPITAL ? Proceed.BaseCurrencyAmount : WrappedMoney.GetBaseCurrencyZero();
 

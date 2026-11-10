@@ -124,9 +124,9 @@
     }
 
     /// <summary>
-    /// Adds the interest income entered, or replaces the one being edited. An edit that leaves the income smaller than the
-    /// fund equalisation entered against it is rejected; one that moves it to another asset or date deletes that
-    /// equalisation, with a warning.
+    /// Adds the interest income entered, or updates the one being edited in place, so fund equalisation linked to it stays
+    /// linked. An edit the income refuses (smaller than its equalisation, or to a type that cannot be equalised) is
+    /// reported and changes nothing.
     /// </summary>
     private async Task AddEntry()
     {
@@ -145,19 +145,23 @@
                 ToastService.ShowError("Unable to update interest income because the original entry could not be found.");
                 return;
             }
-            // Edited in place so any fund equalisation stays linked; the income refuses an amount below it.
+            // Edited in place so any fund equalisation stays linked; the income refuses an amount below it, or a
+            // change to a type that cannot be equalised. Both checked values are put back if either is refused.
+            (InterestType oldType, DescribedMoney oldAmount) = (existing.InterestType, existing.Amount);
             try
             {
+                existing.InterestType = _interestType;
                 existing.Amount = amount;
             }
             catch (InvalidOperationException ex)
             {
+                existing.InterestType = oldType;
+                existing.Amount = oldAmount;
                 ToastService.ShowError(ex.Message);
                 return;
             }
             existing.AssetName = _assetName.Trim();
             existing.Date = _date;
-            existing.InterestType = _interestType;
             existing.IncomeLocation = countryCode;
             existing.Isin = _isin.Trim();
             existing.IsNextPaymentInSameTaxYear = _isNextPaymentInSameTaxYear;

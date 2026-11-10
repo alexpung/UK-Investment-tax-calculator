@@ -59,6 +59,7 @@
     /// </summary>
     private async Task DeleteAction(CorporateAction action)
     {
+        if (!_taxEventLists.CorporateActions.Contains(action)) return;
         List<FundEqualisation> removedWithIt = _taxEventLists.RemoveCorporateAction(action);
         _toastService.ShowInformation("Event removed.");
         if (FundEqualisation.DescribeRemovedWithIncome(removedWithIt) is { } warning)

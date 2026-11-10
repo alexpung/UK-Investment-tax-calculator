@@ -1,61 +1,38 @@
+using InvestmentTaxCalculator.Model.Interfaces;
+
+using System.Runtime.CompilerServices;
+
 namespace InvestmentTaxCalculator.Model.TaxEvents;
 
 /// <summary>
-/// Income a fund equalisation entry can be attached to: a stored <see cref="Dividend"/>, a stored
-/// <see cref="InterestIncome"/> or an <see cref="ExcessReportableIncome"/> entry.
-/// </summary>
-public interface IEqualisableIncome
-{
-    /// <summary>
-    /// Saved identifier, so the link from <see cref="FundEqualisation.IncomeId"/> survives export and import.
-    /// </summary>
-    string IncomeId { get; set; }
-
-    /// <summary>
-    /// The income amount its equalisation entries may not exceed in total.
-    /// </summary>
-    DescribedMoney EqualisableAmount { get; }
-
-    /// <summary>
-    /// The equalisation entries attached to this income.
-    /// </summary>
-    EqualisationLinks EqualisationLinks { get; }
-}
-
-/// <summary>
 /// The income side of the two-way link between an income and its fund equalisation entries (the other side is
-/// <see cref="FundEqualisation.LinkedIncome"/>). Guards the rule that the equalisation attached to an income can
-/// never exceed it: attaching an entry and changing the income amount are both checked here.
+/// <see cref="FundEqualisation.LinkedIncome"/>). Guards the rules that the equalisation attached to an income can
+/// never exceed it, and that only income of a type that can be equalised has any.
 /// <para>
-/// Not part of the owning record's value: all instances compare equal, so record equality and hashing are
-/// unaffected. A copy of the income made with <c>with</c> gets fresh, empty links (see <see cref="For"/>), so
-/// copies such as the reduced income built for the tax calculation are never linked.
+/// Held per income object, outside the income records, so links are not part of a record's value: equality, hashing
+/// and <c>with</c> copies are unaffected, and a copy (such as the reduced income built for the tax calculation)
+/// starts with no links.
 /// </para>
 /// </summary>
 public sealed class EqualisationLinks
 {
+    private static readonly ConditionalWeakTable<IEqualisableIncome, EqualisationLinks> _linksByIncome = [];
+    private readonly IEqualisableIncome _income;
     private readonly List<FundEqualisation> _equalisations = [];
 
-    private EqualisationLinks(IEqualisableIncome owner)
+    private EqualisationLinks(IEqualisableIncome income)
     {
-        Owner = owner;
+        _income = income;
     }
 
-    public IEqualisableIncome Owner { get; }
+    /// <summary>
+    /// The links of the given income object.
+    /// </summary>
+    public static EqualisationLinks Of(IEqualisableIncome income) => _linksByIncome.GetValue(income, i => new EqualisationLinks(i));
 
     public IReadOnlyList<FundEqualisation> Equalisations => _equalisations;
 
     public WrappedMoney Total => _equalisations.Sum(e => e.Amount.BaseCurrencyAmount);
-
-    /// <summary>
-    /// The links held in <paramref name="field"/> if they belong to <paramref name="owner"/>, otherwise new empty
-    /// links for it. A <c>with</c> copy inherits the original's field, which this replaces on first use.
-    /// </summary>
-    public static EqualisationLinks For(IEqualisableIncome owner, ref EqualisationLinks? field)
-    {
-        if (field is null || !ReferenceEquals(field.Owner, owner)) field = new EqualisationLinks(owner);
-        return field;
-    }
 
     /// <summary>
     /// Throws if the attached equalisation would exceed <paramref name="newAmount"/>. Called by the income before
@@ -70,20 +47,46 @@ public sealed class EqualisationLinks
         }
     }
 
+    /// <summary>
+    /// Throws if any equalisation is attached. Called by the income before it changes to a type that cannot be equalised.
+    /// </summary>
+    public void EnsureNone()
+    {
+        if (_equalisations.Count > 0)
+        {
+            throw new InvalidOperationException("Income with fund equalisation entered against it cannot be changed to a type that cannot be equalised. Delete the equalisation first.");
+        }
+    }
+
+    /// <summary>
+    /// <paramref name="income"/> less the attached equalisation, in the income's own currency and FX rate. Returns
+    /// <paramref name="income"/> itself when there is none.
+    /// </summary>
+    public DescribedMoney DeductFrom(DescribedMoney income)
+    {
+        if (_equalisations.Count == 0) return income;
+        WrappedMoney deductionLocal = new(Total.Amount / income.FxRate, income.Amount.Currency);
+        return income with
+        {
+            Amount = income.Amount - deductionLocal,
+            Description = income.Description + $" (Reduced by equalisation of {Total})"
+        };
+    }
+
     internal void Attach(FundEqualisation equalisation)
     {
-        WrappedMoney newTotal = Total + equalisation.Amount.BaseCurrencyAmount;
-        if (newTotal.Amount > Owner.EqualisableAmount.BaseCurrencyAmount.Amount)
+        if (!_income.CanBeEqualised)
+        {
+            throw new InvalidOperationException("Fund equalisation cannot be entered against this type of income.");
+        }
+        WrappedMoney available = _income.EqualisableAmount.BaseCurrencyAmount - Total;
+        if (equalisation.Amount.BaseCurrencyAmount.Amount > available.Amount)
         {
             throw new InvalidOperationException(
-                $"Equalisation of {equalisation.Amount.BaseCurrencyAmount} cannot exceed the income not already equalised ({Owner.EqualisableAmount.BaseCurrencyAmount - Total}).");
+                $"Equalisation of {equalisation.Amount.BaseCurrencyAmount} cannot exceed the income not already equalised ({available}).");
         }
         _equalisations.Add(equalisation);
     }
 
     internal void Detach(FundEqualisation equalisation) => _equalisations.RemoveAll(e => ReferenceEquals(e, equalisation));
-
-    public override bool Equals(object? obj) => obj is EqualisationLinks;
-
-    public override int GetHashCode() => 0;
 }

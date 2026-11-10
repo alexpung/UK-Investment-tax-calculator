@@ -38,10 +38,15 @@ public record TaxEventLists : IDividendLists, ITradeAndCorporateActionList
 
     /// <summary>
     /// Links <paramref name="equalisation"/> to <paramref name="income"/> and stores it. Throws
-    /// <see cref="InvalidOperationException"/>, storing nothing, if the income's equalisation would exceed it.
+    /// <see cref="InvalidOperationException"/>, storing nothing, if the income is not in these lists, cannot be
+    /// equalised, or would be exceeded by its equalisation.
     /// </summary>
     public void AddEqualisation(FundEqualisation equalisation, IEqualisableIncome income)
     {
+        if (!EqualisableIncomes.Any(i => ReferenceEquals(i, income)))
+        {
+            throw new InvalidOperationException("The selected income no longer exists.");
+        }
         equalisation.LinkTo(income);
         CorporateActions.Add(equalisation);
     }
@@ -94,35 +99,46 @@ public record TaxEventLists : IDividendLists, ITradeAndCorporateActionList
     }
 
     /// <summary>
-    /// Restores the link of every equalisation entry not linked to an income in these lists, by
-    /// <see cref="FundEqualisation.IncomeId"/>. Entries whose income is missing (e.g. not loaded on import) or would
-    /// be exceeded are removed, so no equalisation is left without its income. Returns the entries removed.
+    /// Links every equalisation entry not yet linked to an income in these lists to the income with its saved
+    /// <see cref="FundEqualisation.IncomeId"/>, where there is one that can take it.
     /// </summary>
-    public List<FundEqualisation> LinkEqualisations()
+    public void LinkEqualisations()
     {
-        HashSet<IEqualisableIncome> present = new(EqualisableIncomes, ReferenceEqualityComparer.Instance);
-        Dictionary<string, IEqualisableIncome> byId = [];
-        foreach (IEqualisableIncome income in present) byId.TryAdd(income.IncomeId, income);
+        Dictionary<string, IEqualisableIncome> incomeById = [];
+        foreach (IEqualisableIncome income in EqualisableIncomes) incomeById.TryAdd(income.IncomeId, income);
 
-        List<FundEqualisation> dropped = [];
-        foreach (FundEqualisation equalisation in CorporateActions.OfType<FundEqualisation>().ToList())
+        foreach (FundEqualisation equalisation in UnlinkedEqualisations())
         {
-            if (equalisation.LinkedIncome is { } linked && present.Contains(linked)) continue;
+            if (equalisation.IncomeId is null || !incomeById.TryGetValue(equalisation.IncomeId, out IEqualisableIncome? income)) continue;
             try
             {
-                if (equalisation.IncomeId is not { } id || !byId.TryGetValue(id, out IEqualisableIncome? income))
-                {
-                    throw new InvalidOperationException("Income not found.");
-                }
                 equalisation.LinkTo(income);
             }
             catch (InvalidOperationException)
             {
-                RemoveEqualisation(equalisation);
-                dropped.Add(equalisation);
+                // The income refused it (it would be exceeded): left unlinked.
             }
         }
-        return dropped;
+    }
+
+    /// <summary>
+    /// Links what can be linked (see <see cref="LinkEqualisations"/>), then removes the equalisation entries still
+    /// without an income in these lists, so none is left stranded. Returns the entries removed, to warn about.
+    /// Call after importing: an imported equalisation's income may be missing from the file, not loaded, or skipped
+    /// as a duplicate of income already here (which it is then linked to).
+    /// </summary>
+    public List<FundEqualisation> RemoveUnlinkedEqualisations()
+    {
+        LinkEqualisations();
+        List<FundEqualisation> unlinked = UnlinkedEqualisations();
+        unlinked.ForEach(RemoveEqualisation);
+        return unlinked;
+    }
+
+    private List<FundEqualisation> UnlinkedEqualisations()
+    {
+        HashSet<IEqualisableIncome> present = new(EqualisableIncomes, ReferenceEqualityComparer.Instance);
+        return [.. CorporateActions.OfType<FundEqualisation>().Where(e => e.LinkedIncome is null || !present.Contains(e.LinkedIncome))];
     }
 
     /// <summary>
@@ -147,8 +163,6 @@ public record TaxEventLists : IDividendLists, ITradeAndCorporateActionList
     {
         AddEvents(taxEventLists, skipDuplicates);
         EnsureUniqueIncomeIds();
-        // An imported equalisation whose income was skipped as a duplicate is moved onto the existing copy of it.
-        LinkEqualisations();
     }
 
     private void AddEvents(TaxEventLists taxEventLists, bool skipDuplicates)

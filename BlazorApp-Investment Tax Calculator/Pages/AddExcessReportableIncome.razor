@@ -174,9 +174,8 @@
     private void RefreshAll()
     {
         _dataChanged = true;
-        // ERI and equalisation entries (and the dividend/interest events ERI generates) go straight into
-        // TaxEventLists, so re-register the share identities instead of leaving them stale until the next
-        // calculation or file import.
+        // ERI and equalisation entries go straight into TaxEventLists, so re-register the share identities instead
+        // of leaving them stale until the next calculation or file import.
         ShareIdentityRegistry.RegisterEvents(TaxEventLists.AllEvents);
         RefreshHistory();
     }
@@ -189,6 +188,7 @@
     {
         // Entries are self-contained: their income and Section 104 effects are derived at calculation time, so
         // removing the entry is all that is needed.
+        if (!TaxEventLists.CorporateActions.Contains(entry)) return;
         List<FundEqualisation> removedWithIt = TaxEventLists.RemoveCorporateAction(entry);
         ToastService.ShowInformation(entry is ExcessReportableIncome
             ? $"Removed ERI entry for {entry.AssetName}."

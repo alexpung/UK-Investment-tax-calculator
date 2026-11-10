@@ -110,9 +110,9 @@
     }
 
     /// <summary>
-    /// Adds the dividend entered, or replaces the one being edited. An edit that leaves the income smaller than the
-    /// fund equalisation entered against it is rejected; one that moves it to another asset or date deletes that
-    /// equalisation, with a warning.
+    /// Adds the dividend entered, or updates the one being edited in place, so fund equalisation linked to it stays
+    /// linked. An edit the income refuses (smaller than its equalisation, or to a type that cannot be equalised) is
+    /// reported and changes nothing.
     /// </summary>
     private async Task AddEntry()
     {
@@ -132,7 +132,7 @@
                 return;
             }
             // Edited in place so any fund equalisation stays linked; the dividend refuses an amount below it, or a
-            // change to withholding tax. Both checked values are put back if either is refused.
+            // change to a type that cannot be equalised. Both checked values are put back if either is refused.
             (DividendType oldType, DescribedMoney oldProceed) = (existing.DividendType, existing.Proceed);
             try
             {

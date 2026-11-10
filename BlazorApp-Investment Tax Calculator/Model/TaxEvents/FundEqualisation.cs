@@ -80,12 +80,14 @@ public record FundEqualisation : CorporateAction, IChangeSection104
     }
 
     /// <summary>
-    /// Detaches this equalisation from its income, keeping the income's id so it can be linked again.
+    /// Detaches this equalisation from its income, keeping the income's id, asset and date as they were.
     /// </summary>
     public void Unlink()
     {
         if (LinkedIncome is null) return;
         _incomeId = LinkedIncome.IncomeId;
+        base.AssetName = AssetName;
+        base.Date = Date;
         LinkedIncome.EqualisationLinks.Detach(this);
         LinkedIncome = null;
     }
@@ -129,17 +131,6 @@ public record FundEqualisation : CorporateAction, IChangeSection104
         // reduction at the disposal; only the retained units' share reduces the pool.
         ReportingFundCostAllocator.Apply(section104, reportingPeriodEnd, Date, -Amount.BaseCurrencyAmount, explanation);
     }
-
-    /// <summary>
-    /// Hand-written to leave out <see cref="LinkedIncome"/>: equality is by value, not by which income object the
-    /// entry is attached to.
-    /// </summary>
-    public virtual bool Equals(FundEqualisation? other) =>
-        base.Equals(other) &&
-        Amount == other.Amount &&
-        RelatedEventDescription == other.RelatedEventDescription;
-
-    public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), Amount, RelatedEventDescription);
 
     /// <summary>
     /// The warning to show when deleting an income also deleted these equalisation entries, or null if there were none.

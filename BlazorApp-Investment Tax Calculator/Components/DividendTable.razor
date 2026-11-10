@@ -50,7 +50,7 @@
     {
         // Show the income as calculated (ERI added, equalisation deducted) so this page reconciles with the summary.
         // The stored records are not changed.
-        ResolvedIncome income = ReportingFundIncomeResolver.Resolve(_taxEventLists, _taxEventLists.CorporateActions);
+        ResolvedIncome income = ReportingFundIncomeResolver.Resolve(_taxEventLists);
         _dividendViewModels = income.Dividends.Select(dividend => new DividendViewModel(dividend)).ToList();
     }
 

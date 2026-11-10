@@ -97,22 +97,13 @@
             : $"{Event.Date:d} - {Money.Display()} ({TypeDescription}, {Income.EqualisationLinks.Total} already equalised)";
     }
 
-    // Withholding tax, interest expense and accrued income are never fund distributions.
-    private static bool CanBeEqualised(Dividend dividend) => dividend.DividendType is not DividendType.WITHHOLDING;
-    private static bool CanBeEqualised(InterestIncome interest) =>
-        interest.InterestType is not (InterestType.INTERESTEXPENSE or InterestType.ACCURREDINCOMEPROFIT or InterestType.ACCURREDINCOMELOSS);
-
-    /// <summary>
-    /// Lists the fund tickers with income an equalisation can be attached to. Recomputed whenever the parent
-    /// re-renders rather than once on initialisation: the available tickers derive from the Section 104 pools and
-    /// from CanonicalAssetName, both of which change when a calculation is run or shares are linked, while this
-    /// component instance outlives those changes.
-    /// </summary>
+    // Recomputed whenever the parent re-renders rather than once on initialisation: the available tickers derive
+    // from the Section 104 pools and from CanonicalAssetName, both of which change when a calculation is run or
+    // shares are linked, while this component instance outlives those changes.
     protected override void OnParametersSet()
     {
-        var tickersWithIncome = TaxEventLists.Dividends.Where(CanBeEqualised).Select(d => d.CanonicalAssetName)
-            .Union(TaxEventLists.InterestIncomes.Where(CanBeEqualised).Select(i => i.CanonicalAssetName))
-            .Union(TaxEventLists.CorporateActions.OfType<ExcessReportableIncome>().Select(e => e.CanonicalAssetName))
+        var tickersWithIncome = TaxEventLists.EqualisableIncomes.Where(i => i.CanBeEqualised)
+            .Select(i => ((TaxEvent)i).CanonicalAssetName)
             .ToHashSet();
 
         AvailableTickers = Section104Pools.GetSection104s()
@@ -173,26 +164,21 @@
         if (!string.IsNullOrEmpty(SelectedTicker))
         {
             events.AddRange(TaxEventLists.Dividends
-                .Where(d => d.IsSameAsset(SelectedTicker) && CanBeEqualised(d))
+                .Where(d => d.IsSameAsset(SelectedTicker) && d.CanBeEqualised)
                 .Select(d => new IncomeEventVM { Income = d, TypeDescription = d.DividendType.GetDescription() }));
             events.AddRange(TaxEventLists.InterestIncomes
-                .Where(i => i.IsSameAsset(SelectedTicker) && CanBeEqualised(i))
+                .Where(i => i.IsSameAsset(SelectedTicker) && i.CanBeEqualised)
                 .Select(i => new IncomeEventVM { Income = i, TypeDescription = i.InterestType.GetDescription() }));
             events.AddRange(TaxEventLists.CorporateActions.OfType<ExcessReportableIncome>()
                 .Where(e => e.IsSameAsset(SelectedTicker))
                 .Select(e => new IncomeEventVM { Income = e, TypeDescription = $"Excess Reportable Income ({e.IncomeType.GetDescription()})" }));
         }
         AvailableIncomeEvents = [.. events.OrderByDescending(e => e.Event.Date)];
-        // Drop a selection whose income has gone (e.g. its ERI entry was deleted).
-        if (SelectedEventId is not null && !AvailableIncomeEvents.Any(e => e.EventId == SelectedEventId))
-        {
-            SelectedEventId = null;
-        }
     }
 
     /// <summary>
-    /// Attaches a new equalisation entry to the selected income. The income refuses it if the total equalisation
-    /// would exceed the income.
+    /// Attaches a new equalisation entry to the selected income. It is refused if the total equalisation would
+    /// exceed the income, or the income no longer exists.
     /// </summary>
     private async Task OnSubmit(TaxEvent selectedEvent)
     {
@@ -200,12 +186,6 @@
         if (income is null || EqualisationAmount <= 0 || FxRate <= 0)
         {
             ToastService.ShowError("Please select an event and enter a valid amount and exchange rate.");
-            return;
-        }
-        if (!TaxEventLists.EqualisableIncomes.Any(i => ReferenceEquals(i, income.Income)))
-        {
-            RefreshAvailableEvents();
-            ToastService.ShowError("The selected income no longer exists. Please select the income again.");
             return;
         }
 

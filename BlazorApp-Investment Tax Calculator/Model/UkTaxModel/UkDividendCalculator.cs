@@ -6,36 +6,30 @@ using System.Linq;
 
 namespace InvestmentTaxCalculator.Model.UkTaxModel;
 
-public class UkDividendCalculator(IDividendLists storedIncome, ITaxYear taxYear, ToastService toastService, ResidencyStatusRecord residencyStatusRecord,
-    ITradeAndCorporateActionList? corporateActionList = null) : IDividendCalculator
+public class UkDividendCalculator(TaxEventLists taxEventLists, ITaxYear taxYear, ToastService toastService, ResidencyStatusRecord residencyStatusRecord) : IDividendCalculator
 {
-    /// <summary>
-    /// Groups the taxable dividend and interest income received while resident by tax year and country. ERI income
-    /// and fund equalisation reductions are included, derived from the stored entries by
-    /// <see cref="ReportingFundIncomeResolver"/>.
-    /// </summary>
     public List<DividendSummary> CalculateTax()
     {
         _ = toastService;
-        // ERI income and equalisation reductions are worked out here from the stored entries, without changing them.
-        ResolvedIncome dividendList = ReportingFundIncomeResolver.Resolve(storedIncome, corporateActionList?.CorporateActions ?? []);
+        // Stored income plus ERI income, less fund equalisation. The stored events are not changed.
+        ResolvedIncome income = ReportingFundIncomeResolver.Resolve(taxEventLists);
         List<DividendSummary> dividendSummaries = [];
-        var groupedDividendsDict = dividendList.Dividends
+        var groupedDividendsDict = income.Dividends
             .Where(g => residencyStatusRecord.GetResidencyStatus(DateOnly.FromDateTime(g.Date)) == ResidencyStatus.Resident)
             .GroupBy(d => new { TaxYear = taxYear.ToTaxYear(d.Date), d.CompanyLocation })
             .ToDictionary(g => (g.Key.TaxYear, g.Key.CompanyLocation), g => g.ToList());
 
-        var groupedInterestIncomesDict = dividendList.InterestIncomes
+        var groupedInterestIncomesDict = income.InterestIncomes
             .Where(g => residencyStatusRecord.GetResidencyStatus(DateOnly.FromDateTime(g.Date)) == ResidencyStatus.Resident)
             .GroupBy(i => (taxYear.ToTaxYear(i.Date) + (i.IsTaxDeferred ? 1:0), i.IncomeLocation))
             .ToDictionary(g => g.Key, g => g.ToList());
 
         // Logic to determine if the next payment is in the same tax year
-        var interestIncomesByAsset = dividendList.InterestIncomes
+        var interestIncomesByAsset = income.InterestIncomes
             .GroupBy(i => i.CanonicalAssetName)
             .ToDictionary(g => g.Key, g => g.OrderBy(i => i.Date).ToList());
 
-        foreach (var interest in dividendList.InterestIncomes)
+        foreach (var interest in income.InterestIncomes)
         {
             if (interest.InterestType is InterestType.ACCURREDINCOMEPROFIT or InterestType.ACCURREDINCOMELOSS)
             {

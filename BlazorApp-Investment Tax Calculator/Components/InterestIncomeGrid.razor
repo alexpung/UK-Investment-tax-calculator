@@ -56,7 +56,7 @@
     // Accrued income rows are never adjusted, so they are the stored records and the checkbox below edits them.
     protected override void RefreshData()
     {
-        _interestIncomes = ReportingFundIncomeResolver.Resolve(_taxEventLists, _taxEventLists.CorporateActions).InterestIncomes;
+        _interestIncomes = ReportingFundIncomeResolver.Resolve(_taxEventLists).InterestIncomes;
     }
 
     protected override Task RefreshRenderedGridsAsync() => RefreshGridAsync(_grid);

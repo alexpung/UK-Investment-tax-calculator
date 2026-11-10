@@ -14,8 +14,6 @@ namespace InvestmentTaxCalculator.Model.TaxEvents;
 /// </summary>
 public record ExcessReportableIncome : CorporateAction, IChangeSection104, IEqualisableIncome
 {
-    private EqualisationLinks? _equalisationLinks;
-
     /// <summary>
     /// The amount of excess reportable income received
     /// </summary>
@@ -33,8 +31,8 @@ public record ExcessReportableIncome : CorporateAction, IChangeSection104, IEqua
 
     /// <summary>
     /// The last day of the fund reporting period this ERI relates to. Liability is fixed by the holding at the end
-    /// of this day (SI 2009/3001 reg. 94(3)). When absent it is assumed to be 6 months before the fund distribution
-    /// date, mirroring reg. 94(4).
+    /// of this day (SI 2009/3001 reg. 94(3)). When absent (older saved files) it is assumed to be 6 months before
+    /// the fund distribution date, mirroring reg. 94(4).
     /// </summary>
     public DateTime? ReportingPeriodEndDate { get; init; }
 
@@ -44,20 +42,20 @@ public record ExcessReportableIncome : CorporateAction, IChangeSection104, IEqua
     public DescribedMoney EqualisableAmount => Amount;
 
     [JsonIgnore]
-    public EqualisationLinks EqualisationLinks => EqualisationLinks.For(this, ref _equalisationLinks);
+    public bool CanBeEqualised => true;
 
     [JsonIgnore]
-    public DateOnly EffectiveReportingPeriodEndDate => DateOnly.FromDateTime(ReportingPeriodEndDate ?? AssumedReportingPeriodEnd(Date));
+    public EqualisationLinks EqualisationLinks => EqualisationLinks.Of(this);
 
-    /// <summary>
-    /// The reporting period end assumed for a fund distribution date when none is recorded: 6 months earlier.
-    /// </summary>
-    private static DateTime AssumedReportingPeriodEnd(DateTime distributionDate)
+    [JsonIgnore]
+    public DateOnly EffectiveReportingPeriodEndDate => DateOnly.FromDateTime(ReportingPeriodEndDate ?? AssumedReportingPeriodEnd());
+
+    private DateTime AssumedReportingPeriodEnd()
     {
-        DateTime assumed = distributionDate.AddMonths(-6);
+        DateTime assumed = Date.AddMonths(-6);
         // Reg. 94(4) maps a month end period end to a month end distribution date (e.g. 31 Dec -> 30 Jun), so a
         // month end distribution date is mapped back to the month end rather than AddMonths' clamped day.
-        if (distributionDate.Day == DateTime.DaysInMonth(distributionDate.Year, distributionDate.Month))
+        if (Date.Day == DateTime.DaysInMonth(Date.Year, Date.Month))
         {
             assumed = new DateTime(assumed.Year, assumed.Month, DateTime.DaysInMonth(assumed.Year, assumed.Month));
         }
@@ -65,18 +63,21 @@ public record ExcessReportableIncome : CorporateAction, IChangeSection104, IEqua
     }
 
     /// <summary>
-    /// Builds the dividend or interest income this ERI is taxed as. The income is derived afresh at calculation time
-    /// rather than stored, so editing or deleting the ERI entry is all that is needed to change the income.
+    /// Builds the dividend or interest income this ERI is taxed as, less any fund equalisation linked to the entry.
+    /// The income is built afresh at calculation time rather than stored, so deleting the ERI entry is all that is
+    /// needed to remove it.
     /// </summary>
     public TaxEvent CreateIncomeEvent()
     {
+        DescribedMoney taxable = EqualisationLinks.DeductFrom(
+            Amount with { Description = $"Excess Reportable Income ({IncomeType.GetDescription()}) from {AssetName}" });
         TaxEvent income = IncomeType == ExcessReportableIncomeType.DIVIDEND
             ? new Dividend
             {
                 AssetName = AssetName,
                 Date = Date,
                 DividendType = DividendType.EXCESS_REPORTABLE_INCOME,
-                Proceed = Amount with { Description = $"Excess Reportable Income (Dividend) from {AssetName}" },
+                Proceed = taxable,
                 Isin = Isin,
                 CompanyLocation = IncomeLocation
             }
@@ -85,7 +86,7 @@ public record ExcessReportableIncome : CorporateAction, IChangeSection104, IEqua
                 AssetName = AssetName,
                 Date = Date,
                 InterestType = InterestType.EXCESSREPORTABLEINCOME,
-                Amount = Amount with { Description = $"Excess Reportable Income (Interest) from {AssetName}" },
+                Amount = taxable,
                 Isin = Isin,
                 IncomeLocation = IncomeLocation
             };
@@ -102,9 +103,6 @@ public record ExcessReportableIncome : CorporateAction, IChangeSection104, IEqua
         return matchAdjustment;
     }
 
-    /// <summary>
-    /// Adds the ERI to the cost of the holding, apportioned between gap period disposals and the pool.
-    /// </summary>
     public override void ChangeSection104(UkSection104 section104)
     {
         if (!section104.MatchesAsset(AssetName)) return;
