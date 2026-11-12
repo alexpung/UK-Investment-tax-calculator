@@ -1,6 +1,7 @@
 ﻿using InvestmentTaxCalculator.Enumerations;
 using InvestmentTaxCalculator.Model;
 using InvestmentTaxCalculator.Model.TaxEvents;
+using InvestmentTaxCalculator.Model.UkTaxModel;
 
 namespace InvestmentTaxCalculator.ViewModel;
 
@@ -21,7 +22,8 @@ public class DividendToIncomeConvertViewModel(TaxEventLists taxEventLists)
             .OrderBy(d => d.CanonicalAssetName);
 
     /// <summary>
-    /// One row per ticker that still has dividends, ordered by ticker.
+    /// One row per ticker that still has dividends, ordered by ticker. Totals are the amounts taxed, so fund
+    /// equalisation linked to a payment is deducted.
     /// </summary>
     public IReadOnlyList<DividendTickerSummary> GetTickerSummaries()
     {
@@ -35,20 +37,21 @@ public class DividendToIncomeConvertViewModel(TaxEventLists taxEventLists)
                 group.Key,
                 fundTickers.Contains(group.Key),
                 group.Count(dividend => dividend.DividendType != DividendType.WITHHOLDING),
-                group.Sum(dividend => dividend.DividendReceived),
+                group.Sum(dividend => ReportingFundIncomeResolver.WithEqualisationDeducted(dividend).DividendReceived),
                 group.Min(dividend => dividend.Date),
                 group.Max(dividend => dividend.Date)))
             .OrderBy(summary => summary.Ticker, StringComparer.OrdinalIgnoreCase)];
     }
 
     /// <summary>
-    /// Tickers whose dividends have been converted to "ETF dividend income", ordered by ticker.
+    /// Tickers whose dividends have been converted to "ETF dividend income", ordered by ticker. Totals are the
+    /// amounts taxed, so fund equalisation linked to a payment is deducted.
     /// </summary>
     public IReadOnlyList<ConvertedTickerSummary> GetConvertedSummaries() =>
         [.. taxEventLists.InterestIncomes
             .Where(income => income.InterestType == InterestType.ETFDIVIDEND)
             .GroupBy(income => income.CanonicalAssetName)
-            .Select(group => new ConvertedTickerSummary(group.Key, group.Count(), group.Sum(income => income.Amount.BaseCurrencyAmount)))
+            .Select(group => new ConvertedTickerSummary(group.Key, group.Count(), group.Sum(income => ReportingFundIncomeResolver.WithEqualisationDeducted(income).Amount.BaseCurrencyAmount)))
             .OrderBy(summary => summary.Ticker, StringComparer.OrdinalIgnoreCase)];
 
     /// <summary>

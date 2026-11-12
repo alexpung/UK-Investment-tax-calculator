@@ -22,13 +22,8 @@ public static class ReportingFundIncomeResolver
 {
     public static ResolvedIncome Resolve(TaxEventLists taxEventLists)
     {
-        // A copy made with "with" has no links, so its reduced amount is not checked against the equalisation.
-        List<Dividend> dividends = [.. taxEventLists.Dividends.Select(dividend => dividend.EqualisationLinks.Equalisations.Count == 0
-            ? dividend
-            : dividend with { Proceed = dividend.EqualisationLinks.DeductFrom(dividend.Proceed) })];
-        List<InterestIncome> interestIncomes = [.. taxEventLists.InterestIncomes.Select(interest => interest.EqualisationLinks.Equalisations.Count == 0
-            ? interest
-            : interest with { Amount = interest.EqualisationLinks.DeductFrom(interest.Amount) })];
+        List<Dividend> dividends = [.. taxEventLists.Dividends.Select(WithEqualisationDeducted)];
+        List<InterestIncome> interestIncomes = [.. taxEventLists.InterestIncomes.Select(WithEqualisationDeducted)];
 
         foreach (ExcessReportableIncome eri in taxEventLists.CorporateActions.OfType<ExcessReportableIncome>())
         {
@@ -44,4 +39,21 @@ public static class ReportingFundIncomeResolver
         }
         return new ResolvedIncome(dividends, interestIncomes);
     }
+
+    /// <summary>
+    /// The dividend as it is taxed: itself when no equalisation is linked to it, otherwise a copy with the
+    /// equalisation deducted. A copy made with "with" has no links, so its reduced amount is not checked against
+    /// the equalisation.
+    /// </summary>
+    public static Dividend WithEqualisationDeducted(Dividend dividend) => dividend.EqualisationLinks.Equalisations.Count == 0
+        ? dividend
+        : dividend with { Proceed = dividend.EqualisationLinks.DeductFrom(dividend.Proceed) };
+
+    /// <summary>
+    /// The interest income as it is taxed: itself when no equalisation is linked to it, otherwise a copy with the
+    /// equalisation deducted.
+    /// </summary>
+    public static InterestIncome WithEqualisationDeducted(InterestIncome interest) => interest.EqualisationLinks.Equalisations.Count == 0
+        ? interest
+        : interest with { Amount = interest.EqualisationLinks.DeductFrom(interest.Amount) };
 }
