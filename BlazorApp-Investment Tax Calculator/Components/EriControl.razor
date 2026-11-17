@@ -217,6 +217,11 @@
         
         SelectedTicker = string.Empty;
         IncomePerShare = 0;
+        // Every entry starts from the defaults. Carrying the previous entry's currency, rate or income type over
+        // would silently mis-state the next fund's ERI whenever it differs.
+        Currency = "GBP";
+        FxRate = 1.0m;
+        SelectedIncomeType = ExcessReportableIncomeType.DIVIDEND;
 
         await OnDataChanged.InvokeAsync();
     }
