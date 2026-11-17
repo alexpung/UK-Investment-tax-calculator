@@ -12,7 +12,8 @@ public class YearlyTaxSummarySection(TradeCalculationResult tradeCalculationResu
     public string Title { get; set; } = "Capital Gain Tax Summary";
     public Section WriteSection(Section section, int taxYear)
     {
-        TaxYearCgtReport taxYearCgtReport = taxYearReportService.GetTaxYearReports().First(report => report.TaxYear == taxYear);
+        // A year with income but no trades has no report of its own, so ask for the year rather than search the list.
+        TaxYearCgtReport taxYearCgtReport = taxYearReportService.GetTaxYearReport(taxYear);
         Paragraph paragraph = section.AddParagraph(Title);
         Style.StyleTitle(paragraph);
         WriteTaxYearCgtByTypeTable(section, tradeCalculationResult, taxYear);

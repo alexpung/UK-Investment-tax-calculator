@@ -7,6 +7,33 @@ using InvestmentTaxCalculator.Model.UkTaxModel;
 public class TaxYearReportService(TradeCalculationResult tradeCalculationResult, ITaxYear taxYearConverter)
 {
     private readonly UkCapitalGainAllowance _ukCapitalGainAllowance = new();
+    /// <summary>
+    /// The capital gains report for one tax year. A year without any trade has no report of its own (for example a
+    /// year with only dividends): it has no gain or loss, and the losses of earlier years carry through it unchanged.
+    /// </summary>
+    public TaxYearCgtReport GetTaxYearReport(int taxYear)
+    {
+        List<TaxYearCgtReport> reports = [.. GetTaxYearReports()];
+        TaxYearCgtReport? report = reports.Find(r => r.TaxYear == taxYear);
+        if (report is not null) return report;
+
+        WrappedMoney zero = WrappedMoney.GetBaseCurrencyZero();
+        // Reports are in tax year order, so the last earlier one holds the losses still to carry forward.
+        WrappedMoney lossesCarried = reports.FindLast(r => r.TaxYear < taxYear)?.LossesAvailableToBroughtForward ?? zero;
+        return new TaxYearCgtReport
+        {
+            TaxYear = taxYear,
+            CapitalGainAllowance = _ukCapitalGainAllowance.GetTaxAllowance(taxYear),
+            TotalGainInYear = zero,
+            TotalLossInYear = zero,
+            NetCapitalGain = zero,
+            CgtAllowanceBroughtForwardAndUsed = zero,
+            TaxableGainAfterAllowanceAndLossOffset = zero,
+            LossesAvailableToBroughtForward = lossesCarried,
+            AvailableCapitalLossesFromPreviousYears = lossesCarried,
+        };
+    }
+
     public IEnumerable<TaxYearCgtReport> GetTaxYearReports()
     {
         List<int> taxYears = [.. tradeCalculationResult.CalculatedTrade.Select(trade => taxYearConverter.ToTaxYear(trade.Date))
