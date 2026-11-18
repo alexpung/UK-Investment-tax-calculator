@@ -30,7 +30,7 @@ public class YearlyTaxSummarySectionTest
         UKTaxYear taxYear = new();
         TradeCalculationResult result = new(taxYear, new ResidencyStatusRecord());
         result.SetResult(calculations);
-        return (result, new TaxYearReportService(result, taxYear));
+        return (result, new TaxYearReportService(result));
     }
 
     [Fact]
@@ -59,6 +59,53 @@ public class YearlyTaxSummarySectionTest
         report.CapitalGainAllowance.Amount.ShouldBe(3000m);
         report.AvailableCapitalLossesFromPreviousYears.Amount.ShouldBe(400m);
         report.LossesAvailableToBroughtForward.Amount.ShouldBe(400m);
+    }
+
+    [Fact]
+    public void GetTaxYearReports_ForSeveralYears_ReturnsOneReportPerYearInOrder()
+    {
+        TaxYearReportService service = CreateResultWithLossIn2022().Service;
+
+        List<TaxYearCgtReport> reports = service.GetTaxYearReports([2024, 2022]);
+
+        reports.Select(r => r.TaxYear).ShouldBe([2024, 2022]);
+        reports[1].TotalLossInYear.Amount.ShouldBe(-400m);
+        reports[0].LossesAvailableToBroughtForward.Amount.ShouldBe(400m);
+    }
+
+    [Fact]
+    public void GetTaxYearReports_TemporaryNonResidentDisposal_IsReportedInTheYearOfReturn()
+    {
+        // Bought while resident, sold in 2021/22 while temporarily non-resident, back in the UK on 16 June 2023.
+        ResidencyStatusRecord residency = new();
+        residency.SetResidencyStatus(DateOnly.MinValue, new DateOnly(2020, 6, 14), ResidencyStatus.Resident);
+        residency.SetResidencyStatus(new DateOnly(2020, 6, 15), new DateOnly(2023, 6, 15), ResidencyStatus.TemporaryNonResident);
+        residency.SetResidencyStatus(new DateOnly(2023, 6, 16), DateOnly.MaxValue, ResidencyStatus.Resident);
+        Trade buy = MockTrade.CreateMockTrade("ABC", new DateTime(2020, 6, 1), TradeType.ACQUISITION, 100, 1000m);
+        Trade sell = MockTrade.CreateMockTrade("ABC", new DateTime(2021, 6, 20), TradeType.DISPOSAL, 100, 11000m);
+        List<ITradeTaxCalculation> calculations = TradeCalculationHelper.CalculateTrades([buy, sell], out _, residency);
+        TradeCalculationResult result = new(new UKTaxYear(), residency);
+        result.SetResult(calculations);
+        TaxYearReportService service = new(result);
+
+        TaxYearCgtReport returnYear = service.GetTaxYearReport(2023);
+
+        result.GetTotalGain([2023]).Amount.ShouldBe(10000m);
+        returnYear.NetCapitalGain.Amount.ShouldBe(10000m);
+        returnYear.TaxableGainAfterAllowanceAndLossOffset.Amount.ShouldBe(4000m);
+        service.GetTaxYearReport(2021).NetCapitalGain.Amount.ShouldBe(0m);
+        result.GetTaxYearsWithDisposals().ShouldBe([2023]);
+    }
+
+    [Theory]
+    [InlineData(2008, 9600)]
+    [InlineData(2013, 10900)]
+    [InlineData(2014, 11000)]
+    [InlineData(2015, 11100)]
+    [InlineData(2025, 3000)]
+    public void CapitalGainAllowance_KnownYears(int taxYear, decimal expected)
+    {
+        new UkCapitalGainAllowance().GetTaxAllowance(taxYear).Amount.ShouldBe(expected);
     }
 
     [Fact]

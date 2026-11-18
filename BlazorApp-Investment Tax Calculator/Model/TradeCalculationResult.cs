@@ -35,6 +35,7 @@ public class TradeCalculationResult(ITaxYear taxYear, ResidencyStatusRecord resi
     {
         _calculatedTrade.Clear();
         DisposalByYear.Clear();
+        DisposalByYearIncludeNonTaxable.Clear();
         TradeByYear.Clear();
         _numberOfDisposals.Clear();
         _disposalProceeds.Clear();
@@ -75,6 +76,21 @@ public class TradeCalculationResult(ITaxYear taxYear, ResidencyStatusRecord resi
             _totalLoss[group.Key] = DisposalByYear[group.Key].Where(trade => trade.Gain.Amount < 0).Sum(trade => trade.Gain).Floor();
         }
     }
+
+    /// <summary>
+    /// Tax years that have trades, by the year each trade is taxable in. A disposal made while temporarily
+    /// non-resident is taxable in the year of return, not the year it was made.
+    /// </summary>
+    public IEnumerable<int> GetTaxYearsWithTrades() => TradeByYear.Keys.Select(key => key.Item1).Distinct().Order();
+
+    /// <summary>
+    /// Tax years that have disposals, by the year each disposal is taxable in.
+    /// </summary>
+    public IEnumerable<int> GetTaxYearsWithDisposals() => DisposalByYearIncludeNonTaxable
+        .Where(group => group.Value.Count > 0)
+        .Select(group => group.Key.Item1)
+        .Distinct()
+        .Order();
 
     public int GetNumberOfDisposals(IEnumerable<int> taxYearsFilter, AssetGroupType assetGroupType = AssetGroupType.ALL)
     {
