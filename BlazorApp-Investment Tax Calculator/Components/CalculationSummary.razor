@@ -35,7 +35,7 @@
 
 @{
     List<int> years = [.. yearOptions.SelectedOptions.Order()];
-    List<TaxYearCgtReport> cgtReports = [.. years.Select(taxYearReportService.GetTaxYearReport)];
+    List<TaxYearCgtReport> cgtReports = taxYearReportService.GetTaxYearReports(years);
     WrappedMoney netGain = tradeCalculationResult.GetTotalGain(years) + tradeCalculationResult.GetTotalLoss(years);
     WrappedMoney taxableGain = cgtReports.Sum(r => r.TaxableGainAfterAllowanceAndLossOffset);
     WrappedMoney totalDividend = dividendCalculationResult.GetTotalDividend(years);
@@ -261,8 +261,15 @@ else
             white-space: normal;
         }
 
+        /* Hidden visually only, so screen readers still announce the column headers */
         .summary-table-stack thead {
-            display: none;
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            clip: rect(0 0 0 0);
+            clip-path: inset(50%);
+            white-space: nowrap;
         }
 
         .summary-table-stack tr,

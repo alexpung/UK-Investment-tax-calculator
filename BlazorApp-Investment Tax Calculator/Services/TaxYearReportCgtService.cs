@@ -1,19 +1,28 @@
 ﻿namespace InvestmentTaxCalculator.Services;
 
 using InvestmentTaxCalculator.Model;
-using InvestmentTaxCalculator.Model.Interfaces;
 using InvestmentTaxCalculator.Model.UkTaxModel;
 
-public class TaxYearReportService(TradeCalculationResult tradeCalculationResult, ITaxYear taxYearConverter)
+public class TaxYearReportService(TradeCalculationResult tradeCalculationResult)
 {
     private readonly UkCapitalGainAllowance _ukCapitalGainAllowance = new();
     /// <summary>
     /// The capital gains report for one tax year. A year without any trade has no report of its own (for example a
     /// year with only dividends): it has no gain or loss, and the losses of earlier years carry through it unchanged.
     /// </summary>
-    public TaxYearCgtReport GetTaxYearReport(int taxYear)
+    public TaxYearCgtReport GetTaxYearReport(int taxYear) => GetTaxYearReports([taxYear])[0];
+
+    /// <summary>
+    /// The capital gains reports for the given tax years, in the order given, building the yearly reports only once.
+    /// </summary>
+    public List<TaxYearCgtReport> GetTaxYearReports(IEnumerable<int> taxYears)
     {
         List<TaxYearCgtReport> reports = [.. GetTaxYearReports()];
+        return [.. taxYears.Select(taxYear => FindOrCreateReport(reports, taxYear))];
+    }
+
+    private TaxYearCgtReport FindOrCreateReport(List<TaxYearCgtReport> reports, int taxYear)
+    {
         TaxYearCgtReport? report = reports.Find(r => r.TaxYear == taxYear);
         if (report is not null) return report;
 
@@ -36,9 +45,8 @@ public class TaxYearReportService(TradeCalculationResult tradeCalculationResult,
 
     public IEnumerable<TaxYearCgtReport> GetTaxYearReports()
     {
-        List<int> taxYears = [.. tradeCalculationResult.CalculatedTrade.Select(trade => taxYearConverter.ToTaxYear(trade.Date))
-                                                                                                        .Distinct()
-                                                                                                        .Order()];
+        // Group by the year each trade is taxable in, the same years the gain and loss totals use.
+        List<int> taxYears = [.. tradeCalculationResult.GetTaxYearsWithTrades()];
         WrappedMoney capitalLossRunningCount = WrappedMoney.GetBaseCurrencyZero();
         foreach (int taxYear in taxYears)
         {

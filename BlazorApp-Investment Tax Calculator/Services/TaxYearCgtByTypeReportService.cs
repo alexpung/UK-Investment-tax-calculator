@@ -1,10 +1,9 @@
 ﻿using InvestmentTaxCalculator.Enumerations;
 using InvestmentTaxCalculator.Model;
-using InvestmentTaxCalculator.Model.Interfaces;
 
 namespace InvestmentTaxCalculator.Services;
 
-public class TaxYearCgtByTypeReportService(TradeCalculationResult tradeCalculationResult, ITaxYear taxYearConverter)
+public class TaxYearCgtByTypeReportService(TradeCalculationResult tradeCalculationResult)
 {
     /// <summary>
     /// 
@@ -12,9 +11,8 @@ public class TaxYearCgtByTypeReportService(TradeCalculationResult tradeCalculati
     /// <returns></returns>
     public IEnumerable<TaxYearCgtByTypeReport> GetTaxYearCgtByTypeReports()
     {
-        List<int> taxYears = [.. tradeCalculationResult.CalculatedTrade.Select(trade => taxYearConverter.ToTaxYear(trade.Date))
-                                                                                                        .Distinct()
-                                                                                                        .Order()];
+        // Group by the year each trade is taxable in, the same years the gain and loss totals use.
+        List<int> taxYears = [.. tradeCalculationResult.GetTaxYearsWithTrades()];
         foreach (int taxYear in taxYears)
         {
             yield return CreateReport(taxYear);
