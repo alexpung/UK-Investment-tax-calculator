@@ -23,7 +23,8 @@ public record WorkflowStep(int Number, string Title, string Hint, IReadOnlyList<
 
 /// <summary>
 /// The order in which the app is used: import statements, calculate, adjust, review the results,
-/// check the workings and finally produce the report.
+/// check the workings and finally export the reports and the saved session.
+/// Exporting comes last so the exported files include any manual adjustments made along the way.
 /// The adjust step comes after the first calculation because its pages pick from what the import and
 /// calculation produce: bond ETF income selection lists imported dividend tickers, while ERI/equalisation,
 /// corporate actions and manual entries pick from the Section 104 pools a calculation builds.
@@ -33,6 +34,7 @@ public static class WorkflowSteps
 {
     public const string ImportPage = "MainCalculatorPage";
     public const string CalculatePage = "CalculatePage";
+    public const string ExportPage = "PdfReportPage";
 
     public static IReadOnlyList<WorkflowStep> All { get; } =
     [
@@ -40,9 +42,9 @@ public static class WorkflowSteps
         [
             new("Import data", ImportPage),
         ]),
-        new(2, "Calculate", "Run the calculation and export",
+        new(2, "Calculate", "Run the calculation",
         [
-            new("Calculate & export", CalculatePage),
+            new("Calculate taxes", CalculatePage),
         ]),
         new(3, "Adjust", "Recalculates when you leave a page you changed",
         [
@@ -65,9 +67,9 @@ public static class WorkflowSteps
             new("Dividend/Income Data", "DividendDataPage"),
             new("Section 104 Data", "Section104DataPage"),
         ]),
-        new(6, "Report", "PDF for your records",
+        new(6, "Export", "Text reports, PDF and saved session",
         [
-            new("PDF Report", "PdfReportPage"),
+            new("Export & PDF report", ExportPage),
         ]),
     ];
 
