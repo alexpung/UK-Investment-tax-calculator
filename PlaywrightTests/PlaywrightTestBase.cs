@@ -75,9 +75,9 @@ public class PlaywrightTestBase : PageTest
     }
 
     /// <summary>
-    /// Moves from the import page to the Calculate &amp; export page, keeping the imported data.
+    /// Moves from the import page to the Calculate taxes page, keeping the imported data.
     /// </summary>
-    protected Task GoToCalculatePageAsync() => NavigateViaSidebarAsync("Calculate & export", "**/CalculatePage");
+    protected Task GoToCalculatePageAsync() => NavigateViaSidebarAsync("Calculate taxes", "**/CalculatePage");
 
     /// <summary>
     /// Waits for a specific visible text to appear on the page.

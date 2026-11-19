@@ -128,7 +128,7 @@ public class NavigationLinkTests : PlaywrightTestBase
         await NavigateViaSidebarAsync("Import data", "**/MainCalculatorPage");
         await WaitForTextAsync("Import Data");
 
-        await NavigateViaSidebarAsync("Calculate & export", "**/CalculatePage");
+        await NavigateViaSidebarAsync("Calculate taxes", "**/CalculatePage");
         await WaitForTextAsync("Calculate Taxes");
     }
 
@@ -142,10 +142,10 @@ public class NavigationLinkTests : PlaywrightTestBase
 
         string[] expectedLinks =
         [
-            "Import data", "Calculate & export", "Income taxable dividend selection", "ERI and Equalisation",
+            "Import data", "Calculate taxes", "Income taxable dividend selection", "ERI and Equalisation",
             "Corporate Actions and Events", "Add Manual Entries", "Residency Status", "CGT Yearly Summary",
             "Dividend/Income Summary", "Disposal Summary", "Trade Matches", "Imported Trades",
-            "Dividend/Income Data", "Section 104 Data", "PDF Report", "How it works", "Acknowledgement"
+            "Dividend/Income Data", "Section 104 Data", "Export & PDF report", "How it works", "Acknowledgement"
         ];
         foreach (var linkText in expectedLinks)
         {
