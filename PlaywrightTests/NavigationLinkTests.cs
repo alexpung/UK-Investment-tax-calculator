@@ -129,7 +129,8 @@ public class NavigationLinkTests : PlaywrightTestBase
         await WaitForTextAsync("Import Data");
 
         await NavigateViaSidebarAsync("Calculate taxes", "**/CalculatePage");
-        await WaitForTextAsync("Calculate Taxes");
+        // Match the page's own heading exactly: a plain text wait would also match the "Calculate taxes" sidebar link.
+        await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Calculate", Exact = true })).ToBeVisibleAsync();
     }
 
     [Test]
