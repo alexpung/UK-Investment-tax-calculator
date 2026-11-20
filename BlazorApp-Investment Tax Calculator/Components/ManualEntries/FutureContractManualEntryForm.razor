@@ -59,16 +59,14 @@
                                   Currencies="@_currencies"
                                   AdditionalCssClass="mt-2" />
 
-        @if (CanShowCalculationPreview)
-        {
-            <div class="alert alert-info mt-4 mb-0">
-                <div class="row g-2">
-                    <div class="col-md-4"><strong>Contract Value (GBP):</strong> @ContractValueInGbp.ToString("N2")</div>
-                    <div class="col-md-4"><strong>Costs (GBP):</strong> @TotalCostsInGbp.ToString("N2")</div>
-                    <div class="col-md-4"><strong>Immediate Cash Impact (GBP):</strong> @((-TotalCostsInGbp).ToString("N2"))</div>
-                </div>
+        @* Always rendered so the Save button below never shifts position when inputs commit on blur (which would swallow the click). *@
+        <div class="alert alert-info mt-4 mb-0">
+            <div class="row g-2">
+                <div class="col-md-4"><strong>Contract Value (GBP):</strong> @PreviewAmount(ContractValueInGbp)</div>
+                <div class="col-md-4"><strong>Costs (GBP):</strong> @PreviewAmount(TotalCostsInGbp)</div>
+                <div class="col-md-4"><strong>Immediate Cash Impact (GBP):</strong> @PreviewAmount(-TotalCostsInGbp)</div>
             </div>
-        }
+        </div>
 
         <div class="col-12 mt-4 d-flex justify-content-center">
             <RadzenButton Click="@AddEntry" ButtonStyle="ButtonStyle.Warning" Size="ButtonSize.Large" Text="@(IsEditing ? "Update Future Trade" : "Add Future Trade")" />
@@ -104,6 +102,7 @@
     private decimal ContractValueInGbp => _contractValueAmount * _contractValueFxRate;
     private decimal TotalCostsInGbp => (_commissionAmount * _commissionFxRate) + (_taxAmount * _taxFxRate);
     private bool CanShowCalculationPreview => _contractValueAmount != 0 && _contractValueFxRate > 0;
+    private string PreviewAmount(decimal value) => CanShowCalculationPreview ? value.ToString("N2") : "-";
 
     protected override void OnInitialized()
     {

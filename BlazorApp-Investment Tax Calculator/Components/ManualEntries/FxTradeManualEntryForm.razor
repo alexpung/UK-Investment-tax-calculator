@@ -52,16 +52,14 @@
                                   Currencies="@_currencies"
                                   AdditionalCssClass="mt-2" />
 
-        @if (CanShowCalculationPreview)
-        {
-            <div class="alert alert-info mt-4 mb-0">
-                <div class="row g-2">
-                    <div class="col-md-4"><strong>Gross (GBP):</strong> @GrossProceedInGbp.ToString("N2")</div>
-                    <div class="col-md-4"><strong>Commission (GBP):</strong> @CommissionInGbp.ToString("N2")</div>
-                    <div class="col-md-4"><strong>Net (GBP):</strong> @NetProceedInGbp.ToString("N2")</div>
-                </div>
+        @* Always rendered so the Save button below never shifts position when inputs commit on blur (which would swallow the click). *@
+        <div class="alert alert-info mt-4 mb-0">
+            <div class="row g-2">
+                <div class="col-md-4"><strong>Gross (GBP):</strong> @PreviewAmount(GrossProceedInGbp)</div>
+                <div class="col-md-4"><strong>Commission (GBP):</strong> @PreviewAmount(CommissionInGbp)</div>
+                <div class="col-md-4"><strong>Net (GBP):</strong> @PreviewAmount(NetProceedInGbp)</div>
             </div>
-        }
+        </div>
 
         <div class="col-12 mt-4 d-flex justify-content-center">
             <RadzenButton Click="@AddEntry" ButtonStyle="ButtonStyle.Info" Size="ButtonSize.Large" Text="@(IsEditing ? "Update FX Trade" : "Add FX Trade")" />
@@ -95,6 +93,7 @@
         ? GrossProceedInGbp + CommissionInGbp
         : GrossProceedInGbp - CommissionInGbp;
     private bool CanShowCalculationPreview => _grossProceedAmount > 0 && _grossProceedFxRate > 0;
+    private string PreviewAmount(decimal value) => CanShowCalculationPreview ? value.ToString("N2") : "-";
 
     protected override void OnInitialized()
     {
