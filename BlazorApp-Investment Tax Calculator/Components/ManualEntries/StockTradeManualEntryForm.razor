@@ -59,17 +59,16 @@
                                   Currencies="@_currencies"
                                   AdditionalCssClass="mt-2" />
 
-        @if (CanShowCalculationPreview)
-        {
-            <div class="alert alert-info mt-4 mb-0">
-                <div class="row g-2">
-                    <div class="col-md-3"><strong>Gross (GBP):</strong> @GrossProceedInGbp.ToString("N2")</div>
-                    <div class="col-md-3"><strong>Commission (GBP):</strong> @CommissionInGbp.ToString("N2")</div>
-                    <div class="col-md-3"><strong>Tax (GBP):</strong> @TaxInGbp.ToString("N2")</div>
-                    <div class="col-md-3"><strong>Net (GBP):</strong> @NetProceedInGbp.ToString("N2")</div>
-                </div>
+        @* Always rendered so the Save button below never shifts position when inputs commit on blur (which would swallow the click).
+             Labels sit on their own line and values never wrap, so the panel height does not depend on the values. *@
+        <div class="alert alert-info mt-4 mb-0">
+            <div class="row g-2">
+                <div class="col-md-3"><strong class="d-block">Gross (GBP)</strong><span class="text-nowrap">@PreviewAmount(GrossProceedInGbp)</span></div>
+                <div class="col-md-3"><strong class="d-block">Commission (GBP)</strong><span class="text-nowrap">@PreviewAmount(CommissionInGbp)</span></div>
+                <div class="col-md-3"><strong class="d-block">Tax (GBP)</strong><span class="text-nowrap">@PreviewAmount(TaxInGbp)</span></div>
+                <div class="col-md-3"><strong class="d-block">Net (GBP)</strong><span class="text-nowrap">@PreviewAmount(NetProceedInGbp)</span></div>
             </div>
-        }
+        </div>
 
         <div class="col-12 mt-4 d-flex justify-content-center">
             <RadzenButton Click="@AddEntry" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Large" Text="@(IsEditing ? "Update Stock Trade" : "Add Stock Trade")" />
@@ -109,6 +108,7 @@
         ? GrossProceedInGbp + CommissionInGbp + TaxInGbp
         : GrossProceedInGbp - CommissionInGbp - TaxInGbp;
     private bool CanShowCalculationPreview => _grossProceedAmount > 0 && _grossProceedFxRate > 0;
+    private string PreviewAmount(decimal value) => CanShowCalculationPreview ? value.ToString("N2") : "-";
 
     protected override void OnInitialized()
     {

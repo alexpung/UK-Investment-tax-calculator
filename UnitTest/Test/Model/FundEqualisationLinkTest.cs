@@ -234,6 +234,22 @@ public class FundEqualisationLinkTest
     }
 
     [Fact]
+    public void Resolve_DescribesTheDeduction_WithOrWithoutAnExistingDescription()
+    {
+        TaxEventLists lists = new();
+        Dividend described = Dividend(100m);
+        Dividend undescribed = Dividend(100m) with { Proceed = new DescribedMoney(100m, "USD", 0.8m) };
+        lists.Dividends.AddRange([described, undescribed]);
+        lists.AddEqualisation(Equalisation(10m), described);
+        lists.AddEqualisation(Equalisation(10m), undescribed);
+
+        ResolvedIncome resolved = ReportingFundIncomeResolver.Resolve(lists);
+
+        resolved.Dividends[0].Proceed.Description.ShouldBe("Dividend (Reduced by equalisation of £8.00)");
+        resolved.Dividends[1].Proceed.Description.ShouldBe("Reduced by equalisation of £8.00");
+    }
+
+    [Fact]
     public void DividendCalculator_RunRepeatedly_GivesTheSameIncome()
     {
         TaxEventLists lists = new();

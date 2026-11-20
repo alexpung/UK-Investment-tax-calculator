@@ -19,7 +19,6 @@ public class TaxCalculationService(
     TradeCalculationResult tradeCalculationResult,
     IEnumerable<ITradeCalculator> tradeCalculators,
     YearOptions years,
-    ITaxYear taxYear,
     ToastService toastService,
     TaxEventLists taxEventLists,
     ShareIdentityRegistry shareIdentityRegistry)
@@ -88,10 +87,8 @@ public class TaxCalculationService(
 
     private IEnumerable<int> GetSelectableYears()
     {
-        IEnumerable<int> taxYearsWithDisposal = tradeCalculationResult.CalculatedTrade
-            .Where(trade => trade.AcquisitionDisposal == TradeType.DISPOSAL)
-            .Select(trade => taxYear.ToTaxYear(trade.Date))
-            .Distinct();
+        // Use the year each disposal is taxable in, so the year of return from temporary non-residence is offered.
+        IEnumerable<int> taxYearsWithDisposal = tradeCalculationResult.GetTaxYearsWithDisposals();
 
         IEnumerable<int> taxYearsWithDividend = dividendCalculationResult.DividendSummary
             .Select(dividend => dividend.TaxYear)

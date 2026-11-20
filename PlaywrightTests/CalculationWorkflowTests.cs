@@ -98,13 +98,13 @@ public class CalculationWorkflowTests : PlaywrightTestBase
         await Expect(taxSummaryHeader).ToBeVisibleAsync();
         
         // Collect ALL values first, then log them all
-        var disposalsText = await Page.Locator(".metric-card:has-text('Number of Disposals') .metric-value").TextContentAsync() ?? "";
-        var proceedsText = await Page.Locator(".metric-card:has-text('Total Disposal Proceeds') .metric-value").TextContentAsync() ?? "";
-        var allowableCostText = await Page.Locator(".metric-card:has-text('Total Allowable Cost') .metric-value").TextContentAsync() ?? "";
-        var gainText = await Page.Locator(".metric-card:has-text('Total Gain') .metric-value").TextContentAsync() ?? "";
-        var lossText = await Page.Locator(".metric-card:has-text('Total Loss') .metric-value").TextContentAsync() ?? "";
-        var dividendText = await Page.Locator(".metric-card:has-text('Total Dividend') .metric-value").TextContentAsync() ?? "";
-        var foreignTaxText = await Page.Locator(".metric-card:has-text('Total Foreign Withholding Tax Paid') .metric-value").TextContentAsync() ?? "";
+        var disposalsText = await Page.Locator("tr[data-metric='cgt-total'] [data-metric='disposals']").TextContentAsync() ?? "";
+        var proceedsText = await Page.Locator("tr[data-metric='cgt-total'] [data-metric='proceeds']").TextContentAsync() ?? "";
+        var allowableCostText = await Page.Locator("tr[data-metric='cgt-total'] [data-metric='allowable-cost']").TextContentAsync() ?? "";
+        var gainText = await Page.Locator("tr[data-metric='cgt-total'] [data-metric='gain']").TextContentAsync() ?? "";
+        var lossText = await Page.Locator("tr[data-metric='cgt-total'] [data-metric='loss']").TextContentAsync() ?? "";
+        var dividendText = await Page.Locator("[data-metric='total-dividend']").TextContentAsync() ?? "";
+        var foreignTaxText = await Page.Locator("[data-metric='foreign-tax']").TextContentAsync() ?? "";
         
         // Log all values
         TestContext.WriteLine($"Number of Disposals: {disposalsText}");

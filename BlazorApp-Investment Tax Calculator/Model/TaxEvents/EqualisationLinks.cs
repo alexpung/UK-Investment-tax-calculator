@@ -66,10 +66,12 @@ public sealed class EqualisationLinks
     {
         if (_equalisations.Count == 0) return income;
         WrappedMoney deductionLocal = new(Total.Amount / income.FxRate, income.Amount.Currency);
+        string note = $"Reduced by equalisation of {Total}";
         return income with
         {
             Amount = income.Amount - deductionLocal,
-            Description = income.Description + $" (Reduced by equalisation of {Total})"
+            // Income entered by hand often has no description: the note then stands alone, not as a bracketed suffix.
+            Description = string.IsNullOrWhiteSpace(income.Description) ? note : $"{income.Description} ({note})"
         };
     }
 
