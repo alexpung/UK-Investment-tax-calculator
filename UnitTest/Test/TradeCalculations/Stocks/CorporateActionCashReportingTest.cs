@@ -111,8 +111,8 @@ public class CorporateActionCashReportingTest
         TradeCalculationResult tradeCalculationResult = new(taxYear, residencyStatus);
         tradeCalculationResult.SetResult(calculations);
 
-        TaxYearCgtByTypeReportService byType = new(tradeCalculationResult, taxYear);
-        TaxYearReportService byYear = new(tradeCalculationResult, taxYear);
+        TaxYearCgtByTypeReportService byType = new(tradeCalculationResult);
+        TaxYearReportService byYear = new(tradeCalculationResult);
         UkCalculationResultExportService export = new(taxYear, tradeCalculationResult, byType, byYear);
         return export.PrintToTextFile();
     }

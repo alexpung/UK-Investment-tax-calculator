@@ -8,13 +8,8 @@
         <div class="col-lg-10 mx-auto">
             <!-- Page Header -->
             <div class="page-header">
-                <h1 class="page-title">PDF Tax Reports</h1>
-                <p class="page-subtitle">Generate and download PDF reports for your tax calculations</p>
-            </div>
-
-            <!-- Notice -->
-            <div class="alert alert-info alert-custom mb-4" role="alert">
-                <strong>Note:</strong> Selecting multiple years will generate multiple PDFs, one for each year selected.
+                <h1 class="page-title">Export &amp; PDF report</h1>
+                <p class="page-subtitle">Download text reports, PDF tax reports and a saved session that keeps your manual adjustments</p>
             </div>
 
             <!-- Calculation Summary Section -->
@@ -22,7 +17,15 @@
                 <CalculationSummary></CalculationSummary>
             </div>
 
+            <!-- Text report and saved session export -->
+            <div class="section mb-5">
+                <ExportFile></ExportFile>
+            </div>
+
             <!-- Export PDF Section -->
+            <div class="alert alert-info alert-custom mb-4" role="alert">
+                <strong>Note:</strong> Selecting multiple years will generate multiple PDFs, one for each year selected.
+            </div>
             <div class="section">
                 <ExportPdfTaxReport></ExportPdfTaxReport>
             </div>

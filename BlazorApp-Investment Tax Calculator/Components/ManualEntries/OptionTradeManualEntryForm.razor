@@ -92,17 +92,16 @@
                                   Currencies="@_currencies"
                                   AdditionalCssClass="mt-2" />
 
-        @if (CanShowCalculationPreview)
-        {
-            <div class="alert alert-info mt-4 mb-0">
-                <div class="row g-2">
-                    <div class="col-md-3"><strong>Premium (GBP):</strong> @PremiumInGbp.ToString("N2")</div>
-                    <div class="col-md-3"><strong>Costs (GBP):</strong> @TotalCostsInGbp.ToString("N2")</div>
-                    <div class="col-md-3"><strong>Net Premium (GBP):</strong> @NetPremiumInGbp.ToString("N2")</div>
-                    <div class="col-md-3"><strong>Strike Notional:</strong> @StrikeNotionalLocal.ToString("N2") @_strikeCurrency</div>
-                </div>
+        @* Always rendered so the Save button below never shifts position when inputs commit on blur (which would swallow the click).
+             Labels sit on their own line and values never wrap, so the panel height does not depend on the values. *@
+        <div class="alert alert-info mt-4 mb-0">
+            <div class="row g-2">
+                <div class="col-md-3"><strong class="d-block">Premium (GBP)</strong><span class="text-nowrap">@PreviewAmount(PremiumInGbp)</span></div>
+                <div class="col-md-3"><strong class="d-block">Costs (GBP)</strong><span class="text-nowrap">@PreviewAmount(TotalCostsInGbp)</span></div>
+                <div class="col-md-3"><strong class="d-block">Net Premium (GBP)</strong><span class="text-nowrap">@PreviewAmount(NetPremiumInGbp)</span></div>
+                <div class="col-md-3"><strong class="d-block">Strike Notional</strong><span class="text-nowrap">@PreviewAmount(StrikeNotionalLocal) @_strikeCurrency</span></div>
             </div>
-        }
+        </div>
 
         <div class="col-12 mt-4 d-flex justify-content-center">
             <RadzenButton Click="@AddEntry" ButtonStyle="ButtonStyle.Success" Size="ButtonSize.Large" Text="@(IsEditing ? "Update Option Trade" : "Add Option Trade")" />
@@ -151,6 +150,7 @@
         : PremiumInGbp - TotalCostsInGbp;
     private decimal StrikeNotionalLocal => _strikePriceAmount * _quantity * _multiplier;
     private bool CanShowCalculationPreview => _premiumFxRate > 0 && _quantity > 0 && _multiplier > 0;
+    private string PreviewAmount(decimal value) => CanShowCalculationPreview ? value.ToString("N2") : "-";
 
     protected override void OnInitialized()
     {

@@ -59,6 +59,17 @@ public class WorkflowStepsTests
         adjust.IsOptional.ShouldBeTrue();
     }
 
+    [Fact]
+    public void Export_IsTheLastStep_SoExportsIncludeManualAdjustments()
+    {
+        var export = WorkflowSteps.FindStep(WorkflowSteps.ExportPage).ShouldNotBeNull();
+        var adjust = WorkflowSteps.FindStep("AddExcessReportableIncome").ShouldNotBeNull();
+
+        export.ShouldBe(WorkflowSteps.All[^1]);
+        export.Number.ShouldBeGreaterThan(adjust.Number);
+        WorkflowSteps.FindStep(WorkflowSteps.CalculatePage).ShouldNotBe(export);
+    }
+
     [Theory]
     [InlineData("CgtYearlyTaxSummaryPage", 4)]
     [InlineData("cgtyearlytaxsummarypage", 4)]

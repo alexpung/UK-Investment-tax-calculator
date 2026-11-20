@@ -1,9 +1,10 @@
-﻿@using Model
-@using Model.Interfaces
+﻿@using Enumerations
+@using Model
 @using Services
 
 @inject TradeCalculationResult tradeCalculationResult
 @inject DividendCalculationResult dividendCalculationResult
+@inject TaxYearReportService taxYearReportService
 @inject YearOptions yearOptions
 
 <!-- Year Selector Card -->
@@ -27,108 +28,338 @@
 </div>
 
 <!-- Tax Summary Section -->
-<div class="mb-3">
-    <h3 class="section-title">Tax Summary</h3>
+<div class="d-flex flex-wrap align-items-baseline justify-content-between gap-2 mb-3">
+    <h3 class="section-title mb-0">Tax Summary</h3>
+    <span class="text-muted small">@SelectedYearsLabel</span>
 </div>
 
-<!-- Metric Cards Grid -->
-<div class="row g-3">
-    <!-- Number of Disposals -->
-    <div class="col-md-6 col-lg-4">
-        <div class="card metric-card">
-            <div class="card-body">
-                <div class="metric-label text-muted small">Number of Disposals</div>
-                <div class="metric-value h4 mb-0">@tradeCalculationResult.GetNumberOfDisposals(yearOptions.SelectedOptions)</div>
+@{
+    List<int> years = [.. yearOptions.SelectedOptions.Order()];
+    List<TaxYearCgtReport> cgtReports = taxYearReportService.GetTaxYearReports(years);
+    WrappedMoney netGain = tradeCalculationResult.GetTotalGain(years) + tradeCalculationResult.GetTotalLoss(years);
+    WrappedMoney taxableGain = cgtReports.Sum(r => r.TaxableGainAfterAllowanceAndLossOffset);
+    WrappedMoney totalDividend = dividendCalculationResult.GetTotalDividend(years);
+    WrappedMoney eriDividend = dividendCalculationResult.GetExcessReportableIncomeDividend(years);
+    WrappedMoney totalInterest = dividendCalculationResult.GetTotalInterestIncome(years);
+    WrappedMoney interestExpense = dividendCalculationResult.GetInterestExpense(years);
+}
+
+@if (years.Count == 0)
+{
+    <div class="alert alert-info alert-custom mb-0">Select at least one tax year to see the summary.</div>
+}
+else
+{
+    <!-- Headline figures -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-xl-3">
+            <div class="card metric-card summary-headline" data-metric="net-gain">
+                <div class="card-body">
+                    <div class="metric-label text-muted small">Net Capital Gain</div>
+                    <div class="metric-value h4 mb-0 @SignClass(netGain)">@netGain</div>
+                    <div class="summary-hint">Gains less losses in the year(s)</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="card metric-card summary-headline" data-metric="taxable-gain">
+                <div class="card-body">
+                    <div class="metric-label text-muted small">Taxable Gain</div>
+                    <div class="metric-value h4 mb-0">@taxableGain</div>
+                    <div class="summary-hint">After annual exempt amount and losses brought forward</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="card metric-card summary-headline" data-metric="dividend-income">
+                <div class="card-body">
+                    <div class="metric-label text-muted small">Dividend Income</div>
+                    <div class="metric-value h4 mb-0">@totalDividend</div>
+                    <div class="summary-hint">Gross, before withholding tax</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="card metric-card summary-headline" data-metric="interest-income">
+                <div class="card-body">
+                    <div class="metric-label text-muted small">Interest Income</div>
+                    <div class="metric-value h4 mb-0">@totalInterest</div>
+                    <div class="summary-hint">Savings, bonds and bond fund distributions</div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Total Disposal Proceeds -->
-    <div class="col-md-6 col-lg-4">
-        <div class="card metric-card">
-            <div class="card-body">
-                <div class="metric-label text-muted small">Total Disposal Proceeds</div>
-                <div class="metric-value h4 mb-0">@tradeCalculationResult.GetDisposalProceeds(yearOptions.SelectedOptions)</div>
+    <!-- Capital gains -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4 class="mb-0"><span class="me-2">📈</span>Capital Gains</h4>
+        </div>
+        <div class="card-body">
+            <h6 class="summary-subheading">Disposals by HMRC asset type</h6>
+            <div class="table-responsive">
+                <table class="table summary-table summary-table-stack mb-4">
+                    <thead>
+                        <tr>
+                            <th scope="col">Asset type</th>
+                            <th scope="col" class="text-end">Disposals</th>
+                            <th scope="col" class="text-end">Proceeds</th>
+                            <th scope="col" class="text-end">Allowable costs</th>
+                            <th scope="col" class="text-end">Gains</th>
+                            <th scope="col" class="text-end">Losses</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @CgtRow("Listed shares and securities", AssetGroupType.LISTEDSHARES, years, null)
+                        @CgtRow("Other property, assets and gains", AssetGroupType.OTHERASSETS, years, null)
+                    </tbody>
+                    <tfoot>
+                        @CgtRow("Total", AssetGroupType.ALL, years, "cgt-total")
+                    </tfoot>
+                </table>
+            </div>
+
+            <h6 class="summary-subheading">Allowance and losses by tax year</h6>
+            <div class="table-responsive">
+                <table class="table summary-table summary-table-stack mb-0">
+                    <thead>
+                        <tr>
+                            <th scope="col">Tax year</th>
+                            <th scope="col" class="text-end">Net gain</th>
+                            <th scope="col" class="text-end">Annual exempt amount</th>
+                            <th scope="col" class="text-end">Losses b/f used</th>
+                            <th scope="col" class="text-end">Taxable gain</th>
+                            <th scope="col" class="text-end">Losses c/f</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (TaxYearCgtReport report in cgtReports)
+                        {
+                            <tr data-tax-year="@report.TaxYear">
+                                <th scope="row">@YearLabel(report.TaxYear)</th>
+                                <td data-label="Net gain" class="text-end num @SignClass(report.NetCapitalGain)">@report.NetCapitalGain</td>
+                                <td data-label="Annual exempt amount" class="text-end num">@report.CapitalGainAllowance</td>
+                                <td data-label="Losses b/f used" class="text-end num">@report.CgtAllowanceBroughtForwardAndUsed</td>
+                                <td data-label="Taxable gain" class="text-end num fw-semibold">@report.TaxableGainAfterAllowanceAndLossOffset</td>
+                                <td data-label="Losses c/f" class="text-end num">@report.LossesAvailableToBroughtForward</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
-    <!-- Total Allowable Cost -->
-    <div class="col-md-6 col-lg-4">
-        <div class="card metric-card">
-            <div class="card-body">
-                <div class="metric-label text-muted small">Total Allowable Cost</div>
-                <div class="metric-value h4 mb-0">@tradeCalculationResult.GetAllowableCosts(yearOptions.SelectedOptions)</div>
+    <div class="row g-4">
+        <!-- Dividends -->
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h4 class="mb-0"><span class="me-2">💷</span>Dividends</h4>
+                </div>
+                <div class="card-body">
+                    <dl class="summary-list mb-0">
+                        @ListRow("Ordinary dividends", totalDividend - eriDividend, "ordinary-dividend")
+                        @ListRow("Excess reportable income (dividend)", eriDividend, "eri-dividend")
+                        @ListRow("Total Dividend", totalDividend, "total-dividend", total: true)
+                        @ListRow("Total Foreign Withholding Tax Paid", dividendCalculationResult.GetForeignTaxPaid(years), "foreign-tax", spaced: true)
+                    </dl>
+                    <p class="summary-hint mt-3 mb-0">Withholding tax may be claimable as foreign tax credit relief, limited to the UK tax due on the same income.</p>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Total Gain -->
-    <div class="col-md-6 col-lg-4">
-        <div class="card metric-card">
-            <div class="card-body">
-                <div class="metric-label text-muted small">Total Gain</div>
-                <div class="metric-value h4 mb-0">@tradeCalculationResult.GetTotalGain(yearOptions.SelectedOptions)</div>
+        <!-- Interest -->
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h4 class="mb-0"><span class="me-2">🏦</span>Interest &amp; Savings Income</h4>
+                </div>
+                <div class="card-body">
+                    <dl class="summary-list mb-0">
+                        @ListRow("Savings interest", dividendCalculationResult.GetSavingInterest(years), "saving-interest")
+                        @ListRow("Bond coupons", dividendCalculationResult.GetBondInterest(years), "bond-interest")
+                        @ListRow("Accrued income profit", dividendCalculationResult.GetAccruedIncomeProfit(years), "accrued-profit")
+                        @ListRow("Accrued income loss", dividendCalculationResult.GetAccruedIncomeLoss(years), "accrued-loss")
+                        @ListRow("Bond fund (ETF) distributions", dividendCalculationResult.GetEtfDividendIncome(years), "etf-dividend")
+                        @ListRow("Excess reportable income (interest)", dividendCalculationResult.GetExcessReportableIncomeInterest(years), "eri-interest")
+                        @ListRow("Total Interest Income", totalInterest, "total-interest", total: true)
+                    </dl>
+                    @if (interestExpense.Amount != 0)
+                    {
+                        <dl class="summary-list summary-reference mt-3 mb-0">
+                            @ListRow("Interest paid (not deductible)", interestExpense, "interest-expense")
+                        </dl>
+                        <p class="summary-hint mt-2 mb-0">Interest paid is shown for reference only and is not included in any total.</p>
+                    }
+                </div>
             </div>
         </div>
     </div>
-
-    <!-- Total Loss -->
-    <div class="col-md-6 col-lg-4">
-        <div class="card metric-card">
-            <div class="card-body">
-                <div class="metric-label text-muted small">Total Loss</div>
-                <div class="metric-value h4 mb-0">@tradeCalculationResult.GetTotalLoss(yearOptions.SelectedOptions)</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Total Dividend -->
-    <div class="col-md-6 col-lg-4">
-        <div class="card metric-card">
-            <div class="card-body">
-                <div class="metric-label text-muted small">Total Dividend</div>
-                <div class="metric-value h4 mb-0">@dividendCalculationResult.GetTotalDividend(yearOptions.SelectedOptions)</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Total Foreign Withholding Tax Paid -->
-    <div class="col-md-6 col-lg-4">
-        <div class="card metric-card">
-            <div class="card-body">
-                <div class="metric-label text-muted small">Total Foreign Withholding Tax Paid</div>
-                <div class="metric-value h4 mb-0">@dividendCalculationResult.GetForeignTaxPaid(yearOptions.SelectedOptions)</div>
-            </div>
-        </div>
-    </div>
-</div>
+}
 
 <style>
-    .metric-card {
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    .summary-headline .card-body {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
     }
 
-    .metric-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    .summary-hint {
+        color: var(--wf-muted);
+        font-size: 0.8rem;
     }
 
     .metric-label {
-        font-weight: 500;
+        font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
 
-    .metric-value {
+    .summary-subheading {
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--wf-muted);
+        margin-bottom: 0.5rem;
+    }
+
+    .summary-table {
+        --bs-table-bg: transparent;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+    }
+
+    .summary-table thead th {
+        font-size: 0.8rem;
         font-weight: 600;
-        color: var(--bs-body-color);
+        color: var(--wf-muted);
+        border-bottom-color: var(--wf-border);
+    }
+
+    .summary-table td,
+    .summary-table tbody th {
+        border-bottom-color: var(--wf-border-soft);
+    }
+
+    .summary-table tbody th {
+        font-weight: 500;
+    }
+
+    .summary-table tfoot td,
+    .summary-table tfoot th {
+        font-weight: 700;
+        border-top: 2px solid var(--wf-border);
+        border-bottom: 0;
+        background: var(--wf-surface-2);
+    }
+
+    /* On phones each table row becomes a small labelled block instead of scrolling sideways */
+    @@media (max-width: 575.98px) {
+        .summary-table-stack {
+            white-space: normal;
+        }
+
+        /* Hidden visually only, so screen readers still announce the column headers */
+        .summary-table-stack thead {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            clip: rect(0 0 0 0);
+            clip-path: inset(50%);
+            white-space: nowrap;
+        }
+
+        .summary-table-stack tr,
+        .summary-table-stack th,
+        .summary-table-stack td {
+            display: block;
+        }
+
+        .summary-table-stack tr {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--wf-border-soft);
+        }
+
+        .summary-table-stack tbody th,
+        .summary-table-stack tfoot th {
+            border: 0;
+            padding: 0.25rem 0.5rem;
+            font-weight: 700;
+        }
+
+        .summary-table-stack td {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            border: 0;
+            padding: 0.2rem 0.5rem;
+        }
+
+        .summary-table-stack td::before {
+            content: attr(data-label);
+            color: var(--wf-muted);
+            font-weight: 500;
+            text-align: left;
+        }
+
+        .summary-table-stack tfoot tr {
+            border-top: 2px solid var(--wf-border);
+            border-bottom: 0;
+            background: var(--wf-surface-2);
+        }
+
+        .summary-table-stack tfoot td,
+        .summary-table-stack tfoot th {
+            border: 0;
+            background: transparent;
+        }
+    }
+
+    .summary-list {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .summary-list dt,
+    .summary-list dd {
+        margin: 0;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid var(--wf-border-soft);
+    }
+
+    .summary-list dt {
+        font-weight: 500;
+    }
+
+    .summary-list dd {
+        text-align: right;
+        padding-left: 1rem;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+    }
+
+    .summary-list .summary-total {
+        font-weight: 700;
+        border-top: 2px solid var(--wf-border);
+        border-bottom: 0;
+    }
+
+    .summary-list .summary-spaced {
+        margin-top: 1rem;
+        border-top: 1px solid var(--wf-border-soft);
+    }
+
+    .summary-reference dt,
+    .summary-reference dd {
+        color: var(--wf-muted);
+        border-bottom: 0;
     }
 </style>
 
-
-
-@code{
+@code {
     [Parameter] public int ShouldReRender { get; set; }
 
     private int _lastVersion;
@@ -141,4 +372,35 @@
             StateHasChanged();
         }
     }
+
+    private string SelectedYearsLabel => yearOptions.SelectedOptions.Count switch
+    {
+        0 => "No tax year selected",
+        1 => $"Tax year {YearLabel(yearOptions.SelectedOptions[0])}",
+        int n => $"{n} tax years combined: {YearLabel(yearOptions.SelectedOptions.Min())} to {YearLabel(yearOptions.SelectedOptions.Max())}"
+    };
+
+    private static string YearLabel(int taxYear) => $"{taxYear}/{(taxYear + 1) % 100:D2}";
+
+    private static string SignClass(WrappedMoney money) => money.Amount < 0 ? "text-danger" : string.Empty;
+
+    private RenderFragment CgtRow(string label, AssetGroupType group, List<int> years, string? metric) => __builder =>
+    {
+        WrappedMoney loss = tradeCalculationResult.GetTotalLoss(years, group);
+        <tr data-metric="@metric">
+            <th scope="row">@label</th>
+            <td class="text-end" data-metric="@(metric is null ? null : "disposals")" data-label="Disposals">@tradeCalculationResult.GetNumberOfDisposals(years, group)</td>
+            <td class="text-end" data-metric="@(metric is null ? null : "proceeds")" data-label="Proceeds">@tradeCalculationResult.GetDisposalProceeds(years, group)</td>
+            <td class="text-end" data-metric="@(metric is null ? null : "allowable-cost")" data-label="Allowable costs">@tradeCalculationResult.GetAllowableCosts(years, group)</td>
+            <td class="text-end" data-metric="@(metric is null ? null : "gain")" data-label="Gains">@tradeCalculationResult.GetTotalGain(years, group)</td>
+            <td class="text-end @SignClass(loss)" data-metric="@(metric is null ? null : "loss")" data-label="Losses">@loss</td>
+        </tr>
+    };
+
+    private static RenderFragment ListRow(string label, WrappedMoney value, string metric, bool total = false, bool spaced = false) => __builder =>
+    {
+        string rowClass = total ? "summary-total" : spaced ? "summary-spaced" : string.Empty;
+        <dt class="@rowClass">@label</dt>
+        <dd class="@rowClass @SignClass(value)" data-metric="@metric">@value</dd>
+    };
 }
