@@ -59,16 +59,15 @@
                                   Currencies="@_currencies"
                                   AdditionalCssClass="mt-3" />
 
-        @if (CanShowCalculationPreview)
-        {
-            <div class="alert alert-info mt-4 mb-0">
-                <div class="row g-2">
-                    <div class="col-md-4"><strong>Amount (GBP):</strong> @AmountInGbp.ToString("N2")</div>
-                    <div class="col-md-4"><strong>Tax Deferred:</strong> @(IsTaxDeferred ? "Yes" : "No")</div>
-                    <div class="col-md-4"><strong>Type:</strong> @_interestType.GetDescription()</div>
-                </div>
+        @* Always rendered so the Save button below never shifts position when inputs commit on blur (which would swallow the click).
+             Labels sit on their own line and values never wrap, so the panel height does not depend on the values. *@
+        <div class="alert alert-info mt-4 mb-0">
+            <div class="row g-2">
+                <div class="col-md-4"><strong class="d-block">Amount (GBP)</strong><span class="text-nowrap">@PreviewAmount(AmountInGbp)</span></div>
+                <div class="col-md-4"><strong class="d-block">Tax Deferred</strong><span class="text-nowrap">@(IsTaxDeferred ? "Yes" : "No")</span></div>
+                <div class="col-md-4"><strong class="d-block">Type</strong><span class="text-nowrap">@_interestType.GetDescription()</span></div>
             </div>
-        }
+        </div>
 
         <div class="col-12 mt-4 d-flex justify-content-center">
             <RadzenButton Click="@AddEntry" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Large" Text="@(IsEditing ? "Update Interest Income" : "Add Interest Income")" />
@@ -102,6 +101,7 @@
     private bool IsTaxDeferred => IsAccruedIncomeType && !_isNextPaymentInSameTaxYear;
     private decimal AmountInGbp => _amount * _fxRate;
     private bool CanShowCalculationPreview => IsAmountValidForSelectedType(showToast: false) && _fxRate > 0;
+    private string PreviewAmount(decimal value) => CanShowCalculationPreview ? value.ToString("N2") : "-";
 
     protected override void OnInitialized()
     {
