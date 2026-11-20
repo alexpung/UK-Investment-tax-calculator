@@ -125,7 +125,8 @@ public record TaxEventLists : IDividendLists, ITradeAndCorporateActionList
     /// Links what can be linked (see <see cref="LinkEqualisations"/>), then removes the equalisation entries still
     /// without an income in these lists, so none is left stranded. Returns the entries removed, to warn about.
     /// Call after importing: an imported equalisation's income may be missing from the file, not loaded, or skipped
-    /// as a duplicate of income already here (which it is then linked to).
+    /// as a duplicate of income already here. In the last case it is linked to that income only if it has the same
+    /// saved id (the same session imported again); a duplicate from an independently built session is removed.
     /// </summary>
     public List<FundEqualisation> RemoveUnlinkedEqualisations()
     {
@@ -162,7 +163,22 @@ public record TaxEventLists : IDividendLists, ITradeAndCorporateActionList
     public void AddData(TaxEventLists taxEventLists, bool skipDuplicates)
     {
         AddEvents(taxEventLists, skipDuplicates);
+        DetachSkippedEqualisations(taxEventLists);
         EnsureUniqueIncomeIds();
+    }
+
+    /// <summary>
+    /// An imported equalisation skipped as a duplicate may already be linked (by the parser) to an imported income
+    /// that was kept, e.g. an ERI whose amount was corrected. Detach it, or that income would still be reduced by an
+    /// equalisation that is not stored.
+    /// </summary>
+    private void DetachSkippedEqualisations(TaxEventLists imported)
+    {
+        HashSet<CorporateAction> stored = new(CorporateActions, ReferenceEqualityComparer.Instance);
+        foreach (FundEqualisation skipped in imported.CorporateActions.OfType<FundEqualisation>().Where(e => !stored.Contains(e)))
+        {
+            skipped.Unlink();
+        }
     }
 
     private void AddEvents(TaxEventLists taxEventLists, bool skipDuplicates)

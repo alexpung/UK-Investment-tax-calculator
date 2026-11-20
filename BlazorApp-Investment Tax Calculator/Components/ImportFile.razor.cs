@@ -95,7 +95,8 @@ public partial class ImportFile : IDisposable
     {
         if (dropped.Count == 0) return;
         toastService.ShowWarning($"{dropped.Count} fund equalisation entr{(dropped.Count == 1 ? "y was" : "ies were")} not imported because the income " +
-            "reduced could not be found (not loaded, or the file was saved by a version before 1.8). Please enter again:\n" +
+            "it reduces could not be found or could not take it (income not loaded, not in the file, skipped as a duplicate of income from another session, " +
+            "smaller than its equalisation, or the file was saved by a version before 1.8). Please enter again:\n" +
             string.Join("\n", dropped.Select(e => e.Reason)));
     }
 

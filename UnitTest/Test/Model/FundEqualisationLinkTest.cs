@@ -374,6 +374,34 @@ public class FundEqualisationLinkTest
     }
 
     [Fact]
+    public void AddData_SkippingADuplicateEqualisation_DetachesItFromTheImportedIncomeThatIsKept()
+    {
+        // The session is exported and its ERI corrected from 50 to 80 in the copy, leaving the equalisation as it
+        // was. Importing that back skips the equalisation as a duplicate but keeps the corrected ERI, which must not
+        // still be reduced by the skipped equalisation.
+        TaxEventLists lists = new();
+        ExcessReportableIncome eri = Eri(50m);
+        lists.CorporateActions.Add(eri);
+        lists.AddEqualisation(Equalisation(10m), eri);
+        TaxEventLists later = Import(Export(lists));
+        ExcessReportableIncome laterEri = later.CorporateActions.OfType<ExcessReportableIncome>().Single();
+        ExcessReportableIncome corrected = laterEri with { Amount = laterEri.Amount with { Amount = new WrappedMoney(80m, "USD") } };
+        later.RemoveIncome(laterEri);
+        later.CorporateActions.Add(corrected);
+        later.AddEqualisation(Equalisation(10m), corrected);
+        string json = Export(later);
+
+        lists.AddData(Import(json), skipDuplicates: true);
+        lists.RemoveUnlinkedEqualisations().ShouldBeEmpty();
+
+        ExcessReportableIncome kept = lists.CorporateActions.OfType<ExcessReportableIncome>().Single(e => !ReferenceEquals(e, eri));
+        kept.EqualisationLinks.Equalisations.ShouldBeEmpty();
+        ((Dividend)kept.CreateIncomeEvent()).Proceed.Amount.Amount.ShouldBe(80m);
+        eri.EqualisationLinks.Equalisations.ShouldHaveSingleItem();
+        lists.CorporateActions.OfType<FundEqualisation>().ShouldHaveSingleItem();
+    }
+
+    [Fact]
     public void AddData_WithoutSkippingDuplicates_KeepsEachCopyLinkedToItsOwnIncome()
     {
         TaxEventLists lists = new();
