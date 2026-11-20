@@ -186,32 +186,9 @@
             IncomeLocation = region
         };
 
+        // Only the ERI entry is stored: its dividend/interest income and Section 104 uplift are derived from it at
+        // calculation time (see ReportingFundIncomeResolver), so deleting the entry is all that is needed to undo it.
         TaxEventLists.CorporateActions.Add(eri);
-
-        if (SelectedIncomeType == ExcessReportableIncomeType.DIVIDEND)
-        {
-            TaxEventLists.Dividends.Add(new Dividend
-            {
-                AssetName = SelectedTicker,
-                Date = distributionDate,
-                DividendType = DividendType.EXCESS_REPORTABLE_INCOME,
-                Proceed = new DescribedMoney(totalAmountLocal, Currency, FxRate, $"Excess Reportable Income (Dividend) from {SelectedTicker}"),
-                Isin = isin,
-                CompanyLocation = region
-            });
-        }
-        else
-        {
-            TaxEventLists.InterestIncomes.Add(new InterestIncome
-            {
-                AssetName = SelectedTicker,
-                Date = distributionDate,
-                InterestType = InterestType.EXCESSREPORTABLEINCOME,
-                Amount = new DescribedMoney(totalAmountLocal, Currency, FxRate, $"Excess Reportable Income (Interest) from {SelectedTicker}"),
-                Isin = isin,
-                IncomeLocation = region
-            });
-        }
 
         ToastService.ShowInformation($"Successfully added ERI of {eri.Amount.BaseCurrencyAmount} for {SelectedTicker}.");
         

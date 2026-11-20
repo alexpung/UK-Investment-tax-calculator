@@ -28,7 +28,144 @@ public record TaxEventLists : IDividendLists, ITradeAndCorporateActionList
         AddData(taxEventLists, false);
     }
 
+    /// <summary>
+    /// Every income a fund equalisation entry can be linked to.
+    /// </summary>
+    [JsonIgnore]
+    public IEnumerable<IEqualisableIncome> EqualisableIncomes => Dividends.Cast<IEqualisableIncome>()
+        .Concat(InterestIncomes)
+        .Concat(CorporateActions.OfType<ExcessReportableIncome>());
+
+    /// <summary>
+    /// Links <paramref name="equalisation"/> to <paramref name="income"/> and stores it. Throws
+    /// <see cref="InvalidOperationException"/>, storing nothing, if the income is not in these lists, cannot be
+    /// equalised, or would be exceeded by its equalisation.
+    /// </summary>
+    public void AddEqualisation(FundEqualisation equalisation, IEqualisableIncome income)
+    {
+        if (!EqualisableIncomes.Any(i => ReferenceEquals(i, income)))
+        {
+            throw new InvalidOperationException("The selected income no longer exists.");
+        }
+        equalisation.LinkTo(income);
+        CorporateActions.Add(equalisation);
+    }
+
+    /// <summary>
+    /// Removes the equalisation entry and detaches it from its income.
+    /// </summary>
+    public void RemoveEqualisation(FundEqualisation equalisation)
+    {
+        CorporateActions.RemoveAll(c => ReferenceEquals(c, equalisation));
+        equalisation.Unlink();
+    }
+
+    /// <summary>
+    /// Removes a dividend, interest income or ERI entry together with the fund equalisation entries linked to it,
+    /// which cannot exist without their income. Returns those equalisation entries, for the caller to warn about.
+    /// </summary>
+    public List<FundEqualisation> RemoveIncome(IEqualisableIncome income)
+    {
+        int removed = income switch
+        {
+            Dividend dividend => Dividends.RemoveAll(d => ReferenceEquals(d, dividend)),
+            InterestIncome interest => InterestIncomes.RemoveAll(i => ReferenceEquals(i, interest)),
+            ExcessReportableIncome eri => CorporateActions.RemoveAll(c => ReferenceEquals(c, eri)),
+            _ => 0
+        };
+        if (removed == 0) return [];
+        List<FundEqualisation> equalisations = [.. income.EqualisationLinks.Equalisations];
+        equalisations.ForEach(RemoveEqualisation);
+        return equalisations;
+    }
+
+    /// <summary>
+    /// Removes a corporate action. An ERI entry takes its equalisation entries with it (see <see cref="RemoveIncome"/>),
+    /// and an equalisation entry is detached from its income. Returns the equalisation entries removed with an ERI.
+    /// </summary>
+    public List<FundEqualisation> RemoveCorporateAction(CorporateAction action)
+    {
+        switch (action)
+        {
+            case ExcessReportableIncome eri:
+                return RemoveIncome(eri);
+            case FundEqualisation equalisation:
+                RemoveEqualisation(equalisation);
+                return [];
+            default:
+                CorporateActions.RemoveAll(c => ReferenceEquals(c, action));
+                return [];
+        }
+    }
+
+    /// <summary>
+    /// Links every equalisation entry not yet linked to an income in these lists to the income with its saved
+    /// <see cref="FundEqualisation.IncomeId"/>, where there is one that can take it.
+    /// </summary>
+    public void LinkEqualisations()
+    {
+        Dictionary<string, IEqualisableIncome> incomeById = [];
+        foreach (IEqualisableIncome income in EqualisableIncomes) incomeById.TryAdd(income.IncomeId, income);
+
+        foreach (FundEqualisation equalisation in UnlinkedEqualisations())
+        {
+            if (equalisation.IncomeId is null || !incomeById.TryGetValue(equalisation.IncomeId, out IEqualisableIncome? income)) continue;
+            try
+            {
+                equalisation.LinkTo(income);
+            }
+            catch (InvalidOperationException)
+            {
+                // The income refused it (it would be exceeded): left unlinked.
+            }
+        }
+    }
+
+    /// <summary>
+    /// Links what can be linked (see <see cref="LinkEqualisations"/>), then removes the equalisation entries still
+    /// without an income in these lists, so none is left stranded. Returns the entries removed, to warn about.
+    /// Call after importing: an imported equalisation's income may be missing from the file, not loaded, or skipped
+    /// as a duplicate of income already here (which it is then linked to).
+    /// </summary>
+    public List<FundEqualisation> RemoveUnlinkedEqualisations()
+    {
+        LinkEqualisations();
+        List<FundEqualisation> unlinked = UnlinkedEqualisations();
+        unlinked.ForEach(RemoveEqualisation);
+        return unlinked;
+    }
+
+    private List<FundEqualisation> UnlinkedEqualisations()
+    {
+        HashSet<IEqualisableIncome> present = new(EqualisableIncomes, ReferenceEqualityComparer.Instance);
+        return [.. CorporateActions.OfType<FundEqualisation>().Where(e => e.LinkedIncome is null || !present.Contains(e.LinkedIncome))];
+    }
+
+    /// <summary>
+    /// Gives a new <see cref="IEqualisableIncome.IncomeId"/> to any income sharing one with an income before it
+    /// (e.g. the same file imported twice without skipping duplicates), so a saved link identifies one income.
+    /// Links are object references, so linked equalisations are unaffected.
+    /// </summary>
+    private void EnsureUniqueIncomeIds()
+    {
+        HashSet<string> seen = [];
+        foreach (IEqualisableIncome income in EqualisableIncomes)
+        {
+            if (!seen.Add(income.IncomeId))
+            {
+                income.IncomeId = Guid.NewGuid().ToString("N");
+                seen.Add(income.IncomeId);
+            }
+        }
+    }
+
     public void AddData(TaxEventLists taxEventLists, bool skipDuplicates)
+    {
+        AddEvents(taxEventLists, skipDuplicates);
+        EnsureUniqueIncomeIds();
+    }
+
+    private void AddEvents(TaxEventLists taxEventLists, bool skipDuplicates)
     {
         if (skipDuplicates)
         {

@@ -3,7 +3,7 @@
 @using InvestmentTaxCalculator.Model.Interfaces
 @using InvestmentTaxCalculator.Services
 
-@inject ITradeAndCorporateActionList _taxEventLists
+@inject TaxEventLists _taxEventLists
 @inject ToastService _toastService
 
 <div class="card mt-4">
@@ -21,7 +21,11 @@
                 <RadzenDataGridColumn TItem="CorporateAction" Title="Actions" Width="220px" TextAlign="TextAlign.Center" Sortable="false" Filterable="false">
                     <Template Context="action">
                         <div class="d-flex gap-2 justify-content-center">
-                            <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" Click="@(() => EditAction(action))" Text="Edit" class="flex-shrink-0" />
+                            @* ERI and equalisation entries are not editable: delete and re-add them on the ERI page *@
+                            @if (action is not (ExcessReportableIncome or FundEqualisation))
+                            {
+                                <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" Click="@(() => EditAction(action))" Text="Edit" class="flex-shrink-0" />
+                            }
                             <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small" Click="@(() => DeleteAction(action))" Text="Delete" class="flex-shrink-0" />
                         </div>
                     </Template>
@@ -50,13 +54,19 @@
         await OnActionEdit.InvokeAsync(action);
     }
 
+    /// <summary>
+    /// Deletes a corporate action. Deleting an ERI entry also deletes the equalisation entries that reduce it.
+    /// </summary>
     private async Task DeleteAction(CorporateAction action)
     {
-        if (_taxEventLists.CorporateActions.Remove(action))
+        if (!_taxEventLists.CorporateActions.Contains(action)) return;
+        List<FundEqualisation> removedWithIt = _taxEventLists.RemoveCorporateAction(action);
+        _toastService.ShowInformation("Event removed.");
+        if (FundEqualisation.DescribeRemovedWithIncome(removedWithIt) is { } warning)
         {
-            _toastService.ShowInformation("Event removed.");
-            await Refresh();
-            await OnActionDeleted.InvokeAsync();
+            _toastService.ShowWarning(warning);
         }
+        await Refresh();
+        await OnActionDeleted.InvokeAsync();
     }
 }

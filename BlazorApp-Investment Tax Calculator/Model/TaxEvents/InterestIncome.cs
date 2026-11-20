@@ -2,16 +2,57 @@
 using InvestmentTaxCalculator.Model.Interfaces;
 
 using System.ComponentModel;
+using System.Text.Json.Serialization;
 
 namespace InvestmentTaxCalculator.Model.TaxEvents;
 
-public record InterestIncome : TaxEvent, ITextFilePrintable
+public record InterestIncome : TaxEvent, ITextFilePrintable, IEqualisableIncome
 {
+    private DescribedMoney _amount = null!;
+    private InterestType _interestType;
+
     /// <summary>
-    /// Negative for accurred income loss and interest expense
+    /// Negative for accurred income loss and interest expense. Cannot be set below the fund equalisation entered
+    /// against the income.
     /// </summary>
-    public required DescribedMoney Amount { get; init; }
-    public required InterestType InterestType { get; init; }
+    public required DescribedMoney Amount
+    {
+        get => _amount;
+        set
+        {
+            EqualisationLinks.EnsureCovered(value);
+            _amount = value;
+        }
+    }
+
+    /// <summary>
+    /// Income with fund equalisation attached cannot be changed to a type that cannot be equalised.
+    /// </summary>
+    public required InterestType InterestType
+    {
+        get => _interestType;
+        set
+        {
+            if (!IsEqualisable(value)) EqualisationLinks.EnsureNone();
+            _interestType = value;
+        }
+    }
+
+    public string IncomeId { get; set; } = Guid.NewGuid().ToString("N");
+
+    [JsonIgnore]
+    public DescribedMoney EqualisableAmount => Amount;
+
+    [JsonIgnore]
+    public bool CanBeEqualised => IsEqualisable(InterestType);
+
+    [JsonIgnore]
+    public EqualisationLinks EqualisationLinks => EqualisationLinks.Of(this);
+
+    // Interest expense and accrued income profit/loss are never fund distributions.
+    private static bool IsEqualisable(InterestType type) =>
+        type is not (InterestType.INTERESTEXPENSE or InterestType.ACCURREDINCOMEPROFIT or InterestType.ACCURREDINCOMELOSS);
+
     public CountryCode IncomeLocation { get; set; } = CountryCode.UnknownRegion;
     // In case of accrued income profit/loss, tax is deferred if next payment is in different tax year
     public bool IsNextPaymentInSameTaxYear { get; set; } = true;

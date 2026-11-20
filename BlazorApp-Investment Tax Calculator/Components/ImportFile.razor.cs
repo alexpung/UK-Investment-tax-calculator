@@ -1,4 +1,6 @@
+using InvestmentTaxCalculator.Enumerations;
 using InvestmentTaxCalculator.Model;
+using InvestmentTaxCalculator.Model.TaxEvents;
 using InvestmentTaxCalculator.Parser;
 using InvestmentTaxCalculator.Services;
 
@@ -46,6 +48,7 @@ public partial class ImportFile : IDisposable
                 {
                     TaxEventLists events = await fileParseController.ReadFile(file, columnMappingModal.ShowAsync);
                     ShowDividendRegionUnknownWarning(events);
+                    ShowStoredEriIncomeWarning(events);
                     // Build share identities over already imported events and the new file together, so a symbol
                     // pair split across statements (e.g. "DIS" in one and "DISm" in another) resolves to the same
                     // share, and duplicate signatures are compared using the canonical asset names.
@@ -54,6 +57,7 @@ public partial class ImportFile : IDisposable
                     if (executionState is ExecutionState.SKIP_FILE) continue;
                     if (executionState is ExecutionState.SKIP_DUPLICATE) taxEventLists.AddData(events, true);
                     if (executionState is ExecutionState.INCLUDE_DUPLICATE) taxEventLists.AddData(events, false);
+                    ShowDroppedEqualisationWarning(taxEventLists.RemoveUnlinkedEqualisations());
                     OptionHelper.CheckOptions(taxEventLists);
                 }
                 catch (Exception ex)
@@ -81,6 +85,33 @@ public partial class ImportFile : IDisposable
             // asset name/description below are shown safely without manual HTML encoding.
             toastService.ShowWarning($"Unknown region detected with dividend data with:\n date: {dividend.Date.Date:d}\n" +
                 $"company: {dividend.AssetName}\ndescription: {dividend.Proceed.Description}\n Please check the country for the company manually.");
+        }
+    }
+
+    /// <summary>
+    /// Fund equalisation entries are only kept with the income they reduce. Tells the user about any left out.
+    /// </summary>
+    private void ShowDroppedEqualisationWarning(List<FundEqualisation> dropped)
+    {
+        if (dropped.Count == 0) return;
+        toastService.ShowWarning($"{dropped.Count} fund equalisation entr{(dropped.Count == 1 ? "y was" : "ies were")} not imported because the income " +
+            "reduced could not be found (not loaded, or the file was saved by a version before 1.8). Please enter again:\n" +
+            string.Join("\n", dropped.Select(e => e.Reason)));
+    }
+
+    /// <summary>
+    /// Versions before 1.8 stored the income of each ERI entry as a dividend or interest event. That income is now
+    /// worked out from the ERI entry, so a file holding both would count it twice.
+    /// </summary>
+    private void ShowStoredEriIncomeWarning(TaxEventLists events)
+    {
+        IEnumerable<TaxEvent> storedEriIncome = events.Dividends.Where(d => d.DividendType == DividendType.EXCESS_REPORTABLE_INCOME).Cast<TaxEvent>()
+            .Concat(events.InterestIncomes.Where(i => i.InterestType == InterestType.EXCESSREPORTABLEINCOME));
+        List<ExcessReportableIncome> eris = [.. events.CorporateActions.OfType<ExcessReportableIncome>()];
+        if (storedEriIncome.Any(income => eris.Any(eri => eri.AssetName == income.AssetName && eri.Date == income.Date)))
+        {
+            toastService.ShowWarning("This file holds ERI entries together with their income stored separately, as saved by versions before 1.8. " +
+                "That ERI income will be counted twice. Sessions from those versions are not supported: please import the broker files again and re-enter ERI and equalisation.");
         }
     }
 

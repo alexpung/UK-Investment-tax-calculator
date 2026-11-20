@@ -83,6 +83,30 @@ public class DividendToIncomeConvertViewModelTest
         viewModel.GetTickerSummaries().Select(s => s.Ticker).ShouldBe(["ABC"], "converted tickers have no dividends left to convert");
     }
 
+    [Fact]
+    public void Summaries_ShowTotalsAfterFundEqualisation()
+    {
+        // The tax calculation deducts equalisation from the payment it is linked to; these totals must agree with it.
+        Dividend first = CreateDividend("IGLT", "GB00B1FZS350", "01-Mar-21 10:00:00", 100);
+        TaxEventLists taxEventLists = new();
+        taxEventLists.AddData([first, CreateDividend("IGLT", "GB00B1FZS350", "01-Sep-21 10:00:00", 120)]);
+        new ShareIdentityRegistry().RegisterEvents(taxEventLists.AllEvents);
+        taxEventLists.AddEqualisation(new FundEqualisation
+        {
+            AssetName = first.AssetName,
+            Date = first.Date,
+            Amount = new DescribedMoney(20, "GBP", 1)
+        }, first);
+        DividendToIncomeConvertViewModel viewModel = new(taxEventLists);
+
+        viewModel.GetTickerSummaries().ShouldHaveSingleItem().TotalDividend.ShouldBe(new WrappedMoney(200));
+
+        viewModel.ConvertDividendsToIncome(["IGLT"]);
+
+        viewModel.GetConvertedSummaries().ShouldHaveSingleItem().TotalIncome.ShouldBe(new WrappedMoney(200));
+        taxEventLists.InterestIncomes.Sum(income => income.Amount.BaseCurrencyAmount).ShouldBe(new WrappedMoney(220), "stored amounts are not changed");
+    }
+
     private static Trade CreateTrade(string assetName, string isin, string date) => new()
     {
         AssetName = assetName,

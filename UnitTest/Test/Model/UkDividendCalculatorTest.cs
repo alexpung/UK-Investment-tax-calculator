@@ -15,13 +15,10 @@ public class UkDividendCalculatorTest
 {
     private static UkDividendCalculator SetUpCalculator(List<Dividend> Dividend)
     {
-        IDividendLists mockIDividendLists = Substitute.For<IDividendLists>();
         ILogger<ToastService> logger = NSubstitute.Substitute.For<ILogger<ToastService>>();
         ToastService mockToastService = Substitute.For<ToastService>(logger);
-        mockIDividendLists.Dividends.Returns(Dividend);
-        mockIDividendLists.InterestIncomes.Returns([]);
         ResidencyStatusRecord mockResidencyStatusRecord = Substitute.For<ResidencyStatusRecord>();
-        return new UkDividendCalculator(mockIDividendLists, new UKTaxYear(), mockToastService, mockResidencyStatusRecord);
+        return new UkDividendCalculator(new TaxEventLists { Dividends = Dividend }, new UKTaxYear(), mockToastService, mockResidencyStatusRecord);
     }
 
     [Fact]

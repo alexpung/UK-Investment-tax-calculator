@@ -12,7 +12,7 @@ namespace InvestmentTaxCalculator.Model.TaxEvents;
 /// This is treated as either dividend or interest income depending on the nature of the distribution,
 /// and increases the cost base of the holding to avoid double taxation on disposal.
 /// </summary>
-public record ExcessReportableIncome : CorporateAction, IChangeSection104
+public record ExcessReportableIncome : CorporateAction, IChangeSection104, IEqualisableIncome
 {
     /// <summary>
     /// The amount of excess reportable income received
@@ -36,6 +36,17 @@ public record ExcessReportableIncome : CorporateAction, IChangeSection104
     /// </summary>
     public DateTime? ReportingPeriodEndDate { get; init; }
 
+    public string IncomeId { get; set; } = Guid.NewGuid().ToString("N");
+
+    [JsonIgnore]
+    public DescribedMoney EqualisableAmount => Amount;
+
+    [JsonIgnore]
+    public bool CanBeEqualised => true;
+
+    [JsonIgnore]
+    public EqualisationLinks EqualisationLinks => EqualisationLinks.Of(this);
+
     [JsonIgnore]
     public DateOnly EffectiveReportingPeriodEndDate => DateOnly.FromDateTime(ReportingPeriodEndDate ?? AssumedReportingPeriodEnd());
 
@@ -49,6 +60,38 @@ public record ExcessReportableIncome : CorporateAction, IChangeSection104
             assumed = new DateTime(assumed.Year, assumed.Month, DateTime.DaysInMonth(assumed.Year, assumed.Month));
         }
         return assumed;
+    }
+
+    /// <summary>
+    /// Builds the dividend or interest income this ERI is taxed as, less any fund equalisation linked to the entry.
+    /// The income is built afresh at calculation time rather than stored, so deleting the ERI entry is all that is
+    /// needed to remove it.
+    /// </summary>
+    public TaxEvent CreateIncomeEvent()
+    {
+        DescribedMoney taxable = EqualisationLinks.DeductFrom(
+            Amount with { Description = $"Excess Reportable Income ({IncomeType.GetDescription()}) from {AssetName}" });
+        TaxEvent income = IncomeType == ExcessReportableIncomeType.DIVIDEND
+            ? new Dividend
+            {
+                AssetName = AssetName,
+                Date = Date,
+                DividendType = DividendType.EXCESS_REPORTABLE_INCOME,
+                Proceed = taxable,
+                Isin = Isin,
+                CompanyLocation = IncomeLocation
+            }
+            : new InterestIncome
+            {
+                AssetName = AssetName,
+                Date = Date,
+                InterestType = InterestType.EXCESSREPORTABLEINCOME,
+                Amount = taxable,
+                Isin = Isin,
+                IncomeLocation = IncomeLocation
+            };
+        income.ShareIdentity = ShareIdentity;
+        return income;
     }
 
     public override string Reason => $"{AssetName} excess reportable income ({IncomeType.GetDescription()}) of {Amount.BaseCurrencyAmount} on {Date:d}";
