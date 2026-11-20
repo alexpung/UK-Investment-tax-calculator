@@ -5,13 +5,20 @@
     <ChildContent>
         <div class="section">
             <p>
-                The import page has a "Load" tick box for each type of event: stocks, funds, options, futures, FX,
-                dividends and interest income. Unticking one leaves that type out of the files you import. Many events
-                depend on each other, though. Excess reportable income (ERI) and equalisation change the cost of a fund
-                holding, equalisation reduces a dividend, and an exercised option changes the cost of the shares
-                delivered. Leaving one side out changes the other side's result. This page explains what happens in each
-                case, and what the app does about it.
+                The <a href="MainCalculatorPage" class="link-styled">Import data</a> page has a "Load" tick box for each
+                type of event: stocks, funds, options, futures, FX, dividends and interest income. Unticking one leaves that
+                type out of the files you import. Many events depend on each other, though. Excess reportable income (ERI)
+                and equalisation change the cost of a fund holding, equalisation reduces a dividend, and an exercised option
+                changes the cost of the shares delivered. If one side is left out, the other side's result is wrong, and
+                the app cannot always tell.
             </p>
+            <div class="alert alert-info alert-custom" role="note">
+                <strong>Recommended: import everything.</strong> Leave every box ticked and import all your statements for
+                every year you held the investments, together with your saved session if you have one. The only box you
+                may want to untick is "Load FX". Foreign currency trades stand on their own, and whether currency held with
+                a broker is chargeable depends on your circumstances (see
+                <a href="HowItWorks/foreign-currency" class="link-styled">Foreign currency</a>).
+            </div>
         </div>
 
         <div class="section">
@@ -59,9 +66,9 @@
                             <td>ERI or equalisation</td>
                             <td>The fund's trades</td>
                             <td>
-                                The ERI is still taxed as income: the amount was worked out from your holding when you entered
-                                it. With no units in the Section 104 pool to adjust, the cost change goes into an empty pool,
-                                and the next purchase of the fund in the imported trades picks that cost up.
+                                The ERI is still taxed as income, but its cost change goes into an empty Section 104 pool and is
+                                picked up by a later purchase. See <a href="HowItWorks/partial-imports#empty-pool"
+                                class="link-styled">ERI with no units in the pool</a> below.
                             </td>
                         </tr>
                         <tr>
@@ -78,8 +85,8 @@
                             <td>
                                 An equalisation entry only exists with the income it reduces. If that income is not imported,
                                 the entry is left out and a warning lists it. The cost reduction it made to the fund is lost
-                                too, so enter it again once the income is there. Equalisation on an ERI entry stays, because
-                                ERI is always loaded.
+                                too, so the pool's cost is too high and the gain when you sell too low. Enter it again once the
+                                income is there. Equalisation on an ERI entry stays, because ERI is always loaded.
                             </td>
                         </tr>
                         <tr>
@@ -118,7 +125,7 @@
                     You hold 1,000 units of an Irish ETF costing £10,000. Its reporting period ends on 31 December 2023 with
                     ERI of £0.50 a unit, and on 1 September 2024 you sell all 1,000 units for £12,000.
                 </p>
-                <ul>
+                <ul class="mb-0">
                     <li>
                         <strong>With the ERI entered:</strong> £500 of dividend income in 2024/25, and the pool cost becomes
                         £10,500 on the distribution date, 30 June 2024. The gain on the sale is £12,000 − £10,500 =
@@ -129,10 +136,46 @@
                         <strong>£2,000</strong>. Your income is £500 too low and your gain £500 too high.
                     </li>
                 </ul>
-                <p class="mb-0">
-                    If you imported the saved session with "Load Stocks" and "Load Funds" unticked instead, the £500 is still
-                    taxed as income. The pool shows £500 of cost against 0 units.
+            </div>
+        </div>
+
+        <div class="section" id="empty-pool">
+            <h2 class="section-title">ERI with no units in the pool</h2>
+            <p>
+                ERI and equalisation adjust the cost of the units in the Section 104 pool at the end of the reporting
+                period. If the imported trades show no units at that date, there is nothing to adjust, but the app still
+                changes the pool's cost. The pool then has a cost with no units behind it, and the next purchase of the same
+                fund takes that cost on as if it had been paid for those new units.
+            </p>
+            <p>This happens when:</p>
+            <ul>
+                <li>"Load Stocks" or "Load Funds" was unticked when you imported the saved session holding the ERI;</li>
+                <li>the statements for the years you bought the fund were not imported;</li>
+                <li>the ERI was entered for a fund you had already sold before the reporting period end.</li>
+            </ul>
+            <p>
+                The ERI income itself is still taxed, because it was worked out from your holding when you entered it. Only
+                the cost is misplaced. Check the <a href="Section104DataPage" class="link-styled">Section 104 pool</a> page:
+                a pool showing a cost with 0 units means trades are missing, or the ERI entry should be deleted.
+            </p>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <h2 class="h5 card-title">Worked example: ERI without the fund's trades</h2>
+                <p>
+                    You import the saved session from the example above with "Load Funds" unticked, then import a later
+                    statement in which you buy 100 units of the same fund for £1,100 on 1 March 2025 and sell them for £1,300
+                    on 1 April 2025.
                 </p>
+                <ul class="mb-0">
+                    <li>The £500 ERI is still taxed as dividend income in 2024/25.</li>
+                    <li>On 30 June 2024 the pool holds 0 units with a cost of £500.</li>
+                    <li>
+                        The March purchase takes the pool to 100 units costing £1,600 instead of £1,100, so the April sale shows
+                        a <strong>loss of £300</strong> instead of a <strong>gain of £200</strong>.
+                    </li>
+                </ul>
             </div>
         </div>
 
@@ -144,13 +187,15 @@
                     events together with everything entered by hand, so every link between them is restored.
                 </li>
                 <li>
-                    If you start again from broker files, tick every box, then enter ERI, equalisation and other corporate
-                    actions again. Equalisation is linked to a particular imported income, so it cannot be carried over from
-                    a separate session onto freshly imported broker dividends.
+                    If you start again from broker files, tick every box and import the statements for every year you held
+                    the investments. Then enter ERI, equalisation and other corporate actions again. Equalisation is linked
+                    to a particular imported income, so it cannot be carried over from a separate session onto freshly
+                    imported broker dividends.
                 </li>
                 <li>
-                    Untick a box only to leave a type out for good, for example futures you report elsewhere. Do not untick
-                    one to split an import into parts.
+                    Untick "Load FX" if currency gains do not apply to you. Untick other boxes only to leave a type out
+                    for good, for example futures you report elsewhere, and only when nothing above depends on it. Do not
+                    untick boxes to split an import into parts.
                 </li>
                 <li>
                     Read the warnings shown after each import. They list any equalisation entries left out.
@@ -162,5 +207,6 @@
         <li><a href="HowItWorks/reporting-funds" class="link-styled">Excess reportable income and equalisation</a></li>
         <li><a href="HowItWorks/section-104-pool" class="link-styled">Section 104 pool</a></li>
         <li><a href="HowItWorks/options" class="link-styled">Options</a></li>
+        <li><a href="HowItWorks/foreign-currency" class="link-styled">Foreign currency</a></li>
     </FurtherReading>
 </HowItWorksGuideLayout>
