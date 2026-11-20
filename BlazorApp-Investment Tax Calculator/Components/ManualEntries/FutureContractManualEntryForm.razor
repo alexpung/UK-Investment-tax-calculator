@@ -59,12 +59,13 @@
                                   Currencies="@_currencies"
                                   AdditionalCssClass="mt-2" />
 
-        @* Always rendered so the Save button below never shifts position when inputs commit on blur (which would swallow the click). *@
+        @* Always rendered so the Save button below never shifts position when inputs commit on blur (which would swallow the click).
+             Labels sit on their own line and values never wrap, so the panel height does not depend on the values. *@
         <div class="alert alert-info mt-4 mb-0">
             <div class="row g-2">
-                <div class="col-md-4"><strong>Contract Value (GBP):</strong> @PreviewAmount(ContractValueInGbp)</div>
-                <div class="col-md-4"><strong>Costs (GBP):</strong> @PreviewAmount(TotalCostsInGbp)</div>
-                <div class="col-md-4"><strong>Immediate Cash Impact (GBP):</strong> @PreviewAmount(-TotalCostsInGbp)</div>
+                <div class="col-md-4"><strong class="d-block">Contract Value (GBP)</strong><span class="text-nowrap">@PreviewAmount(ContractValueInGbp)</span></div>
+                <div class="col-md-4"><strong class="d-block">Costs (GBP)</strong><span class="text-nowrap">@PreviewAmount(TotalCostsInGbp)</span></div>
+                <div class="col-md-4"><strong class="d-block">Immediate Cash Impact (GBP)</strong><span class="text-nowrap">@PreviewAmount(-TotalCostsInGbp)</span></div>
             </div>
         </div>
 
