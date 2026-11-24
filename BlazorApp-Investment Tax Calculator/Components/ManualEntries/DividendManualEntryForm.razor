@@ -133,7 +133,7 @@
             DividendType = _dividendType,
             CompanyLocation = countryCode,
             Isin = _isin.Trim(),
-            Proceed = new DescribedMoney(_amount, _currency, _fxRate, _description.Trim())
+            Proceed = new DescribedMoney(ToStoredAmount(_dividendType, _amount), _currency, _fxRate, _description.Trim())
         };
 
         TaxEventLists.Dividends.Add(dividend);
@@ -160,13 +160,18 @@
         _date = dividend.Date;
         _assetName = dividend.AssetName;
         _dividendType = dividend.DividendType;
-        _amount = dividend.Proceed.Amount.Amount;
+        _amount = ToStoredAmount(dividend.DividendType, dividend.Proceed.Amount.Amount);
         _currency = dividend.Proceed.Amount.Currency;
         _fxRate = dividend.Proceed.FxRate;
         _companyLocationCode = dividend.CompanyLocation.ThreeDigitCode;
         _isin = dividend.Isin;
         _description = dividend.Proceed.Description;
     }
+
+    // The form takes withholding tax as a positive amount; it is stored as negative (tax paid), the same as imported
+    // withholding tax. Negating is its own inverse, so this also turns a stored amount back into the form's value.
+    private static decimal ToStoredAmount(DividendType dividendType, decimal amount) =>
+        dividendType == DividendType.WITHHOLDING ? -amount : amount;
 
     private bool ValidateInputs(out CountryCode countryCode)
     {

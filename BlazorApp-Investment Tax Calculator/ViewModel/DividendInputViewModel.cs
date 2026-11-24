@@ -47,7 +47,8 @@ public class DividendInputViewModel
         }
         if (WithHoldingAmount != 0)
         {
-            result.Add(Convert(DividendType.WITHHOLDING, WithHoldingAmount));
+            // Entered as a positive amount, stored as negative (tax paid) like imported withholding tax.
+            result.Add(Convert(DividendType.WITHHOLDING, -Math.Abs(WithHoldingAmount)));
         }
         return result;
     }

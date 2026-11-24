@@ -69,7 +69,7 @@ public class Trading212CsvParseControllerTest
 
         var withholding = result.Dividends.First(d => d.DividendType == DividendType.WITHHOLDING);
         withholding.AssetName.ShouldBe("AAPL");
-        withholding.Proceed.Amount.Amount.ShouldBe(3.75m);
+        withholding.Proceed.Amount.Amount.ShouldBe(-3.75m);
         withholding.Isin.ShouldBe("US0378331005");
     }
 
