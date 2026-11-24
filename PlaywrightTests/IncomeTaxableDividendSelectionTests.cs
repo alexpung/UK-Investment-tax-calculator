@@ -1,6 +1,8 @@
 using Microsoft.Playwright;
 using NUnit.Framework;
 
+using System.Text.RegularExpressions;
+
 namespace PlaywrightTests;
 
 /// <summary>
@@ -64,16 +66,21 @@ public class IncomeTaxableDividendSelectionTests : PlaywrightTestBase
 
         var totals = Page.Locator(".rz-grid-table tfoot").First;
         await NavigateViaSidebarAsync("Dividend/Income Summary", "**/DividendYearlyTaxSummaryPage");
-        await Expect(totals).ToContainTextAsync("£555.00");
+        // Footer totals in column order: interest income, taxable dividend, foreign tax paid
+        await Expect(totals).ToHaveTextAsync(FooterTotals("£0.00", "£555.00", "-£166.50"));
 
         await NavigateViaSidebarAsync("Income taxable dividend selection", "**/ConvertPage");
         await Page.Locator("[data-testid='dividend-tickers'] .convert-ticker input").First.CheckAsync();
         await Page.Locator(".convert-buttons .btn-primary").ClickAsync();
         await Expect(Page.Locator("[data-testid='converted-tickers'] tr.rz-data-row")).ToHaveCountAsync(1);
 
-        // Leaving the page re-runs the calculation: the dividends are now taxed as interest income
+        // Leaving the page re-runs the calculation: the dividends are now taxed as interest income, while the
+        // withholding tax stays a dividend entry and is still counted as foreign tax paid
         await NavigateViaSidebarAsync("Dividend/Income Summary", "**/DividendYearlyTaxSummaryPage");
-        await Expect(totals).ToContainTextAsync("£388.50", new LocatorAssertionsToContainTextOptions { Timeout = 30000 });
-        await Expect(totals).Not.ToContainTextAsync("£555.00");
+        await Expect(totals).ToHaveTextAsync(FooterTotals("£555.00", "£0.00", "-£166.50"),
+            new LocatorAssertionsToHaveTextOptions { Timeout = 30000 });
     }
+
+    private static Regex FooterTotals(string interest, string dividend, string foreignTax) =>
+        new($@"Total:\s*{Regex.Escape(interest)}\s*Total:\s*{Regex.Escape(dividend)}\s*Total:\s*{Regex.Escape(foreignTax)}");
 }
