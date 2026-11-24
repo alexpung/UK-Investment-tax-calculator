@@ -83,6 +83,30 @@ public class DividendToIncomeConvertViewModelTest
         viewModel.GetTickerSummaries().Select(s => s.Ticker).ShouldBe(["ABC"], "converted tickers have no dividends left to convert");
     }
 
+    [Theory]
+    [InlineData(15)]  // Freetrade, Trading 212 and manual entries record withholding as positive
+    [InlineData(-15)] // Interactive Brokers records withholding as negative
+    public void ConvertDividendsToIncome_LeavesWithholdingTaxAsDividendEntry(decimal withholdingAmount)
+    {
+        TaxEventLists taxEventLists = new();
+        taxEventLists.AddData([
+            CreateDividend("IGLT", "GB00B1FZS350", "01-Mar-21 10:00:00", 100),
+            CreateDividend("IGLT", "GB00B1FZS350", "01-Mar-21 10:00:00", withholdingAmount, DividendType.WITHHOLDING),
+        ]);
+        new ShareIdentityRegistry().RegisterEvents(taxEventLists.AllEvents);
+        DividendToIncomeConvertViewModel viewModel = new(taxEventLists);
+
+        viewModel.ConvertDividendsToIncome(["IGLT"]);
+
+        InterestIncome income = taxEventLists.InterestIncomes.ShouldHaveSingleItem();
+        income.Amount.BaseCurrencyAmount.ShouldBe(new WrappedMoney(100), "withholding tax is not income");
+        Dividend withholding = taxEventLists.Dividends.ShouldHaveSingleItem();
+        withholding.DividendType.ShouldBe(DividendType.WITHHOLDING);
+        withholding.Proceed.BaseCurrencyAmount.ShouldBe(new WrappedMoney(withholdingAmount));
+        viewModel.GetConvertedSummaries().ShouldHaveSingleItem().TotalIncome.ShouldBe(new WrappedMoney(100));
+        viewModel.GetTickerSummaries().ShouldBeEmpty("only withholding tax is left, there is nothing more to convert");
+    }
+
     private static Trade CreateTrade(string assetName, string isin, string date) => new()
     {
         AssetName = assetName,
