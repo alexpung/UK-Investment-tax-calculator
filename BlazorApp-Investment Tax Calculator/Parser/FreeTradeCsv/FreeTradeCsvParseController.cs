@@ -116,7 +116,8 @@ public class FreeTradeCsvParseController : IColumnMappableCsvParser
                     trades.Dividends.Add(new Dividend
                     {
                         AssetName = csv.GetFieldSafe(columnMap[_tickerName]),
-                        Proceed = new DescribedMoney(csv.GetField<decimal>(columnMap[_dividendWithheldTaxName]), WrappedMoney.BaseCurrency, 1, $"{GetOptionalField(csv, columnMap, _titleName)} withholding tax"),
+                        // Withholding tax is stored as a negative amount (tax paid), matching the Interactive Brokers convention.
+                        Proceed = new DescribedMoney(-Math.Abs(csv.GetField<decimal>(columnMap[_dividendWithheldTaxName])), WrappedMoney.BaseCurrency, 1, $"{GetOptionalField(csv, columnMap, _titleName)} withholding tax"),
                         Date = dividendDate,
                         DividendType = DividendType.WITHHOLDING,
                         CompanyLocation = CountryCode.GetRegionByTwoDigitCode(csv.GetFieldSafe(columnMap[_isinName])[..2]),

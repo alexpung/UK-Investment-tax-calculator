@@ -58,7 +58,7 @@ public class UkDividendCalculatorTest
                 CompanyLocation = CountryCode.GetRegionByTwoDigitCode("GB"),
                 DividendType = DividendType.WITHHOLDING,
                 Date = new DateTime(2022, 4, 4, 0, 0, 0, DateTimeKind.Local),
-                Proceed = new DescribedMoney { Amount = new WrappedMoney(100, "GBP"), Description = "Shell withholding tax", FxRate = 1m }
+                Proceed = new DescribedMoney { Amount = new WrappedMoney(-100, "GBP"), Description = "Shell withholding tax", FxRate = 1m }
             },
             new Dividend()
             {
@@ -74,7 +74,7 @@ public class UkDividendCalculatorTest
                 CompanyLocation = CountryCode.GetRegionByTwoDigitCode("JP"),
                 DividendType = DividendType.WITHHOLDING,
                 Date = new DateTime(2022, 4, 6, 0, 0, 0, DateTimeKind.Local),
-                Proceed = new DescribedMoney { Amount = new WrappedMoney(3000, "JPY"), Description = "Sony Corporation withholding tax", FxRate = 0.0063m }
+                Proceed = new DescribedMoney { Amount = new WrappedMoney(-3000, "JPY"), Description = "Sony Corporation withholding tax", FxRate = 0.0063m }
             },
             new Dividend()
             {
@@ -90,7 +90,7 @@ public class UkDividendCalculatorTest
                 CompanyLocation = CountryCode.GetRegionByTwoDigitCode("JP"),
                 DividendType = DividendType.WITHHOLDING,
                 Date = new DateTime(2022, 8, 6, 0, 0, 0, DateTimeKind.Local),
-                Proceed = new DescribedMoney { Amount = new WrappedMoney(1500, "JPY"), Description = "Sony Corporation withholding tax", FxRate = 0.007m }
+                Proceed = new DescribedMoney { Amount = new WrappedMoney(-1500, "JPY"), Description = "Sony Corporation withholding tax", FxRate = 0.007m }
             }
         ];
         UkDividendCalculator calculator = SetUpCalculator(data);
@@ -103,10 +103,10 @@ public class UkDividendCalculatorTest
         var gbResult = result.Single(i => i.CountryOfOrigin.ThreeDigitCode == "GBR");
         gbResult.TaxYear.ShouldBe(2021);
         gbResult.TotalTaxableDividend.ShouldBe(new WrappedMoney(2000m));
-        gbResult.TotalForeignTaxPaid.ShouldBe(new WrappedMoney(100m));
+        gbResult.TotalForeignTaxPaid.ShouldBe(new WrappedMoney(-100m));
         var jpResult = result.Single(i => i.CountryOfOrigin.ThreeDigitCode == "JPN");
         jpResult.TaxYear.ShouldBe(2022);
         jpResult.TotalTaxableDividend.ShouldBe(new WrappedMoney(196m));
-        jpResult.TotalForeignTaxPaid.ShouldBe(new WrappedMoney(29.4m));
+        jpResult.TotalForeignTaxPaid.ShouldBe(new WrappedMoney(-29.4m));
     }
 }

@@ -44,7 +44,7 @@ public class FreeTradeCsvParseControllerTest
         dividend.CompanyLocation.CountryName.ShouldBe("United States of America");
 
         var withholding = result.Dividends.First(d => d.DividendType == DividendType.WITHHOLDING);
-        withholding.Proceed.Amount.Amount.ShouldBe(3.75m);
+        withholding.Proceed.Amount.Amount.ShouldBe(-3.75m);
         withholding.Isin.ShouldBe("US0378331005");
     }
 

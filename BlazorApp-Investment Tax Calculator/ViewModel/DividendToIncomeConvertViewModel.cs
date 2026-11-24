@@ -17,11 +17,13 @@ public class DividendToIncomeConvertViewModel(TaxEventLists taxEventLists)
 {
     public IEnumerable<Dividend> SelectableTickers =>
         taxEventLists.Dividends
+            .Where(dividend => dividend.DividendType != DividendType.WITHHOLDING)
             .DistinctBy(d => d.CanonicalAssetName)
             .OrderBy(d => d.CanonicalAssetName);
 
     /// <summary>
-    /// One row per ticker that still has dividends, ordered by ticker.
+    /// One row per ticker that still has dividends, ordered by ticker. Withholding tax entries alone do not make a
+    /// ticker convertible: they stay behind as foreign tax after the ticker's dividends are converted.
     /// </summary>
     public IReadOnlyList<DividendTickerSummary> GetTickerSummaries()
     {
@@ -31,6 +33,7 @@ public class DividendToIncomeConvertViewModel(TaxEventLists taxEventLists)
 
         return [.. taxEventLists.Dividends
             .GroupBy(dividend => dividend.CanonicalAssetName)
+            .Where(group => group.Any(dividend => dividend.DividendType != DividendType.WITHHOLDING))
             .Select(group => new DividendTickerSummary(
                 group.Key,
                 fundTickers.Contains(group.Key),
@@ -52,12 +55,14 @@ public class DividendToIncomeConvertViewModel(TaxEventLists taxEventLists)
             .OrderBy(summary => summary.Ticker, StringComparer.OrdinalIgnoreCase)];
 
     /// <summary>
-    /// Convert all dividends of the given ticker to income events.
+    /// Convert all dividends of the given ticker to income events. Withholding tax entries are not income: they are
+    /// left in the dividend list so they are still reported as foreign tax paid, separately from the income.
     /// </summary>
     /// <param name="ticker"></param>
     public void ConvertDividendsToIncome(HashSet<string> tickers)
     {
-        List<Dividend> dividendsToConvert = [.. taxEventLists.Dividends.Where(dividend => tickers.Contains(dividend.CanonicalAssetName))];
+        List<Dividend> dividendsToConvert = [.. taxEventLists.Dividends.Where(dividend =>
+            tickers.Contains(dividend.CanonicalAssetName) && dividend.DividendType != DividendType.WITHHOLDING)];
         foreach (Dividend dividend in dividendsToConvert)
         {
             InterestIncome interestIncome = new()

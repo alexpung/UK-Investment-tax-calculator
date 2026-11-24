@@ -163,7 +163,8 @@ public class Trading212CsvParseController : IColumnMappableCsvParser
             trades.Dividends.Add(new Dividend
             {
                 AssetName = ticker,
-                Proceed = new DescribedMoney(Math.Abs(withholdingTax), WrappedMoney.BaseCurrency, 1, $"{name} withholding tax"),
+                // Withholding tax is stored as a negative amount (tax paid), matching the Interactive Brokers convention.
+                Proceed = new DescribedMoney(-Math.Abs(withholdingTax), WrappedMoney.BaseCurrency, 1, $"{name} withholding tax"),
                 Date = date,
                 DividendType = DividendType.WITHHOLDING,
                 CompanyLocation = CountryCode.GetRegionByTwoDigitCode(isin[..2]),
