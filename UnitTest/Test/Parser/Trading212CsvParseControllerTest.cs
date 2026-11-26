@@ -54,7 +54,7 @@ public class Trading212CsvParseControllerTest
     public void TestParseDividend()
     {
         string csvData = SampleCsvHeader + "\n" +
-            "Dividend (Ordinary),2024-03-10 09:00:00,US0378331005,AAPL,Apple Inc.,,,,,25.00,25.00,3.75,USD,,,,,D123456789,,,";
+            "Dividend (Ordinary),2024-03-10 09:00:00,US0378331005,AAPL,Apple Inc.,100,0.25,USD,1.25,17.00,17.00,3.75,USD,,,,,D123456789,,,";
 
         var parser = new Trading212CsvParseController();
         var result = parser.ParseFile(csvData);
@@ -63,7 +63,7 @@ public class Trading212CsvParseControllerTest
 
         var dividend = result.Dividends.First(d => d.DividendType == DividendType.DIVIDEND);
         dividend.AssetName.ShouldBe("AAPL");
-        dividend.Proceed.Amount.Amount.ShouldBe(25.00m);
+        dividend.Proceed.Amount.Amount.ShouldBe(17.00m);
         dividend.CompanyLocation.ThreeDigitCode.ShouldBe("USA");
         dividend.Isin.ShouldBe("US0378331005");
 
@@ -71,7 +71,46 @@ public class Trading212CsvParseControllerTest
         var withholding = result.Dividends.First(d => d.DividendType == DividendType.WITHHOLDING);
         withholding.AssetName.ShouldBe("AAPL");
         withholding.Proceed.Amount.Amount.ShouldBe(-3.75m);
+        withholding.Proceed.Amount.Currency.ShouldBe("USD");
+        withholding.Proceed.BaseCurrencyAmount.Amount.ShouldBe(-3.00m);
         withholding.Isin.ShouldBe("US0378331005");
+    }
+
+    [Fact]
+    public void TestWithholdingTaxInGbpIsNotConverted()
+    {
+        string csvData = SampleCsvHeader + "\n" +
+            "Dividend (Ordinary),2024-03-10 09:00:00,US0378331005,AAPL,Apple Inc.,100,0.25,USD,1.25,17.00,17.00,3.00,GBP,,,,,D123456789,,,";
+
+        var withholding = new Trading212CsvParseController().ParseFile(csvData).Dividends.Single(d => d.DividendType == DividendType.WITHHOLDING);
+
+        withholding.Proceed.Amount.Currency.ShouldBe("GBP");
+        withholding.Proceed.FxRate.ShouldBe(1m);
+        withholding.Proceed.BaseCurrencyAmount.Amount.ShouldBe(-3.00m);
+    }
+
+    [Fact]
+    public void TestForeignWithholdingTaxWithoutExchangeRateUsesImpliedRate()
+    {
+        // Reported case: 0.17 USD withheld used to be recorded as 0.17 GBP. Exchange rate is "Not available" on dividend rows,
+        // so the rate is implied: 10 x 0.113 USD = 1.13 USD gross, less 0.17 USD = 0.96 USD net, received as 0.75 GBP.
+        string csvData = NewFormatCsvHeader + "\n" +
+            "Dividend (Ordinary),2024-03-10 09:00:00,US0378331005,AAPL,Apple Inc.,,D789,10,0.113,USD,Not available,,GBP,0.75,GBP,0.17,USD,";
+
+        var withholding = new Trading212CsvParseController().ParseFile(csvData).Dividends.Single(d => d.DividendType == DividendType.WITHHOLDING);
+
+        withholding.Proceed.Amount.Amount.ShouldBe(-0.17m);
+        withholding.Proceed.Amount.Currency.ShouldBe("USD");
+        Math.Round(withholding.Proceed.BaseCurrencyAmount.Amount, 4).ShouldBe(Math.Round(-0.17m * 0.75m / 0.96m, 4));
+    }
+
+    [Fact]
+    public void TestForeignWithholdingTaxWithNoWayToConvertThrows()
+    {
+        string csvData = NewFormatCsvHeader + "\n" +
+            "Dividend (Ordinary),2024-03-10 09:00:00,US0378331005,AAPL,Apple Inc.,,D789,,,,,,GBP,0.75,GBP,0.17,USD,";
+
+        Should.Throw<InvalidDataException>(() => new Trading212CsvParseController().ParseFile(csvData)).Message.ShouldContain("USD");
     }
 
     [Fact]
@@ -79,7 +118,7 @@ public class Trading212CsvParseControllerTest
     {
         string csvData = SampleCsvHeader + "\n" +
             "Market buy,2024-01-15 10:30:00,US0378331005,AAPL,Apple Inc.,10,150.00,USD,1.27,-1500.00,-1181.10,,,5.91,2.36,,,T123456789,,,\n" +
-            "Dividend (Ordinary),2024-03-10 09:00:00,,AAPL,Apple Inc.,,,,,25.00,25.00,3.75,USD,,,,,D123456789,,,";
+            "Dividend (Ordinary),2024-03-10 09:00:00,,AAPL,Apple Inc.,100,0.25,USD,1.25,17.00,17.00,3.75,USD,,,,,D123456789,,,";
 
         var result = new Trading212CsvParseController().ParseFile(csvData);
 
@@ -123,7 +162,7 @@ public class Trading212CsvParseControllerTest
         string csvData = SampleCsvHeader + "\n" +
             "Market buy,2024-01-15 10:30:00,US0378331005,AAPL,Apple Inc.,10,150.00,USD,1.27,-1500.00,-1181.10,,,5.91,2.36,,,T123,,,\n" +
             "Market sell,2024-02-20 14:45:00,US0378331005,AAPL,Apple Inc.,5,160.00,USD,1.25,800.00,640.00,,,,,,,T456,,,\n" +
-            "Dividend (Ordinary),2024-03-10 09:00:00,US0378331005,AAPL,Apple Inc.,,,,,25.00,25.00,3.75,USD,,,,,D789,,,\n" +
+            "Dividend (Ordinary),2024-03-10 09:00:00,US0378331005,AAPL,Apple Inc.,100,0.25,USD,1.25,17.00,17.00,3.75,USD,,,,,D789,,,\n" +
             "Interest on cash,2024-04-01 00:00:00,,,,,,,,,5.50,,,,,,I012,,,";
 
         var parser = new Trading212CsvParseController();
@@ -165,7 +204,7 @@ public class Trading212CsvParseControllerTest
     {
         string csvData = NewFormatCsvHeader + "\n" +
             "Market buy,2024-01-15 10:30:00,US0378331005,AAPL,Apple Inc.,,T123,10,150.00,USD,1.27,,GBP,-1181.10,GBP,,,\n" +
-            "Dividend (Ordinary),2024-03-10 09:00:00,US0378331005,AAPL,Apple Inc.,,D789,,,,,,GBP,25.00,GBP,3.75,USD,\n" +
+            "Dividend (Ordinary),2024-03-10 09:00:00,US0378331005,AAPL,Apple Inc.,,D789,100,0.25,USD,Not available,,GBP,17.00,GBP,3.75,USD,\n" +
             "Interest on cash,2024-04-01 00:00:00,,,,,I012,,,,,,,5.50,GBP,,,";
 
         var parser = new Trading212CsvParseController();

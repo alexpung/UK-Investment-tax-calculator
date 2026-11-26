@@ -23,6 +23,10 @@ public class Trading212CsvParseController : IColumnMappableCsvParser
 
     // Dividend-specific columns
     private const string _withholdingTaxName = "Withholding tax";
+    private const string _withholdingTaxCurrencyName = "Currency (Withholding tax)";
+    private const string _pricePerShareName = "Price / share";
+    private const string _priceCurrencyName = "Currency (Price / share)";
+    private const string _exchangeRateName = "Exchange rate";
 
     public string FormatName => "Trading 212";
 
@@ -37,6 +41,10 @@ public class Trading212CsvParseController : IColumnMappableCsvParser
         new(_totalCurrencyName, "Currency of the total amount, which must be GBP", false, ["Currency (Total)"]),
         new(_nameName, "Instrument name, used to describe dividends", false, ["Name"]),
         new(_withholdingTaxName, "Withholding tax deducted from dividends", false, ["Withholding tax"]),
+        new(_withholdingTaxCurrencyName, "Currency of the withholding tax, if blank or unmapped it is assumed to be GBP", false, ["Currency (Withholding tax)"]),
+        new(_pricePerShareName, "Price per share, or dividend per share for dividends, used to convert foreign withholding tax", false, ["Price / share"]),
+        new(_priceCurrencyName, "Currency of the price per share", false, ["Currency (Price / share)"]),
+        new(_exchangeRateName, "Exchange rate quoted as units of the price currency per GBP, used to convert foreign withholding tax", false, ["Exchange rate"]),
     ];
 
     private readonly CsvConfiguration _config = new(CultureInfo.InvariantCulture)
@@ -163,17 +171,61 @@ public class Trading212CsvParseController : IColumnMappableCsvParser
         if (columnMap.TryGetHeader(_withholdingTaxName, out string? withholdingTaxHeader) &&
             csv.TryGetField<decimal>(withholdingTaxHeader, out decimal withholdingTax) && withholdingTax != 0)
         {
+            withholdingTax = Math.Abs(withholdingTax);
+            string withholdingCurrency = GetOptionalField(csv, columnMap, _withholdingTaxCurrencyName);
+            if (string.IsNullOrEmpty(withholdingCurrency)) withholdingCurrency = WrappedMoney.BaseCurrency;
+            decimal fxRate = GetWithholdingTaxFxRate(csv, columnMap, withholdingCurrency, withholdingTax, totalGbp);
             trades.Dividends.Add(new Dividend
             {
                 AssetName = ticker,
                 // Withholding tax is stored as a negative amount (tax paid), matching the Interactive Brokers convention.
-                Proceed = new DescribedMoney(-Math.Abs(withholdingTax), WrappedMoney.BaseCurrency, 1, $"{name} withholding tax"),
+                Proceed = new DescribedMoney(-withholdingTax, withholdingCurrency, fxRate, $"{name} withholding tax"),
                 Date = date,
                 DividendType = DividendType.WITHHOLDING,
                 CompanyLocation = CountryCode.GetRegionByIsin(isin),
                 Isin = isin
             });
         }
+    }
+
+    private static string GetOptionalField(CsvReader csv, CsvColumnMap columnMap, string key)
+        => columnMap.TryGetHeader(key, out string? header) ? csv.GetFieldOrEmpty(header) : string.Empty;
+
+    private static bool TryGetOptionalDecimal(CsvReader csv, CsvColumnMap columnMap, string key, out decimal value)
+    {
+        value = 0;
+        return decimal.TryParse(GetOptionalField(csv, columnMap, key), NumberStyles.Number, CultureInfo.InvariantCulture, out value);
+    }
+
+    /// <summary>
+    /// Returns the rate converting the withholding tax currency into GBP (GBP per unit of the withholding currency).
+    /// Trading 212 quotes "Exchange rate" as units of the instrument currency per GBP. Dividend rows often show
+    /// "Not available" instead, in which case the rate is implied from the GBP amount received:
+    /// net dividend in foreign currency = shares x dividend per share - withholding tax.
+    /// </summary>
+    private static decimal GetWithholdingTaxFxRate(CsvReader csv, CsvColumnMap columnMap, string withholdingCurrency, decimal withholdingTax, decimal totalGbp)
+    {
+        if (withholdingCurrency.Equals(WrappedMoney.BaseCurrency, StringComparison.OrdinalIgnoreCase)) return 1;
+
+        string priceCurrency = GetOptionalField(csv, columnMap, _priceCurrencyName);
+        bool sameCurrencyAsPrice = priceCurrency.Equals(withholdingCurrency, StringComparison.OrdinalIgnoreCase);
+
+        if (sameCurrencyAsPrice && TryGetOptionalDecimal(csv, columnMap, _exchangeRateName, out decimal exchangeRate) && exchangeRate > 0)
+        {
+            return 1 / exchangeRate;
+        }
+
+        if (sameCurrencyAsPrice &&
+            TryGetOptionalDecimal(csv, columnMap, _quantityName, out decimal shares) &&
+            TryGetOptionalDecimal(csv, columnMap, _pricePerShareName, out decimal dividendPerShare))
+        {
+            decimal netForeign = shares * dividendPerShare - withholdingTax;
+            if (netForeign > 0 && totalGbp > 0) return totalGbp / netForeign;
+        }
+
+        throw new InvalidDataException($"Withholding tax on row {csv.Context.Parser?.Row} is in {withholdingCurrency} but no exchange rate to " +
+            $"{WrappedMoney.BaseCurrency.ToUpperInvariant()} could be found. Map the '{_exchangeRateName}' column, or the '{_quantityName}', " +
+            $"'{_pricePerShareName}' and '{_priceCurrencyName}' columns.");
     }
 
     private static InterestIncome ParseInterest(CsvReader csv, CsvColumnMap columnMap)
