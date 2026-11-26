@@ -28,7 +28,7 @@ public static class IBXmlFutureTradeParser
             GrossProceed = new DescribedMoney() { Amount = WrappedMoney.GetBaseCurrencyZero() },
             Expenses = element.BuildExpenses(),
             ContractValue = element.GetContractValue(),
-            Isin = element.GetAttribute("isin")
+            Isin = element.GetOptionalAttribute("isin")
         };
     }
 }

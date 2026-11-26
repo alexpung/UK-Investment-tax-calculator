@@ -6,6 +6,22 @@ namespace UnitTest.Test.Model;
 
 public class CountryCodeTest
 {
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData("U")]
+    public void GetRegionByIsin_ReturnsUnknownRegionForMissingOrTooShortIsin(string? isin)
+    {
+        CountryCode.GetRegionByIsin(isin).ShouldBe(CountryCode.UnknownRegion);
+    }
+
+    [Fact]
+    public void GetRegionByIsin_UsesTwoLetterPrefix()
+    {
+        CountryCode.GetRegionByIsin("US0378331005").ThreeDigitCode.ShouldBe("USA");
+    }
+
     [Fact]
     public void GetAllRegions_ListsUnknownThenCommonRegionsThenRestAlphabetically()
     {

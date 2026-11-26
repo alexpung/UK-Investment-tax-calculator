@@ -168,9 +168,7 @@
         }
 
         string isin = GetIsinForTicker(SelectedTicker, PeriodEndDate.Value);
-        CountryCode region = string.IsNullOrEmpty(isin) || isin.Length < 2
-            ? CountryCode.UnknownRegion 
-            : CountryCode.GetRegionByTwoDigitCode(isin[..2]);
+        CountryCode region = CountryCode.GetRegionByIsin(isin);
 
         DateTime distributionDate = PeriodEndDate.Value.AddMonths(6);
         decimal totalAmountLocal = Quantity * IncomePerShare;

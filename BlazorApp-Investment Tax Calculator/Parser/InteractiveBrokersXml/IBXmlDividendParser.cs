@@ -29,7 +29,7 @@ public static class IBXmlDividendParser
                     AssetName = element.GetAttribute("symbol"),
                     Date = XmlParserHelper.ParseDate(element.GetAttribute("settleDate")),
                     Amount = element.BuildDescribedMoney("amount", "currency", "fxRateToBase", element.GetAttribute("description")),
-                    Isin = element.GetAttribute("isin")
+                    Isin = element.GetOptionalAttribute("isin")
                 };
             }
             catch (Exception ex)
@@ -52,7 +52,7 @@ public static class IBXmlDividendParser
                 Date = XmlParserHelper.ParseDate(element.GetAttribute("settleDate")),
                 CompanyLocation = GetCompanyLocation(element),
                 Proceed = element.BuildDescribedMoney("amount", "currency", "fxRateToBase", element.GetAttribute("description")),
-                Isin = element.GetAttribute("isin")
+                Isin = element.GetOptionalAttribute("isin")
             };
         }
         catch (Exception ex)
@@ -72,7 +72,7 @@ public static class IBXmlDividendParser
         {
             return CountryCode.GetRegionByTwoDigitCode("CA");
         }
-        return CountryCode.GetRegionByTwoDigitCode(dividendElement.GetAttribute("isin")[..2]);
+        return CountryCode.GetRegionByIsin(dividendElement.GetOptionalAttribute("isin"));
     }
 
     private static DividendType GetDividendType(XElement dividendElement)

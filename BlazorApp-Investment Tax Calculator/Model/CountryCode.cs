@@ -24,6 +24,21 @@ public record CountryCode(string ThreeDigitCode, string CountryName)
         }
     }
 
+    /// <summary>
+    /// Derives the region from the two-letter country prefix of an ISIN.
+    /// Returns <see cref="UnknownRegion"/> when the ISIN is null, blank or too short,
+    /// so a single row missing its ISIN does not abort the whole import.
+    /// </summary>
+    public static CountryCode GetRegionByIsin(string? isin)
+    {
+        string trimmed = isin?.Trim() ?? string.Empty;
+        if (trimmed.Length < 2)
+        {
+            return UnknownRegion;
+        }
+        return GetRegionByTwoDigitCode(trimmed[..2]);
+    }
+
     public static CountryCode GetRegionByThreeDigitCode(string threeDigitCode)
     {
         if (string.IsNullOrWhiteSpace(threeDigitCode))

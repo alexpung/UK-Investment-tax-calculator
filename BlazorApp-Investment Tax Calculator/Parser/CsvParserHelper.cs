@@ -26,6 +26,13 @@ public static class CsvParserHelper
         return fieldValue;
     }
 
+    /// <summary>
+    /// Returns the trimmed field value, or an empty string if it is blank.
+    /// Use for fields such as ISIN that may legitimately be missing on some rows.
+    /// </summary>
+    public static string GetFieldOrEmpty(this CsvHelper.CsvReader csv, string fieldName)
+        => csv.GetField(fieldName)?.Trim() ?? string.Empty;
+
     public static T GetFieldSafe<T>(this CsvHelper.CsvReader csv, string fieldName)
     {
         return csv.GetField<T?>(fieldName) ?? throw new InvalidDataException($"Field '{fieldName}' is missing on row {csv.Context.Parser?.Row}.");

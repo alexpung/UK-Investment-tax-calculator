@@ -81,6 +81,18 @@ public class IBXmlParseTest
         var result = IBXmlDividendParser.ParseXml(xmlDoc);
         result[0].CompanyLocation.ShouldBe(CountryCode.UnknownRegion);
     }
+    [Theory]
+    [InlineData("isin=\"\"")]
+    [InlineData("")]
+    public void TestBlankOrMissingIsinInDividendGivesUnknownRegion(string isinAttribute)
+    {
+        XElement xmlDoc = XElement.Parse($@"<CashTransactions><CashTransaction settleDate=""02-Feb-21"" symbol=""ABCD"" {isinAttribute} description=""ABC CASH DIVIDEND USD 0.10 PER SHARE"" amount=""10"" type=""Dividends"" currency=""USD"" fxRateToBase=""0.75"" levelOfDetail=""DETAIL""/></CashTransactions>");
+        var result = IBXmlDividendParser.ParseXml(xmlDoc);
+        result.Count.ShouldBe(1);
+        result[0].CompanyLocation.ShouldBe(CountryCode.UnknownRegion);
+        result[0].Isin.ShouldBe(string.Empty);
+    }
+
     [Fact]
     public void TestReadingIBXmlReturnOfCapital()
     {
