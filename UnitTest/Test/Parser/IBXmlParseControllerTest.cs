@@ -2,6 +2,8 @@
 using InvestmentTaxCalculator.Model;
 using InvestmentTaxCalculator.Parser.InteractiveBrokersXml;
 
+using System.Xml.Linq;
+
 namespace UnitTest.Test.Parser;
 
 public class IBXmlParseControllerTest
@@ -28,6 +30,25 @@ public class IBXmlParseControllerTest
     {
         IBParseController iBParseController = new(new AssetTypeToLoadSetting());
         iBParseController.CheckFileValidity(_taxExampleXml, "text").ShouldBeFalse();
+    }
+
+    [Fact]
+    public void TestBlankDividendIsinDoesNotDropRestOfFile()
+    {
+        XElement document = XElement.Parse(_taxExampleXml);
+        XElement dividendRow = document.Descendants("CashTransaction")
+            .First(row => row.Attribute("type")?.Value == "Dividends" && row.Attribute("levelOfDetail")?.Value == "DETAIL");
+        dividendRow.SetAttributeValue("isin", "");
+        TaxEventLists expected = new IBParseController(new AssetTypeToLoadSetting()).ParseFile(_taxExampleXml);
+
+        TaxEventLists results = new IBParseController(new AssetTypeToLoadSetting()).ParseFile(document.ToString());
+
+        results.Trades.Count.ShouldBeGreaterThan(0);
+        results.Trades.Count.ShouldBe(expected.Trades.Count);
+        results.CorporateActions.Count.ShouldBe(expected.CorporateActions.Count);
+        results.InterestIncomes.Count.ShouldBe(expected.InterestIncomes.Count);
+        results.Dividends.Count.ShouldBe(expected.Dividends.Count);
+        results.Dividends.ShouldContain(dividend => dividend.Isin == string.Empty && dividend.CompanyLocation == CountryCode.UnknownRegion);
     }
 
     [Fact]

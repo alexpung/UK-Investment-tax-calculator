@@ -104,14 +104,16 @@ public class FreeTradeCsvParseController : IColumnMappableCsvParser
                     break;
                 case "DIVIDEND":
                     DateTime dividendDate = csv.ParseDateStringToDateTime(columnMap[_dividendPayDateName]);
+                    // A blank ISIN should not reject the whole file; the region is then recorded as unknown.
+                    string dividendIsin = csv.GetField(columnMap[_isinName])?.Trim() ?? string.Empty;
                     trades.Dividends.Add(new Dividend
                     {
                         AssetName = csv.GetFieldSafe(columnMap[_tickerName]),
                         Proceed = new DescribedMoney(csv.GetField<decimal>(columnMap[_totalAmountName]), WrappedMoney.BaseCurrency, 1, $"{GetOptionalField(csv, columnMap, _titleName)} dividend: {GetOptionalField(csv, columnMap, _dividendPerShareName)} per share."),
                         Date = dividendDate,
                         DividendType = DividendType.DIVIDEND,
-                        CompanyLocation = CountryCode.GetRegionByTwoDigitCode(csv.GetFieldSafe(columnMap[_isinName])[..2]),
-                        Isin = csv.GetFieldSafe(columnMap[_isinName])
+                        CompanyLocation = CountryCode.GetRegionByIsin(dividendIsin),
+                        Isin = dividendIsin
                     });
                     trades.Dividends.Add(new Dividend
                     {
@@ -120,8 +122,8 @@ public class FreeTradeCsvParseController : IColumnMappableCsvParser
                         Proceed = new DescribedMoney(-Math.Abs(csv.GetField<decimal>(columnMap[_dividendWithheldTaxName])), WrappedMoney.BaseCurrency, 1, $"{GetOptionalField(csv, columnMap, _titleName)} withholding tax"),
                         Date = dividendDate,
                         DividendType = DividendType.WITHHOLDING,
-                        CompanyLocation = CountryCode.GetRegionByTwoDigitCode(csv.GetFieldSafe(columnMap[_isinName])[..2]),
-                        Isin = csv.GetFieldSafe(columnMap[_isinName])
+                        CompanyLocation = CountryCode.GetRegionByIsin(dividendIsin),
+                        Isin = dividendIsin
                     });
 
                     break;

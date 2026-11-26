@@ -143,7 +143,9 @@ public class Trading212CsvParseController : IColumnMappableCsvParser
         string ticker = csv.GetFieldSafe(columnMap[_tickerName]);
         string name = columnMap.TryGetHeader(_nameName, out string? nameHeader) ? csv.GetFieldSafe(nameHeader) : ticker;
         DateTime date = GetTime(csv, columnMap);
-        string isin = csv.GetFieldSafe(columnMap[_isinName]);
+        // A blank ISIN should not reject the whole file; the region is then recorded as unknown
+        // and the user is warned to set it manually.
+        string isin = csv.GetField(columnMap[_isinName])?.Trim() ?? string.Empty;
 
         // Add dividend income
         trades.Dividends.Add(new Dividend
@@ -152,7 +154,7 @@ public class Trading212CsvParseController : IColumnMappableCsvParser
             Proceed = new DescribedMoney(totalGbp, WrappedMoney.BaseCurrency, 1, $"{name} dividend"),
             Date = date,
             DividendType = DividendType.DIVIDEND,
-            CompanyLocation = CountryCode.GetRegionByTwoDigitCode(isin[..2]),
+            CompanyLocation = CountryCode.GetRegionByIsin(isin),
             Isin = isin
         });
 
@@ -167,7 +169,7 @@ public class Trading212CsvParseController : IColumnMappableCsvParser
                 Proceed = new DescribedMoney(-Math.Abs(withholdingTax), WrappedMoney.BaseCurrency, 1, $"{name} withholding tax"),
                 Date = date,
                 DividendType = DividendType.WITHHOLDING,
-                CompanyLocation = CountryCode.GetRegionByTwoDigitCode(isin[..2]),
+                CompanyLocation = CountryCode.GetRegionByIsin(isin),
                 Isin = isin
             });
         }

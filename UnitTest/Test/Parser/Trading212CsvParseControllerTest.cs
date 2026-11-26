@@ -1,4 +1,5 @@
 using InvestmentTaxCalculator.Enumerations;
+using InvestmentTaxCalculator.Model;
 using InvestmentTaxCalculator.Model.TaxEvents;
 using InvestmentTaxCalculator.Parser;
 using InvestmentTaxCalculator.Parser.Trading212Csv;
@@ -71,6 +72,20 @@ public class Trading212CsvParseControllerTest
         withholding.AssetName.ShouldBe("AAPL");
         withholding.Proceed.Amount.Amount.ShouldBe(-3.75m);
         withholding.Isin.ShouldBe("US0378331005");
+    }
+
+    [Fact]
+    public void TestDividendWithBlankIsinGivesUnknownRegion()
+    {
+        string csvData = SampleCsvHeader + "\n" +
+            "Market buy,2024-01-15 10:30:00,US0378331005,AAPL,Apple Inc.,10,150.00,USD,1.27,-1500.00,-1181.10,,,5.91,2.36,,,T123456789,,,\n" +
+            "Dividend (Ordinary),2024-03-10 09:00:00,,AAPL,Apple Inc.,,,,,25.00,25.00,3.75,USD,,,,,D123456789,,,";
+
+        var result = new Trading212CsvParseController().ParseFile(csvData);
+
+        result.Trades.Count.ShouldBe(1);
+        result.Dividends.Count.ShouldBe(2);
+        result.Dividends.ShouldAllBe(d => d.CompanyLocation == CountryCode.UnknownRegion && d.Isin == string.Empty);
     }
 
     [Fact]

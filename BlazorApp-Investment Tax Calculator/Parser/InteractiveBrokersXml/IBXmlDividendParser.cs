@@ -52,7 +52,7 @@ public static class IBXmlDividendParser
                 Date = XmlParserHelper.ParseDate(element.GetAttribute("settleDate")),
                 CompanyLocation = GetCompanyLocation(element),
                 Proceed = element.BuildDescribedMoney("amount", "currency", "fxRateToBase", element.GetAttribute("description")),
-                Isin = element.GetAttribute("isin")
+                Isin = GetIsin(element)
             };
         }
         catch (Exception ex)
@@ -61,6 +61,11 @@ public static class IBXmlDividendParser
             throw new ParseException(exceptionMessage, ex);
         }
     }
+
+    /// <summary>
+    /// IB sometimes reports dividends with a blank or missing ISIN; treat both as empty rather than failing.
+    /// </summary>
+    private static string GetIsin(XElement element) => element.Attribute("isin")?.Value ?? string.Empty;
 
     private static CountryCode GetCompanyLocation(XElement dividendElement)
     {
@@ -72,7 +77,7 @@ public static class IBXmlDividendParser
         {
             return CountryCode.GetRegionByTwoDigitCode("CA");
         }
-        return CountryCode.GetRegionByTwoDigitCode(dividendElement.GetAttribute("isin")[..2]);
+        return CountryCode.GetRegionByIsin(GetIsin(dividendElement));
     }
 
     private static DividendType GetDividendType(XElement dividendElement)

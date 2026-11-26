@@ -1,4 +1,5 @@
 ﻿using InvestmentTaxCalculator.Enumerations;
+using InvestmentTaxCalculator.Model;
 using InvestmentTaxCalculator.Model.TaxEvents;
 using InvestmentTaxCalculator.Parser;
 using InvestmentTaxCalculator.Parser.FreeTradeCsv;
@@ -61,6 +62,18 @@ public class FreeTradeCsvParseControllerTest
         var interest = result.InterestIncomes[0];
         interest.AssetName.ShouldBe("Broker interest");
         interest.Amount.Amount.Amount.ShouldBe(5.50m);
+    }
+
+    [Fact]
+    public void TestDividendWithBlankIsinGivesUnknownRegion()
+    {
+        string csvData = SampleCsvHeader + "\n" +
+            "DIVIDEND,2024-03-10 09:00:00,AAPL,Apple Inc.,,,,25.00,USD,,2024-03-10,0.25,3.75";
+
+        var result = new FreeTradeCsvParseController().ParseFile(csvData);
+
+        result.Dividends.Count.ShouldBe(2);
+        result.Dividends.ShouldAllBe(d => d.CompanyLocation == CountryCode.UnknownRegion && d.Isin == string.Empty);
     }
 
     [Fact]
