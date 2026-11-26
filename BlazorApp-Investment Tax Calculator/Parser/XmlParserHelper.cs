@@ -23,6 +23,13 @@ public static class XmlParserHelper
 
     }
 
+    /// <summary>
+    /// Returns the attribute value, or an empty string if the attribute is absent.
+    /// Use for fields such as ISIN that brokers do not always report.
+    /// </summary>
+    public static string GetOptionalAttribute(this XElement xElement, string attributeName)
+        => xElement.Attribute(attributeName)?.Value.Trim() ?? string.Empty;
+
     public static WrappedMoney BuildMoney(this XElement xElement, string amountAttributeName, string currencyAttributeName)
     {
         return new WrappedMoney(decimal.Parse(xElement.GetAttribute(amountAttributeName)), xElement.GetAttribute(currencyAttributeName));

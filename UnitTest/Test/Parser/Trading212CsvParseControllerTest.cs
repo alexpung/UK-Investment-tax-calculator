@@ -89,6 +89,19 @@ public class Trading212CsvParseControllerTest
     }
 
     [Fact]
+    public void TestTradeWithBlankIsinIsParsed()
+    {
+        string csvData = SampleCsvHeader + "\n" +
+            "Market buy,2024-01-15 10:30:00,,AAPL,Apple Inc.,10,150.00,USD,1.27,-1500.00,-1181.10,,,5.91,2.36,,,T123456789,,,";
+
+        var result = new Trading212CsvParseController().ParseFile(csvData);
+
+        result.Trades.Count.ShouldBe(1);
+        result.Trades[0].AssetName.ShouldBe("AAPL");
+        result.Trades[0].Isin.ShouldBe(string.Empty);
+    }
+
+    [Fact]
     public void TestParseInterest()
     {
         string csvData = SampleCsvHeader + "\n" +

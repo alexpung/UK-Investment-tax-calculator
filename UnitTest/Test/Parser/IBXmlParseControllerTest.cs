@@ -51,6 +51,31 @@ public class IBXmlParseControllerTest
         results.Dividends.ShouldContain(dividend => dividend.Isin == string.Empty && dividend.CompanyLocation == CountryCode.UnknownRegion);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void TestBlankOrMissingTradeIsinDoesNotDropRestOfFile(bool removeAttribute)
+    {
+        XElement document = XElement.Parse(_taxExampleXml);
+        List<XElement> tradeRows = [.. document.Descendants("Order").Where(row => row.Attribute("isin") is not null)];
+        tradeRows.ShouldNotBeEmpty();
+        foreach (XElement row in tradeRows)
+        {
+            if (removeAttribute) row.Attribute("isin")!.Remove();
+            else row.SetAttributeValue("isin", "");
+        }
+        TaxEventLists expected = new IBParseController(new AssetTypeToLoadSetting()).ParseFile(_taxExampleXml);
+
+        TaxEventLists results = new IBParseController(new AssetTypeToLoadSetting()).ParseFile(document.ToString());
+
+        results.Trades.Count.ShouldBeGreaterThan(0);
+        results.Trades.Count.ShouldBe(expected.Trades.Count);
+        results.Trades.ShouldAllBe(trade => trade.Isin == string.Empty);
+        results.OptionTrades.Count.ShouldBe(expected.OptionTrades.Count);
+        results.FutureContractTrades.Count.ShouldBe(expected.FutureContractTrades.Count);
+        results.Dividends.Count.ShouldBe(expected.Dividends.Count);
+    }
+
     [Fact]
     public void TestParseValidIBXml()
     {

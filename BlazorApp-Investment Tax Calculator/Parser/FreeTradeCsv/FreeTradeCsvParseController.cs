@@ -99,13 +99,14 @@ public class FreeTradeCsvParseController : IColumnMappableCsvParser
                         AcquisitionDisposal = csv.GetFieldSafe(columnMap[_buySellName]).Equals("BUY", StringComparison.CurrentCultureIgnoreCase)
                                ? TradeType.ACQUISITION
                                : TradeType.DISPOSAL,
-                        Isin = csv.GetFieldSafe(columnMap[_isinName])
+                        // ISIN is optional; trades without one are matched by ticker.
+                        Isin = csv.GetFieldOrEmpty(columnMap[_isinName])
                     });
                     break;
                 case "DIVIDEND":
                     DateTime dividendDate = csv.ParseDateStringToDateTime(columnMap[_dividendPayDateName]);
                     // A blank ISIN should not reject the whole file; the region is then recorded as unknown.
-                    string dividendIsin = csv.GetField(columnMap[_isinName])?.Trim() ?? string.Empty;
+                    string dividendIsin = csv.GetFieldOrEmpty(columnMap[_isinName]);
                     trades.Dividends.Add(new Dividend
                     {
                         AssetName = csv.GetFieldSafe(columnMap[_tickerName]),

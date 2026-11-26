@@ -47,7 +47,7 @@ public static class IBXmlStockTradeParser
                 string s when s.Split(";").Contains("Ep") => TradeReason.Expired,
                 _ => TradeReason.OrderedTrade
             },
-            Isin = element.GetAttribute("isin")
+            Isin = element.GetOptionalAttribute("isin")
         };
     }
 }

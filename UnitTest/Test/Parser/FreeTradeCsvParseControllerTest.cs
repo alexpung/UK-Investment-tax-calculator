@@ -28,6 +28,19 @@ public class FreeTradeCsvParseControllerTest
     }
 
     [Fact]
+    public void TestOrderWithBlankIsinIsParsed()
+    {
+        string csvData = SampleCsvHeader + "\n" +
+            "ORDER,2024-01-15 10:30:00,AAPL,Apple Inc.,,10,150.00,1500.00,USD,BUY,,,";
+
+        var result = new FreeTradeCsvParseController().ParseFile(csvData);
+
+        result.Trades.Count.ShouldBe(1);
+        result.Trades[0].AssetName.ShouldBe("AAPL");
+        result.Trades[0].Isin.ShouldBe(string.Empty);
+    }
+
+    [Fact]
     public void TestParseDividend()
     {
         string csvData = SampleCsvHeader + "\n" +

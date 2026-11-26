@@ -124,7 +124,8 @@ public class Trading212CsvParseController : IColumnMappableCsvParser
         // Total (GBP) is negative for buys, positive for sells in Trading212 CSV
         // We need absolute value for GrossProceed
         decimal grossProceedAmount = Math.Abs(totalGbp);
-        string isin = csv.GetFieldSafe(columnMap[_isinName]);
+        // ISIN is optional; trades without one are matched by ticker.
+        string isin = csv.GetFieldOrEmpty(columnMap[_isinName]);
 
         return new Trade
         {
@@ -145,7 +146,7 @@ public class Trading212CsvParseController : IColumnMappableCsvParser
         DateTime date = GetTime(csv, columnMap);
         // A blank ISIN should not reject the whole file; the region is then recorded as unknown
         // and the user is warned to set it manually.
-        string isin = csv.GetField(columnMap[_isinName])?.Trim() ?? string.Empty;
+        string isin = csv.GetFieldOrEmpty(columnMap[_isinName]);
 
         // Add dividend income
         trades.Dividends.Add(new Dividend
