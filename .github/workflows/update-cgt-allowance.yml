@@ -1,0 +1,43 @@
+# Every 1st May, read the CGT annual exempt amounts from
+# https://www.gov.uk/guidance/capital-gains-tax-rates-and-allowances
+# and open a pull request updating UkCapitalGainAllowance.cs if anything changed.
+name: Update CGT allowance
+
+on:
+  schedule:
+    - cron: "0 6 1 5 *" # 06:00 UTC on 1 May
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-allowance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Update allowances from GOV.UK
+        id: update
+        run: python .github/scripts/update_cgt_allowance.py --bump-version
+
+      - name: Create pull request
+        if: steps.update.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: automation/update-cgt-allowance
+          delete-branch: true
+          commit-message: Update CGT annual exempt amount from GOV.UK
+          title: Update CGT annual exempt amount from GOV.UK
+          body: |
+            Automated update from https://www.gov.uk/guidance/capital-gains-tax-rates-and-allowances
+
+            ${{ steps.update.outputs.summary }}
+          add-paths: |
+            BlazorApp-Investment Tax Calculator/Model/UkTaxModel/UkCapitalGainAllowance.cs
+            BlazorApp-Investment Tax Calculator/InvestmentTaxCalculator.csproj
