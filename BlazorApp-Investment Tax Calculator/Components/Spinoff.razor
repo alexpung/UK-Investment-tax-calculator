@@ -231,8 +231,7 @@
         if (_parentSharesRatio > 0 && !string.IsNullOrEmpty(_parentTicker))
         {
             var pool = _ukSection104Pools.GetExistingOrInitialise(_parentTicker!);
-            var history = pool.GetLastSection104History(DateOnly.FromDateTime(_date));
-            decimal currentHolding = history?.NewQuantity ?? 0;
+            decimal currentHolding = pool.GetQuantityAtStartOfDay(DateOnly.FromDateTime(_date));
 
             decimal rawQuantity = currentHolding * (_spinoffSharesRatio / _parentSharesRatio);
             _expectedSpinoffQuantity = Math.Round(rawQuantity, 4, MidpointRounding.ToZero);

@@ -217,6 +217,15 @@ public record UkSection104
     }
 
     /// <summary>
+    /// Get the quantity held in the S104 pool at the start of the date, i.e. before any trades or corporate actions on that date.
+    /// Used by corporate action input forms so that editing an existing action does not include the action itself.
+    /// </summary>
+    public decimal GetQuantityAtStartOfDay(DateOnly date)
+    {
+        return Section104HistoryList.LastOrDefault(x => DateOnly.FromDateTime(x.Date) < date)?.NewQuantity ?? 0m;
+    }
+
+    /// <summary>
     /// Used in corporate actions like stock split to multiply the quantity in the S104 pool
     /// </summary>
     /// <param name="factor"></param>
