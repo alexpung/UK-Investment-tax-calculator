@@ -238,6 +238,32 @@ public class Trading212CsvParseControllerTest
         new Trading212CsvParseController().ParseFile(csvData).Trades.ShouldBeEmpty();
     }
 
+    [Fact]
+    public void TestZeroTotalBuyIsKeptAsZeroCostAcquisition()
+    {
+        string csvData = NewFormatCsvHeader + "\n" +
+            "Market buy,2024-03-10 09:00:00,US0378331005,AAPL,Apple Inc.,,,1,0,USD,1.27,,,0.00,GBP,,,";
+
+        var trade = new Trading212CsvParseController().ParseFile(csvData).Trades.ShouldHaveSingleItem();
+
+        trade.AcquisitionDisposal.ShouldBe(TradeType.ACQUISITION);
+        trade.Quantity.ShouldBe(1);
+        trade.GrossProceed.BaseCurrencyAmount.Amount.ShouldBe(0m);
+    }
+
+    [Fact]
+    public void TestInterestDistributionIsGrossedUpByWithholdingTax()
+    {
+        // 10 x 0.85 USD net = 8.50 USD credited as 6.80 GBP, so 1.50 USD withheld is 1.20 GBP and the gross interest is 8.00 GBP.
+        string csvData = NewFormatCsvHeader + "\n" +
+            "Dividend (Interest),2024-03-10 09:00:00,IE00BSKRJZ44,IDTL,iShares USD Treasury Bond 20+yr (Dist),,,10,0.85,USD,Not available,,,6.80,GBP,1.50,USD,";
+
+        var result = new Trading212CsvParseController().ParseFile(csvData);
+
+        result.Dividends.ShouldBeEmpty();
+        result.InterestIncomes.ShouldHaveSingleItem().Amount.BaseCurrencyAmount.Amount.ShouldBe(8.00m);
+    }
+
     [Theory]
     [InlineData("2024-04-05 23:30:00", 2024, 4, 6, 0, 30)] // BST: 5 April in UTC is 6 April in the UK, the next tax year
     [InlineData("2024-04-05 23:30:00+00:00", 2024, 4, 6, 0, 30)]

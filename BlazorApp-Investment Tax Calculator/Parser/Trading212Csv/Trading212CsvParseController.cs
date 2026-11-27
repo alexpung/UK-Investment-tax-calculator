@@ -174,10 +174,12 @@ public class Trading212CsvParseController(ToastService? toastService = null) : I
         string ticker = csv.GetFieldSafe(columnMap[_tickerName]);
         DateTime date = GetTime(csv, columnMap);
 
-        if (totalGbp == 0)
+        TradeType tradeType = action.EndsWith("buy", StringComparison.OrdinalIgnoreCase) ? TradeType.ACQUISITION : TradeType.DISPOSAL;
+        if (totalGbp == 0 && tradeType == TradeType.DISPOSAL)
         {
             // A sell at zero is how Trading 212 records shares exchanged in a takeover; it is not a disposal for nothing.
-            warnings.Add($"Trades with a zero total (usually shares exchanged in a takeover) are not imported, enter the corporate action manually instead");
+            // A zero-cost acquisition is kept, as dropping it would leave too few shares for later disposals.
+            warnings.Add($"Sells with a zero total (usually shares exchanged in a takeover) are not imported, enter the corporate action manually instead");
             return null;
         }
 
@@ -189,7 +191,7 @@ public class Trading212CsvParseController(ToastService? toastService = null) : I
             Quantity = quantity,
             GrossProceed = new DescribedMoney(Math.Abs(totalGbp), WrappedMoney.BaseCurrency, 1),
             Date = date,
-            AcquisitionDisposal = action.EndsWith("buy", StringComparison.OrdinalIgnoreCase) ? TradeType.ACQUISITION : TradeType.DISPOSAL,
+            AcquisitionDisposal = tradeType,
             // ISIN is optional; trades without one are matched by ticker.
             Isin = csv.GetFieldOrEmpty(columnMap[_isinName])
         };
@@ -214,11 +216,12 @@ public class Trading212CsvParseController(ToastService? toastService = null) : I
 
         if (label.Contains("interest", StringComparison.OrdinalIgnoreCase))
         {
-            // An interest distribution from a bond fund is savings income, not a dividend.
+            // An interest distribution from a bond fund is savings income, not a dividend. Like dividends it is recorded gross,
+            // as Total is net of any withholding tax.
             trades.InterestIncomes.Add(new InterestIncome
             {
                 AssetName = ticker,
-                Amount = new DescribedMoney(netGbp, WrappedMoney.BaseCurrency, 1, description),
+                Amount = new DescribedMoney(netGbp + withholdingGbp, WrappedMoney.BaseCurrency, 1, description),
                 InterestType = InterestType.ETFDIVIDEND,
                 IncomeLocation = location,
                 Date = date,
