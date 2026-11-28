@@ -61,9 +61,6 @@ public class GroupedTradeContainer<T>(IEnumerable<T> tradeList, IEnumerable<Corp
             kvp => kvp.Key,
             kvp => kvp.Value
                 .OrderBy(GetProcessingDateTime)
-                // A trade timestamped exactly at midnight on an action's effective date would otherwise tie with the action
-                // and, being inserted first, be processed before it. Corporate actions apply at the start of the day.
-                .ThenBy(taxEvent => taxEvent is CorporateAction ? 0 : 1)
                 .ToImmutableList()
         );
     }

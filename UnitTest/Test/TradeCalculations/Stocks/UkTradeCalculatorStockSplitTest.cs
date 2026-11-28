@@ -61,50 +61,6 @@ public class UkTradeCalculatorStockSplitTest
     }
 
     [Fact]
-    public void TestStockSplit_AppliesBeforeMidnightTradeOnEffectiveDate()
-    {
-        Trade earlierPurchase = new()
-        {
-            AssetName = "MIDNIGHT_SPLIT",
-            AcquisitionDisposal = TradeType.ACQUISITION,
-            Date = DateTime.Parse("01-Jan-22 10:00:00", CultureInfo.InvariantCulture),
-            Quantity = 10,
-            GrossProceed = new() { Amount = new(300m) },
-        };
-
-        // Date-only broker exports give trades a midnight timestamp, tying with the split's processing time.
-        Trade midnightPurchase = new()
-        {
-            AssetName = "MIDNIGHT_SPLIT",
-            AcquisitionDisposal = TradeType.ACQUISITION,
-            Date = DateTime.Parse("01-Feb-22 00:00:00", CultureInfo.InvariantCulture),
-            Quantity = 10,
-            GrossProceed = new() { Amount = new(900m) },
-        };
-
-        StockSplit stockSplit = new()
-        {
-            AssetName = "MIDNIGHT_SPLIT",
-            Date = DateTime.Parse("01-Feb-22 00:00:00", CultureInfo.InvariantCulture),
-            SplitFrom = 3,
-            SplitTo = 1
-        };
-
-        UkSection104Pools section104Pools = new(new UKTaxYear(), new ResidencyStatusRecord());
-        TaxEventLists taxEventLists = new();
-        taxEventLists.AddData([earlierPurchase, midnightPurchase, stockSplit]);
-
-        UkTradeCalculator calculator = TradeCalculationHelper.CreateUkTradeCalculator(section104Pools, taxEventLists);
-        calculator.CalculateTax();
-
-        UkSection104 pool = section104Pools.GetExistingOrInitialise("MIDNIGHT_SPLIT");
-        // Split applies to the 10 shares held at the start of the day only (10 / 3), then the midnight purchase is added.
-        pool.Quantity.ShouldBe(10m / 3m + 10m, 0.0001m);
-        // The corporate action form previews the holding the split actually sees.
-        pool.GetQuantityAtStartOfDay(new DateOnly(2022, 2, 1)).ShouldBe(10m);
-    }
-
-    [Fact]
     public void TestStockSplitIntraday_AppliesBeforeLaterDisposalInSection104Flow()
     {
         Trade initialPurchase = new()
