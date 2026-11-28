@@ -100,7 +100,7 @@ public class UkSection104Test
         history.Date.ShouldBe(reportingDate);
     }
     [Fact]
-    public void TestGetQuantityAtStartOfDay_ExcludesSameDayStockSplit()
+    public void TestGetQuantityAtEndOfPreviousDay_ExcludesSameDayStockSplit()
     {
         DateTime buyDate = new(2023, 1, 1, 10, 0, 0, DateTimeKind.Local);
         DateTime splitDate = new(2023, 6, 1, 0, 0, 0, DateTimeKind.Local);
@@ -110,9 +110,9 @@ public class UkSection104Test
         buy.MatchWithSection104(ukSection104);
         split.ChangeSection104(ukSection104);
 
-        ukSection104.GetQuantityAtStartOfDay(DateOnly.FromDateTime(splitDate)).ShouldBe(10m);
-        ukSection104.GetQuantityAtStartOfDay(DateOnly.FromDateTime(splitDate).AddDays(1)).ShouldBe(ukSection104.Quantity);
-        ukSection104.GetQuantityAtStartOfDay(DateOnly.FromDateTime(buyDate)).ShouldBe(0m);
+        ukSection104.GetQuantityAtEndOfPreviousDay(DateOnly.FromDateTime(splitDate)).ShouldBe(10m);
+        ukSection104.GetQuantityAtEndOfPreviousDay(DateOnly.FromDateTime(splitDate).AddDays(1)).ShouldBe(ukSection104.Quantity);
+        ukSection104.GetQuantityAtEndOfPreviousDay(DateOnly.FromDateTime(buyDate)).ShouldBe(0m);
     }
 
     [Fact]

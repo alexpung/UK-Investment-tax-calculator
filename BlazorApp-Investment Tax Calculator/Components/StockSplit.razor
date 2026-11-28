@@ -166,7 +166,7 @@
         if (_splitFrom > 0 && !string.IsNullOrEmpty(_ticker))
         {
             var pool = _ukSection104Pools.GetExistingOrInitialise(_ticker!);
-            decimal currentHolding = pool.GetQuantityAtStartOfDay(DateOnly.FromDateTime(_date));
+            decimal currentHolding = pool.GetQuantityAtEndOfPreviousDay(DateOnly.FromDateTime(_date));
             decimal rawNewQuantity = currentHolding * (_splitTo / _splitFrom);
             _expectedNewQuantity = rawNewQuantity;
             _fractionalRemoved = rawNewQuantity - Math.Floor(rawNewQuantity);

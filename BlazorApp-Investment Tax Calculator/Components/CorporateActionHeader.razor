@@ -23,7 +23,7 @@
         @if (!string.IsNullOrEmpty(SourceTicker))
         {
             <div class="form-text form-text-accent">
-                Holding at start of @Date.ToShortDateString(): <strong>@CurrentHolding</strong> shares
+                Section 104 holding at end of @Date.AddDays(-1).ToShortDateString(): <strong>@CurrentHolding</strong> shares
             </div>
         }
     </div>
@@ -111,7 +111,7 @@
         if (string.IsNullOrEmpty(SourceTicker)) return;
 
         var pool = _ukSection104Pools.GetExistingOrInitialise(SourceTicker!);
-        CurrentHolding = pool.GetQuantityAtStartOfDay(DateOnly.FromDateTime(Date));
+        CurrentHolding = pool.GetQuantityAtEndOfPreviousDay(DateOnly.FromDateTime(Date));
     }
 
     private async Task OnDateChangeInternal(DateTime? value)

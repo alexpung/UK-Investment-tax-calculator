@@ -217,10 +217,10 @@ public record UkSection104
     }
 
     /// <summary>
-    /// Get the quantity held in the S104 pool at the start of the date, i.e. before any trades or corporate actions on that date.
-    /// Used by corporate action input forms so that editing an existing action does not include the action itself.
+    /// Get the quantity stored in the S104 pool at the end of the day before the date, ignoring every event on that date.
+    /// Shown by corporate action input forms as a reminder of the imported holding, so editing an existing action does not include the action itself.
     /// </summary>
-    public decimal GetQuantityAtStartOfDay(DateOnly date)
+    public decimal GetQuantityAtEndOfPreviousDay(DateOnly date)
     {
         return Section104HistoryList.LastOrDefault(x => DateOnly.FromDateTime(x.Date) < date)?.NewQuantity ?? 0m;
     }
