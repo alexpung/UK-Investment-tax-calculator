@@ -192,8 +192,7 @@
         if (_oldSharesRatio > 0 && !string.IsNullOrEmpty(_oldTicker))
         {
             var pool = _ukSection104Pools.GetExistingOrInitialise(_oldTicker!);
-            var history = pool.GetLastSection104History(DateOnly.FromDateTime(_date));
-            decimal currentHolding = history?.NewQuantity ?? 0;
+            decimal currentHolding = pool.GetQuantityAtEndOfPreviousDay(DateOnly.FromDateTime(_date));
             _expectedNewQuantity = currentHolding * (_newSharesRatio / _oldSharesRatio);
         }
     }

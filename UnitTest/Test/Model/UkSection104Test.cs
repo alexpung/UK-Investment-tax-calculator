@@ -100,6 +100,22 @@ public class UkSection104Test
         history.Date.ShouldBe(reportingDate);
     }
     [Fact]
+    public void TestGetQuantityAtEndOfPreviousDay_ExcludesSameDayStockSplit()
+    {
+        DateTime buyDate = new(2023, 1, 1, 10, 0, 0, DateTimeKind.Local);
+        DateTime splitDate = new(2023, 6, 1, 0, 0, 0, DateTimeKind.Local);
+        TradeTaxCalculation buy = MockTrade.CreateTradeTaxCalculation("ABC", buyDate, 10m, 1000m, TradeType.ACQUISITION);
+        StockSplit split = new() { AssetName = "ABC", Date = splitDate, SplitFrom = 3, SplitTo = 1 };
+        UkSection104 ukSection104 = new("ABC");
+        buy.MatchWithSection104(ukSection104);
+        split.ChangeSection104(ukSection104);
+
+        ukSection104.GetQuantityAtEndOfPreviousDay(DateOnly.FromDateTime(splitDate)).ShouldBe(10m);
+        ukSection104.GetQuantityAtEndOfPreviousDay(DateOnly.FromDateTime(splitDate).AddDays(1)).ShouldBe(ukSection104.Quantity);
+        ukSection104.GetQuantityAtEndOfPreviousDay(DateOnly.FromDateTime(buyDate)).ShouldBe(0m);
+    }
+
+    [Fact]
     public void TestSection104AcquisitionExplanationWithExpenses()
     {
         // Arrange
